@@ -43,10 +43,15 @@ export function useChanceCalculator() {
       }
 
       if (totalCredits > 0) {
+        const computedW = colW / totalCredits;
+        const rigor: "low" | "medium" | "high" =
+          computedW >= 4.4 ? "high" : computedW >= 4.0 ? "medium" : "low";
+
         setInputs((prev) => ({
           ...prev,
           gpaUW: prev.gpaUW || (colUW / totalCredits).toFixed(2),
-          gpaW: prev.gpaW || (colW / totalCredits).toFixed(2),
+          gpaW: prev.gpaW || computedW.toFixed(2),
+          rigor: prev.rigor === "medium" ? rigor : prev.rigor,
         }));
       }
     } catch (e) {
