@@ -71,13 +71,15 @@ export function compareTests(
 
   if (sat !== null && college.testPolicy !== "blind") {
     const mid = (college.sat25 + college.sat75) / 2;
-    const spread = Math.max((college.sat75 - college.sat25) / 2, 1);
-    const normalized = (sat - mid) / spread;
+    // Use minimum spread of 40 SAT points to prevent small ranges from creating huge swings
+    const spread = Math.max((college.sat75 - college.sat25) / 2, 40);
+    // Clamp to ±1.5 so no single metric dominates
+    const normalized = Math.max(-1.5, Math.min(1.5, (sat - mid) / spread));
     delta += normalized;
     metrics++;
 
-    if (sat >= college.sat75) {
-      signals.push({ label: `Your SAT (${sat}) is above the 75th percentile (${college.sat75})`, delta: normalized });
+    if (sat >= college.sat75 + 10) {
+      signals.push({ label: `Your SAT (${sat}) is well above the 75th percentile (${college.sat75})`, delta: normalized });
     } else if (sat >= college.sat25) {
       signals.push({ label: `Your SAT (${sat}) is within the school's range (${college.sat25}-${college.sat75})`, delta: normalized });
     } else {
@@ -87,12 +89,13 @@ export function compareTests(
 
   if (act !== null && college.testPolicy !== "blind") {
     const mid = (college.act25 + college.act75) / 2;
-    const spread = Math.max((college.act75 - college.act25) / 2, 1);
-    const normalized = (act - mid) / spread;
+    // Use minimum spread of 2 ACT points — a 35 vs 36 should NOT be a huge jump
+    const spread = Math.max((college.act75 - college.act25) / 2, 2);
+    const normalized = Math.max(-1.5, Math.min(1.5, (act - mid) / spread));
     delta += normalized;
     metrics++;
 
-    if (act >= college.act75) {
+    if (act >= college.act75 + 1) {
       signals.push({ label: `Your ACT (${act}) is above the 75th percentile (${college.act75})`, delta: normalized });
     } else if (act >= college.act25) {
       signals.push({ label: `Your ACT (${act}) is within range (${college.act25}-${college.act75})`, delta: normalized });
