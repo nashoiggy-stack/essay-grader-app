@@ -5,7 +5,8 @@ export interface College {
   readonly size: "small" | "medium" | "large";
   readonly setting: "urban" | "suburban" | "rural";
   readonly acceptanceRate: number; // 0-100
-  readonly avgGPA: number;
+  readonly avgGPAUW: number; // unweighted (4.0 scale, college recalculated)
+  readonly avgGPAW: number; // weighted (5.0 scale, with AP/Honors bonuses)
   readonly satRange: [number, number]; // [25th, 75th]
   readonly actRange: [number, number]; // [25th, 75th]
   readonly testPolicy: "required" | "optional" | "blind";
@@ -35,7 +36,8 @@ export interface ChanceResult {
 }
 
 export interface CollegeFilters {
-  gpa: string;
+  gpaUW: string;
+  gpaW: string;
   sat: string;
   act: string;
   major: string;
@@ -49,7 +51,8 @@ export interface CollegeFilters {
 }
 
 export interface ChanceInputs {
-  gpa: string;
+  gpaUW: string;
+  gpaW: string;
   sat: string;
   act: string;
   rigor: "low" | "medium" | "high";
@@ -60,7 +63,8 @@ export interface ChanceInputs {
 }
 
 export const EMPTY_FILTERS: CollegeFilters = {
-  gpa: "",
+  gpaUW: "",
+  gpaW: "",
   sat: "",
   act: "",
   major: "",
@@ -74,7 +78,8 @@ export const EMPTY_FILTERS: CollegeFilters = {
 };
 
 export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
-  gpa: "",
+  gpaUW: "",
+  gpaW: "",
   sat: "",
   act: "",
   rigor: "medium",

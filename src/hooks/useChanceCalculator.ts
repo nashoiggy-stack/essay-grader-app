@@ -37,7 +37,8 @@ export function useChanceCalculator() {
   const result = useMemo((): ChanceResult | null => {
     if (!college) return null;
 
-    const gpa = inputs.gpa ? parseFloat(inputs.gpa) : null;
+    const gpaUW = inputs.gpaUW ? parseFloat(inputs.gpaUW) : null;
+    const gpaW = inputs.gpaW ? parseFloat(inputs.gpaW) : null;
     const sat = inputs.sat ? parseInt(inputs.sat) : null;
     const act = inputs.act ? parseInt(inputs.act) : null;
 
@@ -45,21 +46,39 @@ export function useChanceCalculator() {
     const strengths: string[] = [];
     const weaknesses: string[] = [];
 
-    // ── GPA comparison ──
-    if (gpa !== null) {
-      const diff = gpa - college.avgGPA;
+    // ── Unweighted GPA comparison (college recalculated, 4.0 scale) ──
+    if (gpaUW !== null) {
+      const diff = gpaUW - college.avgGPAUW;
       if (diff >= 0.2) {
-        score += 15;
-        strengths.push(`Your GPA (${gpa.toFixed(2)}) is above the school average (${college.avgGPA.toFixed(2)})`);
+        score += 12;
+        strengths.push(`Your UW GPA (${gpaUW.toFixed(2)}) is above the school average (${college.avgGPAUW.toFixed(2)})`);
       } else if (diff >= 0) {
-        score += 5;
-        strengths.push(`Your GPA (${gpa.toFixed(2)}) is at the school average`);
+        score += 4;
+        strengths.push(`Your UW GPA (${gpaUW.toFixed(2)}) is at the school average`);
       } else if (diff >= -0.15) {
-        score -= 5;
-        weaknesses.push(`Your GPA (${gpa.toFixed(2)}) is slightly below average (${college.avgGPA.toFixed(2)})`);
+        score -= 4;
+        weaknesses.push(`Your UW GPA (${gpaUW.toFixed(2)}) is slightly below average (${college.avgGPAUW.toFixed(2)})`);
       } else {
-        score -= 15;
-        weaknesses.push(`Your GPA (${gpa.toFixed(2)}) is below the school average (${college.avgGPA.toFixed(2)})`);
+        score -= 12;
+        weaknesses.push(`Your UW GPA (${gpaUW.toFixed(2)}) is below the school average (${college.avgGPAUW.toFixed(2)})`);
+      }
+    }
+
+    // ── Weighted GPA comparison (5.0 scale) ──
+    if (gpaW !== null) {
+      const diff = gpaW - college.avgGPAW;
+      if (diff >= 0.25) {
+        score += 8;
+        strengths.push(`Your weighted GPA (${gpaW.toFixed(2)}) is above the school average (${college.avgGPAW.toFixed(2)})`);
+      } else if (diff >= 0) {
+        score += 3;
+        strengths.push(`Your weighted GPA (${gpaW.toFixed(2)}) is at the school average`);
+      } else if (diff >= -0.2) {
+        score -= 3;
+        weaknesses.push(`Your weighted GPA (${gpaW.toFixed(2)}) is slightly below average (${college.avgGPAW.toFixed(2)})`);
+      } else {
+        score -= 8;
+        weaknesses.push(`Your weighted GPA (${gpaW.toFixed(2)}) is below the school average (${college.avgGPAW.toFixed(2)})`);
       }
     }
 

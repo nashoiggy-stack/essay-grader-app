@@ -45,10 +45,16 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
 
       {/* Stats */}
       <div>
-        <label className={labelClass}>GPA</label>
-        <input type="number" step="0.01" min="0" max="5" placeholder="e.g. 3.8"
-          className={inputClass} value={inputs.gpa}
-          onChange={(e) => onUpdate("gpa", e.target.value)} />
+        <label className={labelClass}>Unweighted GPA (4.0)</label>
+        <input type="number" step="0.01" min="0" max="4.0" placeholder="e.g. 3.8"
+          className={inputClass} value={inputs.gpaUW}
+          onChange={(e) => onUpdate("gpaUW", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>Weighted GPA (5.0)</label>
+        <input type="number" step="0.01" min="0" max="5.0" placeholder="e.g. 4.3"
+          className={inputClass} value={inputs.gpaW}
+          onChange={(e) => onUpdate("gpaW", e.target.value)} />
       </div>
       <div>
         <label className={labelClass}>SAT (optional)</label>

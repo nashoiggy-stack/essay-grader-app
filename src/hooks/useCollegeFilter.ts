@@ -9,7 +9,8 @@ import { EMPTY_FILTERS as DEFAULT_FILTERS } from "@/lib/college-types";
 
 function classify(
   college: College,
-  gpa: number | null,
+  gpaUW: number | null,
+  gpaW: number | null,
   sat: number | null,
   act: number | null
 ): { classification: Classification; reason: string; fitScore: number } {
@@ -17,14 +18,26 @@ function classify(
   let totalDelta = 0;
   let metrics = 0;
 
-  if (gpa !== null) {
-    const diff = gpa - college.avgGPA;
-    const pct = diff / 0.5; // 0.5 GPA spread = full range
+  // Unweighted GPA (college recalculated, 4.0 scale)
+  if (gpaUW !== null) {
+    const diff = gpaUW - college.avgGPAUW;
+    const pct = diff / 0.5;
     totalDelta += pct;
     metrics++;
-    if (diff >= 0.15) signals.push({ label: "GPA above average", delta: pct });
-    else if (diff <= -0.15) signals.push({ label: "GPA below average", delta: pct });
-    else signals.push({ label: "GPA in range", delta: pct });
+    if (diff >= 0.15) signals.push({ label: `UW GPA (${gpaUW.toFixed(2)}) above average`, delta: pct });
+    else if (diff <= -0.15) signals.push({ label: `UW GPA (${gpaUW.toFixed(2)}) below average`, delta: pct });
+    else signals.push({ label: `UW GPA (${gpaUW.toFixed(2)}) in range`, delta: pct });
+  }
+
+  // Weighted GPA (5.0 scale)
+  if (gpaW !== null) {
+    const diff = gpaW - college.avgGPAW;
+    const pct = diff / 0.6;
+    totalDelta += pct;
+    metrics++;
+    if (diff >= 0.2) signals.push({ label: `Weighted GPA (${gpaW.toFixed(2)}) above average`, delta: pct });
+    else if (diff <= -0.2) signals.push({ label: `Weighted GPA (${gpaW.toFixed(2)}) below average`, delta: pct });
+    else signals.push({ label: `Weighted GPA (${gpaW.toFixed(2)}) in range`, delta: pct });
   }
 
   if (sat !== null && college.testPolicy !== "blind") {
@@ -94,7 +107,8 @@ export function useCollegeFilter() {
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
   const results = useMemo((): ClassifiedCollege[] => {
-    const gpa = filters.gpa ? parseFloat(filters.gpa) : null;
+    const gpaUW = filters.gpaUW ? parseFloat(filters.gpaUW) : null;
+    const gpaW = filters.gpaW ? parseFloat(filters.gpaW) : null;
     const sat = filters.sat ? parseInt(filters.sat) : null;
     const act = filters.act ? parseInt(filters.act) : null;
     const arMin = filters.acceptanceRateMin ? parseFloat(filters.acceptanceRateMin) : 0;
@@ -114,7 +128,7 @@ export function useCollegeFilter() {
         return true;
       })
       .map((c) => {
-        const { classification, reason, fitScore } = classify(c, gpa, sat, act);
+        const { classification, reason, fitScore } = classify(c, gpaUW, gpaW, sat, act);
         return { college: c, classification, reason, fitScore };
       })
       .sort((a, b) => a.college.acceptanceRate - b.college.acceptanceRate);

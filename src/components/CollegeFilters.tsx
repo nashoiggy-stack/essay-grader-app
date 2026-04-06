@@ -31,10 +31,16 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {/* Stats */}
       <div>
-        <label className={labelClass}>GPA</label>
-        <input type="number" step="0.01" min="0" max="5" placeholder="e.g. 3.8"
-          className={inputClass} value={filters.gpa}
-          onChange={(e) => onUpdate("gpa", e.target.value)} />
+        <label className={labelClass}>Unweighted GPA (4.0)</label>
+        <input type="number" step="0.01" min="0" max="4.0" placeholder="e.g. 3.8"
+          className={inputClass} value={filters.gpaUW}
+          onChange={(e) => onUpdate("gpaUW", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>Weighted GPA (5.0)</label>
+        <input type="number" step="0.01" min="0" max="5.0" placeholder="e.g. 4.3"
+          className={inputClass} value={filters.gpaW}
+          onChange={(e) => onUpdate("gpaW", e.target.value)} />
       </div>
       <div>
         <label className={labelClass}>SAT (optional)</label>

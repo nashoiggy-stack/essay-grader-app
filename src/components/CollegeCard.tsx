@@ -39,9 +39,10 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mt-3">
+      <div className="grid grid-cols-4 gap-2 mt-3">
         <Stat label="Accept Rate" value={`${c.acceptanceRate}%`} />
-        <Stat label="Avg GPA" value={c.avgGPA.toFixed(2)} />
+        <Stat label="Avg UW GPA" value={c.avgGPAUW.toFixed(2)} />
+        <Stat label="Avg W GPA" value={c.avgGPAW.toFixed(2)} />
         <Stat label="Fit Score" value={`${fitScore}`} />
       </div>
 
