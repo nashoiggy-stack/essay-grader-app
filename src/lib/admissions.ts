@@ -182,34 +182,48 @@ export function classifyCollege(
   // Essay adjustment applies as a small fitScore modifier (not classification-changing)
   const essayBoost = essayResult.adjustment * 0.5; // dampen for classification purposes
 
-  if (avg > 0.5) {
+  // 5-tier classification: unlikely → reach → target → likely → safety
+  if (avg > 0.8 && college.acceptanceRate >= 40) {
+    // Safety: stats well above average AND school isn't too selective
     classification = "safety";
-    fitScore = Math.min(95, 70 + avg * 20 + essayBoost);
+    fitScore = Math.min(95, 80 + avg * 10 + essayBoost);
+  } else if (avg > 0.4) {
+    // Likely: stats above average, good chance but not guaranteed
+    classification = "likely";
+    fitScore = Math.min(88, 65 + avg * 20 + essayBoost);
   } else if (avg > -0.3) {
+    // Target: stats within range
     classification = "target";
-    fitScore = Math.min(80, 50 + (avg + 0.3) * 40 + essayBoost);
-  } else {
+    fitScore = Math.min(75, 50 + (avg + 0.3) * 35 + essayBoost);
+  } else if (avg > -0.8) {
+    // Reach: stats below range but not impossible
     classification = "reach";
-    fitScore = Math.max(5, 30 + avg * 20 + essayBoost);
+    fitScore = Math.max(15, 35 + avg * 20 + essayBoost);
+  } else {
+    // Unlikely: stats well below range
+    classification = "unlikely";
+    fitScore = Math.max(5, 20 + avg * 10 + essayBoost);
   }
 
-  // Highly selective schools (<15%) can never be safety
-  if (classification === "safety" && college.acceptanceRate < 15) {
+  // Highly selective schools (<15%) can never be safety — cap at likely
+  if ((classification === "safety" || classification === "likely") && college.acceptanceRate < 15) {
     classification = "target";
-    fitScore = Math.min(fitScore, 75);
+    fitScore = Math.min(fitScore, 70);
   }
 
-  // Selective-tagged schools with <20% acceptance get extra guard
-  if (classification === "safety" && college.tags.includes("selective") && college.acceptanceRate < 20) {
-    classification = "target";
-    fitScore = Math.min(fitScore, 72);
+  // Selective-tagged schools with <25% acceptance can't be safety — cap at likely
+  if (classification === "safety" && college.tags.includes("selective")) {
+    classification = "likely";
+    fitScore = Math.min(fitScore, 82);
   }
 
   // No metrics → fall back to acceptance rate heuristic
   if (totalMetrics === 0) {
-    if (college.acceptanceRate < 20) { classification = "reach"; fitScore = 30; }
-    else if (college.acceptanceRate < 50) { classification = "target"; fitScore = 55; }
-    else { classification = "safety"; fitScore = 75; }
+    if (college.acceptanceRate < 15) { classification = "reach"; fitScore = 25; }
+    else if (college.acceptanceRate < 30) { classification = "target"; fitScore = 45; }
+    else if (college.acceptanceRate < 55) { classification = "target"; fitScore = 55; }
+    else if (college.acceptanceRate < 75) { classification = "likely"; fitScore = 68; }
+    else { classification = "safety"; fitScore = 80; }
   }
 
   const reason = allSignals.length > 0

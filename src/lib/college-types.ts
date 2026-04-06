@@ -19,7 +19,7 @@ export interface College {
   readonly region: string;
 }
 
-export type Classification = "reach" | "target" | "safety";
+export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
 
 export interface ClassifiedCollege {
   readonly college: College;

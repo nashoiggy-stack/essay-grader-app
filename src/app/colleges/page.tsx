@@ -1,14 +1,54 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeFiltersPanel } from "@/components/CollegeFilters";
 import { CollegeResults } from "@/components/CollegeResults";
 import { useCollegeFilter } from "@/hooks/useCollegeFilter";
 
+const TIERS = [
+  {
+    label: "Safety",
+    color: "bg-emerald-500",
+    textColor: "text-emerald-400",
+    fit: "85-95",
+    description: "Your stats are well above average and the school has a higher acceptance rate. You're very likely to be admitted.",
+  },
+  {
+    label: "Likely",
+    color: "bg-blue-500",
+    textColor: "text-blue-400",
+    fit: "65-84",
+    description: "Your stats are above the school's averages. You have a strong chance, but admission isn't guaranteed — especially at more selective schools.",
+  },
+  {
+    label: "Target",
+    color: "bg-amber-500",
+    textColor: "text-amber-400",
+    fit: "40-64",
+    description: "Your stats are within the school's admitted student range. This is where most of your list should be — realistic but not a given.",
+  },
+  {
+    label: "Reach",
+    color: "bg-orange-500",
+    textColor: "text-orange-400",
+    fit: "15-39",
+    description: "Your stats are below the school's averages. Admission is possible but you'll need strong essays, ECs, and some luck.",
+  },
+  {
+    label: "Unlikely",
+    color: "bg-red-500",
+    textColor: "text-red-500",
+    fit: "5-14",
+    description: "Your stats are significantly below this school's admitted student profile. Admission would require exceptional circumstances.",
+  },
+];
+
 export default function CollegesPage() {
   const { filters, updateFilter, resetFilters, results, sortedBy } = useCollegeFilter();
+  const [showGuide, setShowGuide] = useState(false);
 
   return (
     <AuroraBackground>
@@ -24,9 +64,63 @@ export default function CollegesPage() {
             <span className="text-gradient">College List Builder</span>
           </h1>
           <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
-            Find your reach, target, and safety schools based on your academic profile and preferences.
+            Find your safety, likely, target, reach, and unlikely schools based on your academic profile.
           </p>
+
+          {/* Guide toggle */}
+          <button
+            onClick={() => setShowGuide(!showGuide)}
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+            </svg>
+            {showGuide ? "Hide" : "What do these tiers mean?"}
+          </button>
         </motion.div>
+
+        {/* Guide panel */}
+        <AnimatePresence>
+          {showGuide && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-8"
+            >
+              <div className="rounded-2xl bg-[#12121f] border border-white/[0.08] p-6">
+                <h3 className="text-sm font-bold text-zinc-200 mb-4">Classification Tiers & Fit Scores</h3>
+
+                <div className="space-y-3 mb-6">
+                  {TIERS.map((tier) => (
+                    <div key={tier.label} className="flex items-start gap-3">
+                      <div className="flex items-center gap-2 shrink-0 w-24">
+                        <span className={`w-2.5 h-2.5 rounded-full ${tier.color}`} />
+                        <span className={`text-sm font-semibold ${tier.textColor}`}>{tier.label}</span>
+                      </div>
+                      <span className="text-xs text-zinc-600 font-mono shrink-0 w-12">{tier.fit}</span>
+                      <p className="text-xs text-zinc-400 leading-relaxed">{tier.description}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-white/[0.06] pt-4">
+                  <h4 className="text-xs font-semibold text-zinc-300 mb-2">What is Fit Score?</h4>
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    Fit Score (0-95) measures how your academic stats (GPA, SAT, ACT) compare to a school&apos;s
+                    admitted student averages. It also factors in your essay scores if provided. A higher fit score
+                    means your numbers are stronger relative to the school. It does <em>not</em> account for
+                    extracurriculars, recommendations, or demonstrated interest — it&apos;s a numbers-based snapshot
+                    to help you build a balanced college list.
+                  </p>
+                  <p className="text-xs text-zinc-600 mt-2">
+                    A balanced list typically has 2-3 safeties/likelies, 3-5 targets, and 2-3 reaches.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters */}
         <ScrollReveal delay={0.1}>

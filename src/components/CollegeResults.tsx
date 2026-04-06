@@ -11,9 +11,11 @@ interface CollegeResultsProps {
 }
 
 const GROUPS: { key: Classification; label: string; color: string }[] = [
-  { key: "reach", label: "Reach Schools", color: "text-red-400" },
-  { key: "target", label: "Target Schools", color: "text-amber-400" },
-  { key: "safety", label: "Safety Schools", color: "text-emerald-400" },
+  { key: "safety", label: "Safety", color: "text-emerald-400" },
+  { key: "likely", label: "Likely", color: "text-blue-400" },
+  { key: "target", label: "Target", color: "text-amber-400" },
+  { key: "reach", label: "Reach", color: "text-orange-400" },
+  { key: "unlikely", label: "Unlikely", color: "text-red-500" },
 ];
 
 export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedBy }) => {

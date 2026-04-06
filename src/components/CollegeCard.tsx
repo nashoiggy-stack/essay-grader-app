@@ -5,8 +5,10 @@ import { motion } from "motion/react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 
 const CLASS_COLORS = {
-  reach: { bg: "bg-red-500/10", border: "border-red-500/20", text: "text-red-400", label: "Reach" },
+  unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely" },
+  reach: { bg: "bg-orange-500/10", border: "border-orange-500/20", text: "text-orange-400", label: "Reach" },
   target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target" },
+  likely: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Likely" },
   safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety" },
 } as const;
 
