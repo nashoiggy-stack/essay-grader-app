@@ -4,6 +4,8 @@ import { parseUploadedFile } from "@/lib/parse-file";
 import { GRADING_SYSTEM_PROMPT } from "@/lib/prompts";
 import type { GradingResult } from "@/lib/types";
 
+export const maxDuration = 60;
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function wordCount(text: string): number {

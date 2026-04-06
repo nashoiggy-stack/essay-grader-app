@@ -6,6 +6,8 @@ import {
   type SuggestionFocus,
 } from "@/lib/suggestions-prompt";
 
+export const maxDuration = 60;
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: NextRequest) {
