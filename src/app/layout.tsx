@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AppShell } from "@/components/AppShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Common App Essay Grader",
-  description: "AI-powered essay grading for college admissions using Common App and VSPICE rubrics",
+  title: "College Prep Tools",
+  description: "Essay grading and GPA calculator for college admissions",
 };
 
 export default function RootLayout({
@@ -27,7 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-zinc-200">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#06060f] text-zinc-200">
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }
