@@ -53,6 +53,8 @@ export interface CollegeFilters {
   acceptanceRateMin: string;
   acceptanceRateMax: string;
   testPolicy: string;
+  essayCommonApp: string; // 0-100
+  essayVspice: string; // 0-4
 }
 
 export interface ChanceInputs {
@@ -63,7 +65,8 @@ export interface ChanceInputs {
   rigor: "low" | "medium" | "high";
   major: string;
   ecStrength: "low" | "medium" | "high";
-  essayStrength: "low" | "medium" | "high";
+  essayCommonApp: string; // 0-100
+  essayVspice: string; // 0-4 (composite)
   collegeIndex: number | null;
 }
 
@@ -80,6 +83,8 @@ export const EMPTY_FILTERS: CollegeFilters = {
   acceptanceRateMin: "",
   acceptanceRateMax: "",
   testPolicy: "any",
+  essayCommonApp: "",
+  essayVspice: "",
 };
 
 export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
@@ -90,7 +95,8 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   rigor: "medium",
   major: "",
   ecStrength: "medium",
-  essayStrength: "medium",
+  essayCommonApp: "",
+  essayVspice: "",
   collegeIndex: null,
 };
 

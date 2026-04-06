@@ -6,7 +6,7 @@ import type { ChanceInputs, ChanceResult, ChanceBand } from "@/lib/college-types
 import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
 import {
   compareGPA, compareTests, selectivityPenalty, majorAdjustment,
-  scoreToBand, BAND_LABELS, essayScoreToStrength,
+  scoreToBand, BAND_LABELS, essayScoreAdjustment,
 } from "@/lib/admissions";
 
 export function useChanceCalculator() {
@@ -52,17 +52,17 @@ export function useChanceCalculator() {
     }
   }, []);
 
-  // ── Auto-fill essay strength from essay grader (localStorage) ──────────────
+  // ── Auto-fill essay scores from essay grader (localStorage) ─────────────
   useEffect(() => {
     try {
       const raw = localStorage.getItem("essay-grader-result");
       if (!raw) return;
       const result = JSON.parse(raw);
       if (result?.rawScore != null && result?.vspiceComposite != null) {
-        const strength = essayScoreToStrength(result.rawScore, result.vspiceComposite);
         setInputs((prev) => ({
           ...prev,
-          essayStrength: prev.essayStrength === "medium" ? strength : prev.essayStrength,
+          essayCommonApp: prev.essayCommonApp || String(result.rawScore),
+          essayVspice: prev.essayVspice || String(result.vspiceComposite),
         }));
       }
     } catch (e) {
@@ -128,8 +128,14 @@ export function useChanceCalculator() {
     if (inputs.ecStrength === "high") { score += 7; strengths.push("Strong extracurriculars strengthen your application"); }
     else if (inputs.ecStrength === "low") { score -= 4; weaknesses.push("Deeper extracurricular involvement would help"); }
 
-    if (inputs.essayStrength === "high") { score += 6; strengths.push("Strong essays can make a meaningful difference"); }
-    else if (inputs.essayStrength === "low") { score -= 4; weaknesses.push("Investing more in your essays could help"); }
+    // ── Essay scores (real numbers from grader) ──
+    const essayCA = inputs.essayCommonApp ? parseFloat(inputs.essayCommonApp) : null;
+    const essayV = inputs.essayVspice ? parseFloat(inputs.essayVspice) : null;
+    const essayResult = essayScoreAdjustment(essayCA, essayV);
+    score += essayResult.adjustment;
+    for (const s of essayResult.signals) {
+      (s.delta >= 0 ? strengths : weaknesses).push(s.label);
+    }
 
     score = Math.max(5, Math.min(95, Math.round(score)));
 

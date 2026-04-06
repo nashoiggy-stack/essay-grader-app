@@ -123,6 +123,20 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
           <option value="blind">Test Blind</option>
         </select>
       </div>
+
+      {/* Essay scores */}
+      <div>
+        <label className={labelClass}>Common App Score (0-100)</label>
+        <input type="number" min="0" max="100" placeholder="From Essay Grader"
+          className={inputClass} value={filters.essayCommonApp}
+          onChange={(e) => onUpdate("essayCommonApp", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>VSPICE Score (0-4)</label>
+        <input type="number" step="0.1" min="0" max="4" placeholder="From Essay Grader"
+          className={inputClass} value={filters.essayVspice}
+          onChange={(e) => onUpdate("essayVspice", e.target.value)} />
+      </div>
     </div>
 
     <div className="mt-4 pt-4 border-t border-white/[0.06]">

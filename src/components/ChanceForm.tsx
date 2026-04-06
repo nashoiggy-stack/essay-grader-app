@@ -24,10 +24,10 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         Reset
       </button>
     </div>
-    {(inputs.gpaUW || inputs.essayStrength !== "medium") && (
+    {(inputs.gpaUW || inputs.essayCommonApp) && (
       <p className="text-xs text-indigo-400/70 mb-4">
         {inputs.gpaUW ? "GPA auto-filled from GPA Calculator. " : ""}
-        {inputs.essayStrength !== "medium" ? "Essay strength auto-filled from Essay Grader." : ""}
+        {inputs.essayCommonApp ? "Essay scores auto-filled from Essay Grader." : ""}
       </p>
     )}
 
@@ -95,13 +95,16 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         </select>
       </div>
       <div>
-        <label className={labelClass}>Essay Strength</label>
-        <select className={selectClass} value={inputs.essayStrength}
-          onChange={(e) => onUpdate("essayStrength", e.target.value as ChanceInputs["essayStrength"])}>
-          <option value="low">Low — first draft</option>
-          <option value="medium">Medium — revised</option>
-          <option value="high">High — polished &amp; compelling</option>
-        </select>
+        <label className={labelClass}>Common App Score (0-100)</label>
+        <input type="number" min="0" max="100" placeholder="From Essay Grader"
+          className={inputClass} value={inputs.essayCommonApp}
+          onChange={(e) => onUpdate("essayCommonApp", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>VSPICE Score (0-4)</label>
+        <input type="number" step="0.1" min="0" max="4" placeholder="From Essay Grader"
+          className={inputClass} value={inputs.essayVspice}
+          onChange={(e) => onUpdate("essayVspice", e.target.value)} />
       </div>
     </div>
   </div>

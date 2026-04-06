@@ -160,12 +160,15 @@ export function classifyCollege(
   gpaUW: number | null,
   gpaW: number | null,
   sat: number | null,
-  act: number | null
+  act: number | null,
+  essayCA: number | null = null,
+  essayV: number | null = null
 ): { classification: Classification; reason: string; fitScore: number } {
   const gpaResult = compareGPA(gpaUW, gpaW, college.avgGPAUW, college.avgGPAW);
   const testResult = compareTests(sat, act, college);
+  const essayResult = essayScoreAdjustment(essayCA, essayV);
 
-  const allSignals = [...gpaResult.signals, ...testResult.signals];
+  const allSignals = [...gpaResult.signals, ...testResult.signals, ...essayResult.signals];
   const totalDelta = gpaResult.delta + testResult.delta;
   const totalMetrics = gpaResult.metrics + testResult.metrics;
 
@@ -173,15 +176,18 @@ export function classifyCollege(
   let classification: Classification;
   let fitScore: number;
 
+  // Essay adjustment applies as a small fitScore modifier (not classification-changing)
+  const essayBoost = essayResult.adjustment * 0.5; // dampen for classification purposes
+
   if (avg > 0.5) {
     classification = "safety";
-    fitScore = Math.min(95, 70 + avg * 20);
+    fitScore = Math.min(95, 70 + avg * 20 + essayBoost);
   } else if (avg > -0.3) {
     classification = "target";
-    fitScore = Math.min(80, 50 + (avg + 0.3) * 40);
+    fitScore = Math.min(80, 50 + (avg + 0.3) * 40 + essayBoost);
   } else {
     classification = "reach";
-    fitScore = Math.max(5, 30 + avg * 20);
+    fitScore = Math.max(5, 30 + avg * 20 + essayBoost);
   }
 
   // Safety requires: acceptance rate >= 30% AND strong academic fit
@@ -228,15 +234,48 @@ export function scoreToBand(score: number): ChanceBand {
   return "very-low";
 }
 
-// ── Essay Strength Mapping ───────────────────────────────────────────────────
+// ── Essay Score Adjustment ───────────────────────────────────────────────────
 
-export function essayScoreToStrength(
-  commonAppAvg: number,
-  vspiceComposite: number
-): "low" | "medium" | "high" {
-  // commonAppAvg is 0-100, vspiceComposite is 0-4
-  const normalized = (commonAppAvg / 100 + vspiceComposite / 4) / 2; // 0-1 range
-  if (normalized >= 0.7) return "high";
-  if (normalized >= 0.45) return "medium";
-  return "low";
+export function essayScoreAdjustment(
+  commonAppScore: number | null, // 0-100
+  vspiceComposite: number | null // 0-4
+): { adjustment: number; signals: Signal[] } {
+  const signals: Signal[] = [];
+  let adjustment = 0;
+
+  if (commonAppScore === null && vspiceComposite === null) {
+    return { adjustment: 0, signals: [] };
+  }
+
+  // Common App score (0-100) — normalize to a -8 to +8 range
+  if (commonAppScore !== null) {
+    const normalized = (commonAppScore - 60) / 40; // 60 is "average", maps to 0
+    const boost = Math.max(-6, Math.min(6, normalized * 8));
+    adjustment += boost;
+
+    if (commonAppScore >= 80) {
+      signals.push({ label: `Strong Common App essay score (${commonAppScore}/100) — this strengthens your application`, delta: boost });
+    } else if (commonAppScore >= 65) {
+      signals.push({ label: `Solid Common App essay score (${commonAppScore}/100)`, delta: boost });
+    } else {
+      signals.push({ label: `Common App essay score (${commonAppScore}/100) has room for improvement`, delta: boost });
+    }
+  }
+
+  // VSPICE composite (0-4) — normalize to a -5 to +5 range
+  if (vspiceComposite !== null) {
+    const normalized = (vspiceComposite - 2.5) / 1.5; // 2.5 is "average"
+    const boost = Math.max(-4, Math.min(4, normalized * 5));
+    adjustment += boost;
+
+    if (vspiceComposite >= 3.2) {
+      signals.push({ label: `Strong VSPICE score (${vspiceComposite.toFixed(1)}/4) — shows depth of character`, delta: boost });
+    } else if (vspiceComposite >= 2.3) {
+      signals.push({ label: `Solid VSPICE score (${vspiceComposite.toFixed(1)}/4)`, delta: boost });
+    } else {
+      signals.push({ label: `VSPICE score (${vspiceComposite.toFixed(1)}/4) could be strengthened`, delta: boost });
+    }
+  }
+
+  return { adjustment: Math.round(adjustment), signals };
 }
