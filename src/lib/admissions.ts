@@ -193,14 +193,14 @@ export function classifyCollege(
     fitScore = Math.max(5, 30 + avg * 20 + essayBoost);
   }
 
-  // Safety requires: acceptance rate >= 30% AND strong academic fit
-  if (classification === "safety" && college.acceptanceRate < 30) {
+  // Highly selective schools (<15%) can never be safety
+  if (classification === "safety" && college.acceptanceRate < 15) {
     classification = "target";
     fitScore = Math.min(fitScore, 75);
   }
 
-  // Selective-tagged schools get extra guard
-  if (classification === "safety" && college.tags.includes("selective")) {
+  // Selective-tagged schools with <20% acceptance get extra guard
+  if (classification === "safety" && college.tags.includes("selective") && college.acceptanceRate < 20) {
     classification = "target";
     fitScore = Math.min(fitScore, 72);
   }
