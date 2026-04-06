@@ -128,9 +128,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error("Grading error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Grading error:", message);
     return NextResponse.json(
-      { error: "Something went wrong while grading. Please try again." },
+      { error: `Grading failed: ${message}` },
       { status: 500 }
     );
   }
