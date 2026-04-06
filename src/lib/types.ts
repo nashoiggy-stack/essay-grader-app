@@ -8,6 +8,13 @@ export interface LineSuggestion {
   suggestion: string;
 }
 
+export interface InlineSuggestion {
+  type: "cut" | "add" | "rewrite" | "strengthen";
+  original: string;
+  replacement: string;
+  reason: string;
+}
+
 export interface GradingResult {
   commonApp: Record<string, CriterionResult>;
   vspice: Record<string, CriterionResult>;

@@ -12,17 +12,25 @@ import { VspiceTab } from "@/components/VspiceTab";
 import { FeedbackTab } from "@/components/FeedbackTab";
 import { LineNotesTab } from "@/components/LineNotesTab";
 import { ChatTab } from "@/components/ChatTab";
+import { InlineEditor } from "@/components/InlineEditor";
 import { useEssayInput } from "@/hooks/useEssayInput";
 import { useGrading } from "@/hooks/useGrading";
 import { useChat } from "@/hooks/useChat";
+import { useSuggestions } from "@/hooks/useSuggestions";
 import { APP_CONFIG } from "@/data/mockData";
+import type { SuggestionFocus } from "@/lib/suggestions-prompt";
 
 export default function Home() {
   const essay = useEssayInput();
   const grading = useGrading();
   const chat = useChat();
+  const suggestions = useSuggestions(essay.essayText);
   const [activeTab, setActiveTab] = useState<TabId>("common");
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Track whether essay was modified after grading (for re-grade button)
+  const [gradedText, setGradedText] = useState("");
+  const essayModified = grading.result !== null && essay.essayText !== gradedText;
 
   useEffect(() => {
     if (grading.result && resultsRef.current) {
@@ -32,18 +40,36 @@ export default function Home() {
 
   const handleGrade = () => {
     chat.reset();
+    suggestions.clear();
     setActiveTab("common");
+    setGradedText(essay.essayText);
     grading.grade(essay.essayText, essay.file);
+  };
+
+  const handleRegrade = () => {
+    setGradedText(essay.essayText);
+    grading.grade(essay.essayText, null);
   };
 
   const handleClear = () => {
     essay.clear();
     grading.reset();
     chat.reset();
+    suggestions.clear();
+    setGradedText("");
   };
 
   const handleChatSend = () => {
     if (grading.result) chat.send(essay.essayText, grading.result);
+  };
+
+  const handleFetchSuggestions = (focus: SuggestionFocus) => {
+    suggestions.fetch(essay.essayText, focus);
+  };
+
+  const handleAcceptSuggestion = (index: number) => {
+    const newText = suggestions.accept(index);
+    if (newText) essay.setEssayText(newText);
   };
 
   return (
@@ -57,17 +83,6 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.25, 0.4, 0.25, 1] }}
         >
-          <motion.div
-            className="inline-block mb-4"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
-          >
-            <span className="px-4 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20">
-              Powered by Claude AI
-            </span>
-          </motion.div>
-
           <motion.h1
             className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1]"
             initial={{ opacity: 0, y: 20 }}
@@ -86,7 +101,6 @@ export default function Home() {
             {APP_CONFIG.subtitle}
           </motion.p>
 
-          {/* Scroll indicator */}
           <motion.div
             className="mt-12 flex flex-col items-center gap-2"
             initial={{ opacity: 0 }}
@@ -149,6 +163,31 @@ export default function Home() {
               {/* Score Overview */}
               <ScrollReveal delay={0.1}>
                 <ScoreOverview result={grading.result} />
+              </ScrollReveal>
+
+              {/* ── Inline Editor / Suggestions ──────────────────────── */}
+              <ScrollReveal delay={0.15}>
+                <div className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06]">
+                  <h3 className="text-lg font-bold text-zinc-200 mb-1">Inline Suggestions</h3>
+                  <p className="text-sm text-zinc-500 mb-5">
+                    Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
+                  </p>
+                  <InlineEditor
+                    essayText={essay.essayText}
+                    suggestions={suggestions.suggestions}
+                    suggestionsLoading={suggestions.loading}
+                    suggestionsError={suggestions.error}
+                    activeFocus={suggestions.activeFocus}
+                    onTextChange={essay.setEssayText}
+                    onFetchSuggestions={handleFetchSuggestions}
+                    onAcceptSuggestion={handleAcceptSuggestion}
+                    onDismissSuggestion={suggestions.dismiss}
+                    onClearSuggestions={suggestions.clear}
+                    hasResult={!!grading.result}
+                    onRegrade={handleRegrade}
+                    essayModified={essayModified}
+                  />
+                </div>
               </ScrollReveal>
 
               {/* Tabbed Content */}

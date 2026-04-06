@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       temperature: 0,
       system: GRADING_SYSTEM_PROMPT,
@@ -77,13 +77,20 @@ export async function POST(req: NextRequest) {
       ],
     });
 
-    const responseText =
+    let responseText =
       message.content[0].type === "text" ? message.content[0].text : "";
+
+    // Strip markdown code fences if the model wrapped the JSON
+    responseText = responseText.trim();
+    if (responseText.startsWith("```")) {
+      responseText = responseText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+    }
 
     let parsed;
     try {
       parsed = JSON.parse(responseText);
     } catch {
+      console.error("Failed to parse grading JSON:", responseText.slice(0, 500));
       return NextResponse.json(
         { error: "Failed to parse grading response. Please try again." },
         { status: 500 }

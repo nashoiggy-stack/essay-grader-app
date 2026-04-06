@@ -54,8 +54,8 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none resize-y transition-all"
-        rows={12}
+        className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none resize-y transition-all min-h-[60vh]"
+        rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
         onChange={(e) => onTextChange(e.target.value)}
