@@ -1,0 +1,128 @@
+"use client";
+
+import React from "react";
+import { motion } from "motion/react";
+import type { CollegeFilters } from "@/lib/college-types";
+import { REGIONS, MAJORS } from "@/lib/college-types";
+
+interface CollegeFiltersProps {
+  readonly filters: CollegeFilters;
+  readonly onUpdate: <K extends keyof CollegeFilters>(key: K, value: CollegeFilters[K]) => void;
+  readonly onReset: () => void;
+  readonly resultCount: number;
+}
+
+const inputClass =
+  "w-full rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none transition-all";
+const selectClass = `${inputClass} appearance-none cursor-pointer`;
+const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
+
+export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
+  filters, onUpdate, onReset, resultCount,
+}) => (
+  <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
+    <div className="flex items-center justify-between mb-5">
+      <h3 className="text-lg font-bold text-zinc-200">Filters</h3>
+      <button onClick={onReset} className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+        Reset all
+      </button>
+    </div>
+
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {/* Stats */}
+      <div>
+        <label className={labelClass}>GPA</label>
+        <input type="number" step="0.01" min="0" max="5" placeholder="e.g. 3.8"
+          className={inputClass} value={filters.gpa}
+          onChange={(e) => onUpdate("gpa", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>SAT (optional)</label>
+        <input type="number" min="400" max="1600" placeholder="e.g. 1400"
+          className={inputClass} value={filters.sat}
+          onChange={(e) => onUpdate("sat", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>ACT (optional)</label>
+        <input type="number" min="1" max="36" placeholder="e.g. 32"
+          className={inputClass} value={filters.act}
+          onChange={(e) => onUpdate("act", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>Intended Major</label>
+        <select className={selectClass} value={filters.major}
+          onChange={(e) => onUpdate("major", e.target.value)}>
+          {MAJORS.map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
+      </div>
+
+      {/* Preferences */}
+      <div>
+        <label className={labelClass}>Region</label>
+        <select className={selectClass} value={filters.region}
+          onChange={(e) => onUpdate("region", e.target.value)}>
+          {REGIONS.map((r) => <option key={r} value={r}>{r === "any" ? "Any Region" : r}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className={labelClass}>School Size</label>
+        <select className={selectClass} value={filters.size}
+          onChange={(e) => onUpdate("size", e.target.value)}>
+          <option value="any">Any Size</option>
+          <option value="small">Small (&lt;5k)</option>
+          <option value="medium">Medium (5-15k)</option>
+          <option value="large">Large (15k+)</option>
+        </select>
+      </div>
+      <div>
+        <label className={labelClass}>Setting</label>
+        <select className={selectClass} value={filters.setting}
+          onChange={(e) => onUpdate("setting", e.target.value)}>
+          <option value="any">Any Setting</option>
+          <option value="urban">Urban</option>
+          <option value="suburban">Suburban</option>
+          <option value="rural">Rural</option>
+        </select>
+      </div>
+      <div>
+        <label className={labelClass}>Type</label>
+        <select className={selectClass} value={filters.type}
+          onChange={(e) => onUpdate("type", e.target.value)}>
+          <option value="any">Public &amp; Private</option>
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+
+      {/* Advanced */}
+      <div>
+        <label className={labelClass}>Acceptance Rate Min %</label>
+        <input type="number" min="0" max="100" placeholder="0"
+          className={inputClass} value={filters.acceptanceRateMin}
+          onChange={(e) => onUpdate("acceptanceRateMin", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>Acceptance Rate Max %</label>
+        <input type="number" min="0" max="100" placeholder="100"
+          className={inputClass} value={filters.acceptanceRateMax}
+          onChange={(e) => onUpdate("acceptanceRateMax", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>Test Policy</label>
+        <select className={selectClass} value={filters.testPolicy}
+          onChange={(e) => onUpdate("testPolicy", e.target.value)}>
+          <option value="any">Any Policy</option>
+          <option value="required">Required</option>
+          <option value="optional">Test Optional</option>
+          <option value="blind">Test Blind</option>
+        </select>
+      </div>
+    </div>
+
+    <div className="mt-4 pt-4 border-t border-white/[0.06]">
+      <p className="text-sm text-zinc-500">
+        <span className="text-indigo-400 font-semibold">{resultCount}</span> schools match your filters
+      </p>
+    </div>
+  </div>
+);
