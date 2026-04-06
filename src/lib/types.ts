@@ -15,6 +15,14 @@ export interface InlineSuggestion {
   reason: string;
 }
 
+export interface SavedEssay {
+  id: string;
+  title: string;
+  essayText: string;
+  result: GradingResult;
+  savedAt: number; // timestamp
+}
+
 export interface GradingResult {
   commonApp: Record<string, CriterionResult>;
   vspice: Record<string, CriterionResult>;

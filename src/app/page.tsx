@@ -13,10 +13,12 @@ import { FeedbackTab } from "@/components/FeedbackTab";
 import { LineNotesTab } from "@/components/LineNotesTab";
 import { ChatTab } from "@/components/ChatTab";
 import { InlineEditor } from "@/components/InlineEditor";
+import { EssayHistorySidebar } from "@/components/EssayHistorySidebar";
 import { useEssayInput } from "@/hooks/useEssayInput";
 import { useGrading } from "@/hooks/useGrading";
 import { useChat } from "@/hooks/useChat";
 import { useSuggestions } from "@/hooks/useSuggestions";
+import { useEssayHistory } from "@/hooks/useEssayHistory";
 import { APP_CONFIG } from "@/data/mockData";
 import type { SuggestionFocus } from "@/lib/suggestions-prompt";
 
@@ -25,10 +27,12 @@ export default function Home() {
   const grading = useGrading();
   const chat = useChat();
   const suggestions = useSuggestions(essay.essayText);
+  const history = useEssayHistory();
   const [activeTab, setActiveTab] = useState<TabId>("common");
   const resultsRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [saveFlash, setSaveFlash] = useState(false);
 
-  // Track whether essay was modified after grading (for re-grade button)
   const [gradedText, setGradedText] = useState("");
   const essayModified = grading.result !== null && essay.essayText !== gradedText;
 
@@ -72,8 +76,41 @@ export default function Home() {
     if (newText) essay.setEssayText(newText);
   };
 
+  const handleSave = () => {
+    if (!grading.result) return;
+    history.save(essay.essayText, grading.result);
+    setSaveFlash(true);
+    setTimeout(() => setSaveFlash(false), 1500);
+  };
+
+  const handleLoadEssay = (id: string) => {
+    const saved = history.load(id);
+    if (!saved) return;
+    essay.setEssayText(saved.essayText);
+    grading.reset();
+    // Re-set the result directly — we need to expose this from the hook
+    // For now, trigger a re-grade with the loaded text
+    chat.reset();
+    suggestions.clear();
+    setSidebarOpen(false);
+    setActiveTab("common");
+    setGradedText(saved.essayText);
+    // Load the saved result
+    grading.loadResult(saved.result);
+  };
+
   return (
     <AuroraBackground>
+      {/* Essay History Sidebar */}
+      <EssayHistorySidebar
+        essays={history.essays}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        onLoad={handleLoadEssay}
+        onDelete={history.remove}
+        onRename={history.rename}
+      />
+
       <main className="mx-auto max-w-5xl px-4 py-10 sm:py-20 font-[family-name:var(--font-geist-sans)]">
 
         {/* ── Hero ─────────────────────────────────────────────────── */}
@@ -153,11 +190,33 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="mt-12 space-y-10"
             >
-              {/* Divider */}
+              {/* Divider + Save button */}
               <div className="flex items-center gap-4">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
                 <span className="text-xs text-zinc-500 uppercase tracking-widest">Results</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+                <motion.button
+                  onClick={handleSave}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    saveFlash
+                      ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                      : "bg-white/[0.04] text-zinc-400 hover:bg-indigo-500/10 hover:text-indigo-400 ring-1 ring-white/[0.06]"
+                  }`}
+                >
+                  {saveFlash ? (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      Saved
+                    </>
+                  ) : (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+                      Save
+                    </>
+                  )}
+                </motion.button>
               </div>
 
               {/* Score Overview */}

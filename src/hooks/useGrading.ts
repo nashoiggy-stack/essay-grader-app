@@ -10,6 +10,7 @@ interface UseGradingReturn {
   readonly error: string;
   readonly grade: (essayText: string, file: File | null) => Promise<void>;
   readonly reset: () => void;
+  readonly loadResult: (result: GradingResult) => void;
 }
 
 export function useGrading(): UseGradingReturn {
@@ -74,5 +75,10 @@ export function useGrading(): UseGradingReturn {
     setError("");
   };
 
-  return { result, loading, error, grade, reset };
+  const loadResult = (savedResult: GradingResult) => {
+    setResult(savedResult);
+    setError("");
+  };
+
+  return { result, loading, error, grade, reset, loadResult };
 }
