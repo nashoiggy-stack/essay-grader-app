@@ -27,6 +27,8 @@ export function useCollegeFilter() {
       for (const year of state.years) {
         for (const row of year.rows) {
           if (!row.grade) continue;
+          // Skip non-core classes — college GPA only counts core classes
+          if (row.nonCore) continue;
           const credits = parseFloat(row.credits) || 1;
           const base = COL_UW[row.grade] ?? 0;
           const isF = row.grade === "F";
