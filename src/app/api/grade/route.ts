@@ -69,13 +69,13 @@ export async function POST(req: NextRequest) {
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 3000,
       temperature: 0,
       system: GRADING_SYSTEM_PROMPT,
       messages: [
         {
           role: "user",
-          content: `Please grade the following Common App essay. It is ${words} words long.\n\n---\n${essayText}\n---`,
+          content: `Grade this ${words}-word Common App essay. Be concise in feedback (2 sentences max per criterion). Respond with JSON only, no explanation.\n\n---\n${essayText}\n---`,
         },
       ],
     });
