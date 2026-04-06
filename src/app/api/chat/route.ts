@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildChatSystemPrompt } from "@/lib/prompts";
 
 export const maxDuration = 60;
+export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { parseUploadedFile } from "@/lib/parse-file";
 import { GRADING_SYSTEM_PROMPT } from "@/lib/prompts";
 import type { GradingResult } from "@/lib/types";
 
 export const maxDuration = 60;
+export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       const pasted = formData.get("text") as string | null;
 
       if (file && file.size > 0) {
+        const { parseUploadedFile } = await import("@/lib/parse-file");
         const parsed = await parseUploadedFile(file);
         if (!parsed.ok) {
           return NextResponse.json({ error: parsed.error }, { status: 400 });
