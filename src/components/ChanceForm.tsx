@@ -18,12 +18,18 @@ const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
 
 export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpdate, onReset }) => (
   <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
-    <div className="flex items-center justify-between mb-5">
+    <div className="flex items-center justify-between mb-2">
       <h3 className="text-lg font-bold text-zinc-200">Your Profile</h3>
       <button onClick={onReset} className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
         Reset
       </button>
     </div>
+    {(inputs.gpaUW || inputs.essayStrength !== "medium") && (
+      <p className="text-xs text-indigo-400/70 mb-4">
+        {inputs.gpaUW ? "GPA auto-filled from GPA Calculator. " : ""}
+        {inputs.essayStrength !== "medium" ? "Essay strength auto-filled from Essay Grader." : ""}
+      </p>
+    )}
 
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {/* College selector */}

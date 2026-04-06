@@ -47,8 +47,8 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-2 mt-2">
-        <Stat label="SAT Range" value={`${c.satRange[0]}-${c.satRange[1]}`} />
-        <Stat label="ACT Range" value={`${c.actRange[0]}-${c.actRange[1]}`} />
+        <Stat label="SAT Range" value={`${c.sat25}-${c.sat75}`} />
+        <Stat label="ACT Range" value={`${c.act25}-${c.act75}`} />
       </div>
 
       <p className="mt-3 text-xs text-zinc-500 leading-relaxed">{reason}</p>

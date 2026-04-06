@@ -41,6 +41,11 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
             {result.bandLabel}
           </span>
         </motion.div>
+        {result.confidence !== "high" && (
+          <p className="mt-2 text-xs text-zinc-600">
+            {result.confidence === "low" ? "Low confidence — add GPA and test scores for a better estimate" : "Add more data for a more reliable estimate"}
+          </p>
+        )}
       </div>
 
       {/* Score bar */}

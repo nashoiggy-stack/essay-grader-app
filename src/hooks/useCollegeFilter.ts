@@ -2,100 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { COLLEGES } from "@/data/colleges";
-import type {
-  College, CollegeFilters, ClassifiedCollege, Classification, EMPTY_FILTERS,
-} from "@/lib/college-types";
+import type { CollegeFilters, ClassifiedCollege } from "@/lib/college-types";
 import { EMPTY_FILTERS as DEFAULT_FILTERS } from "@/lib/college-types";
-
-function classify(
-  college: College,
-  gpaUW: number | null,
-  gpaW: number | null,
-  sat: number | null,
-  act: number | null
-): { classification: Classification; reason: string; fitScore: number } {
-  const signals: { label: string; delta: number }[] = [];
-  let totalDelta = 0;
-  let metrics = 0;
-
-  // Unweighted GPA (college recalculated, 4.0 scale)
-  if (gpaUW !== null) {
-    const diff = gpaUW - college.avgGPAUW;
-    const pct = diff / 0.5;
-    totalDelta += pct;
-    metrics++;
-    if (diff >= 0.15) signals.push({ label: `UW GPA (${gpaUW.toFixed(2)}) above average`, delta: pct });
-    else if (diff <= -0.15) signals.push({ label: `UW GPA (${gpaUW.toFixed(2)}) below average`, delta: pct });
-    else signals.push({ label: `UW GPA (${gpaUW.toFixed(2)}) in range`, delta: pct });
-  }
-
-  // Weighted GPA (5.0 scale)
-  if (gpaW !== null) {
-    const diff = gpaW - college.avgGPAW;
-    const pct = diff / 0.6;
-    totalDelta += pct;
-    metrics++;
-    if (diff >= 0.2) signals.push({ label: `Weighted GPA (${gpaW.toFixed(2)}) above average`, delta: pct });
-    else if (diff <= -0.2) signals.push({ label: `Weighted GPA (${gpaW.toFixed(2)}) below average`, delta: pct });
-    else signals.push({ label: `Weighted GPA (${gpaW.toFixed(2)}) in range`, delta: pct });
-  }
-
-  if (sat !== null && college.testPolicy !== "blind") {
-    const mid = (college.satRange[0] + college.satRange[1]) / 2;
-    const spread = (college.satRange[1] - college.satRange[0]) / 2;
-    const diff = (sat - mid) / Math.max(spread, 1);
-    totalDelta += diff;
-    metrics++;
-    if (sat >= college.satRange[1]) signals.push({ label: "SAT above 75th percentile", delta: diff });
-    else if (sat <= college.satRange[0]) signals.push({ label: "SAT below 25th percentile", delta: diff });
-    else signals.push({ label: "SAT within range", delta: diff });
-  }
-
-  if (act !== null && college.testPolicy !== "blind") {
-    const mid = (college.actRange[0] + college.actRange[1]) / 2;
-    const spread = (college.actRange[1] - college.actRange[0]) / 2;
-    const diff = (act - mid) / Math.max(spread, 1);
-    totalDelta += diff;
-    metrics++;
-    if (act >= college.actRange[1]) signals.push({ label: "ACT above 75th percentile", delta: diff });
-    else if (act <= college.actRange[0]) signals.push({ label: "ACT below 25th percentile", delta: diff });
-    else signals.push({ label: "ACT within range", delta: diff });
-  }
-
-  const avg = metrics > 0 ? totalDelta / metrics : 0;
-  let classification: Classification;
-  let fitScore: number;
-
-  if (avg > 0.5) {
-    classification = "safety";
-    fitScore = Math.min(95, 70 + avg * 20);
-  } else if (avg > -0.3) {
-    classification = "target";
-    fitScore = Math.min(80, 50 + (avg + 0.3) * 40);
-  } else {
-    classification = "reach";
-    fitScore = Math.max(5, 30 + avg * 20);
-  }
-
-  // Highly selective schools can never be safety
-  if (college.acceptanceRate < 15 && classification === "safety") {
-    classification = "target";
-    fitScore = Math.min(fitScore, 75);
-  }
-
-  // If no metrics provided, default to acceptance rate heuristic
-  if (metrics === 0) {
-    if (college.acceptanceRate < 20) { classification = "reach"; fitScore = 30; }
-    else if (college.acceptanceRate < 50) { classification = "target"; fitScore = 55; }
-    else { classification = "safety"; fitScore = 75; }
-  }
-
-  const reason = signals.length > 0
-    ? signals.map((s) => s.label).join(". ") + "."
-    : `Based on ${college.acceptanceRate}% acceptance rate.`;
-
-  return { classification, reason, fitScore: Math.round(fitScore) };
-}
+import { classifyCollege } from "@/lib/admissions";
 
 export function useCollegeFilter() {
   const [filters, setFilters] = useState<CollegeFilters>(DEFAULT_FILTERS);
@@ -128,7 +37,7 @@ export function useCollegeFilter() {
         return true;
       })
       .map((c) => {
-        const { classification, reason, fitScore } = classify(c, gpaUW, gpaW, sat, act);
+        const { classification, reason, fitScore } = classifyCollege(c, gpaUW, gpaW, sat, act);
         return { college: c, classification, reason, fitScore };
       })
       .sort((a, b) => a.college.acceptanceRate - b.college.acceptanceRate);

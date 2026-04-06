@@ -54,6 +54,14 @@ export function useGrading(): UseGradingReturn {
       }
 
       setResult(data as GradingResult);
+
+      // Save scores to localStorage so Chance Calculator can auto-fill essay strength
+      try {
+        localStorage.setItem("essay-grader-result", JSON.stringify({
+          rawScore: (data as GradingResult).rawScore,
+          vspiceComposite: (data as GradingResult).vspiceComposite,
+        }));
+      } catch {}
     } catch {
       setError("Network error. Please check your connection.");
     } finally {

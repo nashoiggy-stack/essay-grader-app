@@ -7,11 +7,15 @@ export interface College {
   readonly acceptanceRate: number; // 0-100
   readonly avgGPAUW: number; // unweighted (4.0 scale, college recalculated)
   readonly avgGPAW: number; // weighted (5.0 scale, with AP/Honors bonuses)
-  readonly satRange: [number, number]; // [25th, 75th]
-  readonly actRange: [number, number]; // [25th, 75th]
+  readonly sat25: number;
+  readonly sat75: number;
+  readonly act25: number;
+  readonly act75: number;
   readonly testPolicy: "required" | "optional" | "blind";
   readonly topMajors: string[];
-  readonly usNewsRank: number | null; // null if unranked
+  readonly competitiveMajors: string[]; // majors harder to get into at this school
+  readonly tags: string[]; // e.g. ["selective", "tech", "research", "collaborative"]
+  readonly usNewsRank: number | null;
   readonly region: string;
 }
 
@@ -33,6 +37,7 @@ export interface ChanceResult {
   readonly strengths: string[];
   readonly weaknesses: string[];
   readonly score: number; // internal 0-100
+  readonly confidence: "low" | "medium" | "high";
 }
 
 export interface CollegeFilters {
