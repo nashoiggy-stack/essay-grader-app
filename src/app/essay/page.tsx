@@ -127,59 +127,51 @@ export default function Home() {
             </div>
           }
         >
-          {/* Preview of the grading interface inside the 3D card */}
-          <div className="h-full w-full bg-[#0a0a14] p-6 flex flex-col gap-4 overflow-hidden">
-            {/* Mock score cards */}
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                { label: "Word Count", value: "547", color: "text-emerald-400" },
-                { label: "Raw Score", value: "82", color: "text-emerald-400" },
-                { label: "Adjusted", value: "82", color: "text-emerald-400" },
-                { label: "VSPICE", value: "3.2", color: "text-blue-400" },
-              ].map((card) => (
-                <div key={card.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
-                  <p className="text-[9px] text-zinc-600 uppercase tracking-wider">{card.label}</p>
-                  <p className={`text-xl font-bold font-mono ${card.color}`}>{card.value}</p>
-                </div>
-              ))}
+          {/* Rubric overview inside the 3D card */}
+          <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
+            <div>
+              <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
+              <div className="space-y-2">
+                {[
+                  { name: "Authenticity", desc: "Your real voice — not a formal essay voice" },
+                  { name: "Compelling Story", desc: "Clear beginning, turn, and landing that hooks the reader" },
+                  { name: "Insight", desc: "Sustained reflection showing self-awareness and growth" },
+                  { name: "Values", desc: "What matters to you — shown through choices, not slogans" },
+                  { name: "Writing Skills", desc: "Clear sentences, varied rhythm, conversational but polished" },
+                  { name: "Passion", desc: "What energizes you — shown through specific detail" },
+                  { name: "Ambition", desc: "Meaningful goals with a concrete next step" },
+                ].map((c) => (
+                  <div key={c.name} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                    <div>
+                      <span className="text-xs text-zinc-300 font-semibold">{c.name}</span>
+                      <span className="text-[10px] text-zinc-600 ml-1.5">{c.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Mock score bars */}
-            <div className="flex-1 space-y-3">
-              {[
-                { name: "Authenticity", score: 85 },
-                { name: "Compelling Story", score: 78 },
-                { name: "Insight", score: 82 },
-                { name: "Values", score: 88 },
-                { name: "Writing Skills", score: 75 },
-                { name: "Passion", score: 90 },
-                { name: "Ambition", score: 72 },
-              ].map((item) => (
-                <div key={item.name}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs text-zinc-400">{item.name}</span>
-                    <span className={`text-xs font-mono ${item.score >= 80 ? "text-emerald-400" : item.score >= 65 ? "text-blue-400" : "text-amber-400"}`}>{item.score}</span>
+            <div className="border-t border-white/[0.06] pt-3">
+              <h3 className="text-xs font-bold text-violet-400 uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {[
+                  { name: "Vulnerability", desc: "Real fear or doubt, handled with maturity" },
+                  { name: "Selflessness", desc: "Genuine care for others, grounded and specific" },
+                  { name: "Perseverance", desc: "Attempt → failure → adjustment → retry" },
+                  { name: "Initiative", desc: "You started something without being asked" },
+                  { name: "Curiosity", desc: "A question you chased with real receipts" },
+                  { name: "Expression", desc: "Creative choices — image, metaphor, dialogue" },
+                ].map((c) => (
+                  <div key={c.name} className="flex items-start gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 shrink-0" />
+                    <div>
+                      <span className="text-[11px] text-zinc-300 font-semibold">{c.name}</span>
+                      <p className="text-[9px] text-zinc-600">{c.desc}</p>
+                    </div>
                   </div>
-                  <div className="h-1 rounded-full bg-white/[0.05]">
-                    <div
-                      className={`h-full rounded-full ${item.score >= 80 ? "bg-emerald-500" : item.score >= 65 ? "bg-blue-500" : "bg-amber-500"}`}
-                      style={{ width: `${item.score}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Mock footer */}
-            <div className="flex gap-2">
-              {["Common App", "VSPICE", "Feedback", "Line Notes", "Coach"].map((tab, i) => (
-                <span
-                  key={tab}
-                  className={`text-[10px] px-2 py-1 rounded ${i === 0 ? "bg-indigo-500/20 text-indigo-400" : "text-zinc-600"}`}
-                >
-                  {tab}
-                </span>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </ContainerScroll>
