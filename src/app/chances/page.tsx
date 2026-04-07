@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ShaderBackground } from "@/components/ui/shader-background";
+import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ChanceForm } from "@/components/ChanceForm";
 import { ChanceResultDisplay } from "@/components/ChanceResult";
@@ -11,7 +11,7 @@ export default function ChancesPage() {
   const { inputs, updateInput, resetInputs, college, result, colleges } = useChanceCalculator();
 
   return (
-    <ShaderBackground>
+    <AuroraBackground>
       <main className="mx-auto max-w-3xl px-4 py-10 sm:py-16 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
@@ -49,6 +49,6 @@ export default function ChancesPage() {
           </div>
         )}
       </main>
-    </ShaderBackground>
+    </AuroraBackground>
   );
 }

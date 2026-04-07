@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { PenLine, Calculator, School, BarChart3 } from "lucide-react";
-import { AuroraBackground } from "@/components/AuroraBackground";
+import { ShaderBackground } from "@/components/ui/shader-background";
 import RadialOrbitalTimeline from "@/components/ui/radial-orbital-timeline";
 
 const timelineData = [
@@ -54,7 +54,7 @@ const timelineData = [
 
 export default function LandingPage() {
   return (
-    <AuroraBackground>
+    <ShaderBackground>
       {/* Title overlaid on the orbital timeline */}
       <div className="relative">
         {/* Title positioned at the top of the orbital section */}
@@ -75,6 +75,6 @@ export default function LandingPage() {
         {/* Orbital timeline takes up the full viewport */}
         <RadialOrbitalTimeline timelineData={timelineData} />
       </div>
-    </AuroraBackground>
+    </ShaderBackground>
   );
 }
