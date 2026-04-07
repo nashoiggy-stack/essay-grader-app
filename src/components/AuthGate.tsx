@@ -109,7 +109,7 @@ function LoginScreen() {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
+              className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
               autoComplete="email"
             />
             <input
@@ -117,7 +117,7 @@ function LoginScreen() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
+              className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
             <motion.button
@@ -144,7 +144,7 @@ function LoginScreen() {
           {/* Guest button */}
           <button
             onClick={handleGuest}
-            className="w-full rounded-xl py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 bg-white/[0.03] hover:bg-white/[0.06] ring-1 ring-white/[0.06] transition-all"
+            className="w-full rounded-xl py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 bg-[#0c0c1a]/90 hover:bg-white/[0.06] ring-1 ring-white/[0.06] transition-all"
           >
             Continue as Guest
           </button>

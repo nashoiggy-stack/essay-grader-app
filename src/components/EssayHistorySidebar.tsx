@@ -124,7 +124,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.03 }}
-                      className="group px-4 py-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]"
+                      className="group px-4 py-3 hover:bg-[#0c0c1a]/90 transition-colors border-b border-white/[0.03]"
                     >
                       {/* Title row */}
                       {editingId === essay.id ? (

@@ -131,7 +131,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                       activeFocus === cat
                         ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
-                        : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
+                        : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
                     }`}
                   >
                     {cat}
@@ -148,7 +148,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                       activeFocus === cat
                         ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
-                        : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
+                        : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
                     }`}
                   >
                     {cat}
@@ -163,7 +163,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                     activeFocus === "Lower Word Count"
                       ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30"
-                      : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
+                      : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
                   }`}
                 >
                   Lower Word Count
@@ -261,7 +261,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
               </button>
               <button
                 onClick={() => { onDismissSuggestion(activeSuggestion!); setActiveSuggestion(null); }}
-                className="flex-1 rounded-lg bg-white/[0.04] text-zinc-500 py-2 text-sm font-semibold hover:text-zinc-300 transition-colors"
+                className="flex-1 rounded-lg bg-[#0c0c1a]/90 text-zinc-500 py-2 text-sm font-semibold hover:text-zinc-300 transition-colors"
               >
                 Dismiss
               </button>

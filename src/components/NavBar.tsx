@@ -31,7 +31,7 @@ export const NavBar: React.FC = () => {
         </Link>
 
         {/* Desktop tabs */}
-        <div className="hidden md:flex items-center gap-1 bg-white/[0.03] rounded-lg p-1 ring-1 ring-white/[0.06]">
+        <div className="hidden md:flex items-center gap-1 bg-[#0c0c1a]/90 rounded-lg p-1 ring-1 ring-white/[0.06]">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (

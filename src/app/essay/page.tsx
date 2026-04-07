@@ -219,7 +219,7 @@ export default function Home() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     saveFlash
                       ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                      : "bg-white/[0.04] text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 ring-1 ring-white/[0.06]"
+                      : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 ring-1 ring-white/[0.06]"
                   }`}
                 >
                   {saveFlash ? (

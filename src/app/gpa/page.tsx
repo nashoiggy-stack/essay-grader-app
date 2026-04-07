@@ -30,7 +30,7 @@ export default function GPAPage() {
                 { level: "Honors", bonus: "+1.0", color: "text-blue-400" },
                 { level: "AP", bonus: "+2.0", color: "text-blue-400" },
               ].map((l) => (
-                <div key={l.level} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2.5 text-center">
+                <div key={l.level} className="rounded-lg bg-[#0c0c1a]/90 border border-white/[0.05] p-2.5 text-center">
                   <p className="text-[10px] text-zinc-500">{l.level}</p>
                   <p className={`text-lg font-bold font-mono ${l.color}`}>{l.bonus}</p>
                 </div>
@@ -47,7 +47,7 @@ export default function GPAPage() {
                 { level: "Dual Enroll", bonus: "+1.0", color: "text-cyan-400" },
                 { level: "AP", bonus: "+1.0", color: "text-blue-400" },
               ].map((l) => (
-                <div key={l.level} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2 text-center">
+                <div key={l.level} className="rounded-lg bg-[#0c0c1a]/90 border border-white/[0.05] p-2 text-center">
                   <p className="text-[9px] text-zinc-500">{l.level}</p>
                   <p className={`text-base font-bold font-mono ${l.color}`}>{l.bonus}</p>
                 </div>

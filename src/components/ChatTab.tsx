@@ -29,7 +29,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
     </p>
 
     {/* Messages */}
-    <div className="mb-4 max-h-80 min-h-[140px] overflow-y-auto rounded-xl bg-black/20 border border-white/[0.04] p-4 space-y-3">
+    <div className="mb-4 max-h-80 min-h-[140px] overflow-y-auto rounded-xl bg-[#0c0c1a]/90 border border-white/[0.04] p-4 space-y-3">
       {messages.length === 0 && (
         <div className="text-center py-8">
           <p className="text-zinc-600 text-sm mb-3">No messages yet</p>
@@ -40,7 +40,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onInputChange(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-white/[0.04] text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 transition-all"
+                className="text-xs px-3 py-1.5 rounded-full bg-[#0c0c1a]/90 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 transition-all"
               >
                 {q}
               </motion.button>
@@ -56,14 +56,14 @@ export const ChatTab: React.FC<ChatTabProps> = ({
           className={`rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
             msg.role === "user"
               ? "bg-blue-500/10 text-blue-200 ml-12"
-              : "bg-white/[0.03] border border-white/[0.06] text-zinc-300 mr-12"
+              : "bg-[#0c0c1a]/90 border border-white/[0.06] text-zinc-300 mr-12"
           }`}
         >
           {msg.content}
         </motion.div>
       ))}
       {loading && (
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-zinc-500 italic mr-12">
+        <div className="bg-[#0c0c1a]/90 border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-zinc-500 italic mr-12">
           <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity }}>
             Thinking...
           </motion.span>
@@ -75,7 +75,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
     {/* Input */}
     <div className="flex gap-2">
       <textarea
-        className="flex-1 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
+        className="flex-1 rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
         rows={2}
         placeholder="Ask anything about your essay..."
         value={input}

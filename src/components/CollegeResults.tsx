@@ -49,7 +49,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedB
             className={`text-xs px-3 py-1 rounded-lg transition-all ${
               sort === key
                 ? "bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
-                : "bg-white/[0.04] text-zinc-500 hover:text-zinc-300"
+                : "bg-[#0c0c1a]/90 text-zinc-500 hover:text-zinc-300"
             }`}
           >
             {key === "acceptanceRate" ? "Acceptance Rate" : "Fit Score"}
@@ -67,7 +67,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedB
                 {group.label}
               </h3>
               <span className="text-xs text-zinc-600">({group.items.length})</span>
-              <div className="flex-1 h-px bg-white/[0.04]" />
+              <div className="flex-1 h-px bg-[#0c0c1a]/90" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {group.items.map((item, i) => (
