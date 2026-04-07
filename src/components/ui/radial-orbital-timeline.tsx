@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { ArrowRight, Link as LinkIcon } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Link as LinkIcon, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -164,6 +165,13 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
                     </CardHeader>
                     <CardContent className="text-xs text-white/80">
                       <p>{item.content}</p>
+                      <Link
+                        href={item.date}
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Open {item.title} <ExternalLink size={10} />
+                      </Link>
                       {item.relatedIds.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-white/10">
                           <div className="flex items-center mb-2">
