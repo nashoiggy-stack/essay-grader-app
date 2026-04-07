@@ -114,7 +114,7 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
       <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
         <div className="absolute w-full h-full flex items-center justify-center" ref={orbitRef} style={{ perspective: "1000px", transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)` }}>
           {/* Center orb */}
-          <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
+          <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-blue-500 to-teal-500 animate-pulse flex items-center justify-center z-10">
             <div className="absolute w-20 h-20 rounded-full border border-white/20 animate-ping opacity-70" />
             <div className="absolute w-24 h-24 rounded-full border border-white/10 animate-ping opacity-50" style={{ animationDelay: "0.5s" }} />
             <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-md" />

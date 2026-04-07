@@ -40,7 +40,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onInputChange(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-white/[0.04] text-zinc-400 hover:bg-indigo-500/10 hover:text-indigo-400 transition-all"
+                className="text-xs px-3 py-1.5 rounded-full bg-white/[0.04] text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 transition-all"
               >
                 {q}
               </motion.button>
@@ -55,7 +55,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
           animate={{ opacity: 1, y: 0 }}
           className={`rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
             msg.role === "user"
-              ? "bg-indigo-500/10 text-indigo-200 ml-12"
+              ? "bg-blue-500/10 text-blue-200 ml-12"
               : "bg-white/[0.03] border border-white/[0.06] text-zinc-300 mr-12"
           }`}
         >
@@ -75,7 +75,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
     {/* Input */}
     <div className="flex gap-2">
       <textarea
-        className="flex-1 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none transition-all"
+        className="flex-1 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
         rows={2}
         placeholder="Ask anything about your essay..."
         value={input}
@@ -89,7 +89,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
         disabled={loading || !input.trim()}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="self-end rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        className="self-end rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
       >
         Send
       </motion.button>

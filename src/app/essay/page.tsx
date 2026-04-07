@@ -130,7 +130,7 @@ export default function Home() {
           {/* Rubric overview inside the 3D card */}
           <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
             <div>
-              <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
+              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
               <div className="space-y-2">
                 {[
                   { name: "Authenticity", desc: "Your real voice — not a formal essay voice" },
@@ -142,7 +142,7 @@ export default function Home() {
                   { name: "Ambition", desc: "Meaningful goals with a concrete next step" },
                 ].map((c) => (
                   <div key={c.name} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                     <div>
                       <span className="text-xs text-zinc-300 font-semibold">{c.name}</span>
                       <span className="text-[10px] text-zinc-600 ml-1.5">{c.desc}</span>
@@ -153,7 +153,7 @@ export default function Home() {
             </div>
 
             <div className="border-t border-white/[0.06] pt-3">
-              <h3 className="text-xs font-bold text-violet-400 uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
+              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
                   { name: "Vulnerability", desc: "Real fear or doubt, handled with maturity" },
@@ -164,7 +164,7 @@ export default function Home() {
                   { name: "Expression", desc: "Creative choices — image, metaphor, dialogue" },
                 ].map((c) => (
                   <div key={c.name} className="flex items-start gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                     <div>
                       <span className="text-[11px] text-zinc-300 font-semibold">{c.name}</span>
                       <p className="text-[9px] text-zinc-600">{c.desc}</p>
@@ -209,9 +209,9 @@ export default function Home() {
             >
               {/* Divider + Save button */}
               <div className="flex items-center gap-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
                 <span className="text-xs text-zinc-500 uppercase tracking-widest">Results</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
                 <motion.button
                   onClick={handleSave}
                   whileHover={{ scale: 1.05 }}
@@ -219,7 +219,7 @@ export default function Home() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     saveFlash
                       ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                      : "bg-white/[0.04] text-zinc-400 hover:bg-indigo-500/10 hover:text-indigo-400 ring-1 ring-white/[0.06]"
+                      : "bg-white/[0.04] text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 ring-1 ring-white/[0.06]"
                   }`}
                 >
                   {saveFlash ? (

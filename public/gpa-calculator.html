@@ -11,12 +11,12 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --hs-w:    #818cf8;
-      --hs-uw:   #22d3ee;
-      --col-w:   #c084fc;
-      --col-uw:  #2dd4bf;
-      --bg:      #020617;
-      --surface: rgba(15, 23, 42, 0.6);
+      --hs-w:    #60a5fa;
+      --hs-uw:   #93c5fd;
+      --col-w:   #3b82f6;
+      --col-uw:  #bfdbfe;
+      --bg:      #06060f;
+      --surface: rgba(6, 6, 15, 0.6);
       --border:  rgba(255, 255, 255, 0.07);
       --text:    #f1f5f9;
       --muted:   #94a3b8;
@@ -25,39 +25,29 @@
 
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
+      background: transparent;
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
     }
 
     body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 70% 55% at 15% -10%,  rgba(99,102,241,.18) 0%, transparent 60%),
-        radial-gradient(ellipse 55% 45% at 85% 105%,  rgba(139,92,246,.14) 0%, transparent 55%),
-        radial-gradient(ellipse 45% 35% at 95%  25%,  rgba(34,211,238,.07) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 30% at  5%  80%,  rgba(45,212,191,.06) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
+      display: none;
     }
 
-    /* ── Header ── */
+    /* ── Header (hidden — parent page provides it) ── */
     header {
-      position: relative; z-index: 1;
-      text-align: center;
-      padding: 4.5rem 1.5rem 3.5rem;
+      display: none;
     }
 
     .badge {
       display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(99,102,241,.1);
-      border: 1px solid rgba(99,102,241,.28);
+      background: rgba(59,130,246,.1);
+      border: 1px solid rgba(59,130,246,.28);
       border-radius: 100px;
       padding: .3rem .9rem;
       font-size: .72rem; font-weight: 600;
-      color: #a5b4fc;
+      color: #93c5fd;
       text-transform: uppercase; letter-spacing: .09em;
       margin-bottom: 1.4rem;
     }
@@ -66,7 +56,7 @@
     header h1 {
       font-size: clamp(2.6rem, 7vw, 4.2rem);
       font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
-      background: linear-gradient(140deg, #e0e7ff 0%, #a5b4fc 30%, #c084fc 60%, #67e8f9 100%);
+      background: linear-gradient(140deg, #e0e7ff 0%, #93c5fd 30%, #60a5fa 60%, #67e8f9 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: .8rem;
@@ -83,9 +73,9 @@
 
     /* ── Glass card ── */
     .card {
-      background: rgba(15, 23, 42, 0.55);
+      background: rgba(6, 6, 15, 0.7);
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--border); border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 22px;
       padding: 1.8rem; margin-bottom: 1.5rem;
       box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 24px 64px rgba(0,0,0,.45);
     }
@@ -93,11 +83,11 @@
     .card-header { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.25rem; }
     .card-icon {
       width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, rgba(99,102,241,.22), rgba(139,92,246,.22));
-      border: 1px solid rgba(99,102,241,.28);
+      background: linear-gradient(135deg, rgba(59,130,246,.22), rgba(37,99,235,.22));
+      border: 1px solid rgba(59,130,246,.28);
       display: grid; place-items: center; flex-shrink: 0;
     }
-    .card-icon svg { width: 17px; height: 17px; color: #a5b4fc; }
+    .card-icon svg { width: 17px; height: 17px; color: #93c5fd; }
     .card-title { font-size: 1rem; font-weight: 700; }
 
     /* ── Year tab bar ── */
@@ -124,10 +114,10 @@
     }
     .ytab:hover { background: rgba(255,255,255,.08); color: var(--text); border-color: rgba(255,255,255,.14); }
     .ytab.active {
-      background: linear-gradient(135deg, rgba(79,70,229,.35), rgba(124,58,237,.35));
-      border-color: rgba(99,102,241,.45);
-      color: #c7d2fe;
-      box-shadow: 0 0 18px rgba(99,102,241,.22);
+      background: linear-gradient(135deg, rgba(29,78,216,.35), rgba(37,99,235,.35));
+      border-color: rgba(59,130,246,.45);
+      color: #bfdbfe;
+      box-shadow: 0 0 18px rgba(59,130,246,.22);
     }
 
     .ytab-remove {
@@ -158,7 +148,7 @@
       margin-left: auto;
     }
     .btn-add-year svg { width: 13px; height: 13px; }
-    .btn-add-year:hover { border-color: rgba(99,102,241,.45); color: #a5b4fc; background: rgba(99,102,241,.07); }
+    .btn-add-year:hover { border-color: rgba(59,130,246,.45); color: #93c5fd; background: rgba(59,130,246,.07); }
     .btn-add-year:disabled { opacity: .3; cursor: not-allowed; }
     .btn-add-year:disabled:hover { border-color: rgba(255,255,255,.15); color: var(--subtle); background: transparent; }
 
@@ -197,13 +187,13 @@
       display: grid; place-items: center;
     }
     .core-toggle.is-core {
-      background: rgba(99,102,241,.12);
-      border: 1px solid rgba(99,102,241,.28);
-      color: #a5b4fc;
+      background: rgba(59,130,246,.12);
+      border: 1px solid rgba(59,130,246,.28);
+      color: #93c5fd;
     }
     .core-toggle.is-core:hover {
-      background: rgba(99,102,241,.22);
-      border-color: rgba(99,102,241,.45);
+      background: rgba(59,130,246,.22);
+      border-color: rgba(59,130,246,.45);
     }
     .core-toggle.is-hs {
       background: rgba(234,179,8,.1);
@@ -227,7 +217,7 @@
     /* ── Inputs ── */
     input[type="text"], input[type="email"], input[type="password"], select {
       width: 100%; padding: .55rem .85rem;
-      background: rgba(2,6,23,.55); border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
       border-radius: 10px; font-size: .88rem;
       font-family: 'DM Sans', sans-serif; color: var(--text);
       outline: none; transition: border-color .18s, box-shadow .18s, background .18s;
@@ -240,15 +230,15 @@
     input[type="password"]:hover { border-color: rgba(255,255,255,.15); background: rgba(2,6,23,.7); }
     input[type="text"]:focus,
     input[type="email"]:focus,
-    input[type="password"]:focus { border-color: rgba(99,102,241,.6); box-shadow: 0 0 0 3px rgba(99,102,241,.13); background: rgba(2,6,23,.75); }
+    input[type="password"]:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.13); background: rgba(2,6,23,.75); }
     select {
       cursor: pointer; -webkit-appearance: none; appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23475569'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem;
     }
     select:hover { border-color: rgba(255,255,255,.15); background-color: rgba(2,6,23,.7); }
-    select:focus { border-color: rgba(99,102,241,.6); box-shadow: 0 0 0 3px rgba(99,102,241,.13); background-color: rgba(2,6,23,.75); }
-    select option { background: #0f172a; color: #f1f5f9; }
+    select:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.13); background-color: rgba(2,6,23,.75); }
+    select option { background: #06060f; color: #f1f5f9; }
     select.unset  { color: var(--subtle); }
 
     /* ── Delete btn ── */
@@ -275,8 +265,8 @@
     }
     .btn svg { width: 14px; height: 14px; }
 
-    .btn-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; box-shadow: 0 0 22px rgba(99,102,241,.28); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(99,102,241,.48), 0 6px 20px rgba(0,0,0,.35); }
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 0 22px rgba(59,130,246,.28); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(59,130,246,.48), 0 6px 20px rgba(0,0,0,.35); }
     .btn-primary:active { transform: translateY(0); }
     .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
 
@@ -301,11 +291,11 @@
     details { margin-top: 1.3rem; }
     summary {
       cursor: pointer; list-style: none;
-      font-size: .82rem; font-weight: 600; color: #818cf8;
+      font-size: .82rem; font-weight: 600; color: #60a5fa;
       user-select: none; display: inline-flex; align-items: center; gap: .4rem;
       transition: color .15s;
     }
-    summary:hover { color: #a5b4fc; }
+    summary:hover { color: #93c5fd; }
     summary::-webkit-details-marker { display: none; }
     .chev { width: 13px; height: 13px; transition: transform .2s ease; flex-shrink: 0; }
     details[open] summary .chev { transform: rotate(90deg); }
@@ -352,8 +342,8 @@
     }
     .result-card::before {
       content: ''; position: absolute; inset: 0;
-      background: rgba(15,23,42,.58); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border-radius: 22px; border: 1px solid rgba(255,255,255,.07);
+      background: rgba(6,6,15,.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: 22px; border: 1px solid rgba(255,255,255,.06);
     }
     .result-card::after {
       content: ''; position: absolute;
@@ -438,22 +428,22 @@
       border: 1px solid rgba(255,255,255,.09);
       border-radius: 24px;
       padding: 2.4rem 2rem 2rem;
-      box-shadow: 0 0 80px rgba(99,102,241,.15), 0 32px 80px rgba(0,0,0,.65);
+      box-shadow: 0 0 80px rgba(59,130,246,.15), 0 32px 80px rgba(0,0,0,.65);
     }
 
     .auth-header { text-align: center; margin-bottom: 1.8rem; }
     .auth-badge {
       display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.28);
+      background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.28);
       border-radius: 100px; padding: .28rem .85rem;
-      font-size: .7rem; font-weight: 600; color: #a5b4fc;
+      font-size: .7rem; font-weight: 600; color: #93c5fd;
       text-transform: uppercase; letter-spacing: .09em;
       margin-bottom: 1.1rem;
     }
     .auth-badge svg { width: 10px; height: 10px; }
     .auth-title {
       font-size: 1.7rem; font-weight: 800; letter-spacing: -0.04em;
-      background: linear-gradient(140deg, #e0e7ff 0%, #a5b4fc 40%, #c084fc 80%);
+      background: linear-gradient(140deg, #e0e7ff 0%, #93c5fd 40%, #60a5fa 80%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: .4rem;
@@ -474,11 +464,11 @@
 
     .auth-toggle { text-align: center; font-size: .83rem; color: var(--muted); }
     .auth-toggle-btn {
-      background: none; border: none; color: #a5b4fc; font-weight: 600;
+      background: none; border: none; color: #93c5fd; font-weight: 600;
       cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .83rem;
       padding: 0; margin-left: .25rem; transition: color .15s;
     }
-    .auth-toggle-btn:hover { color: #c7d2fe; text-decoration: underline; }
+    .auth-toggle-btn:hover { color: #bfdbfe; text-decoration: underline; }
 
     /* ── User bar ── */
     #user-bar {
@@ -594,7 +584,7 @@
       <span></span>
     </div>
 
-    <div style="margin-bottom:1rem;padding:.55rem .85rem;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.15);border-radius:10px;font-size:.76rem;color:#a5b4fc;line-height:1.55;">
+    <div style="margin-bottom:1rem;padding:.55rem .85rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:10px;font-size:.76rem;color:#93c5fd;line-height:1.55;">
       <strong>*Counts for:</strong> Click the <strong>ALL</strong> button on a class to change it to <strong>HS</strong>. Classes set to <strong>ALL</strong> count toward both your High School and College GPA. Classes set to <strong>HS</strong> count only toward your High School GPA (e.g. PE, electives that colleges don't consider).
     </div>
 

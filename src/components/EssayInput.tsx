@@ -54,7 +54,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none resize-y transition-all min-h-[60vh]"
+        className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-all min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
@@ -64,7 +64,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
       {/* Drop zone */}
       <motion.div
         className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-all cursor-pointer ${
-          dragging ? "border-indigo-500 bg-indigo-500/10" : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
+          dragging ? "border-blue-500 bg-blue-500/10" : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
@@ -82,9 +82,9 @@ export const EssayInput: React.FC<EssayInputProps> = ({
         />
         <p className="text-sm text-zinc-400">
           {file ? (
-            <><span className="font-medium text-indigo-400">{file.name}</span> selected</>
+            <><span className="font-medium text-blue-400">{file.name}</span> selected</>
           ) : (
-            <><span className="font-medium text-indigo-400">Click to upload</span> or drag & drop PDF / Word doc</>
+            <><span className="font-medium text-blue-400">Click to upload</span> or drag & drop PDF / Word doc</>
           )}
         </p>
       </motion.div>
@@ -96,10 +96,10 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           disabled={loading}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative rounded-xl bg-indigo-600 px-7 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+          className="relative rounded-xl bg-blue-600 px-7 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
         >
           <motion.span
-            className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 pointer-events-none"
+            className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 pointer-events-none"
             animate={{ backgroundPosition: loading ? ["0% 50%", "200% 50%"] : "0% 50%" }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             style={{ backgroundSize: "200% 100%" }}
@@ -126,9 +126,9 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="mt-5 glass rounded-xl p-5 overflow-hidden animate-pulse-glow"
           >
-            <p className="text-sm text-indigo-300 font-medium">{LOADING_TEXT}</p>
+            <p className="text-sm text-blue-300 font-medium">{LOADING_TEXT}</p>
             <div className="mt-3 h-1 w-full rounded-full bg-white/[0.05] overflow-hidden">
-              <div className="h-full bg-indigo-500/50 rounded-full shimmer w-full" />
+              <div className="h-full bg-blue-500/50 rounded-full shimmer w-full" />
             </div>
           </motion.div>
         )}

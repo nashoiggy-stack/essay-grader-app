@@ -18,7 +18,7 @@ export function AnimatedScore({ value, max, label, sub, delay = 0 }: AnimatedSco
 
   const pct = value / max;
   const color =
-    pct >= 0.8 ? "#10b981" : pct >= 0.6 ? "#6366f1" : pct >= 0.4 ? "#f59e0b" : "#ef4444";
+    pct >= 0.8 ? "#10b981" : pct >= 0.6 ? "#3b82f6" : pct >= 0.4 ? "#f59e0b" : "#ef4444";
 
   useEffect(() => {
     const timeout = setTimeout(() => mv.set(value), delay);

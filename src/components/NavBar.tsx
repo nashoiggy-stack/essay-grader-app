@@ -23,7 +23,7 @@ export const NavBar: React.FC = () => {
       <div className="mx-auto max-w-5xl px-4 flex items-center justify-between h-14">
         {/* Home button */}
         <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-indigo-500/20 transition-shadow">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-shadow">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
             </svg>
@@ -78,7 +78,7 @@ export const NavBar: React.FC = () => {
               <Link
                 href="/"
                 onClick={signOut}
-                className="text-xs text-indigo-400 hover:text-indigo-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
+                className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
               >
                 Sign in
               </Link>
@@ -126,7 +126,7 @@ export const NavBar: React.FC = () => {
                     onClick={() => setMobileOpen(false)}
                     className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? "bg-indigo-500/10 text-indigo-400"
+                        ? "bg-blue-500/10 text-blue-400"
                         : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
                     }`}
                   >

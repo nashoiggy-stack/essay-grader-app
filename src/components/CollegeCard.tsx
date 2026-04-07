@@ -33,7 +33,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
           <h4 className="text-sm font-semibold text-zinc-200 truncate">{c.name}</h4>
           <p className="text-xs text-zinc-500">
             {c.state} &middot; {c.type === "public" ? "Public" : "Private"} &middot; {c.setting}
-            {c.usNewsRank && <> &middot; <span className="text-indigo-400">#{c.usNewsRank} US News</span></>}
+            {c.usNewsRank && <> &middot; <span className="text-blue-400">#{c.usNewsRank} US News</span></>}
           </p>
         </div>
         <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.border}`}>

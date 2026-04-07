@@ -10,7 +10,7 @@ const TYPE_COLORS = {
   cut: { bg: "bg-red-500/15", border: "border-red-500/40", text: "text-red-400", label: "Cut", dot: "bg-red-500" },
   add: { bg: "bg-emerald-500/15", border: "border-emerald-500/40", text: "text-emerald-400", label: "Add", dot: "bg-emerald-500" },
   rewrite: { bg: "bg-blue-500/15", border: "border-blue-500/40", text: "text-blue-400", label: "Rewrite", dot: "bg-blue-500" },
-  strengthen: { bg: "bg-violet-500/15", border: "border-violet-500/40", text: "text-violet-400", label: "Strengthen", dot: "bg-violet-500" },
+  strengthen: { bg: "bg-blue-500/15", border: "border-blue-500/40", text: "text-blue-400", label: "Strengthen", dot: "bg-blue-500" },
 } as const;
 
 interface InlineEditorProps {
@@ -72,7 +72,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         <button
           onClick={() => setShowPicker(!showPicker)}
           disabled={suggestionsLoading}
-          className="rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
           {suggestionsLoading ? (
             <>
@@ -88,7 +88,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           <>
             <span className="text-xs text-zinc-500">
               {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""}
-              {activeFocus && <> for <span className="text-violet-400">{activeFocus}</span></>}
+              {activeFocus && <> for <span className="text-blue-400">{activeFocus}</span></>}
             </span>
             <button onClick={onClearSuggestions} className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors">
               Clear all
@@ -101,7 +101,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={onRegrade}
-            className="ml-auto rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors flex items-center gap-2"
+            className="ml-auto rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors flex items-center gap-2"
           >
             Re-grade
           </motion.button>
@@ -130,7 +130,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                     onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions(cat); }}
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                       activeFocus === cat
-                        ? "bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/30"
+                        ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
                         : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
                     }`}
                   >
@@ -147,7 +147,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                     onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions(cat); }}
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                       activeFocus === cat
-                        ? "bg-violet-500/20 text-violet-300 ring-1 ring-violet-500/30"
+                        ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
                         : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
                     }`}
                   >

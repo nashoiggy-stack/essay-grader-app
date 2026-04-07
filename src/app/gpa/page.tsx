@@ -20,7 +20,7 @@ export default function GPAPage() {
       >
         {/* How weighting works inside the 3D card */}
         <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
-          <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">How GPA Weighting Works</h3>
+          <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider">How GPA Weighting Works</h3>
 
           <div>
             <h4 className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">High School Scale</h4>
@@ -28,7 +28,7 @@ export default function GPAPage() {
               {[
                 { level: "College Prep", bonus: "+0.0", color: "text-zinc-400" },
                 { level: "Honors", bonus: "+1.0", color: "text-blue-400" },
-                { level: "AP", bonus: "+2.0", color: "text-violet-400" },
+                { level: "AP", bonus: "+2.0", color: "text-blue-400" },
               ].map((l) => (
                 <div key={l.level} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2.5 text-center">
                   <p className="text-[10px] text-zinc-500">{l.level}</p>
@@ -45,7 +45,7 @@ export default function GPAPage() {
                 { level: "CP", bonus: "+0.0", color: "text-zinc-400" },
                 { level: "Honors", bonus: "+0.5", color: "text-blue-400" },
                 { level: "Dual Enroll", bonus: "+1.0", color: "text-cyan-400" },
-                { level: "AP", bonus: "+1.0", color: "text-violet-400" },
+                { level: "AP", bonus: "+1.0", color: "text-blue-400" },
               ].map((l) => (
                 <div key={l.level} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2 text-center">
                   <p className="text-[9px] text-zinc-500">{l.level}</p>
@@ -64,11 +64,11 @@ export default function GPAPage() {
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-zinc-500">+ HS AP bonus</span>
-                <span className="text-indigo-400 font-mono">+2.00 = 6.00</span>
+                <span className="text-blue-400 font-mono">+2.00 = 6.00</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-zinc-500">+ College AP bonus</span>
-                <span className="text-violet-400 font-mono">+1.00 = 5.00</span>
+                <span className="text-blue-400 font-mono">+1.00 = 5.00</span>
               </div>
             </div>
           </div>
@@ -83,9 +83,10 @@ export default function GPAPage() {
       <div className="-mt-32">
         <iframe
           src="/gpa-calculator.html"
-          className="w-full border-0"
-          style={{ height: "calc(100vh - 56px)" }}
+          className="w-full border-0 bg-transparent"
+          style={{ height: "2400px", minHeight: "100vh" }}
           title="GPA Calculator"
+          allowTransparency
         />
       </div>
     </AuroraBackground>

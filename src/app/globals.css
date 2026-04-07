@@ -27,7 +27,7 @@ body {
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 30%, #6366f1 60%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #bfdbfe 0%, #60a5fa 30%, #3b82f6 60%, #2563eb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -47,8 +47,8 @@ body {
 
 /* Pulse glow for loading */
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.15); }
-  50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.3); }
+  0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.3); }
 }
 
 .animate-pulse-glow {
@@ -63,13 +63,13 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(59, 130, 246, 0.3);
   color: white;
 }
 
 /* Orbital timeline gradient */
 .bg-gradient-orbital {
-  background: linear-gradient(to bottom right, #6366f1, #3b82f6, #14b8a6);
+  background: linear-gradient(to bottom right, #2563eb, #3b82f6, #60a5fa);
 }
 
 /* Orbital shadow */

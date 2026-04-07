@@ -21,14 +21,14 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
         key={tab.id}
         onClick={() => onTabChange(tab.id)}
         className={`relative px-5 py-3.5 text-sm font-medium transition-all whitespace-nowrap ${
-          activeTab === tab.id ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
+          activeTab === tab.id ? "text-blue-400" : "text-zinc-500 hover:text-zinc-300"
         }`}
       >
         {tab.label}
         {activeTab === tab.id && (
           <motion.div
             layoutId="tab-underline"
-            className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500"
+            className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-500"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
         )}

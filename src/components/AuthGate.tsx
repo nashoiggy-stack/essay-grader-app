@@ -18,7 +18,7 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#06060f]">
-        <div className="h-6 w-6 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+        <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -76,7 +76,7 @@ function LoginScreen() {
         <div className="glass rounded-2xl p-8 ring-1 ring-white/[0.06]">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 mb-4">
               <span className="text-white text-lg font-bold">AE</span>
             </div>
             <h2 className="text-xl font-bold text-white">
@@ -108,7 +108,7 @@ function LoginScreen() {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none transition-all"
+              className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
               autoComplete="email"
             />
             <input
@@ -116,7 +116,7 @@ function LoginScreen() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:outline-none transition-all"
+              className="w-full rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
             <motion.button
@@ -124,7 +124,7 @@ function LoginScreen() {
               disabled={submitting}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {submitting
                 ? mode === "signin" ? "Signing in..." : "Creating account..."
@@ -153,7 +153,7 @@ function LoginScreen() {
             {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setSuccessMsg(""); }}
-              className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+              className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
             >
               {mode === "signin" ? "Create one" : "Sign in"}
             </button>

@@ -23,8 +23,8 @@ export const FeedbackTab: React.FC<FeedbackTabProps> = ({
     exit={{ opacity: 0, x: 20 }}
     transition={{ duration: 0.3 }}
   >
-    <div className="rounded-xl bg-indigo-500/5 border border-indigo-500/10 p-5 mb-6">
-      <h4 className="text-sm font-semibold text-indigo-400 mb-2">Overall Assessment</h4>
+    <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-5 mb-6">
+      <h4 className="text-sm font-semibold text-blue-400 mb-2">Overall Assessment</h4>
       <p className="text-sm text-zinc-300 leading-relaxed">{generalFeedback}</p>
     </div>
 
