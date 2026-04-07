@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
 import { BackgroundPaths } from "./ui/background-paths";
 
-const PUBLIC_ROUTES: string[] = [];
+const PUBLIC_ROUTES = ["/gpa"];
 
 export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading, guest } = useAuthContext();
