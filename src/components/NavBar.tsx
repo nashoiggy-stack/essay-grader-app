@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Essay Grader" },
+  { href: "/", label: "Home" },
+  { href: "/essay", label: "Essay Grader" },
   { href: "/gpa", label: "GPA Calc" },
   { href: "/colleges", label: "College List" },
   { href: "/chances", label: "Chances" },

@@ -1,0 +1,330 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { AuroraBackground } from "@/components/AuroraBackground";
+import { ScrollReveal } from "@/components/ScrollReveal";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { EssayInput } from "@/components/EssayInput";
+import { ScoreOverview } from "@/components/ScoreOverview";
+import { TabNavigation, type TabId } from "@/components/TabNavigation";
+import { CommonAppTab } from "@/components/CommonAppTab";
+import { VspiceTab } from "@/components/VspiceTab";
+import { FeedbackTab } from "@/components/FeedbackTab";
+import { LineNotesTab } from "@/components/LineNotesTab";
+import { ChatTab } from "@/components/ChatTab";
+import { InlineEditor } from "@/components/InlineEditor";
+import { EssayHistorySidebar } from "@/components/EssayHistorySidebar";
+import { useEssayInput } from "@/hooks/useEssayInput";
+import { useGrading } from "@/hooks/useGrading";
+import { useChat } from "@/hooks/useChat";
+import { useSuggestions } from "@/hooks/useSuggestions";
+import { useEssayHistory } from "@/hooks/useEssayHistory";
+import { APP_CONFIG } from "@/data/mockData";
+import type { SuggestionFocus } from "@/lib/suggestions-prompt";
+
+export default function Home() {
+  const essay = useEssayInput();
+  const grading = useGrading();
+  const chat = useChat();
+  const suggestions = useSuggestions(essay.essayText);
+  const history = useEssayHistory();
+  const [activeTab, setActiveTab] = useState<TabId>("common");
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [saveFlash, setSaveFlash] = useState(false);
+
+  const [gradedText, setGradedText] = useState("");
+  const essayModified = grading.result !== null && essay.essayText !== gradedText;
+
+  useEffect(() => {
+    if (grading.result && resultsRef.current) {
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+    }
+  }, [grading.result]);
+
+  const handleGrade = () => {
+    chat.reset();
+    suggestions.clear();
+    setActiveTab("common");
+    setGradedText(essay.essayText);
+    grading.grade(essay.essayText, essay.file);
+  };
+
+  const handleRegrade = () => {
+    setGradedText(essay.essayText);
+    grading.grade(essay.essayText, null);
+  };
+
+  const handleClear = () => {
+    essay.clear();
+    grading.reset();
+    chat.reset();
+    suggestions.clear();
+    setGradedText("");
+  };
+
+  const handleChatSend = () => {
+    if (grading.result) chat.send(essay.essayText, grading.result);
+  };
+
+  const handleFetchSuggestions = (focus: SuggestionFocus) => {
+    suggestions.fetch(essay.essayText, focus);
+  };
+
+  const handleAcceptSuggestion = (index: number) => {
+    const newText = suggestions.accept(index);
+    if (newText) essay.setEssayText(newText);
+  };
+
+  const handleSave = () => {
+    if (!grading.result) return;
+    history.save(essay.essayText, grading.result);
+    setSaveFlash(true);
+    setTimeout(() => setSaveFlash(false), 1500);
+  };
+
+  const handleLoadEssay = (id: string) => {
+    const saved = history.load(id);
+    if (!saved) return;
+    essay.setEssayText(saved.essayText);
+    grading.reset();
+    // Re-set the result directly — we need to expose this from the hook
+    // For now, trigger a re-grade with the loaded text
+    chat.reset();
+    suggestions.clear();
+    setSidebarOpen(false);
+    setActiveTab("common");
+    setGradedText(saved.essayText);
+    // Load the saved result
+    grading.loadResult(saved.result);
+  };
+
+  return (
+    <AuroraBackground>
+      {/* Essay History Sidebar */}
+      <EssayHistorySidebar
+        essays={history.essays}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        onLoad={handleLoadEssay}
+        onDelete={history.remove}
+        onRename={history.rename}
+      />
+
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:py-20 font-[family-name:var(--font-geist-sans)]">
+
+        {/* ── Hero with Scroll Animation ─────────────────────────── */}
+        <ContainerScroll
+          titleComponent={
+            <div className="mb-4">
+              <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1] mb-5">
+                <span className="text-gradient">{APP_CONFIG.title}</span>
+              </h1>
+              <p className="text-zinc-400 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
+                {APP_CONFIG.subtitle}
+              </p>
+            </div>
+          }
+        >
+          {/* Preview of the grading interface inside the 3D card */}
+          <div className="h-full w-full bg-[#0a0a14] p-6 flex flex-col gap-4 overflow-hidden">
+            {/* Mock score cards */}
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { label: "Word Count", value: "547", color: "text-emerald-400" },
+                { label: "Raw Score", value: "82", color: "text-emerald-400" },
+                { label: "Adjusted", value: "82", color: "text-emerald-400" },
+                { label: "VSPICE", value: "3.2", color: "text-blue-400" },
+              ].map((card) => (
+                <div key={card.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                  <p className="text-[9px] text-zinc-600 uppercase tracking-wider">{card.label}</p>
+                  <p className={`text-xl font-bold font-mono ${card.color}`}>{card.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Mock score bars */}
+            <div className="flex-1 space-y-3">
+              {[
+                { name: "Authenticity", score: 85 },
+                { name: "Compelling Story", score: 78 },
+                { name: "Insight", score: 82 },
+                { name: "Values", score: 88 },
+                { name: "Writing Skills", score: 75 },
+                { name: "Passion", score: 90 },
+                { name: "Ambition", score: 72 },
+              ].map((item) => (
+                <div key={item.name}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-xs text-zinc-400">{item.name}</span>
+                    <span className={`text-xs font-mono ${item.score >= 80 ? "text-emerald-400" : item.score >= 65 ? "text-blue-400" : "text-amber-400"}`}>{item.score}</span>
+                  </div>
+                  <div className="h-1 rounded-full bg-white/[0.05]">
+                    <div
+                      className={`h-full rounded-full ${item.score >= 80 ? "bg-emerald-500" : item.score >= 65 ? "bg-blue-500" : "bg-amber-500"}`}
+                      style={{ width: `${item.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mock footer */}
+            <div className="flex gap-2">
+              {["Common App", "VSPICE", "Feedback", "Line Notes", "Coach"].map((tab, i) => (
+                <span
+                  key={tab}
+                  className={`text-[10px] px-2 py-1 rounded ${i === 0 ? "bg-indigo-500/20 text-indigo-400" : "text-zinc-600"}`}
+                >
+                  {tab}
+                </span>
+              ))}
+            </div>
+          </div>
+        </ContainerScroll>
+
+        {/* ── Input Section ────────────────────────────────────────── */}
+        <ScrollReveal delay={0.1}>
+          <EssayInput
+            essayText={essay.essayText}
+            file={essay.file}
+            dragging={essay.dragging}
+            wordCount={essay.wordCount}
+            loading={grading.loading}
+            error={grading.error}
+            fileInputRef={essay.fileInputRef}
+            onTextChange={essay.setEssayText}
+            onDrop={essay.handleDrop}
+            onDragOver={essay.handleDragOver}
+            onDragLeave={essay.handleDragLeave}
+            onFileChange={essay.handleFileChange}
+            onOpenFilePicker={essay.openFilePicker}
+            onGrade={handleGrade}
+            onClear={handleClear}
+          />
+        </ScrollReveal>
+
+        {/* ── Results ──────────────────────────────────────────────── */}
+        <AnimatePresence>
+          {grading.result && (
+            <motion.div
+              ref={resultsRef}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mt-12 space-y-10"
+            >
+              {/* Divider + Save button */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+                <span className="text-xs text-zinc-500 uppercase tracking-widest">Results</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
+                <motion.button
+                  onClick={handleSave}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    saveFlash
+                      ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                      : "bg-white/[0.04] text-zinc-400 hover:bg-indigo-500/10 hover:text-indigo-400 ring-1 ring-white/[0.06]"
+                  }`}
+                >
+                  {saveFlash ? (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      Saved
+                    </>
+                  ) : (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+                      Save
+                    </>
+                  )}
+                </motion.button>
+              </div>
+
+              {/* Score Overview */}
+              <ScrollReveal delay={0.1}>
+                <ScoreOverview result={grading.result} />
+              </ScrollReveal>
+
+              {/* ── Inline Editor / Suggestions ──────────────────────── */}
+              <ScrollReveal delay={0.15}>
+                <div className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06]">
+                  <h3 className="text-lg font-bold text-zinc-200 mb-1">Inline Suggestions</h3>
+                  <p className="text-sm text-zinc-500 mb-5">
+                    Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
+                  </p>
+                  <InlineEditor
+                    essayText={essay.essayText}
+                    suggestions={suggestions.suggestions}
+                    suggestionsLoading={suggestions.loading}
+                    suggestionsError={suggestions.error}
+                    activeFocus={suggestions.activeFocus}
+                    onTextChange={essay.setEssayText}
+                    onFetchSuggestions={handleFetchSuggestions}
+                    onAcceptSuggestion={handleAcceptSuggestion}
+                    onDismissSuggestion={suggestions.dismiss}
+                    onClearSuggestions={suggestions.clear}
+                    hasResult={!!grading.result}
+                    onRegrade={handleRegrade}
+                    essayModified={essayModified}
+                  />
+                </div>
+              </ScrollReveal>
+
+              {/* Tabbed Content */}
+              <ScrollReveal delay={0.2}>
+                <div className="glass rounded-2xl overflow-hidden ring-1 ring-white/[0.06]">
+                  <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+
+                  <div className="p-6 sm:p-8">
+                    <AnimatePresence mode="wait">
+                      {activeTab === "common" && <CommonAppTab scores={grading.result.commonApp} />}
+                      {activeTab === "vspice" && (
+                        <VspiceTab
+                          scores={grading.result.vspice}
+                          bonuses={grading.result.bonuses}
+                          pitfalls={grading.result.pitfalls}
+                        />
+                      )}
+                      {activeTab === "feedback" && (
+                        <FeedbackTab
+                          generalFeedback={grading.result.generalFeedback}
+                          commonApp={grading.result.commonApp}
+                          onNavigateToCommon={() => setActiveTab("common")}
+                        />
+                      )}
+                      {activeTab === "lines" && <LineNotesTab suggestions={grading.result.lineSuggestions} />}
+                      {activeTab === "chat" && (
+                        <ChatTab
+                          messages={chat.messages}
+                          input={chat.input}
+                          loading={chat.loading}
+                          chatEndRef={chat.chatEndRef}
+                          onInputChange={chat.setInput}
+                          onSend={handleChatSend}
+                        />
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </ScrollReveal>
+
+              {/* Footer */}
+              <ScrollReveal delay={0.1}>
+                <div className="text-center py-8">
+                  <p className="text-xs text-zinc-600">
+                    Scores are AI-generated estimates, not official admissions feedback.
+                    Use as a revision tool alongside your counselor.
+                  </p>
+                </div>
+              </ScrollReveal>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </AuroraBackground>
+  );
+}
