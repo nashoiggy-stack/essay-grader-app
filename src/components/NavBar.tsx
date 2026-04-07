@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
+import { AdmitEdgeLogo } from "./AdmitEdgeLogo";
 
 const NAV_ITEMS = [
   { href: "/essay", label: "Essay Grader" },
@@ -23,13 +24,9 @@ export const NavBar: React.FC = () => {
       <div className="mx-auto max-w-5xl px-4 flex items-center justify-between h-14">
         {/* Home button */}
         <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-shadow">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </div>
+          <AdmitEdgeLogo size={28} className="group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.4)] transition-[filter]" />
           <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-colors">
-            Home
+            AdmitEdge
           </span>
         </Link>
 

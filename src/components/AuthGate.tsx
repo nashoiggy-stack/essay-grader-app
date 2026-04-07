@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
 import { BackgroundPaths } from "./ui/background-paths";
+import { AdmitEdgeLogo } from "./AdmitEdgeLogo";
 
 const PUBLIC_ROUTES = ["/gpa"];
 
@@ -76,8 +77,8 @@ function LoginScreen() {
         <div className="glass rounded-2xl p-8 ring-1 ring-white/[0.06]">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 mb-4">
-              <span className="text-white text-lg font-bold">AE</span>
+            <div className="mb-4">
+              <AdmitEdgeLogo size={48} />
             </div>
             <h2 className="text-xl font-bold text-white">
               {mode === "signin" ? "Welcome back" : "Create account"}
