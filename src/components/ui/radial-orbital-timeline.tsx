@@ -110,7 +110,7 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
   };
 
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden" ref={containerRef} onClick={handleContainerClick}>
+    <div className="w-full h-screen flex flex-col items-center justify-center bg-transparent overflow-hidden" ref={containerRef} onClick={handleContainerClick}>
       <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
         <div className="absolute w-full h-full flex items-center justify-center" ref={orbitRef} style={{ perspective: "1000px", transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)` }}>
           {/* Center orb */}
