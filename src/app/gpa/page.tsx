@@ -86,7 +86,6 @@ export default function GPAPage() {
           className="w-full border-0 bg-transparent"
           style={{ height: "2400px", minHeight: "100vh" }}
           title="GPA Calculator"
-          allowTransparency
         />
       </div>
     </AuroraBackground>
