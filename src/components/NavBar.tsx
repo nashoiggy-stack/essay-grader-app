@@ -56,8 +56,23 @@ export const NavBar: React.FC = () => {
           })}
         </div>
 
-        {/* Right side: user + hamburger */}
+        {/* Right side: profile + user + hamburger */}
         <div className="flex items-center gap-2">
+          {/* Profile link */}
+          <Link
+            href="/profile"
+            className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-all ${
+              pathname === "/profile"
+                ? "text-blue-400 bg-blue-500/10"
+                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.05]"
+            }`}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profile
+          </Link>
+
           {user ? (
             <>
               <span className="text-xs text-zinc-500 hidden lg:block truncate max-w-[140px]">
@@ -132,6 +147,18 @@ export const NavBar: React.FC = () => {
                   </Link>
                 );
               })}
+
+              <Link
+                href="/profile"
+                onClick={() => setMobileOpen(false)}
+                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  pathname === "/profile"
+                    ? "bg-blue-500/10 text-blue-400"
+                    : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
+                }`}
+              >
+                Profile
+              </Link>
 
               {user && (
                 <div className="pt-2 mt-2 border-t border-white/[0.06]">

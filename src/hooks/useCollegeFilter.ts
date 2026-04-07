@@ -9,62 +9,28 @@ import { classifyCollege } from "@/lib/admissions";
 export function useCollegeFilter() {
   const [filters, setFilters] = useState<CollegeFilters>(DEFAULT_FILTERS);
 
-  // ── Auto-fill GPA from GPA calculator ──────────────────────────────────────
+  // ── Auto-fill from profile (localStorage) ──────────────────────────────────
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("gpa-calc-v1");
+      const raw = localStorage.getItem("admitedge-profile");
       if (!raw) return;
-      const state = JSON.parse(raw);
-      if (!state?.years?.length) return;
+      const p = JSON.parse(raw);
 
-      const COL_UW: Record<string, number> = {
-        "A+":4.00,"A":4.00,"A−":3.70,"B+":3.30,"B":3.00,"B−":2.70,
-        "C+":2.30,"C":2.00,"C−":1.70,"D+":1.00,"D":1.00,"F":0.00,
-      };
-      const COL_BONUS: Record<string, number> = { CP:0, Honors:0.5, DE:1.0, HDE:1.0, AP:1.0 };
-
-      let colUW = 0, colW = 0, totalCredits = 0;
-      for (const year of state.years) {
-        for (const row of year.rows) {
-          if (!row.grade) continue;
-          // Skip non-core classes — college GPA only counts core classes
-          if (row.nonCore) continue;
-          const credits = parseFloat(row.credits) || 1;
-          const base = COL_UW[row.grade] ?? 0;
-          const isF = row.grade === "F";
-          colUW += base * credits;
-          colW += (isF ? 0 : base + (COL_BONUS[row.level] ?? 0)) * credits;
-          totalCredits += credits;
-        }
-      }
-
-      if (totalCredits > 0) {
-        setFilters((prev) => ({
-          ...prev,
-          gpaUW: prev.gpaUW || (colUW / totalCredits).toFixed(2),
-          gpaW: prev.gpaW || (colW / totalCredits).toFixed(2),
-        }));
-      }
+      setFilters((prev) => ({
+        ...prev,
+        gpaUW: prev.gpaUW || p.gpaUW || "",
+        gpaW: prev.gpaW || p.gpaW || "",
+        sat: prev.sat || (p.sat?.readingWriting && p.sat?.math
+          ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
+          : ""),
+        act: prev.act || (p.act?.english && p.act?.math && p.act?.reading && p.act?.science
+          ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading) + parseInt(p.act.science)) / 4))
+          : ""),
+        essayCommonApp: prev.essayCommonApp || p.essayCommonApp || "",
+        essayVspice: prev.essayVspice || p.essayVspice || "",
+      }));
     } catch (e) {
-      console.warn("Could not read GPA from calculator:", e);
-    }
-  }, []);
-
-  // ── Auto-fill essay scores from essay grader ───────────────────────────────
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("essay-grader-result");
-      if (!raw) return;
-      const result = JSON.parse(raw);
-      if (result?.rawScore != null && result?.vspiceComposite != null) {
-        setFilters((prev) => ({
-          ...prev,
-          essayCommonApp: prev.essayCommonApp || String(result.rawScore),
-          essayVspice: prev.essayVspice || String(result.vspiceComposite),
-        }));
-      }
-    } catch (e) {
-      console.warn("Could not read essay scores:", e);
+      console.warn("Could not read profile:", e);
     }
   }, []);
 

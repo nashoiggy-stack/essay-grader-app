@@ -12,93 +12,31 @@ import {
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
 
-  // ── Auto-fill from GPA calculator (localStorage) ───────────────────────────
+  // ── Auto-fill from profile (localStorage) ──────────────────────────────
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("gpa-calc-v1");
+      const raw = localStorage.getItem("admitedge-profile");
       if (!raw) return;
-      const state = JSON.parse(raw);
-      // Recalculate cumulative college-recalc GPA from saved rows
-      if (!state?.years?.length) return;
+      const p = JSON.parse(raw);
 
-      const COL_UW: Record<string, number> = {
-        "A+":4.00,"A":4.00,"A−":3.70,"B+":3.30,"B":3.00,"B−":2.70,
-        "C+":2.30,"C":2.00,"C−":1.70,"D+":1.00,"D":1.00,"F":0.00,
-      };
-      const COL_BONUS: Record<string, number> = { CP:0, Honors:0.5, DE:1.0, HDE:1.0, AP:1.0 };
-
-      let colUW = 0, colW = 0, totalCredits = 0;
-      for (const year of state.years) {
-        for (const row of year.rows) {
-          if (!row.grade) continue;
-          // Skip non-core classes — college GPA only counts core classes
-          if (row.nonCore) continue;
-          const credits = parseFloat(row.credits) || 1;
-          const base = COL_UW[row.grade] ?? 0;
-          const isF = row.grade === "F";
-          colUW += base * credits;
-          colW += (isF ? 0 : base + (COL_BONUS[row.level] ?? 0)) * credits;
-          totalCredits += credits;
-        }
-      }
-
-      if (totalCredits > 0) {
-        const computedW = colW / totalCredits;
-        const rigor: "low" | "medium" | "high" =
-          computedW >= 4.4 ? "high" : computedW >= 4.0 ? "medium" : "low";
-
-        setInputs((prev) => ({
-          ...prev,
-          gpaUW: prev.gpaUW || (colUW / totalCredits).toFixed(2),
-          gpaW: prev.gpaW || computedW.toFixed(2),
-          rigor: prev.rigor === "medium" ? rigor : prev.rigor,
-        }));
-      }
+      setInputs((prev) => ({
+        ...prev,
+        gpaUW: prev.gpaUW || p.gpaUW || "",
+        gpaW: prev.gpaW || p.gpaW || "",
+        rigor: prev.rigor === "medium" && p.rigor ? p.rigor : prev.rigor,
+        essayCommonApp: prev.essayCommonApp || p.essayCommonApp || "",
+        essayVspice: prev.essayVspice || p.essayVspice || "",
+        ecStrength: prev.ecStrength === "medium" && p.ecStrength ? p.ecStrength : prev.ecStrength,
+        // Compute SAT/ACT composites from section scores
+        sat: prev.sat || (p.sat?.readingWriting && p.sat?.math
+          ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
+          : ""),
+        act: prev.act || (p.act?.english && p.act?.math && p.act?.reading && p.act?.science
+          ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading) + parseInt(p.act.science)) / 4))
+          : ""),
+      }));
     } catch (e) {
-      console.warn("Could not read GPA from calculator:", e);
-    }
-  }, []);
-
-  // ── Auto-fill essay scores from essay grader (localStorage) ─────────────
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("essay-grader-result");
-      if (!raw) return;
-      const result = JSON.parse(raw);
-      if (result?.rawScore != null && result?.vspiceComposite != null) {
-        setInputs((prev) => ({
-          ...prev,
-          essayCommonApp: prev.essayCommonApp || String(result.rawScore),
-          essayVspice: prev.essayVspice || String(result.vspiceComposite),
-        }));
-      }
-    } catch (e) {
-      console.warn("Could not read essay scores:", e);
-    }
-  }, []);
-
-  // ── Auto-fill EC strength from EC evaluator (localStorage) ────────────
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("ec-evaluator-result");
-      if (!raw) return;
-      const ecResult = JSON.parse(raw);
-      if (ecResult?.band) {
-        const bandToStrength: Record<string, "low" | "medium" | "high"> = {
-          exceptional: "high",
-          strong: "high",
-          solid: "medium",
-          developing: "low",
-          limited: "low",
-        };
-        const strength = bandToStrength[ecResult.band] ?? "medium";
-        setInputs((prev) => ({
-          ...prev,
-          ecStrength: prev.ecStrength === "medium" ? strength : prev.ecStrength,
-        }));
-      }
-    } catch (e) {
-      console.warn("Could not read EC evaluation:", e);
+      console.warn("Could not read profile:", e);
     }
   }, []);
 
