@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
+import { ShaderBackground } from "@/components/ui/shader-background";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { EssayInput } from "@/components/EssayInput";
@@ -101,7 +101,7 @@ export default function Home() {
   };
 
   return (
-    <AuroraBackground>
+    <ShaderBackground>
       {/* Essay History Sidebar */}
       <EssayHistorySidebar
         essays={history.essays}
@@ -317,6 +317,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </main>
-    </AuroraBackground>
+    </ShaderBackground>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
-import { AuroraBackground } from "@/components/AuroraBackground";
+import { ShaderBackground } from "@/components/ui/shader-background";
 
 export default function GPAPage() {
   return (
-    <AuroraBackground>
+    <ShaderBackground>
       <ContainerScroll
         titleComponent={
           <div className="mb-4">
@@ -88,6 +88,6 @@ export default function GPAPage() {
           title="GPA Calculator"
         />
       </div>
-    </AuroraBackground>
+    </ShaderBackground>
   );
 }

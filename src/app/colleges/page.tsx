@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
+import { ShaderBackground } from "@/components/ui/shader-background";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeFiltersPanel } from "@/components/CollegeFilters";
 import { CollegeResults } from "@/components/CollegeResults";
@@ -21,7 +21,7 @@ export default function CollegesPage() {
   const [showGuide, setShowGuide] = useState(false);
 
   return (
-    <AuroraBackground>
+    <ShaderBackground>
       <main className="mx-auto max-w-5xl px-4 py-10 sm:py-16 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
@@ -90,6 +90,6 @@ export default function CollegesPage() {
           </ScrollReveal>
         </div>
       </main>
-    </AuroraBackground>
+    </ShaderBackground>
   );
 }
