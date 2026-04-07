@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { PenLine, Calculator, School, BarChart3 } from "lucide-react";
 import { ShaderAnimation } from "@/components/ui/shader-animation";
+import { GooeyText } from "@/components/ui/gooey-text-morphing";
 import RadialOrbitalTimeline from "@/components/ui/radial-orbital-timeline";
 
 const timelineData = [
@@ -69,9 +70,17 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.05]">
+          {/* UNDO: Replace <GooeyText .../> block with the commented-out <h1> below to revert */}
+          {/* <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.05]">
             <span className="text-gradient">AdmitEdge</span>
-          </h1>
+          </h1> */}
+          <GooeyText
+            texts={["AdmitEdge", "Essay Grader", "GPA Calculator", "College List", "Chances"]}
+            morphTime={1.5}
+            cooldownTime={0.5}
+            className="h-[80px] sm:h-[100px] font-bold"
+            textClassName="text-5xl sm:text-7xl tracking-tight"
+          />
           <p className="mt-4 text-zinc-400 max-w-lg mx-auto text-sm sm:text-base">
             Click a node to explore. Everything connects.
           </p>
