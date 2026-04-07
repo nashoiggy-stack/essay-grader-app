@@ -131,7 +131,6 @@ export default function HeroModernLanding() {
   const metrics = [
     { label: "Tools", value: "04" },
     { label: "Colleges", value: "80+" },
-    { label: "Criteria", value: "7+V" },
   ];
 
   const setSpotlight = (event: React.MouseEvent<HTMLElement>) => {
