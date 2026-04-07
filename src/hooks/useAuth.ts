@@ -6,15 +6,18 @@ import type { User, Session } from "@supabase/supabase-js";
 
 interface UseAuthReturn {
   readonly user: User | null;
+  readonly guest: boolean;
   readonly loading: boolean;
   readonly error: string;
   readonly signIn: (email: string, password: string) => Promise<void>;
   readonly signUp: (email: string, password: string) => Promise<string | null>;
   readonly signOut: () => Promise<void>;
+  readonly enterAsGuest: () => void;
 }
 
 export function useAuth(): UseAuthReturn {
   const [user, setUser] = useState<User | null>(null);
+  const [guest, setGuest] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -54,7 +57,12 @@ export function useAuth(): UseAuthReturn {
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setGuest(false);
   };
 
-  return { user, loading, error, signIn, signUp, signOut };
+  const enterAsGuest = () => {
+    setGuest(true);
+  };
+
+  return { user, guest, loading, error, signIn, signUp, signOut, enterAsGuest };
 }

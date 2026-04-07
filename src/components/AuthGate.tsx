@@ -1,16 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
 
 export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuthContext();
-  const pathname = usePathname();
-
-  // Landing page is public — no auth required
-  if (pathname === "/") return <>{children}</>;
+  const { user, loading, guest } = useAuthContext();
 
   if (loading) {
     return (
@@ -20,13 +16,15 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  if (!user) return <LoginScreen />;
+  // Allow access if logged in OR entered as guest
+  if (!user && !guest) return <LoginScreen />;
 
   return <>{children}</>;
 };
 
 function LoginScreen() {
-  const { signIn, signUp, error } = useAuthContext();
+  const { signIn, signUp, error, enterAsGuest } = useAuthContext();
+  const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,6 +41,8 @@ function LoginScreen() {
 
     if (mode === "signin") {
       await signIn(email, password);
+      // After successful sign in, redirect to home
+      router.push("/");
     } else {
       const msg = await signUp(email, password);
       if (msg) {
@@ -51,6 +51,11 @@ function LoginScreen() {
       }
     }
     setSubmitting(false);
+  };
+
+  const handleGuest = () => {
+    enterAsGuest();
+    router.push("/");
   };
 
   return (
@@ -126,6 +131,21 @@ function LoginScreen() {
               }
             </motion.button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-white/[0.06]" />
+            <span className="text-xs text-zinc-600">or</span>
+            <div className="flex-1 h-px bg-white/[0.06]" />
+          </div>
+
+          {/* Guest button */}
+          <button
+            onClick={handleGuest}
+            className="w-full rounded-xl py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 bg-white/[0.03] hover:bg-white/[0.06] ring-1 ring-white/[0.06] transition-all"
+          >
+            Continue as Guest
+          </button>
 
           {/* Toggle */}
           <p className="text-center text-sm text-zinc-500 mt-5">

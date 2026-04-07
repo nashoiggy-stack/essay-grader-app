@@ -6,11 +6,13 @@ import type { User } from "@supabase/supabase-js";
 
 interface AuthContextValue {
   readonly user: User | null;
+  readonly guest: boolean;
   readonly loading: boolean;
   readonly error: string;
   readonly signIn: (email: string, password: string) => Promise<void>;
   readonly signUp: (email: string, password: string) => Promise<string | null>;
   readonly signOut: () => Promise<void>;
+  readonly enterAsGuest: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);

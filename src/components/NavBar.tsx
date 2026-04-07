@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 
 export const NavBar: React.FC = () => {
   const pathname = usePathname();
-  const { user, signOut } = useAuthContext();
+  const { user, guest, signOut } = useAuthContext();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -58,7 +58,7 @@ export const NavBar: React.FC = () => {
 
         {/* Right side: user + hamburger */}
         <div className="flex items-center gap-2">
-          {user && (
+          {user ? (
             <>
               <span className="text-xs text-zinc-500 hidden lg:block truncate max-w-[140px]">
                 {user.email}
@@ -70,7 +70,18 @@ export const NavBar: React.FC = () => {
                 Sign out
               </button>
             </>
-          )}
+          ) : guest ? (
+            <>
+              <span className="text-xs text-zinc-500 hidden lg:block">Guest</span>
+              <Link
+                href="/"
+                onClick={signOut}
+                className="text-xs text-indigo-400 hover:text-indigo-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
+              >
+                Sign in
+              </Link>
+            </>
+          ) : null}
 
           {/* Hamburger button (mobile) */}
           <button
