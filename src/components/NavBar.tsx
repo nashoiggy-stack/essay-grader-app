@@ -10,6 +10,7 @@ import { AdmitEdgeLogo } from "./AdmitEdgeLogo";
 const NAV_ITEMS = [
   { href: "/essay", label: "Essay Grader" },
   { href: "/gpa", label: "GPA Calc" },
+  { href: "/extracurriculars", label: "ECs" },
   { href: "/colleges", label: "College List" },
   { href: "/chances", label: "Chances" },
 ] as const;

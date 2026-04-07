@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { PenLine, Calculator, School, BarChart3 } from "lucide-react";
+import { PenLine, Calculator, School, BarChart3, ClipboardList } from "lucide-react";
 
 const STYLE_ID = "hero3-animations";
 
@@ -61,6 +61,7 @@ const TOOLS = [
   { href: "/essay", title: "Essay Grader", icon: PenLine, description: "AI-powered Common App essay grading with 7 criteria + VSPICE rubric, inline suggestions, and coaching chat.", status: "Live" },
   { href: "/gpa", title: "GPA Calculator", icon: Calculator, description: "Calculate weighted and unweighted GPA across high school and college scales. Auto-fills into other tools.", status: "Live" },
   { href: "/colleges", title: "College List", icon: School, description: "Build a balanced list across 5 tiers — Safety, Likely, Target, Reach, Unlikely — filtered by your profile.", status: "Live" },
+  { href: "/extracurriculars", title: "EC Evaluator", icon: ClipboardList, description: "Describe your activities in conversation. Get tier ratings, profile analysis, and spike detection.", status: "Live" },
   { href: "/chances", title: "Chance Calculator", icon: BarChart3, description: "Estimate admission chances at any school. Pulls your GPA and essay scores automatically.", status: "Live" },
 ];
 
@@ -129,7 +130,7 @@ export default function HeroModernLanding() {
   [theme]);
 
   const metrics = [
-    { label: "Tools", value: "04" },
+    { label: "Tools", value: "05" },
     { label: "Colleges", value: "80+" },
   ];
 

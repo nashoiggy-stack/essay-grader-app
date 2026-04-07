@@ -77,6 +77,31 @@ export function useChanceCalculator() {
     }
   }, []);
 
+  // ── Auto-fill EC strength from EC evaluator (localStorage) ────────────
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("ec-evaluator-result");
+      if (!raw) return;
+      const ecResult = JSON.parse(raw);
+      if (ecResult?.band) {
+        const bandToStrength: Record<string, "low" | "medium" | "high"> = {
+          exceptional: "high",
+          strong: "high",
+          solid: "medium",
+          developing: "low",
+          limited: "low",
+        };
+        const strength = bandToStrength[ecResult.band] ?? "medium";
+        setInputs((prev) => ({
+          ...prev,
+          ecStrength: prev.ecStrength === "medium" ? strength : prev.ecStrength,
+        }));
+      }
+    } catch (e) {
+      console.warn("Could not read EC evaluation:", e);
+    }
+  }, []);
+
   const updateInput = <K extends keyof ChanceInputs>(key: K, value: ChanceInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
   };

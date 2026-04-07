@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import type { ClassifiedCollege } from "@/lib/college-types";
+import type { ProfileSpike } from "@/lib/extracurricular-types";
 
 const CLASS_COLORS = {
   unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely" },
@@ -12,6 +13,27 @@ const CLASS_COLORS = {
   safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety" },
 } as const;
 
+// Map EC spike categories to college tags for matching
+const SPIKE_TAG_MAP: Record<string, string[]> = {
+  "stem research": ["research", "tech", "stem"],
+  "research": ["research"],
+  "community service": ["service", "community", "collaborative"],
+  "arts": ["arts", "creative"],
+  "athletics": ["athletics"],
+  "leadership": ["collaborative", "pre-professional"],
+  "business": ["pre-professional", "business"],
+  "entrepreneurship": ["pre-professional", "business"],
+};
+
+function getSpikeMatch(spikes: ProfileSpike[], tags: string[]): string | null {
+  for (const spike of spikes) {
+    const matchTags = SPIKE_TAG_MAP[spike.category.toLowerCase()] ?? [];
+    const match = matchTags.find((t) => tags.some((tag) => tag.toLowerCase().includes(t)));
+    if (match) return spike.category;
+  }
+  return null;
+}
+
 interface CollegeCardProps {
   readonly item: ClassifiedCollege;
   readonly index: number;
@@ -20,6 +42,18 @@ interface CollegeCardProps {
 export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
   const { college: c, classification, reason, fitScore } = item;
   const colors = CLASS_COLORS[classification];
+
+  const spikeMatch = useMemo(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("ec-evaluator-result") : null;
+      if (!raw) return null;
+      const ecResult = JSON.parse(raw);
+      if (!ecResult?.spikes?.length) return null;
+      return getSpikeMatch(ecResult.spikes, c.tags);
+    } catch {
+      return null;
+    }
+  }, [c.tags]);
 
   return (
     <motion.div
@@ -54,6 +88,12 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
       </div>
 
       <p className="mt-3 text-xs text-zinc-500 leading-relaxed">{reason}</p>
+
+      {spikeMatch && (
+        <p className="mt-2 text-[10px] text-blue-400/80 flex items-center gap-1">
+          <span>⭐</span> Your {spikeMatch} profile aligns with this school
+        </p>
+      )}
     </motion.div>
   );
 };
