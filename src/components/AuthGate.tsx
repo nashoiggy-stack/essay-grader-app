@@ -1,11 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
 
 export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuthContext();
+  const pathname = usePathname();
+
+  // Landing page is public — no auth required
+  if (pathname === "/") return <>{children}</>;
 
   if (loading) {
     return (

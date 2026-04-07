@@ -8,8 +8,8 @@ export const NavBarWrapper: React.FC = () => {
   const { user } = useAuthContext();
   const pathname = usePathname();
 
-  if (!user) return null;
-  if (pathname === "/") return null; // Hide nav on landing page
+  // Hide nav when not logged in or on the landing page
+  if (!user || pathname === "/") return null;
 
   return <NavBar />;
 };
