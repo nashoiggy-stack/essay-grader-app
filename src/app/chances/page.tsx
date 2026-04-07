@@ -5,6 +5,7 @@ import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ChanceForm } from "@/components/ChanceForm";
 import { ChanceResultDisplay } from "@/components/ChanceResult";
+import { CollegeMap } from "@/components/ui/college-map";
 import { useChanceCalculator } from "@/hooks/useChanceCalculator";
 
 export default function ChancesPage() {
@@ -34,12 +35,18 @@ export default function ChancesPage() {
           <ChanceForm inputs={inputs} colleges={colleges} onUpdate={updateInput} onReset={resetInputs} />
         </ScrollReveal>
 
-        {/* Result */}
-        {result && college && (
-          <div className="mt-8">
-            <ScrollReveal delay={0.15}>
-              <ChanceResultDisplay result={result} collegeName={college.name} />
+        {/* Map + Result */}
+        {college && (
+          <div className="mt-8 space-y-6">
+            <ScrollReveal delay={0.12}>
+              <CollegeMap college={college} className="h-[280px] sm:h-[320px]" />
             </ScrollReveal>
+
+            {result && (
+              <ScrollReveal delay={0.15}>
+                <ChanceResultDisplay result={result} collegeName={college.name} />
+              </ScrollReveal>
+            )}
           </div>
         )}
 
