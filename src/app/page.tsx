@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { EssayInput } from "@/components/EssayInput";
 import { ScoreOverview } from "@/components/ScoreOverview";
 import { TabNavigation, type TabId } from "@/components/TabNavigation";
@@ -113,51 +114,75 @@ export default function Home() {
 
       <main className="mx-auto max-w-5xl px-4 py-10 sm:py-20 font-[family-name:var(--font-geist-sans)]">
 
-        {/* ── Hero ─────────────────────────────────────────────────── */}
-        <motion.div
-          className="mb-16 text-center"
-          initial={{ opacity: 0, y: -40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.25, 0.4, 0.25, 1] }}
+        {/* ── Hero with Scroll Animation ─────────────────────────── */}
+        <ContainerScroll
+          titleComponent={
+            <div className="mb-4">
+              <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1] mb-5">
+                <span className="text-gradient">{APP_CONFIG.title}</span>
+              </h1>
+              <p className="text-zinc-400 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
+                {APP_CONFIG.subtitle}
+              </p>
+            </div>
+          }
         >
-          <motion.h1
-            className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-          >
-            <span className="text-gradient">{APP_CONFIG.title}</span>
-          </motion.h1>
+          {/* Preview of the grading interface inside the 3D card */}
+          <div className="h-full w-full bg-[#0a0a14] p-6 flex flex-col gap-4 overflow-hidden">
+            {/* Mock score cards */}
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { label: "Word Count", value: "547", color: "text-emerald-400" },
+                { label: "Raw Score", value: "82", color: "text-emerald-400" },
+                { label: "Adjusted", value: "82", color: "text-emerald-400" },
+                { label: "VSPICE", value: "3.2", color: "text-blue-400" },
+              ].map((card) => (
+                <div key={card.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                  <p className="text-[9px] text-zinc-600 uppercase tracking-wider">{card.label}</p>
+                  <p className={`text-xl font-bold font-mono ${card.color}`}>{card.value}</p>
+                </div>
+              ))}
+            </div>
 
-          <motion.p
-            className="mt-5 text-zinc-400 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-          >
-            {APP_CONFIG.subtitle}
-          </motion.p>
+            {/* Mock score bars */}
+            <div className="flex-1 space-y-3">
+              {[
+                { name: "Authenticity", score: 85 },
+                { name: "Compelling Story", score: 78 },
+                { name: "Insight", score: 82 },
+                { name: "Values", score: 88 },
+                { name: "Writing Skills", score: 75 },
+                { name: "Passion", score: 90 },
+                { name: "Ambition", score: 72 },
+              ].map((item) => (
+                <div key={item.name}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-xs text-zinc-400">{item.name}</span>
+                    <span className={`text-xs font-mono ${item.score >= 80 ? "text-emerald-400" : item.score >= 65 ? "text-blue-400" : "text-amber-400"}`}>{item.score}</span>
+                  </div>
+                  <div className="h-1 rounded-full bg-white/[0.05]">
+                    <div
+                      className={`h-full rounded-full ${item.score >= 80 ? "bg-emerald-500" : item.score >= 65 ? "bg-blue-500" : "bg-amber-500"}`}
+                      style={{ width: `${item.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          <motion.div
-            className="mt-12 flex flex-col items-center gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-          >
-            <span className="text-xs text-zinc-600 uppercase tracking-widest">Paste or upload below</span>
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="w-5 h-8 rounded-full border border-zinc-700 flex items-start justify-center p-1"
-            >
-              <motion.div
-                className="w-1 h-2 rounded-full bg-indigo-500"
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            {/* Mock footer */}
+            <div className="flex gap-2">
+              {["Common App", "VSPICE", "Feedback", "Line Notes", "Coach"].map((tab, i) => (
+                <span
+                  key={tab}
+                  className={`text-[10px] px-2 py-1 rounded ${i === 0 ? "bg-indigo-500/20 text-indigo-400" : "text-zinc-600"}`}
+                >
+                  {tab}
+                </span>
+              ))}
+            </div>
+          </div>
+        </ContainerScroll>
 
         {/* ── Input Section ────────────────────────────────────────── */}
         <ScrollReveal delay={0.1}>
