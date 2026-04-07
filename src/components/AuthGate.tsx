@@ -12,7 +12,7 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const { user, loading, guest } = useAuthContext();
   const pathname = usePathname();
 
-  // GPA calculator is public — no auth needed
+  // Public routes bypass auth entirely
   if (PUBLIC_ROUTES.includes(pathname)) return <>{children}</>;
 
   if (loading) {

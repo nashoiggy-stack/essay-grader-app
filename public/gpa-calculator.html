@@ -1150,9 +1150,8 @@
     if (!sb) return;
     sb.auth.signOut().then(function(){
       currentUser = null;
-      document.getElementById('auth-overlay').style.display = 'flex';
-      document.getElementById('app-content').style.display = 'none';
       document.getElementById('user-bar').style.display = 'none';
+      // App stays visible — just loses cloud sync
     });
   }
 
@@ -1176,10 +1175,8 @@
       sb.auth.getSession().then(function(res){
         if (res.data && res.data.session && res.data.session.user) {
           onLogin(res.data.session.user);
-        } else {
-          // Not logged in — show auth overlay
-          document.getElementById('auth-overlay').style.display = 'flex';
         }
+        // If not logged in, app still works — just no cloud sync
       });
 
       // Listen for future auth changes
