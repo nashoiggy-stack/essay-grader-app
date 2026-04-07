@@ -1,12 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthContext } from "./AuthProvider";
+import { BackgroundPaths } from "./ui/background-paths";
+
+const PUBLIC_ROUTES = ["/gpa"];
 
 export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading, guest } = useAuthContext();
+  const pathname = usePathname();
+
+  // GPA calculator is public — no auth needed
+  if (PUBLIC_ROUTES.includes(pathname)) return <>{children}</>;
 
   if (loading) {
     return (
@@ -16,7 +23,6 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  // Allow access if logged in OR entered as guest
   if (!user && !guest) return <LoginScreen />;
 
   return <>{children}</>;
@@ -59,18 +65,13 @@ function LoginScreen() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#06060f] relative overflow-hidden">
-      {/* Background glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-violet-600/10 rounded-full blur-[100px]" />
-      </div>
-
+    <BackgroundPaths>
+      <div className="flex items-center justify-center min-h-screen px-4">
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-sm mx-4"
+        className="w-full max-w-sm"
       >
         <div className="glass rounded-2xl p-8 ring-1 ring-white/[0.06]">
           {/* Header */}
@@ -159,6 +160,7 @@ function LoginScreen() {
           </p>
         </div>
       </motion.div>
-    </div>
+      </div>
+    </BackgroundPaths>
   );
 }

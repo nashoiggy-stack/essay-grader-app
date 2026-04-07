@@ -21,13 +21,15 @@ export const NavBar: React.FC = () => {
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#06060f]/70 border-b border-white/[0.06]">
       <div className="mx-auto max-w-5xl px-4 flex items-center justify-between h-14">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">CP</span>
+        {/* Home button */}
+        <Link href="/" className="flex items-center gap-2 shrink-0 group">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-indigo-500/20 transition-shadow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
           </div>
-          <span className="text-sm font-semibold text-zinc-300 hidden sm:block">
-            College Prep
+          <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-colors">
+            Home
           </span>
         </Link>
 

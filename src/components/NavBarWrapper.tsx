@@ -5,11 +5,14 @@ import { NavBar } from "./NavBar";
 import { useAuthContext } from "./AuthProvider";
 
 export const NavBarWrapper: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user, guest } = useAuthContext();
   const pathname = usePathname();
 
-  // Hide nav when not logged in or on the landing page
-  if (!user || pathname === "/") return null;
+  // Hide nav on landing page
+  if (pathname === "/") return null;
+
+  // Show nav if logged in, guest, or on public routes like GPA
+  if (!user && !guest && pathname !== "/gpa") return null;
 
   return <NavBar />;
 };
