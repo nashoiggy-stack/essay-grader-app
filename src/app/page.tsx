@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { PenLine, Calculator, School, BarChart3 } from "lucide-react";
-import { ShaderBackground } from "@/components/ui/shader-background";
+import { ShaderAnimation } from "@/components/ui/shader-animation";
 import RadialOrbitalTimeline from "@/components/ui/radial-orbital-timeline";
 
 const timelineData = [
@@ -54,9 +54,14 @@ const timelineData = [
 
 export default function LandingPage() {
   return (
-    <ShaderBackground>
-      {/* Title overlaid on the orbital timeline */}
-      <div className="relative">
+    <div className="relative min-h-screen w-full overflow-hidden bg-black">
+      {/* Three.js shader background */}
+      <div className="absolute inset-0 z-0">
+        <ShaderAnimation />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10">
         {/* Title positioned at the top of the orbital section */}
         <motion.div
           className="absolute top-12 left-0 right-0 z-20 text-center px-4"
@@ -65,9 +70,9 @@ export default function LandingPage() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.05]">
-            <span className="text-gradient">College Prep</span>
+            <span className="text-gradient">AdmitEdge</span>
           </h1>
-          <p className="mt-4 text-zinc-500 max-w-lg mx-auto text-sm sm:text-base">
+          <p className="mt-4 text-zinc-400 max-w-lg mx-auto text-sm sm:text-base">
             Click a node to explore. Everything connects.
           </p>
         </motion.div>
@@ -75,6 +80,6 @@ export default function LandingPage() {
         {/* Orbital timeline takes up the full viewport */}
         <RadialOrbitalTimeline timelineData={timelineData} />
       </div>
-    </ShaderBackground>
+    </div>
   );
 }

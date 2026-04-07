@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "College Prep Tools",
+  title: "AdmitEdge",
   description: "Essay grading and GPA calculator for college admissions",
 };
 

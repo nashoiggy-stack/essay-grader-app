@@ -77,14 +77,14 @@ function LoginScreen() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 mb-4">
-              <span className="text-white text-lg font-bold">CP</span>
+              <span className="text-white text-lg font-bold">AE</span>
             </div>
             <h2 className="text-xl font-bold text-white">
               {mode === "signin" ? "Welcome back" : "Create account"}
             </h2>
             <p className="text-sm text-zinc-500 mt-1">
               {mode === "signin"
-                ? "Sign in to access your college prep tools"
+                ? "Sign in to access AdmitEdge"
                 : "Start tracking your GPA and essay scores"}
             </p>
           </div>
