@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -76,6 +76,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCardRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
+  const [shaderReady, setShaderReady] = useState(false);
 
   // Mouse sheen
   useEffect(() => {
@@ -135,6 +136,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         .to({}, { duration: 3 })
         // Phase 5: Everything exits, CTA + shader appear
         .set(".hero-text-wrapper", { autoAlpha: 0 })
+        .call(() => setShaderReady(true))
         .to([".card-inner-content", ".feature-grid-item"], {
           scale: 0.9, y: -40, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05,
         })
@@ -178,10 +180,13 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       </div>
 
       {/* CTA — hidden initially, appears after card exits */}
-      <div className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen h-screen px-4 pointer-events-auto">
-        {/* Shader background inside CTA only */}
+      <div
+        className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen h-screen px-4 pointer-events-auto"
+        style={{ visibility: "hidden", opacity: 0 }}
+      >
+        {/* Shader background inside CTA only — lazy-mounted to avoid black flash */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <ShaderLines />
+          {shaderReady && <ShaderLines />}
         </div>
         <h2 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
           Start building your profile.
