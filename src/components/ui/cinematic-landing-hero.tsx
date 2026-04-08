@@ -169,7 +169,6 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       scrollTl
         // Phase 1: Hero text fades, card rises
         .to([".hero-text-wrapper", ".bg-grid-theme"], { scale: 1.15, filter: "blur(20px)", opacity: 0, ease: "power2.inOut", duration: 2 }, 0)
-        .to(".shader-bg", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 0)
         .to(".main-card", { y: 0, ease: "power3.inOut", duration: 2 }, 0)
         // Phase 2: Card expands to full screen
         .to(".main-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power3.inOut", duration: 1.5 })
@@ -215,8 +214,8 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       <div className="film-grain" aria-hidden="true" />
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
-      {/* Single shader background layer — behind all content */}
-      <div className="shader-bg absolute inset-0 z-[1] pointer-events-none opacity-25">
+      {/* Shader background — starts hidden, fades in for CTA section only */}
+      <div className="shader-bg absolute inset-0 z-[1] pointer-events-none opacity-0">
         <ShaderLines />
       </div>
 
