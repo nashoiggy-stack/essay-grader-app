@@ -181,7 +181,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
 
       {/* CTA — hidden initially, appears after card exits */}
       <div
-        className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen h-screen px-4 pointer-events-auto"
+        className="cta-wrapper absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4 pointer-events-auto"
         style={{ visibility: "hidden", opacity: 0 }}
       >
         {/* Shader background inside CTA only — lazy-mounted to avoid black flash */}
@@ -212,11 +212,12 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         </div>
       </div>
 
-      {/* The Deep Blue Card — starts off-screen below */}
+      {/* The Deep Blue Card — starts off-screen below, hidden until GSAP positions it */}
       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" style={{ perspective: "1500px" }}>
         <div
           ref={mainCardRef}
           className="main-card premium-depth-card relative overflow-hidden flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] h-[92vh] md:h-[85vh] rounded-[32px] md:rounded-[40px]"
+          style={{ transform: "translateY(200vh)" }}
         >
           <div className="card-sheen" aria-hidden="true" />
 
