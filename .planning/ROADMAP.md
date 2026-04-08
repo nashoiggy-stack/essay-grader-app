@@ -9,8 +9,8 @@
 **Success:** Hero text visible on first paint. Scroll animation plays smoothly. All 5 tools still work.
 **Plans:** 1 plan
 Plans:
-- [ ] 01-01-PLAN.md — Rewrite landing page from GSAP to framer-motion scroll animation
-**Status:** Planned
+- [x] 01-01-PLAN.md — Rewrite landing page from GSAP to framer-motion scroll animation
+**Status:** Complete
 
 ### Phase 2: Security + Cleanup
 **Goal:** Fix security issues and remove dead code.
