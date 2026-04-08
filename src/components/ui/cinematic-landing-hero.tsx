@@ -203,11 +203,11 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       </div>
 
       {/* The Deep Blue Card — starts off-screen below */}
-      <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" style={{ perspective: "1500px" }}>
+      <div className="absolute top-0 left-0 w-full h-full z-20 flex items-center justify-center pointer-events-none overflow-hidden" style={{ perspective: "1500px" }}>
         <div
           ref={mainCardRef}
           className="main-card premium-depth-card relative overflow-hidden flex items-center justify-center pointer-events-auto w-[92vw] md:w-[85vw] h-[92vh] md:h-[85vh] rounded-[32px] md:rounded-[40px]"
-          style={{ transform: "translateY(200vh)" }}
+          style={{ visibility: "hidden" }}
         >
           <div className="card-sheen" aria-hidden="true" />
 
