@@ -7,7 +7,10 @@
 **Requirements:** REQ-01, REQ-02, REQ-03, REQ-04
 **Approach:** Replace GSAP ScrollTrigger with framer-motion useScroll + useTransform. Sticky container pattern (700vh outer, 100vh sticky inner). Card uses scale animation not width/height. No visibility:hidden anywhere.
 **Success:** Hero text visible on first paint. Scroll animation plays smoothly. All 5 tools still work.
-**Status:** Not started
+**Plans:** 1 plan
+Plans:
+- [ ] 01-01-PLAN.md — Rewrite landing page from GSAP to framer-motion scroll animation
+**Status:** Planned
 
 ### Phase 2: Security + Cleanup
 **Goal:** Fix security issues and remove dead code.
