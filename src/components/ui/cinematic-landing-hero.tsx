@@ -105,7 +105,6 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       gsap.set(".main-card", { y: window.innerHeight + 200, autoAlpha: 1 });
       gsap.set([".card-inner-content", ".feature-grid-item"], { autoAlpha: 0 });
       gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.8, filter: "blur(30px)" });
-      gsap.set(".shader-bg", { autoAlpha: 0 });
 
       // Scroll timeline
       const scrollTl = gsap.timeline({
@@ -147,7 +146,6 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
           duration: 1.8,
         }, "pullback")
         .set(".cta-wrapper", { autoAlpha: 1 })
-        .to(".shader-bg", { autoAlpha: 1, duration: 1.5, ease: "power2.inOut" }, "pullback")
         .to(".cta-wrapper", { scale: 1, filter: "blur(0px)", ease: "expo.inOut", duration: 1.8 }, "pullback")
         // Phase 6: Card exits upward
         .to(".main-card", { y: -window.innerHeight - 300, ease: "power3.in", duration: 1.5 });
@@ -168,12 +166,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       <div className="film-grain" aria-hidden="true" />
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
-      {/* Shader background — hidden initially, appears with CTA */}
-      <div className="shader-bg absolute inset-0 z-[1] pointer-events-none">
-        <ShaderLines />
-      </div>
-
-      {/* Hero Text — ALWAYS VISIBLE on load, no gsap-reveal */}
+      {/* Hero Text — ALWAYS VISIBLE on load */}
       <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4">
         <p className="text-xs uppercase tracking-[0.5em] text-zinc-500 mb-6 font-semibold">College Prep Suite</p>
         <h1 className="text-silver-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tight mb-2">
@@ -185,14 +178,18 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       </div>
 
       {/* CTA — hidden initially, appears after card exits */}
-      <div className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4 pointer-events-auto">
-        <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
+      <div className="cta-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen h-screen px-4 pointer-events-auto">
+        {/* Shader background inside CTA only */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <ShaderLines />
+        </div>
+        <h2 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
           Start building your profile.
         </h2>
-        <p className="text-zinc-400 text-lg md:text-xl mb-12 max-w-xl mx-auto font-light leading-relaxed">
+        <p className="relative z-10 text-zinc-400 text-lg md:text-xl mb-12 max-w-xl mx-auto font-light leading-relaxed">
           Grade your essays, calculate your GPA, evaluate your extracurriculars, and find your best-fit schools — all in one place.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative z-10 flex flex-col sm:flex-row gap-4">
           <Link
             href="/essay"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-zinc-950 transition-all hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.98]"
