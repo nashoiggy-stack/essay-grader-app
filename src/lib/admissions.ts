@@ -64,24 +64,35 @@ export function compareGPA(
 // the original compareTests function that processed SAT and ACT independently.
 
 /**
- * Apply diminishing returns for scores above the 75th percentile.
- * Below p75: linear scaling (full value per point).
- * Above p75: logarithmic flattening — each additional point is worth less.
- * This makes 35→36 ACT or 1550→1580 SAT almost negligible.
+ * Apply aggressive diminishing returns once a student is within or above
+ * a school's score range. The curve has three regions:
+ *
+ *   raw ≤ 0    : full linear (below range hurts fully)
+ *   0 < raw ≤ 0.3 : linear (within range, still rewarded)
+ *   raw > 0.3  : hard log cap (above range, almost no extra benefit)
+ *
+ * Result: 35→36 ACT or 1550→1580 SAT produces a delta of ~0.02-0.05,
+ * which is far too small to swing a band (possible→competitive requires ~10 pts).
  */
 function applyDiminishingReturns(rawNormalized: number): number {
-  if (rawNormalized <= 0) return rawNormalized; // no flattening for below-range scores
-  if (rawNormalized <= 0.6) return rawNormalized; // linear up to ~60th percentile region
-  // Above 0.6: log curve that flattens sharply
-  // At rawNormalized=0.6 → 0.6 (continuous)
-  // At rawNormalized=1.5 → ~0.88 (heavily dampened)
-  const excess = rawNormalized - 0.6;
-  return 0.6 + 0.3 * Math.log1p(excess / 0.3);
+  if (rawNormalized <= 0) return rawNormalized;
+  if (rawNormalized <= 0.3) return rawNormalized;
+  // Hard cap: 0.3 + 0.15 * ln(1 + excess/0.15)
+  // At raw=0.3 → 0.3 (continuous)
+  // At raw=0.5 → ~0.41
+  // At raw=1.0 → ~0.53
+  // At raw=1.5 → ~0.59 (max realistic output ≈ 0.6)
+  const excess = rawNormalized - 0.3;
+  return 0.3 + 0.15 * Math.log1p(excess / 0.15);
 }
 
 /**
  * Compute a normalized test fit signal for a single test against a school's range.
- * Returns a value roughly in [-1.5, +0.9] with diminishing returns above p75.
+ * Returns a value roughly in [-1.5, +0.6] with heavy diminishing returns above p75.
+ *
+ * minSpread prevents tiny ranges (e.g., ACT 35-36) from creating huge per-point swings.
+ * SAT minSpread=60 (so 30-point differences are modest).
+ * ACT minSpread=3 (so 1-point differences at the top are tiny).
  */
 function normalizeTestScore(
   score: number,
@@ -97,12 +108,12 @@ function normalizeTestScore(
 
 /** Normalize SAT to a school-relative fit index. */
 export function normalizeSatToIndex(sat: number, college: College): number {
-  return normalizeTestScore(sat, college.sat25, college.sat75, 40);
+  return normalizeTestScore(sat, college.sat25, college.sat75, 60);
 }
 
 /** Normalize ACT to a school-relative fit index. */
 export function normalizeActToIndex(act: number, college: College): number {
-  return normalizeTestScore(act, college.act25, college.act75, 2);
+  return normalizeTestScore(act, college.act25, college.act75, 3);
 }
 
 /**
