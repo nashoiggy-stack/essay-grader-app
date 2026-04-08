@@ -215,7 +215,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
       {/* Shader background for hero text */}
-      <div className="hero-shader absolute inset-0 z-[5] pointer-events-none opacity-40">
+      <div className="hero-shader absolute inset-0 z-[1] pointer-events-none opacity-30 mix-blend-screen">
         <ShaderLines />
       </div>
 
@@ -231,7 +231,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       </div>
 
       {/* Shader background for CTA */}
-      <div className="cta-shader absolute inset-0 z-[5] pointer-events-none opacity-0">
+      <div className="cta-shader absolute inset-0 z-[1] pointer-events-none opacity-0 mix-blend-screen">
         <ShaderLines />
       </div>
 

@@ -57,8 +57,8 @@ export function computeACTComposite(scores: ACTScores): number | null {
   const e = scores.english ? parseInt(scores.english) : null;
   const m = scores.math ? parseInt(scores.math) : null;
   const r = scores.reading ? parseInt(scores.reading) : null;
-  const s = scores.science ? parseInt(scores.science) : null;
-  if (e === null || m === null || r === null || s === null) return null;
-  if (isNaN(e) || isNaN(m) || isNaN(r) || isNaN(s)) return null;
-  return Math.round((e + m + r + s) / 4);
+  if (e === null || m === null || r === null) return null;
+  if (isNaN(e) || isNaN(m) || isNaN(r)) return null;
+  // ACT composite = English + Math + Reading (science excluded)
+  return Math.round((e + m + r) / 3);
 }

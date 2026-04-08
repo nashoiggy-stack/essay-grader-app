@@ -62,6 +62,7 @@ export interface ChanceInputs {
   gpaW: string;
   sat: string;
   act: string;
+  actScience: string; // optional, not in composite
   rigor: "low" | "medium" | "high";
   major: string;
   ecStrength: "low" | "medium" | "high";
@@ -92,6 +93,7 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   gpaW: "",
   sat: "",
   act: "",
+  actScience: "",
   rigor: "medium",
   major: "",
   ecStrength: "medium",

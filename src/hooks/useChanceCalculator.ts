@@ -31,9 +31,11 @@ export function useChanceCalculator() {
         sat: prev.sat || (p.sat?.readingWriting && p.sat?.math
           ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
           : ""),
-        act: prev.act || (p.act?.english && p.act?.math && p.act?.reading && p.act?.science
-          ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading) + parseInt(p.act.science)) / 4))
+        // ACT composite excludes science
+        act: prev.act || (p.act?.english && p.act?.math && p.act?.reading
+          ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading)) / 3))
           : ""),
+        actScience: prev.actScience || p.act?.science || "",
       }));
     } catch (e) {
       console.warn("Could not read profile:", e);
