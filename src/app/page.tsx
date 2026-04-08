@@ -179,18 +179,18 @@ export default function LandingPage() {
           className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
           style={{ opacity: heroOpacity, scale: heroScale, filter: heroBlurFilter }}
         >
-          <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-500 mb-4 sm:mb-6 font-semibold">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-300 mb-4 sm:mb-6 font-semibold">
             College Prep Suite
           </p>
           <h1
-            className="font-bold tracking-tight mb-2 sm:mb-3 text-white leading-[0.95]"
-            style={{ fontSize: "clamp(2.2rem, 8vw, 7rem)" }}
+            className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
+            style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
           >
             Your edge in
           </h1>
           <h1
-            className="font-extrabold tracking-tighter text-white leading-[0.95]"
-            style={{ fontSize: "clamp(2.2rem, 8vw, 7rem)" }}
+            className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[1] italic"
+            style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
           >
             college admissions.
           </h1>
@@ -214,12 +214,12 @@ export default function LandingPage() {
           }}
         >
           <h2
-            className="font-bold mb-4 sm:mb-6 tracking-tight text-white leading-[0.95]"
-            style={{ fontSize: "clamp(1.8rem, 7vw, 5rem)" }}
+            className="font-[family-name:var(--font-display)] mb-4 sm:mb-6 tracking-tight text-white leading-[1]"
+            style={{ fontSize: "clamp(2rem, 7vw, 5rem)" }}
           >
             Start building your profile.
           </h2>
-          <p className="text-zinc-400 text-sm sm:text-lg md:text-xl mb-8 sm:mb-12 max-w-xl mx-auto font-light leading-relaxed px-2">
+          <p className="text-zinc-300 text-sm sm:text-lg md:text-xl mb-8 sm:mb-12 max-w-xl mx-auto font-light leading-relaxed px-2">
             Grade your essays, calculate your GPA, evaluate your extracurriculars, and find your
             best-fit schools — all in one place.
           </p>
