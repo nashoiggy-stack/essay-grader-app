@@ -106,9 +106,30 @@ export function normalizeActToIndex(act: number, college: College): number {
 }
 
 /**
+ * Official ACT-to-SAT concordance table (College Board / ACT joint study).
+ * Maps ACT composite → equivalent SAT total.
+ * Used to compare SAT and ACT on a common scale before picking the better one.
+ * Scores 35-36 and 1530-1600 are intentionally close — they're near-identical.
+ */
+const ACT_TO_SAT: Record<number, number> = {
+  36: 1590, 35: 1560, 34: 1530, 33: 1500, 32: 1470, 31: 1440,
+  30: 1410, 29: 1380, 28: 1350, 27: 1320, 26: 1290, 25: 1260,
+  24: 1230, 23: 1200, 22: 1170, 21: 1140, 20: 1110, 19: 1080,
+  18: 1050, 17: 1020, 16: 990, 15: 960, 14: 930, 13: 900, 12: 870,
+};
+
+/** Convert ACT to equivalent SAT using concordance table. */
+export function actToSatEquivalent(act: number): number {
+  const clamped = Math.round(Math.max(12, Math.min(36, act)));
+  return ACT_TO_SAT[clamped] ?? 1050;
+}
+
+/**
  * Pick the best single test signal. If both SAT and ACT are provided,
- * use whichever gives the student a better (higher) normalized fit.
- * This prevents stacking two tests for an inflated score.
+ * convert ACT to SAT-equivalent using the official concordance table,
+ * then use whichever represents the higher score on that common scale.
+ * A 35 ACT (≈1560 SAT) and a 1550 SAT are nearly identical — the 35 ACT wins
+ * marginally, and adding the 1550 SAT does NOT boost anything.
  */
 export function getBestTestSignal(
   sat: number | null,
@@ -117,17 +138,19 @@ export function getBestTestSignal(
 ): { type: "sat" | "act" | null; score: number | null; normalized: number } {
   if (college.testPolicy === "blind") return { type: null, score: null, normalized: 0 };
 
-  const satNorm = sat !== null ? normalizeSatToIndex(sat, college) : null;
-  const actNorm = act !== null ? normalizeActToIndex(act, college) : null;
-
-  if (satNorm !== null && actNorm !== null) {
-    // Use whichever is more favorable
-    return satNorm >= actNorm
-      ? { type: "sat", score: sat, normalized: satNorm }
-      : { type: "act", score: act, normalized: actNorm };
+  if (sat !== null && act !== null) {
+    // Compare on SAT scale using concordance
+    const actAsSat = actToSatEquivalent(act);
+    if (actAsSat >= sat) {
+      // ACT is equal or stronger — use ACT
+      return { type: "act", score: act, normalized: normalizeActToIndex(act, college) };
+    }
+    // SAT is stronger — use SAT
+    return { type: "sat", score: sat, normalized: normalizeSatToIndex(sat, college) };
   }
-  if (satNorm !== null) return { type: "sat", score: sat, normalized: satNorm };
-  if (actNorm !== null) return { type: "act", score: act, normalized: actNorm };
+
+  if (sat !== null) return { type: "sat", score: sat, normalized: normalizeSatToIndex(sat, college) };
+  if (act !== null) return { type: "act", score: act, normalized: normalizeActToIndex(act, college) };
   return { type: null, score: null, normalized: 0 };
 }
 
