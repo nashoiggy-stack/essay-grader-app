@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+
+// Lazy-load shader to avoid blocking first paint
+const ShaderLines = dynamic(
+  () => import("@/components/ui/shader-lines").then((m) => ({ default: m.ShaderLines })),
+  { ssr: false }
+);
 import { PenLine, Calculator, ClipboardList, School, BarChart3, ArrowRight, User } from "lucide-react";
 
 const FEATURES = [
@@ -74,6 +81,13 @@ export default function LandingPage() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
+  const [shaderReady, setShaderReady] = useState(false);
+
+  // Delay shader mount to avoid blocking first paint
+  useEffect(() => {
+    const timer = setTimeout(() => setShaderReady(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Scroll tracking
   const { scrollYProgress } = useScroll({
@@ -169,6 +183,13 @@ export default function LandingPage() {
           }}
         />
 
+        {/* UNDO SHADER: Remove this div to revert hero shader */}
+        {shaderReady && (
+          <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: heroOpacity }}>
+            <ShaderLines />
+          </motion.div>
+        )}
+
         {/* Hero text — visible on first paint at opacity 1, fades via scroll */}
         <motion.div
           className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4"
@@ -184,6 +205,13 @@ export default function LandingPage() {
             college admissions.
           </h1>
         </motion.div>
+
+        {/* UNDO SHADER: Remove this div to revert CTA shader */}
+        {shaderReady && (
+          <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: ctaOpacity }}>
+            <ShaderLines />
+          </motion.div>
+        )}
 
         {/* CTA — starts at opacity 0, appears via scroll */}
         <motion.div
