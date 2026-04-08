@@ -222,10 +222,10 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       {/* Hero Text */}
       <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4">
         <p className="text-xs uppercase tracking-[0.5em] text-zinc-500 mb-6 font-semibold">College Prep Suite</p>
-        <h1 className="text-track gsap-reveal text-3d-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tight mb-2">
+        <h1 className="text-track text-3d-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tight mb-2">
           Your edge in
         </h1>
-        <h1 className="text-days gsap-reveal text-silver-matte text-5xl md:text-7xl lg:text-[6rem] font-extrabold tracking-tighter">
+        <h1 className="text-days text-silver-matte text-5xl md:text-7xl lg:text-[6rem] font-extrabold tracking-tighter">
           college admissions.
         </h1>
       </div>
