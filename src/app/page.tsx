@@ -111,7 +111,7 @@ export default function LandingPage() {
   return (
     <div
       ref={containerRef}
-      className="relative w-screen h-screen overflow-hidden bg-zinc-950 text-white"
+      className="relative w-screen h-screen bg-zinc-950 text-white"
       style={{ perspective: "1500px" }}
     >
       <style dangerouslySetInnerHTML={{ __html: CARD_STYLES }} />
