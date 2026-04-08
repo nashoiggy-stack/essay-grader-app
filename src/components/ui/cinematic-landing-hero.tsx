@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
 import { PenLine, Calculator, ClipboardList, School, BarChart3 } from "lucide-react";
-import { ShaderLines } from "./shader-lines";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -76,7 +75,6 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCardRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
-  const [shaderReady, setShaderReady] = useState(false);
 
   // Mouse sheen
   useEffect(() => {
@@ -101,13 +99,10 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
     const isMobile = window.innerWidth < 768;
 
     const ctx = gsap.context(() => {
-      // Hero text starts VISIBLE (no gsap-reveal) — GSAP just animates it
-      // Card and CTA start hidden
       gsap.set(".main-card", { y: window.innerHeight + 200, autoAlpha: 1 });
       gsap.set([".card-inner-content", ".feature-grid-item"], { autoAlpha: 0 });
       gsap.set(".cta-wrapper", { autoAlpha: 0, scale: 0.8, filter: "blur(30px)" });
 
-      // Scroll timeline
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
@@ -134,9 +129,8 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         )
         // Phase 4: Hold for reading
         .to({}, { duration: 3 })
-        // Phase 5: Everything exits, CTA + shader appear
+        // Phase 5: Everything exits, CTA appears
         .set(".hero-text-wrapper", { autoAlpha: 0 })
-        .call(() => setShaderReady(true))
         .to([".card-inner-content", ".feature-grid-item"], {
           scale: 0.9, y: -40, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05,
         })
@@ -168,7 +162,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       <div className="film-grain" aria-hidden="true" />
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
-      {/* Hero Text — ALWAYS VISIBLE on load */}
+      {/* Hero Text */}
       <div className="hero-text-wrapper absolute z-10 flex flex-col items-center justify-center text-center w-screen px-4">
         <p className="text-xs uppercase tracking-[0.5em] text-zinc-500 mb-6 font-semibold">College Prep Suite</p>
         <h1 className="text-silver-matte text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tight mb-2">
@@ -179,22 +173,18 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         </h1>
       </div>
 
-      {/* CTA — hidden initially, appears after card exits */}
+      {/* CTA — hidden initially via GSAP, appears after card exits */}
       <div
         className="cta-wrapper absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-4 pointer-events-auto"
         style={{ visibility: "hidden", opacity: 0 }}
       >
-        {/* Shader background inside CTA only — lazy-mounted to avoid black flash */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          {shaderReady && <ShaderLines />}
-        </div>
-        <h2 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
+        <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-silver-matte">
           Start building your profile.
         </h2>
-        <p className="relative z-10 text-zinc-400 text-lg md:text-xl mb-12 max-w-xl mx-auto font-light leading-relaxed">
+        <p className="text-zinc-400 text-lg md:text-xl mb-12 max-w-xl mx-auto font-light leading-relaxed">
           Grade your essays, calculate your GPA, evaluate your extracurriculars, and find your best-fit schools — all in one place.
         </p>
-        <div className="relative z-10 flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <Link
             href="/essay"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-zinc-950 transition-all hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.98]"
@@ -212,7 +202,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         </div>
       </div>
 
-      {/* The Deep Blue Card — starts off-screen below, hidden until GSAP positions it */}
+      {/* The Deep Blue Card — starts off-screen below */}
       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" style={{ perspective: "1500px" }}>
         <div
           ref={mainCardRef}
