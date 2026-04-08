@@ -76,14 +76,17 @@ export function compareGPA(
  */
 function applyDiminishingReturns(rawNormalized: number): number {
   if (rawNormalized <= 0) return rawNormalized;
-  if (rawNormalized <= 0.3) return rawNormalized;
-  // Hard cap: 0.3 + 0.15 * ln(1 + excess/0.15)
-  // At raw=0.3 → 0.3 (continuous)
-  // At raw=0.5 → ~0.41
-  // At raw=1.0 → ~0.53
-  // At raw=1.5 → ~0.59 (max realistic output ≈ 0.6)
-  const excess = rawNormalized - 0.3;
-  return 0.3 + 0.15 * Math.log1p(excess / 0.15);
+  if (rawNormalized <= 0.2) return rawNormalized;
+  // Hard log cap starting at 0.2 — within range is rewarded,
+  // above range is nearly flat.
+  // At raw=0.2 → 0.2 (continuous)
+  // At raw=0.5 → 0.30
+  // At raw=1.0 → 0.36
+  // At raw=1.5 → 0.39 (hard ceiling ≈ 0.4)
+  // This means a perfect score vs near-perfect = delta of ~0.03
+  // which at *10 = 0.3 points — can never flip a band.
+  const excess = rawNormalized - 0.2;
+  return 0.2 + 0.1 * Math.log1p(excess / 0.1);
 }
 
 /**

@@ -93,6 +93,18 @@ export function useChanceCalculator() {
     score += majResult.adjustment;
     if (majResult.signal) weaknesses.push(majResult.signal.label);
 
+    // ── ACT Science (small optional boost, no penalty) ──
+    const actScience = inputs.actScience ? parseInt(inputs.actScience) : null;
+    if (actScience !== null && college.testPolicy !== "blind") {
+      // Only a boost if within or above range — no penalty for low/missing
+      const actMid = (college.act25 + college.act75) / 2;
+      if (actScience >= actMid) {
+        const boost = actScience >= college.act75 ? 2 : 1;
+        score += boost;
+        strengths.push(`ACT Science (${actScience}) is ${actScience >= college.act75 ? "above" : "within"} range — modest boost`);
+      }
+    }
+
     // ── Holistic boosts (small) ──
     if (inputs.rigor === "high") { score += 5; strengths.push("Strong course rigor signals academic readiness"); }
     else if (inputs.rigor === "low") { score -= 5; weaknesses.push("Consider taking more challenging courses"); }
