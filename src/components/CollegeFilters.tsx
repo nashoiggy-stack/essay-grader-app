@@ -49,10 +49,17 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
           onChange={(e) => onUpdate("sat", e.target.value)} />
       </div>
       <div>
-        <label className={labelClass}>ACT (optional)</label>
+        <label className={labelClass}>ACT Composite (optional)</label>
         <input type="number" min="1" max="36" placeholder="e.g. 32"
           className={inputClass} value={filters.act}
           onChange={(e) => onUpdate("act", e.target.value)} />
+      </div>
+      <div>
+        <label className={labelClass}>ACT Science (optional)</label>
+        <input type="number" min="1" max="36" placeholder="e.g. 30"
+          className={inputClass} value={filters.actScience}
+          onChange={(e) => onUpdate("actScience", e.target.value)} />
+        <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
       </div>
       <div>
         <label className={labelClass}>Intended Major</label>

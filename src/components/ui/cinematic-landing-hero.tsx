@@ -167,8 +167,9 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       });
 
       scrollTl
-        // Phase 1: Hero text + shader fades, card rises
-        .to([".hero-text-wrapper", ".bg-grid-theme", ".hero-shader"], { scale: 1.15, filter: "blur(20px)", opacity: 0, ease: "power2.inOut", duration: 2 }, 0)
+        // Phase 1: Hero text fades, card rises
+        .to([".hero-text-wrapper", ".bg-grid-theme"], { scale: 1.15, filter: "blur(20px)", opacity: 0, ease: "power2.inOut", duration: 2 }, 0)
+        .to(".shader-bg", { opacity: 0, duration: 1.5, ease: "power2.inOut" }, 0)
         .to(".main-card", { y: 0, ease: "power3.inOut", duration: 2 }, 0)
         // Phase 2: Card expands to full screen
         .to(".main-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power3.inOut", duration: 1.5 })
@@ -184,7 +185,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         // Phase 5: Everything exits, CTA appears
         .set(".hero-text-wrapper", { autoAlpha: 0 })
         .set(".cta-wrapper", { autoAlpha: 1 })
-        .to(".cta-shader", { opacity: 0.35, duration: 1.5, ease: "power2.inOut" })
+        .to(".shader-bg", { opacity: 0.25, duration: 1.5, ease: "power2.inOut" })
         .to([".card-inner-content", ".feature-grid-item"], {
           scale: 0.9, y: -40, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05,
         })
@@ -214,8 +215,8 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
       <div className="film-grain" aria-hidden="true" />
       <div className="bg-grid-theme absolute inset-0 z-0 pointer-events-none opacity-50" aria-hidden="true" />
 
-      {/* Shader background for hero text */}
-      <div className="hero-shader absolute inset-0 z-[1] pointer-events-none opacity-30 mix-blend-screen">
+      {/* Single shader background layer — behind all content */}
+      <div className="shader-bg absolute inset-0 z-[1] pointer-events-none opacity-25">
         <ShaderLines />
       </div>
 
@@ -228,11 +229,6 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
         <h1 className="text-days gsap-reveal text-silver-matte text-5xl md:text-7xl lg:text-[6rem] font-extrabold tracking-tighter">
           college admissions.
         </h1>
-      </div>
-
-      {/* Shader background for CTA */}
-      <div className="cta-shader absolute inset-0 z-[1] pointer-events-none opacity-0 mix-blend-screen">
-        <ShaderLines />
       </div>
 
       {/* CTA (appears after card exits) */}

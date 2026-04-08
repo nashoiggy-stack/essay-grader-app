@@ -45,6 +45,7 @@ export interface CollegeFilters {
   gpaW: string;
   sat: string;
   act: string;
+  actScience: string; // optional, not in composite
   major: string;
   region: string;
   size: string;
@@ -76,6 +77,7 @@ export const EMPTY_FILTERS: CollegeFilters = {
   gpaW: "",
   sat: "",
   act: "",
+  actScience: "",
   major: "",
   region: "any",
   size: "any",
