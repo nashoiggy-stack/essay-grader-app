@@ -64,26 +64,19 @@ export function compareGPA(
 // the original compareTests function that processed SAT and ACT independently.
 
 /**
- * Normalize a test score against a school's range with two-stage flattening:
+ * Normalize a test score against a school's range with school-specific
+ * diminishing returns.
  *
- * Stage 1 — School-relative position:
- *   Below p25: negative (below range hurts)
- *   Between p25-p75: 0 to 0.15 (within range, modest positive)
- *   Above p75: 0.15+ (above range, but capped by stage 2)
+ * Ceiling: 0.4 (= max 4 points on 0-100 scale)
+ * Decay speed: based on range width — narrow ranges flatten fast,
+ * wide ranges flatten slowly.
  *
- * Stage 2 — Elite cap (hard ceiling at 0.2):
- *   Once a student is above the school's 75th percentile, additional
- *   points have near-zero effect. The max positive output is ~0.2,
- *   which at ×10 = 2 points — never enough to flip a band.
+ * Below p25: linear negative penalty (clamped at -1.5 = -15 pts)
+ * At p25: 0 (neutral)
+ * Within range: meaningful positive (higher at wider-range schools)
+ * Above p75: diminishing returns (faster at narrow-range schools)
  *
- * This ensures:
- *   35 ACT ≈ 1560 SAT ≈ 1600 SAT → all produce ~0.15-0.20
- *   34 ACT vs 35 ACT = ~0.05 difference
- *   35 ACT vs 36 ACT = ~0.01 difference
- *   1550 vs 1600 SAT = ~0.02 difference
- *
- * UNDO: To revert, replace this section with the old applyDiminishingReturns
- * + normalizeTestScore that used a log1p curve starting at 0.2.
+ * UNDO: Replace this function with the 0.15-ceiling version.
  */
 function normalizeTestScore(
   score: number,
@@ -92,32 +85,27 @@ function normalizeTestScore(
   minSpread: number
 ): number {
   const range = Math.max(p75 - p25, minSpread * 2);
-
-  // Position relative to the school's range:
-  // At p25 → 0 (bottom of range, neutral)
-  // At p75 → 1 (top of range)
-  // Below p25 → negative
-  // Above p75 → >1
   const position = (score - p25) / range;
 
   // Below p25: linear negative (clamped at -1.5)
   if (position <= 0) return Math.max(-1.5, position * 1.2);
 
-  // At or above p25: exponential saturation curve
-  // Approaches ceiling of 0.15 (= max 1.5 points on 0-100 scale)
+  // School-specific decay factor:
+  // Narrow range (elite) → high decay → flattens fast
+  // Wide range (mid-tier) → low decay → flattens slowly
   //
-  // At position=0.0 (p25) → 0.0
-  // At position=0.5 (mid) → 0.09
-  // At position=1.0 (p75) → 0.12
-  // At position=1.5 (above) → 0.14
-  // At position=3.0 (far above) → 0.15 (ceiling)
+  // SAT range 100 (1480-1580, Harvard) → decay = 3.0 (very fast)
+  // SAT range 200 (1200-1400, mid-tier) → decay = 1.5 (moderate)
+  // ACT range 2 (34-36, Harvard) → uses minSpread 3→range 6 → decay = 3.0
+  // ACT range 4 (28-32, mid-tier) → decay = 2.25
   //
-  // This ensures:
-  //   35 ACT at Harvard (position ~0.5) → 0.09 → 0.9 pts
-  //   36 ACT at Harvard (position ~1.0) → 0.12 → 1.2 pts  (diff: 0.3 pts)
-  //   1600 SAT at Harvard (position ~1.4) → 0.13 → 1.3 pts
-  //   35 ACT vs 1600 SAT diff → 0.4 pts (negligible)
-  return 0.15 * (1 - Math.exp(-position * 1.5));
+  // Formula: decay = 1.0 + 200 / range (SAT) or 1.0 + 12 / range (ACT)
+  // Simplified: use range directly — smaller range = faster decay
+  const decay = 1.0 + 12.0 / range;
+
+  // Exponential saturation: ceiling 0.4 (= 4 pts max)
+  // output = 0.4 * (1 - e^(-position * decay))
+  return 0.4 * (1 - Math.exp(-position * decay));
 }
 
 /** Normalize SAT to a school-relative fit index. */
