@@ -8,6 +8,7 @@ import {
   compareGPA, compareTests, selectivityPenalty, majorAdjustment,
   scoreToBand, BAND_LABELS, essayScoreAdjustment,
 } from "@/lib/admissions";
+import { computeApAcademicSupport } from "@/lib/ap-scores";
 
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
@@ -102,6 +103,16 @@ export function useChanceCalculator() {
         const boost = actScience >= college.act75 ? 2 : 1;
         score += boost;
         strengths.push(`ACT Science (${actScience}) is ${actScience >= college.act75 ? "above" : "within"} range — modest boost`);
+      }
+    }
+
+    // ── AP Scores (supporting academic evidence, max +6) ──
+    if (inputs.apScores.length > 0) {
+      const hasTests = sat !== null || act !== null;
+      const apResult = computeApAcademicSupport(inputs.apScores, inputs.major, hasTests);
+      score += apResult.adjustment;
+      for (const s of apResult.signals) {
+        (s.delta >= 0 ? strengths : weaknesses).push(s.label);
       }
     }
 

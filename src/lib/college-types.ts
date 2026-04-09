@@ -64,6 +64,7 @@ export interface ChanceInputs {
   sat: string;
   act: string;
   actScience: string; // optional, not in composite
+  apScores: { subject: string; score: 1 | 2 | 3 | 4 | 5 }[]; // optional AP exam scores
   rigor: "low" | "medium" | "high";
   major: string;
   ecStrength: "low" | "medium" | "high";
@@ -96,6 +97,7 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   sat: "",
   act: "",
   actScience: "",
+  apScores: [],
   rigor: "medium",
   major: "",
   ecStrength: "medium",

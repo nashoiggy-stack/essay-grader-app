@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { ChanceInputs } from "@/lib/college-types";
 import type { College } from "@/lib/college-types";
+import { AP_SUBJECTS } from "@/lib/ap-scores";
+import { Plus, Trash2 } from "lucide-react";
 
 interface ChanceFormProps {
   readonly inputs: ChanceInputs;
@@ -16,7 +18,25 @@ const inputClass =
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
 
-export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpdate, onReset }) => (
+export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpdate, onReset }) => {
+  const [apSubjectInput, setApSubjectInput] = useState("");
+  const [apScoreInput, setApScoreInput] = useState<string>("5");
+  const [showApSection, setShowApSection] = useState(inputs.apScores.length > 0);
+
+  const addApScore = () => {
+    if (!apSubjectInput.trim()) return;
+    const score = parseInt(apScoreInput) as 1 | 2 | 3 | 4 | 5;
+    if (score < 1 || score > 5) return;
+    onUpdate("apScores", [...inputs.apScores, { subject: apSubjectInput.trim(), score }]);
+    setApSubjectInput("");
+    setApScoreInput("5");
+  };
+
+  const removeApScore = (index: number) => {
+    onUpdate("apScores", inputs.apScores.filter((_, i) => i !== index));
+  };
+
+  return (
   <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
     <div className="flex items-center justify-between mb-2">
       <h3 className="text-lg font-bold text-zinc-200">Your Profile</h3>
@@ -114,5 +134,77 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           onChange={(e) => onUpdate("essayVspice", e.target.value)} />
       </div>
     </div>
+
+    {/* AP Scores — optional */}
+    <div className="mt-5 pt-5 border-t border-white/[0.06]">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h4 className="text-sm font-semibold text-zinc-300">AP Exam Scores</h4>
+          <p className="text-[10px] text-zinc-600 mt-0.5">Optional — helps refine academic context</p>
+        </div>
+        {!showApSection && (
+          <button
+            onClick={() => setShowApSection(true)}
+            className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add AP Scores
+          </button>
+        )}
+      </div>
+
+      {showApSection && (
+        <>
+          {/* Existing AP entries */}
+          {inputs.apScores.length > 0 && (
+            <div className="space-y-1.5 mb-3">
+              {inputs.apScores.map((ap, i) => (
+                <div key={i} className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5">
+                  <span className="flex-1 text-xs text-zinc-300 truncate">{ap.subject}</span>
+                  <span className={`text-xs font-bold ${ap.score >= 4 ? "text-emerald-400" : ap.score === 3 ? "text-amber-400" : "text-zinc-500"}`}>{ap.score}</span>
+                  <button onClick={() => removeApScore(i)} className="text-zinc-600 hover:text-red-400 transition-colors p-0.5">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add new AP score */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              list="ap-subjects-list"
+              placeholder="AP Subject..."
+              value={apSubjectInput}
+              onChange={(e) => setApSubjectInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addApScore(); } }}
+              className={`${inputClass} flex-1`}
+            />
+            <datalist id="ap-subjects-list">
+              {AP_SUBJECTS.map((s) => <option key={s} value={s} />)}
+            </datalist>
+            <select
+              value={apScoreInput}
+              onChange={(e) => setApScoreInput(e.target.value)}
+              className={`${selectClass} w-16`}
+            >
+              <option value="5">5</option>
+              <option value="4">4</option>
+              <option value="3">3</option>
+              <option value="2">2</option>
+              <option value="1">1</option>
+            </select>
+            <button
+              onClick={addApScore}
+              disabled={!apSubjectInput.trim()}
+              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   </div>
-);
+  );
+};
