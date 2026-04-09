@@ -64,38 +64,26 @@ export function compareGPA(
 // the original compareTests function that processed SAT and ACT independently.
 
 /**
- * Apply aggressive diminishing returns once a student is within or above
- * a school's score range. The curve has three regions:
+ * Normalize a test score against a school's range with two-stage flattening:
  *
- *   raw ≤ 0    : full linear (below range hurts fully)
- *   0 < raw ≤ 0.3 : linear (within range, still rewarded)
- *   raw > 0.3  : hard log cap (above range, almost no extra benefit)
+ * Stage 1 — School-relative position:
+ *   Below p25: negative (below range hurts)
+ *   Between p25-p75: 0 to 0.15 (within range, modest positive)
+ *   Above p75: 0.15+ (above range, but capped by stage 2)
  *
- * Result: 35→36 ACT or 1550→1580 SAT produces a delta of ~0.02-0.05,
- * which is far too small to swing a band (possible→competitive requires ~10 pts).
- */
-function applyDiminishingReturns(rawNormalized: number): number {
-  if (rawNormalized <= 0) return rawNormalized;
-  if (rawNormalized <= 0.2) return rawNormalized;
-  // Hard log cap starting at 0.2 — within range is rewarded,
-  // above range is nearly flat.
-  // At raw=0.2 → 0.2 (continuous)
-  // At raw=0.5 → 0.30
-  // At raw=1.0 → 0.36
-  // At raw=1.5 → 0.39 (hard ceiling ≈ 0.4)
-  // This means a perfect score vs near-perfect = delta of ~0.03
-  // which at *10 = 0.3 points — can never flip a band.
-  const excess = rawNormalized - 0.2;
-  return 0.2 + 0.1 * Math.log1p(excess / 0.1);
-}
-
-/**
- * Compute a normalized test fit signal for a single test against a school's range.
- * Returns a value roughly in [-1.5, +0.6] with heavy diminishing returns above p75.
+ * Stage 2 — Elite cap (hard ceiling at 0.2):
+ *   Once a student is above the school's 75th percentile, additional
+ *   points have near-zero effect. The max positive output is ~0.2,
+ *   which at ×10 = 2 points — never enough to flip a band.
  *
- * minSpread prevents tiny ranges (e.g., ACT 35-36) from creating huge per-point swings.
- * SAT minSpread=60 (so 30-point differences are modest).
- * ACT minSpread=3 (so 1-point differences at the top are tiny).
+ * This ensures:
+ *   35 ACT ≈ 1560 SAT ≈ 1600 SAT → all produce ~0.15-0.20
+ *   34 ACT vs 35 ACT = ~0.05 difference
+ *   35 ACT vs 36 ACT = ~0.01 difference
+ *   1550 vs 1600 SAT = ~0.02 difference
+ *
+ * UNDO: To revert, replace this section with the old applyDiminishingReturns
+ * + normalizeTestScore that used a log1p curve starting at 0.2.
  */
 function normalizeTestScore(
   score: number,
@@ -103,10 +91,33 @@ function normalizeTestScore(
   p75: number,
   minSpread: number
 ): number {
-  const mid = (p25 + p75) / 2;
-  const spread = Math.max((p75 - p25) / 2, minSpread);
-  const raw = Math.max(-1.5, Math.min(1.5, (score - mid) / spread));
-  return applyDiminishingReturns(raw);
+  const range = Math.max(p75 - p25, minSpread * 2);
+
+  // Position relative to the school's range:
+  // At p25 → 0 (bottom of range, neutral)
+  // At p75 → 1 (top of range)
+  // Below p25 → negative
+  // Above p75 → >1
+  const position = (score - p25) / range;
+
+  // Below p25: linear negative (clamped at -1.5)
+  if (position <= 0) return Math.max(-1.5, position * 1.2);
+
+  // At or above p25: exponential saturation curve
+  // Approaches ceiling of 0.15 (= max 1.5 points on 0-100 scale)
+  //
+  // At position=0.0 (p25) → 0.0
+  // At position=0.5 (mid) → 0.09
+  // At position=1.0 (p75) → 0.12
+  // At position=1.5 (above) → 0.14
+  // At position=3.0 (far above) → 0.15 (ceiling)
+  //
+  // This ensures:
+  //   35 ACT at Harvard (position ~0.5) → 0.09 → 0.9 pts
+  //   36 ACT at Harvard (position ~1.0) → 0.12 → 1.2 pts  (diff: 0.3 pts)
+  //   1600 SAT at Harvard (position ~1.4) → 0.13 → 1.3 pts
+  //   35 ACT vs 1600 SAT diff → 0.4 pts (negligible)
+  return 0.15 * (1 - Math.exp(-position * 1.5));
 }
 
 /** Normalize SAT to a school-relative fit index. */
