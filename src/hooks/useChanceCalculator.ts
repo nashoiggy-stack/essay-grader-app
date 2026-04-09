@@ -37,6 +37,8 @@ export function useChanceCalculator() {
           ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading)) / 3))
           : ""),
         actScience: prev.actScience || p.act?.science || "",
+        // Auto-fill AP scores from profile
+        apScores: prev.apScores.length > 0 ? prev.apScores : (p.apScores ?? []),
       }));
     } catch (e) {
       console.warn("Could not read profile:", e);

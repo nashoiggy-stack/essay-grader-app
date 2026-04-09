@@ -1,11 +1,14 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useState } from "react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { useProfile } from "@/hooks/useProfile";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
+import type { APScoreProfile } from "@/lib/profile-types";
 import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
+import { AP_SUBJECTS } from "@/lib/ap-scores";
+import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
   "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all";
@@ -218,6 +221,14 @@ export default function ProfilePage() {
           </div>
         </ScrollReveal>
 
+        {/* AP Scores */}
+        <ScrollReveal delay={0.22}>
+          <APScoresSection
+            apScores={profile.apScores ?? []}
+            onUpdate={(scores) => updateField("apScores", scores)}
+          />
+        </ScrollReveal>
+
         {/* Essay Scores */}
         <ScrollReveal delay={0.25}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
@@ -312,6 +323,92 @@ export default function ProfilePage() {
         </ScrollReveal>
       </main>
     </AuroraBackground>
+  );
+}
+
+function APScoresSection({ apScores, onUpdate }: { apScores: APScoreProfile[]; onUpdate: (scores: APScoreProfile[]) => void }) {
+  const [subject, setSubject] = useState("");
+  const [score, setScore] = useState<string>("5");
+  const [expanded, setExpanded] = useState(apScores.length > 0);
+
+  const addScore = () => {
+    if (!subject.trim()) return;
+    const s = parseInt(score) as 1 | 2 | 3 | 4 | 5;
+    if (s < 1 || s > 5) return;
+    onUpdate([...apScores, { subject: subject.trim(), score: s }]);
+    setSubject("");
+    setScore("5");
+  };
+
+  const removeScore = (index: number) => {
+    onUpdate(apScores.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">AP Exam Scores</h2>
+          <p className="text-[10px] text-zinc-600 mt-0.5">Optional — saved to your profile and auto-filled into Chance Calculator</p>
+        </div>
+        {!expanded && (
+          <button onClick={() => setExpanded(true)} className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Add
+          </button>
+        )}
+      </div>
+
+      {expanded && (
+        <>
+          {apScores.length > 0 && (
+            <div className="space-y-1.5 mb-4">
+              {apScores.map((ap, i) => (
+                <div key={i} className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5">
+                  <span className="flex-1 text-xs text-zinc-300 truncate">{ap.subject}</span>
+                  <span className={`text-xs font-bold ${ap.score >= 4 ? "text-emerald-400" : ap.score === 3 ? "text-amber-400" : "text-zinc-500"}`}>{ap.score}</span>
+                  <button onClick={() => removeScore(i)} className="text-zinc-600 hover:text-red-400 transition-colors p-0.5">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              list="profile-ap-subjects"
+              placeholder="AP Subject..."
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addScore(); } }}
+              className={`${inputClass} flex-1`}
+            />
+            <datalist id="profile-ap-subjects">
+              {AP_SUBJECTS.map((s) => <option key={s} value={s} />)}
+            </datalist>
+            <select
+              value={score}
+              onChange={(e) => setScore(e.target.value)}
+              className={`${inputClass} w-16 appearance-none cursor-pointer`}
+            >
+              <option value="5">5</option>
+              <option value="4">4</option>
+              <option value="3">3</option>
+              <option value="2">2</option>
+              <option value="1">1</option>
+            </select>
+            <button
+              onClick={addScore}
+              disabled={!subject.trim()}
+              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

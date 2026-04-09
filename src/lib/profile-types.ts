@@ -10,6 +10,11 @@ export interface ACTScores {
   readonly science: string;  // 1-36
 }
 
+export interface APScoreProfile {
+  readonly subject: string;
+  readonly score: 1 | 2 | 3 | 4 | 5;
+}
+
 export interface UserProfile {
   // GPA — auto-filled from GPA calculator
   gpaUW: string;
@@ -18,6 +23,9 @@ export interface UserProfile {
   // Test scores — user-entered section scores
   sat: SATScores;
   act: ACTScores;
+
+  // AP scores — user-entered, persists across sessions
+  apScores: APScoreProfile[];
 
   // Essay — auto-filled from essay grader
   essayCommonApp: string; // 0-100
@@ -36,6 +44,7 @@ export const EMPTY_PROFILE: UserProfile = {
   gpaW: "",
   sat: { readingWriting: "", math: "" },
   act: { english: "", math: "", reading: "", science: "" },
+  apScores: [],
   essayCommonApp: "",
   essayVspice: "",
   ecBand: "",
