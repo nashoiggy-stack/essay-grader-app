@@ -1,9 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import type { ProfileEvaluation, ActivityTier } from "@/lib/extracurricular-types";
-import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
+import {
+  EC_BAND_LABELS,
+  BAND_RANGES,
+  BAND_ORDER,
+  computeReadinessScore,
+  buildReadinessNextStep,
+} from "@/lib/extracurricular-types";
 
 const TIER_STYLES: Record<ActivityTier, { bg: string; border: string; text: string; label: string }> = {
   1: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Tier 1 — National/International" },
@@ -40,6 +46,17 @@ interface ECResultsProps {
 }
 
 export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
+  const score = useMemo(
+    () =>
+      computeReadinessScore({
+        activities: result.activities,
+        band: result.band,
+        spikes: result.spikes,
+      }),
+    [result]
+  );
+  const nextStep = useMemo(() => buildReadinessNextStep(result.band, score), [result.band, score]);
+
   return (
     <div className="space-y-8">
       {/* Profile Summary Card */}
@@ -49,13 +66,18 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
         className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8"
       >
         <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 mb-2">Overall Band</p>
-            <h2 className={`text-3xl font-bold tracking-tight ${BAND_STYLES[result.band] ?? "text-white"}`}>
-              {EC_BAND_LABELS[result.band]}
-            </h2>
+            <div className="flex items-baseline gap-3 mb-1">
+              <h2 className={`text-3xl font-bold tracking-tight ${BAND_STYLES[result.band] ?? "text-white"}`}>
+                {EC_BAND_LABELS[result.band]}
+              </h2>
+              <span className="font-mono tabular-nums text-lg text-zinc-500">
+                {score}<span className="text-zinc-700">/100</span>
+              </span>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 justify-end">
             {result.spikes.map((spike) => (
               <span
                 key={spike.category}
@@ -70,6 +92,51 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
                 Well-rounded
               </span>
             )}
+          </div>
+        </div>
+
+        {/* Segmented progress bar — bands visible */}
+        <div className="mb-6">
+          <div className="relative h-2 rounded-full bg-white/[0.04] overflow-hidden ring-1 ring-white/[0.05]">
+            {/* Segment separators (hairlines) at band boundaries */}
+            {BAND_ORDER.slice(1).map((band) => {
+              const pct = BAND_RANGES[band].min;
+              return (
+                <div
+                  key={band}
+                  className="absolute top-0 bottom-0 w-px bg-white/[0.08]"
+                  style={{ left: `${pct}%` }}
+                />
+              );
+            })}
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${score}%` }}
+              transition={{ duration: 1, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              className="h-full rounded-full bg-gradient-to-r from-blue-500 via-blue-400 to-blue-300"
+            />
+          </div>
+          {/* Band labels under bar */}
+          <div className="mt-2 flex justify-between text-[9px] uppercase tracking-[0.15em] text-zinc-600">
+            {BAND_ORDER.map((band) => (
+              <span
+                key={band}
+                className={band === result.band ? "text-zinc-300" : ""}
+              >
+                {EC_BAND_LABELS[band]}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Next step narrative */}
+        <div className="mb-6 rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] p-4 flex items-start gap-3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 shrink-0 mt-[2px]">
+            <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-[0.15em] text-zinc-500 font-medium mb-1">Next step</p>
+            <p className="text-sm text-zinc-300 leading-relaxed">{nextStep}</p>
           </div>
         </div>
 

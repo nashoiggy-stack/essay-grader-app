@@ -55,6 +55,7 @@ export default function ExtracurricularsPage() {
                   onInputChange={ec.setChatInput}
                   onSend={ec.sendMessage}
                   onDone={() => ec.markDone(ec.activeConvId!)}
+                  onReopen={() => ec.reopenActivity(ec.activeConvId!)}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full min-h-[350px]">

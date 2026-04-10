@@ -78,6 +78,13 @@ export function useECEvaluator() {
     setActiveConvId(null);
   }, []);
 
+  const reopenActivity = useCallback((id: string) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, done: false } : c))
+    );
+    setActiveConvId(id);
+  }, []);
+
   const sendMessage = useCallback(async () => {
     if (!chatInput.trim() || !activeConvId || chatLoading) return;
 
@@ -203,6 +210,7 @@ export function useECEvaluator() {
     selectActivity,
     removeActivity,
     markDone,
+    reopenActivity,
     sendMessage,
     evaluate,
     resetAll,
