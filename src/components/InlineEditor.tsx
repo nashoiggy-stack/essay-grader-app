@@ -6,6 +6,43 @@ import type { InlineSuggestion } from "@/lib/types";
 import type { SuggestionFocus } from "@/lib/suggestions-prompt";
 import { SUGGESTION_CATEGORIES } from "@/lib/suggestions-prompt";
 
+type IntentGroup = {
+  key: string;
+  label: string;
+  description: string;
+  categories: readonly SuggestionFocus[];
+};
+
+const INTENT_GROUPS: readonly IntentGroup[] = [
+  {
+    key: "voice",
+    label: "Voice",
+    description: "Make it sound like you — honest, specific, real.",
+    categories: ["Authenticity", "Passion", "Vulnerability", "Selflessness", "Expression"],
+  },
+  {
+    key: "story",
+    label: "Story",
+    description: "Structure, hook, tension, and landing.",
+    categories: ["Compelling Story", "Perseverance", "Initiative", "Curiosity"],
+  },
+  {
+    key: "impact",
+    label: "Impact",
+    description: "Reflection, values, insight, and ambition.",
+    categories: ["Insight", "Values", "Ambition"],
+  },
+  {
+    key: "craft",
+    label: "Craft",
+    description: "Polish — sentence rhythm, clarity, word count.",
+    categories: ["Writing Skills", "Lower Word Count"],
+  },
+];
+
+// Suppress unused import warning — categories exported for type integrity
+void SUGGESTION_CATEGORIES;
+
 const TYPE_COLORS = {
   cut: { bg: "bg-red-500/15", border: "border-red-500/40", text: "text-red-400", label: "Cut", dot: "bg-red-500" },
   add: { bg: "bg-emerald-500/15", border: "border-emerald-500/40", text: "text-emerald-400", label: "Add", dot: "bg-emerald-500" },
@@ -36,6 +73,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
 }) => {
   const [activeSuggestion, setActiveSuggestion] = useState<number | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>("voice");
 
   const highlightedParts = useMemo(() => {
     if (!suggestions.length) return null;
@@ -108,66 +146,78 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         )}
       </div>
 
-      {/* ── Category picker (inline grid, no floating menu) ───────── */}
+      {/* ── Category picker — intent-grouped ──────────────────────── */}
       <AnimatePresence>
         {showPicker && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
-            <div className="rounded-xl bg-[#12121f] border border-white/[0.08] p-4">
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-3">
-                Choose focus area
-              </p>
+            <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.08] p-5">
+              <p className="text-xs text-zinc-400 font-medium mb-4">What do you want to improve?</p>
 
-              <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1.5">Common App</p>
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {SUGGESTION_CATEGORIES.slice(0, 7).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions(cat); }}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-[background-color,color,opacity,box-shadow] duration-200 ${
-                      activeFocus === cat
-                        ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
-                        : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1.5">VSPICE</p>
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {SUGGESTION_CATEGORIES.slice(7, 13).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions(cat); }}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-[background-color,color,opacity,box-shadow] duration-200 ${
-                      activeFocus === cat
-                        ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
-                        : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1.5">Special</p>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions("Lower Word Count"); }}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-[background-color,color,opacity,box-shadow] duration-200 ${
-                    activeFocus === "Lower Word Count"
-                      ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30"
-                      : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
-                  }`}
-                >
-                  Lower Word Count
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {INTENT_GROUPS.map((group) => {
+                  const isOpen = openGroup === group.key;
+                  const hasActive = group.categories.some((c) => c === activeFocus);
+                  return (
+                    <div key={group.key} className="rounded-xl bg-[#0c0c1a]/90 ring-1 ring-white/[0.05] overflow-hidden">
+                      <button
+                        onClick={() => setOpenGroup(isOpen ? null : group.key)}
+                        className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left transition-[background-color] duration-200 hover:bg-white/[0.03]"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-[13px] font-semibold ${hasActive ? "text-blue-300" : "text-zinc-200"}`}>
+                            {group.label}
+                          </p>
+                          <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug">
+                            {group.description}
+                          </p>
+                        </div>
+                        <svg
+                          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                          className={`shrink-0 text-zinc-500 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                        >
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+                            className="overflow-hidden"
+                          >
+                            <div className="flex flex-wrap gap-1.5 px-3.5 pb-3 pt-1">
+                              {group.categories.map((cat) => (
+                                <button
+                                  key={cat}
+                                  onClick={() => {
+                                    setShowPicker(false);
+                                    setActiveSuggestion(null);
+                                    onFetchSuggestions(cat);
+                                  }}
+                                  className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-[background-color,color] duration-200 ${
+                                    activeFocus === cat
+                                      ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
+                                      : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
+                                  }`}
+                                >
+                                  {cat}
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>
