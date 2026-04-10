@@ -11,7 +11,7 @@ import { AP_SUBJECTS } from "@/lib/ap-scores";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all";
+  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
 
 function SourceBadge({ source }: { source: string }) {
@@ -39,9 +39,30 @@ export default function ProfilePage() {
   const satComposite = computeSATComposite(profile.sat);
   const actComposite = computeACTComposite(profile.act);
 
+  // Completeness: 6 sections, each 0/1
+  const sections = [
+    { key: "GPA", done: !!profile.gpaUW },
+    { key: "Test", done: satComposite !== null || actComposite !== null },
+    { key: "APs", done: profile.apScores.length > 0 },
+    { key: "Essay", done: !!profile.essayCommonApp },
+    { key: "ECs", done: !!profile.ecBand },
+    { key: "Rigor", done: !!profile.rigor },
+  ];
+  const completed = sections.filter((s) => s.done).length;
+  const total = sections.length;
+  const pct = Math.round((completed / total) * 100);
+  const completeMessage =
+    completed === total
+      ? "Your profile is complete. Every tool will use this data."
+      : completed >= 4
+      ? "Almost there — a few more fields for the best chance estimates."
+      : completed >= 2
+      ? "You're making progress. Keep filling sections as you go."
+      : "Start with the basics — GPA and a test score unlock the most tools.";
+
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
@@ -52,12 +73,47 @@ export default function ProfilePage() {
           </p>
         </div>
 
+        {/* Completeness Meter */}
+        <ScrollReveal delay={0.03}>
+          <div className="mb-8 rounded-2xl bg-[#0f0f1c] border border-white/[0.08] p-5 sm:p-6">
+            <div className="flex items-baseline justify-between mb-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">Profile completeness</p>
+                <p className="text-sm text-zinc-200">{completeMessage}</p>
+              </div>
+              <p className="font-mono tabular-nums text-2xl font-semibold text-white leading-none">
+                {completed}<span className="text-zinc-600">/{total}</span>
+              </p>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 transition-[width] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {sections.map((s) => (
+                <span
+                  key={s.key}
+                  className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
+                    s.done
+                      ? "bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/25"
+                      : "bg-white/[0.03] text-zinc-600 ring-1 ring-white/[0.05]"
+                  }`}
+                >
+                  {s.done ? "✓ " : ""}{s.key}
+                </span>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+
         {/* Reset Button */}
         <ScrollReveal delay={0.05}>
           <div className="flex justify-end mb-6">
             <button
               onClick={resetToComputed}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-white/[0.06] rounded-lg px-3 py-1.5 hover:bg-white/[0.04] transition-all"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-white/[0.06] rounded-lg px-3 py-1.5 hover:bg-white/[0.04] transition-[background-color,color] duration-200"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.87"/></svg>
               Reset to calculated values

@@ -56,8 +56,8 @@ const QuickScoreCard: React.FC<QuickScoreCardProps> = ({ name, score, onClick })
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ scale: 1.05, y: -2 }}
-      className="glass rounded-lg p-3 text-left transition-all cursor-pointer"
+      whileHover={{ scale: 1.02, y: -2 }}
+      className="glass rounded-lg p-3 text-left transition-[background-color,box-shadow] duration-200 cursor-pointer"
     >
       <p className="text-xs text-zinc-500 truncate">{name}</p>
       <p className={`text-lg font-bold font-mono ${text}`}>{score}</p>

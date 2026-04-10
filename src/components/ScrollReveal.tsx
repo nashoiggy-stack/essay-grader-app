@@ -19,19 +19,24 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
+  const distance = 30; // Tighter distance feels more intentional
   const axis = direction === "left" || direction === "right" ? "x" : "y";
-  const value = direction === "right" || direction === "down" ? 60 : -60;
-  const initial = axis === "x" ? { opacity: 0, x: value } : { opacity: 0, y: Math.abs(value) };
+  const value = direction === "right" || direction === "down" ? distance : -distance;
+  const initialTransform = axis === "x"
+    ? `translateX(${value}px)`
+    : `translateY(${Math.abs(value)}px)`;
+
+  const initial = { opacity: 0, transform: initialTransform, filter: "blur(6px)" };
   const animate = isInView
-    ? { opacity: 1, x: 0, y: 0, filter: "blur(0px)" }
-    : { ...initial, filter: "blur(8px)" };
+    ? { opacity: 1, transform: "translateX(0px) translateY(0px)", filter: "blur(0px)" }
+    : initial;
 
   return (
     <motion.div
       ref={ref}
-      initial={{ ...initial, filter: "blur(8px)" }}
+      initial={initial}
       animate={animate}
-      transition={{ duration: 0.7, delay, ease: [0.25, 0.4, 0.25, 1] }}
+      transition={{ duration: 0.45, delay, ease: [0.23, 1, 0.32, 1] }}
       className={className}
     >
       {children}

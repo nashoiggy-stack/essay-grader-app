@@ -22,8 +22,8 @@ const FEATURES = [
 const CARD_STYLES = `
   .premium-depth-card {
     background: linear-gradient(145deg, #162C6D 0%, #0A101D 100%);
-    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 20px 40px -20px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.8);
-    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 40px 100px -20px rgba(10,16,29,0.95), 0 20px 40px -20px rgba(10,16,29,0.85), inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(10,16,29,0.8);
+    border: 1px solid rgba(255,255,255,0.06);
   }
   .card-sheen {
     position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 50;
@@ -32,8 +32,12 @@ const CARD_STYLES = `
   }
   .feature-card-depth {
     background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.08), inset 0 -1px 1px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 15px 30px rgba(10,16,29,0.5), inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -1px 1px rgba(10,16,29,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: border-color 200ms cubic-bezier(0.23,1,0.32,1), background-color 200ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .feature-card-depth:hover {
+    border-color: rgba(255,255,255,0.14);
   }
 `;
 
@@ -46,19 +50,23 @@ function FeatureCard({
   index: number;
   smoothProgress: ReturnType<typeof useSpring>;
 }) {
-  const start = 0.4 + index * 0.03;
-  const end = start + 0.12;
+  const start = 0.4 + index * 0.025;
+  const end = start + 0.1;
   const featureOpacity = useTransform(smoothProgress, [start, end, 0.7, 0.78], [0, 1, 1, 0]);
-  const featureY = useTransform(smoothProgress, [start, end], [40, 0]);
-  const featureScale = useTransform(smoothProgress, [start, end], [0.9, 1]);
+  const featureY = useTransform(smoothProgress, [start, end], [30, 0]);
+  const featureScale = useTransform(smoothProgress, [start, end], [0.95, 1]);
+  const featureTransform = useTransform(
+    [featureY, featureScale] as const,
+    ([y, s]: number[]) => `translateY(${y}px) scale(${s})`
+  );
 
   const Icon = feature.icon;
 
   return (
-    <motion.div style={{ opacity: featureOpacity, y: featureY, scale: featureScale }}>
+    <motion.div style={{ opacity: featureOpacity, transform: featureTransform }}>
       <Link
         href={feature.href}
-        className="feature-card-depth block rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] group"
+        className="feature-card-depth block rounded-2xl p-4 sm:p-5 transition-[transform,background-color] duration-200 hover:-translate-y-1 hover:bg-white/[0.08] group"
       >
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
@@ -92,8 +100,8 @@ export default function LandingPage() {
     offset: ["start start", "end end"],
   });
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 120,
+    damping: 28,
     restDelta: 0.001,
   });
 
@@ -106,7 +114,7 @@ export default function LandingPage() {
 
   // Phase 2+6: Card rises and exits
   const cardY = useTransform(smoothProgress, [0, 0.05, 0.3, 0.85, 1], ["110%", "110%", "0%", "0%", "-110%"]);
-  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.75, 0.85], [0.85, 0.85, 1, 1, 0.85]);
+  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.75, 0.85], [0.92, 0.92, 1, 1, 0.92]);
   const cardRadius = useTransform(smoothProgress, [0.25, 0.4, 0.75, 0.85], [40, 0, 0, 40]);
 
   // Phase 5: Card content
@@ -115,8 +123,8 @@ export default function LandingPage() {
 
   // Phase 6: CTA
   const ctaOpacity = useTransform(smoothProgress, [0.78, 0.88], [0, 1]);
-  const ctaScale = useTransform(smoothProgress, [0.78, 0.88], [0.8, 1]);
-  const ctaBlur = useTransform(smoothProgress, [0.78, 0.88], [30, 0]);
+  const ctaScale = useTransform(smoothProgress, [0.78, 0.88], [0.95, 1]);
+  const ctaBlur = useTransform(smoothProgress, [0.78, 0.88], [12, 0]);
   const ctaBlurFilter = useTransform(ctaBlur, (v) => `blur(${v}px)`);
   const ctaPointerEvents = useTransform(ctaOpacity, (v) => (v > 0.5 ? "auto" : "none"));
 
@@ -226,15 +234,21 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
             <Link
               href="/essay"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-zinc-950 transition-all hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.98]"
+              className="group inline-flex items-center gap-3 rounded-full bg-white pl-6 sm:pl-8 pr-1.5 py-1.5 text-sm font-semibold text-zinc-950 transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] hover:bg-zinc-100 active:scale-[0.97]"
             >
-              Get Started <ArrowRight className="w-4 h-4" />
+              Get Started
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-950/10 transition-[transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
+                <ArrowRight className="w-4 h-4" />
+              </span>
             </Link>
             <Link
               href="/profile"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-6 sm:pl-8 pr-1.5 py-1.5 text-sm font-semibold text-white transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/10 hover:border-white/15"
             >
-              <User className="w-4 h-4" /> My Profile
+              My Profile
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 transition-[transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
+                <User className="w-4 h-4" />
+              </span>
             </Link>
           </div>
         </motion.div>

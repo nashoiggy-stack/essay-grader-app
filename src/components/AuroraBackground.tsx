@@ -9,7 +9,7 @@ interface AuroraBackgroundProps {
 
 export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({ children }) => {
   return (
-    <div className="relative min-h-screen bg-black text-zinc-200 overflow-hidden">
+    <div className="relative min-h-screen bg-[#06060f] text-zinc-200 overflow-hidden">
       {/* WebGL shader background */}
       <div className="fixed inset-0 pointer-events-none">
         <WebGLShader />

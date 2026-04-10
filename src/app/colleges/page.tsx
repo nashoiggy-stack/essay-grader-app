@@ -22,7 +22,7 @@ export default function CollegesPage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
           className="mb-10 text-center"

@@ -200,7 +200,7 @@ export function CollegeMap({ college, className }: CollegeMapProps) {
     <div className={`relative overflow-hidden rounded-2xl border border-white/[0.06] ${className ?? ""}`}>
       <div ref={containerRef} className="w-full h-full min-h-[250px]" />
       {loaded && (
-        <div className="absolute bottom-3 left-3 z-10 rounded-lg bg-black/70 backdrop-blur-sm px-3 py-1.5 text-xs text-zinc-300">
+        <div className="absolute bottom-3 left-3 z-10 rounded-lg bg-[#06060f]/85 backdrop-blur-md ring-1 ring-white/[0.08] px-3 py-1.5 text-xs text-zinc-300">
           {college.name} &middot; {college.state}
         </div>
       )}

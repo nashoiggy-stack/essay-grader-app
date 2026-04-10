@@ -57,9 +57,9 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
       {/* Toggle button (always visible) */}
       <motion.button
         onClick={onToggle}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed right-4 top-20 z-40 rounded-xl bg-[#12121f] border border-white/[0.08] px-3 py-2.5 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:border-white/[0.15] transition-all shadow-lg shadow-black/40 flex items-center gap-2"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
+        className="fixed right-4 top-20 z-40 rounded-xl bg-[#12121f] border border-white/[0.08] px-3 py-2.5 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:border-white/[0.15] transition-[background-color,color,border-color] duration-200 shadow-lg shadow-black/40 flex items-center gap-2"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
@@ -79,7 +79,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onToggle}
-            className="fixed inset-0 z-40 bg-black/40"
+            className="fixed inset-0 z-40 bg-[#06060f]/60 backdrop-blur-sm"
           />
         )}
       </AnimatePresence>

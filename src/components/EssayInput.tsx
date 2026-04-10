@@ -12,6 +12,8 @@ interface EssayInputProps {
   readonly wordCount: number;
   readonly loading: boolean;
   readonly error: string;
+  readonly errorCode?: string | null;
+  readonly canRetry?: boolean;
   readonly fileInputRef: React.RefObject<HTMLInputElement | null>;
   readonly onTextChange: (value: string) => void;
   readonly onDrop: (e: React.DragEvent) => void;
@@ -20,13 +22,14 @@ interface EssayInputProps {
   readonly onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readonly onOpenFilePicker: () => void;
   readonly onGrade: () => void;
+  readonly onRetry?: () => void;
   readonly onClear: () => void;
 }
 
 export const EssayInput: React.FC<EssayInputProps> = ({
-  essayText, file, dragging, wordCount, loading, error,
+  essayText, file, dragging, wordCount, loading, error, errorCode, canRetry,
   fileInputRef, onTextChange, onDrop, onDragOver, onDragLeave,
-  onFileChange, onOpenFilePicker, onGrade, onClear,
+  onFileChange, onOpenFilePicker, onGrade, onRetry, onClear,
 }) => {
   const { min, max } = APP_CONFIG.idealWordRange;
   const inRange = wordCount >= min && wordCount <= max;
@@ -54,7 +57,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-all min-h-[60vh]"
+        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
@@ -63,7 +66,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Drop zone */}
       <motion.div
-        className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-all cursor-pointer ${
+        className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer ${
           dragging ? "border-blue-500 bg-blue-500/10" : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
         }`}
         onDragOver={onDragOver}
@@ -94,8 +97,8 @@ export const EssayInput: React.FC<EssayInputProps> = ({
         <motion.button
           onClick={onGrade}
           disabled={loading}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           className="relative rounded-xl bg-blue-600 px-7 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
         >
           <motion.span
@@ -111,7 +114,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
         </motion.button>
         <button
           onClick={onClear}
-          className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-all"
+          className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-[border-color,box-shadow,background-color,color] duration-200"
         >
           Clear
         </button>
@@ -143,7 +146,27 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             exit={{ opacity: 0 }}
             className="mt-5 rounded-xl border border-red-500/20 bg-red-500/5 p-4"
           >
-            <p className="text-sm text-red-400">{error}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-red-300">{error}</p>
+                {errorCode && errorCode !== "EMPTY_INPUT" && (
+                  <p className="mt-1 text-[10px] text-red-400/60 font-mono tabular-nums">
+                    Error: {errorCode}
+                  </p>
+                )}
+              </div>
+              {canRetry && onRetry && (
+                <button
+                  onClick={onRetry}
+                  className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 px-3 py-1.5 text-xs font-semibold transition-[background-color] duration-200"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.87"/>
+                  </svg>
+                  Try again
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -28,7 +28,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
         </h3>
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-white/10 transition-all"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-white/10 transition-[background-color,color,border-color,opacity] duration-200"
         >
           <Plus className="w-3.5 h-3.5" />
           Add Activity
@@ -40,7 +40,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
           <p className="text-zinc-500 text-sm mb-3">No activities yet</p>
           <button
             onClick={onAdd}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 transition-all"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 transition-[background-color,color,border-color,opacity] duration-200"
           >
             <Plus className="w-4 h-4" />
             Describe Your First Activity
@@ -58,7 +58,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
               key={conv.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`group relative rounded-xl border p-3 cursor-pointer transition-all ${
+              className={`group relative rounded-xl border p-3 cursor-pointer transition-[background-color,color,border-color,opacity] duration-200 ${
                 isActive
                   ? "border-white/20 bg-white/10"
                   : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
@@ -86,7 +86,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); onRemove(conv.id); }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/10 text-zinc-600 hover:text-red-400 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/15 text-zinc-500 hover:text-red-300 transition-[background-color,color,border-color,opacity] duration-200"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

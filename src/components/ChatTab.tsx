@@ -37,10 +37,10 @@ export const ChatTab: React.FC<ChatTabProps> = ({
             {CHAT_SUGGESTIONS.map((q) => (
               <motion.button
                 key={q}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => onInputChange(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-[#0c0c1a]/90 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 transition-all"
+                className="text-xs px-3 py-1.5 rounded-full bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
               >
                 {q}
               </motion.button>
@@ -75,7 +75,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
     {/* Input */}
     <div className="flex gap-2">
       <textarea
-        className="flex-1 rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all"
+        className="flex-1 rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-3 text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
         rows={2}
         placeholder="Ask anything about your essay..."
         value={input}
@@ -87,9 +87,9 @@ export const ChatTab: React.FC<ChatTabProps> = ({
       <motion.button
         onClick={onSend}
         disabled={loading || !input.trim()}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="self-end rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
+        className="self-end rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
       >
         Send
       </motion.button>

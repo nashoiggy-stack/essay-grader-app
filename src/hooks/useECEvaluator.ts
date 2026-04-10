@@ -27,6 +27,7 @@ export function useECEvaluator() {
   const [evaluating, setEvaluating] = useState(false);
   const [evalError, setEvalError] = useState("");
   const [result, setResult] = useState<ProfileEvaluation | null>(null);
+  const [saveFlash, setSaveFlash] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Load saved activities from localStorage
@@ -76,6 +77,13 @@ export function useECEvaluator() {
       prev.map((c) => (c.id === id ? { ...c, done: true } : c))
     );
     setActiveConvId(null);
+  }, []);
+
+  const reopenActivity = useCallback((id: string) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, done: false } : c))
+    );
+    setActiveConvId(id);
   }, []);
 
   const sendMessage = useCallback(async () => {
@@ -175,6 +183,20 @@ export function useECEvaluator() {
     }
   }, [conversations]);
 
+  const saveAll = useCallback(() => {
+    try {
+      localStorage.setItem(EC_ACTIVITIES_KEY, JSON.stringify(conversations));
+      if (result) {
+        localStorage.setItem(EC_STORAGE_KEY, JSON.stringify(result));
+      }
+      setSaveFlash(true);
+      setTimeout(() => setSaveFlash(false), 1500);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [conversations, result]);
+
   const resetAll = useCallback(() => {
     setConversations([]);
     setActiveConvId(null);
@@ -197,12 +219,15 @@ export function useECEvaluator() {
     evalError,
     result,
     doneCount,
+    saveFlash,
+    saveAll,
     chatEndRef,
     setChatInput,
     startNewActivity,
     selectActivity,
     removeActivity,
     markDone,
+    reopenActivity,
     sendMessage,
     evaluate,
     resetAll,

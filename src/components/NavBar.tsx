@@ -15,166 +15,201 @@ const NAV_ITEMS = [
   { href: "/chances", label: "Chances" },
 ] as const;
 
+const SPRING = { type: "spring" as const, stiffness: 350, damping: 30 };
+const EASE_EXPO = [0.32, 0.72, 0, 1] as const;
+
 export const NavBar: React.FC = () => {
   const pathname = usePathname();
   const { user, guest, signOut } = useAuthContext();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#06060f]/70 border-b border-white/[0.06]">
-      <div className="mx-auto max-w-5xl px-4 flex items-center justify-between h-14">
-        {/* Home button */}
-        <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <AdmitEdgeLogo size={28} className="group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.4)] transition-[filter]" />
-          <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-colors">
-            AdmitEdge
-          </span>
-        </Link>
-
-        {/* Desktop tabs */}
-        <div className="hidden md:flex items-center gap-1 bg-[#0c0c1a]/90 rounded-lg p-1 ring-1 ring-white/[0.06]">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative px-3 lg:px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-active"
-                    className="absolute inset-0 rounded-md bg-white/[0.08] ring-1 ring-white/[0.1]"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Right side: profile + user + hamburger */}
-        <div className="flex items-center gap-2">
-          {/* Profile link */}
-          <Link
-            href="/profile"
-            className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-all ${
-              pathname === "/profile"
-                ? "text-blue-400 bg-blue-500/10"
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.05]"
-            }`}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-            Profile
-          </Link>
-
-          {user ? (
-            <>
-              <span className="text-xs text-zinc-500 hidden lg:block truncate max-w-[140px]">
-                {user.email}
+    <>
+      {/* ── Floating pill nav ─────────────────────────────────── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-4xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
+          <div className="px-4 lg:px-5 flex items-center justify-between h-12">
+            {/* Home button */}
+            <Link href="/" className="flex items-center gap-2 shrink-0 group">
+              <AdmitEdgeLogo size={24} className="group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.4)] transition-[filter] duration-300" />
+              <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-[color] duration-200">
+                AdmitEdge
               </span>
-              <button
-                onClick={signOut}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
-              >
-                Sign out
-              </button>
-            </>
-          ) : guest ? (
-            <>
-              <span className="text-xs text-zinc-500 hidden lg:block">Guest</span>
-              <Link
-                href="/"
-                onClick={signOut}
-                className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
-              >
-                Sign in
-              </Link>
-            </>
-          ) : null}
+            </Link>
 
-          {/* Hamburger button (mobile) */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
-            aria-label="Toggle menu"
-          >
-            <motion.span
-              animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
-              className="w-5 h-0.5 bg-zinc-400 block rounded-full origin-center"
-            />
-            <motion.span
-              animate={mobileOpen ? { opacity: 0 } : { opacity: 1 }}
-              className="w-5 h-0.5 bg-zinc-400 block rounded-full"
-            />
-            <motion.span
-              animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
-              className="w-5 h-0.5 bg-zinc-400 block rounded-full origin-center"
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden overflow-hidden border-t border-white/[0.06] bg-[#0a0a14]"
-          >
-            <div className="px-4 py-3 space-y-1">
+            {/* Desktop tabs */}
+            <div className="hidden md:flex items-center gap-0.5">
               {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-blue-500/10 text-blue-400"
-                        : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
+                    className={`relative px-3 lg:px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-[color] duration-200 ${
+                      isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
-                    {item.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-active"
+                        className="absolute inset-0 rounded-full bg-white/[0.08] ring-1 ring-white/[0.1]"
+                        transition={SPRING}
+                      />
+                    )}
+                    <span className="relative z-10">{item.label}</span>
                   </Link>
                 );
               })}
+            </div>
 
+            {/* Right side */}
+            <div className="flex items-center gap-2">
               <Link
                 href="/profile"
-                onClick={() => setMobileOpen(false)}
-                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-[color,background-color] duration-200 ${
                   pathname === "/profile"
-                    ? "bg-blue-500/10 text-blue-400"
-                    : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
+                    ? "text-blue-400 bg-blue-500/10"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.06]"
                 }`}
               >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
                 Profile
               </Link>
 
-              {user && (
-                <div className="pt-2 mt-2 border-t border-white/[0.06]">
-                  <p className="text-xs text-zinc-600 px-3 truncate">{user.email}</p>
+              {user ? (
+                <>
+                  <span className="text-[11px] text-zinc-600 hidden lg:block truncate max-w-[120px]">
+                    {user.email}
+                  </span>
                   <button
-                    onClick={() => { signOut(); setMobileOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200 transition-all"
+                    onClick={signOut}
+                    className="text-[11px] text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block"
                   >
                     Sign out
                   </button>
-                </div>
+                </>
+              ) : guest ? (
+                <>
+                  <span className="text-[11px] text-zinc-600 hidden lg:block">Guest</span>
+                  <Link
+                    href="/"
+                    onClick={signOut}
+                    className="text-[11px] text-blue-400 hover:text-blue-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block"
+                  >
+                    Sign in
+                  </Link>
+                </>
+              ) : null}
+
+              {/* Hamburger */}
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+                aria-label="Toggle menu"
+              >
+                <motion.span
+                  animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.3, ease: EASE_EXPO }}
+                  className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full origin-center"
+                />
+                <motion.span
+                  animate={mobileOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full"
+                />
+                <motion.span
+                  animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.3, ease: EASE_EXPO }}
+                  className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full origin-center"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Fullscreen mobile overlay ──────────────────────────── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE_EXPO }}
+            className="fixed inset-0 z-40 bg-[#06060f]/95 backdrop-blur-2xl md:hidden flex flex-col items-center justify-center"
+          >
+            <div className="flex flex-col items-center gap-2 w-full max-w-xs">
+              {NAV_ITEMS.map((item, i) => {
+                const isActive = pathname === item.href;
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ delay: 0.05 + i * 0.04, duration: 0.4, ease: EASE_EXPO }}
+                    className="w-full"
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`block w-full text-center px-6 py-3.5 rounded-2xl text-base font-medium transition-[color,background-color] duration-200 ${
+                        isActive
+                          ? "bg-white/[0.08] text-white"
+                          : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ delay: 0.05 + NAV_ITEMS.length * 0.04, duration: 0.4, ease: EASE_EXPO }}
+                className="w-full"
+              >
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className={`block w-full text-center px-6 py-3.5 rounded-2xl text-base font-medium transition-[color,background-color] duration-200 ${
+                    pathname === "/profile"
+                      ? "bg-white/[0.08] text-white"
+                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                  }`}
+                >
+                  Profile
+                </Link>
+              </motion.div>
+
+              {user && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.35, duration: 0.3 }}
+                  className="w-full pt-4 mt-4 border-t border-white/[0.06] text-center"
+                >
+                  <p className="text-[11px] text-zinc-600 truncate mb-2">{user.email}</p>
+                  <button
+                    onClick={() => { signOut(); setMobileOpen(false); }}
+                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-[color] duration-200"
+                  >
+                    Sign out
+                  </button>
+                </motion.div>
               )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+
+      {/* Spacer for floating nav */}
+      <div className="h-20" />
+    </>
   );
 };

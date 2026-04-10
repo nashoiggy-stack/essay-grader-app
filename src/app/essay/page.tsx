@@ -112,7 +112,7 @@ export default function Home() {
         onRename={history.rename}
       />
 
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:py-20 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
 
         {/* ── Hero with Scroll Animation ─────────────────────────── */}
         <ContainerScroll
@@ -185,6 +185,8 @@ export default function Home() {
             wordCount={essay.wordCount}
             loading={grading.loading}
             error={grading.error}
+            errorCode={grading.errorCode}
+            canRetry={grading.canRetry}
             fileInputRef={essay.fileInputRef}
             onTextChange={essay.setEssayText}
             onDrop={essay.handleDrop}
@@ -193,6 +195,7 @@ export default function Home() {
             onFileChange={essay.handleFileChange}
             onOpenFilePicker={essay.openFilePicker}
             onGrade={handleGrade}
+            onRetry={grading.retry}
             onClear={handleClear}
           />
         </ScrollReveal>
@@ -214,12 +217,12 @@ export default function Home() {
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
                 <motion.button
                   onClick={handleSave}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                     saveFlash
                       ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                      : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 ring-1 ring-white/[0.06]"
+                      : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
                   }`}
                 >
                   {saveFlash ? (
@@ -243,7 +246,8 @@ export default function Home() {
 
               {/* ── Inline Editor / Suggestions ──────────────────────── */}
               <ScrollReveal delay={0.15}>
-                <div className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06]">
+                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
+                <div className="glass rounded-2xl p-6 sm:p-8">
                   <h3 className="text-lg font-bold text-zinc-200 mb-1">Inline Suggestions</h3>
                   <p className="text-sm text-zinc-500 mb-5">
                     Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
@@ -264,11 +268,13 @@ export default function Home() {
                     essayModified={essayModified}
                   />
                 </div>
+                </div>
               </ScrollReveal>
 
               {/* Tabbed Content */}
               <ScrollReveal delay={0.2}>
-                <div className="glass rounded-2xl overflow-hidden ring-1 ring-white/[0.06]">
+                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
+                <div className="glass rounded-2xl overflow-hidden">
                   <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
                   <div className="p-6 sm:p-8">
@@ -301,6 +307,7 @@ export default function Home() {
                       )}
                     </AnimatePresence>
                   </div>
+                </div>
                 </div>
               </ScrollReveal>
 
