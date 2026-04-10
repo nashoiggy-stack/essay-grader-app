@@ -1,24 +1,91 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { buildECEvaluatePrompt } from "@/lib/ec-prompts";
-import type { ECConversation, ProfileEvaluation } from "@/lib/extracurricular-types";
+import {
+  buildSingleActivityPrompt,
+  buildProfileSynthesisPrompt,
+} from "@/lib/ec-prompts";
+import type {
+  ECConversation,
+  ActivityEvaluation,
+  ProfileEvaluation,
+} from "@/lib/extracurricular-types";
 
-export const maxDuration = 120;
+export const maxDuration = 60;
 export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Each activity in the JSON response consumes roughly 400-500 tokens
-// (name, category, tier, tierExplanation, 4 scores, highlights[], improvements[]).
-// Profile-level fields add another ~1000. Budget generously.
-const TOKENS_PER_ACTIVITY = 600;
-const PROFILE_OVERHEAD_TOKENS = 1500;
-const MIN_TOKENS = 4000;
-const MAX_TOKENS_CAP = 16000;
+const SYSTEM_PROMPT =
+  "You are a college admissions extracurricular evaluator. Return only valid JSON. No markdown fences.";
 
-function computeMaxTokens(activityCount: number): number {
-  const estimated = PROFILE_OVERHEAD_TOKENS + activityCount * TOKENS_PER_ACTIVITY;
-  return Math.min(MAX_TOKENS_CAP, Math.max(MIN_TOKENS, estimated));
+/**
+ * Parse JSON response, stripping markdown fences if present.
+ * Throws on invalid JSON.
+ */
+function parseJsonResponse<T>(raw: string): T {
+  const cleaned = raw.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+  return JSON.parse(cleaned) as T;
+}
+
+/**
+ * Evaluate a single activity. Returns the parsed ActivityEvaluation.
+ */
+async function evaluateActivity(
+  conv: ECConversation
+): Promise<ActivityEvaluation> {
+  const prompt = buildSingleActivityPrompt(conv);
+
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1500,
+    temperature: 0,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const raw =
+    response.content[0].type === "text" ? response.content[0].text : "";
+
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      `Activity "${conv.title}" response truncated. The description may be too long.`
+    );
+  }
+
+  return parseJsonResponse<ActivityEvaluation>(raw);
+}
+
+/**
+ * Synthesize profile-level evaluation from pre-scored activities.
+ */
+async function synthesizeProfile(
+  activities: ActivityEvaluation[]
+): Promise<Omit<ProfileEvaluation, "activities">> {
+  const summaries = activities.map((a) => ({
+    activityName: a.activityName,
+    category: a.category,
+    tier: a.tier,
+    scores: a.scores,
+  }));
+
+  const prompt = buildProfileSynthesisPrompt(summaries);
+
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 2000,
+    temperature: 0,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const raw =
+    response.content[0].type === "text" ? response.content[0].text : "";
+
+  if (response.stop_reason === "max_tokens") {
+    throw new Error("Profile synthesis response truncated.");
+  }
+
+  return parseJsonResponse<Omit<ProfileEvaluation, "activities">>(raw);
 }
 
 export async function POST(req: NextRequest) {
@@ -34,51 +101,64 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const prompt = buildECEvaluatePrompt(conversations);
-    const maxTokens = computeMaxTokens(conversations.length);
+    // Step 1: Evaluate all activities in parallel.
+    // Each call is ~5-15s; running in parallel keeps total latency close
+    // to the slowest single call, not the sum.
+    const activityResults = await Promise.allSettled(
+      conversations.map((conv) => evaluateActivity(conv))
+    );
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: maxTokens,
-      temperature: 0,
-      system: "You are a college admissions extracurricular evaluator. Return only valid JSON. No markdown fences.",
-      messages: [{ role: "user", content: prompt }],
-    });
+    const activities: ActivityEvaluation[] = [];
+    const failures: string[] = [];
 
-    const raw =
-      response.content[0].type === "text" ? response.content[0].text : "";
+    for (let i = 0; i < activityResults.length; i++) {
+      const result = activityResults[i];
+      if (result.status === "fulfilled") {
+        activities.push(result.value);
+      } else {
+        const convTitle = conversations[i].title;
+        const reason =
+          result.reason instanceof Error
+            ? result.reason.message
+            : String(result.reason);
+        console.error(`Activity "${convTitle}" failed:`, reason);
+        failures.push(`"${convTitle}": ${reason.slice(0, 80)}`);
+      }
+    }
 
-    // Warn if we hit the token ceiling — response was likely truncated
-    if (response.stop_reason === "max_tokens") {
-      console.error(
-        `EC Evaluate: response truncated at ${maxTokens} tokens for ${conversations.length} activities. Raw length: ${raw.length}`
-      );
+    // If more than half the activities failed, abort.
+    if (activities.length === 0) {
       return NextResponse.json(
         {
-          error:
-            "Evaluation response was too long. Try evaluating fewer activities at once, or shorten your longest activity descriptions.",
+          error: `All activities failed to evaluate. ${failures[0] ?? "Unknown error."}`,
         },
         { status: 500 }
       );
     }
 
-    // Strip markdown fences if present
-    const cleaned = raw.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
-
-    let result: ProfileEvaluation;
-    try {
-      result = JSON.parse(cleaned);
-    } catch (parseErr) {
-      console.error("EC Evaluate JSON parse error:", parseErr);
-      console.error("Raw response (first 500 chars):", cleaned.slice(0, 500));
-      console.error("Raw response (last 500 chars):", cleaned.slice(-500));
+    if (failures.length > conversations.length / 2) {
       return NextResponse.json(
         {
-          error:
-            "The evaluator returned malformed data. Please try again — this usually resolves on retry.",
+          error: `${failures.length} of ${conversations.length} activities failed. Please try again.`,
         },
         { status: 500 }
       );
+    }
+
+    // Step 2: Synthesize profile-level evaluation from the scored activities.
+    const profile = await synthesizeProfile(activities);
+
+    const result: ProfileEvaluation = {
+      activities,
+      ...profile,
+    };
+
+    // If any activities failed but we succeeded overall, include a warning.
+    if (failures.length > 0) {
+      return NextResponse.json({
+        result,
+        warning: `${failures.length} activit${failures.length === 1 ? "y" : "ies"} could not be evaluated and ${failures.length === 1 ? "was" : "were"} skipped.`,
+      });
     }
 
     return NextResponse.json({ result });
@@ -87,7 +167,7 @@ export async function POST(req: NextRequest) {
     console.error("EC Evaluate error:", message);
     return NextResponse.json(
       {
-        error: `Failed to evaluate activities: ${message.slice(0, 100)}. Please try again.`,
+        error: `Failed to evaluate activities: ${message.slice(0, 120)}. Please try again.`,
       },
       { status: 500 }
     );
