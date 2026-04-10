@@ -83,33 +83,84 @@ function readComputedValues(): ComputedValues {
   return result;
 }
 
+// Tracks which fields the user has manually edited so auto-sync won't stomp them
+const OVERRIDES_KEY = "admitedge-profile-overrides";
+
+interface FieldOverrides {
+  gpaUW?: boolean;
+  gpaW?: boolean;
+  essayCommonApp?: boolean;
+  essayVspice?: boolean;
+  ecBand?: boolean;
+  ecStrength?: boolean;
+  rigor?: boolean;
+}
+
+function readOverrides(): FieldOverrides {
+  try {
+    const raw = localStorage.getItem(OVERRIDES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeOverrides(o: FieldOverrides) {
+  try {
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(o));
+  } catch { /* ignore */ }
+}
+
 export function useProfile() {
   const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE);
   const [computed, setComputed] = useState<ComputedValues | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Load saved profile + computed values
+  // Merge computed values into current profile, respecting overrides
+  const syncFromComputed = useCallback(() => {
+    const computedVals = readComputedValues();
+    const overrides = readOverrides();
+    setComputed(computedVals);
+
+    setProfile((prev) => {
+      // Merge rule: fresh computed values always win UNLESS the user manually
+      // edited that field (tracked in overrides).
+      return {
+        ...prev,
+        gpaUW: overrides.gpaUW ? prev.gpaUW : (computedVals.gpaUW || prev.gpaUW),
+        gpaW: overrides.gpaW ? prev.gpaW : (computedVals.gpaW || prev.gpaW),
+        essayCommonApp: overrides.essayCommonApp ? prev.essayCommonApp : (computedVals.essayCommonApp || prev.essayCommonApp),
+        essayVspice: overrides.essayVspice ? prev.essayVspice : (computedVals.essayVspice || prev.essayVspice),
+        ecBand: overrides.ecBand ? prev.ecBand : (computedVals.ecBand || prev.ecBand),
+        ecStrength: overrides.ecStrength ? prev.ecStrength : computedVals.ecStrength,
+        rigor: overrides.rigor ? prev.rigor : computedVals.rigor,
+      };
+    });
+  }, []);
+
+  // Initial load
   useEffect(() => {
     const computedVals = readComputedValues();
+    const overrides = readOverrides();
     setComputed(computedVals);
 
     try {
       const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (saved) {
         const parsed: UserProfile = JSON.parse(saved);
-        // Merge computed values into empty fields
+        // Merge rule: fresh computed values always overwrite the saved ones
+        // UNLESS the user manually edited that field.
         setProfile({
           ...parsed,
-          gpaUW: parsed.gpaUW || computedVals.gpaUW,
-          gpaW: parsed.gpaW || computedVals.gpaW,
-          essayCommonApp: parsed.essayCommonApp || computedVals.essayCommonApp,
-          essayVspice: parsed.essayVspice || computedVals.essayVspice,
-          ecBand: parsed.ecBand || computedVals.ecBand,
-          ecStrength: parsed.ecStrength === "medium" ? computedVals.ecStrength : parsed.ecStrength,
-          rigor: parsed.rigor === "medium" ? computedVals.rigor : parsed.rigor,
+          gpaUW: overrides.gpaUW ? parsed.gpaUW : (computedVals.gpaUW || parsed.gpaUW),
+          gpaW: overrides.gpaW ? parsed.gpaW : (computedVals.gpaW || parsed.gpaW),
+          essayCommonApp: overrides.essayCommonApp ? parsed.essayCommonApp : (computedVals.essayCommonApp || parsed.essayCommonApp),
+          essayVspice: overrides.essayVspice ? parsed.essayVspice : (computedVals.essayVspice || parsed.essayVspice),
+          ecBand: overrides.ecBand ? parsed.ecBand : (computedVals.ecBand || parsed.ecBand),
+          ecStrength: overrides.ecStrength ? parsed.ecStrength : computedVals.ecStrength,
+          rigor: overrides.rigor ? parsed.rigor : computedVals.rigor,
         });
       } else {
-        // No saved profile — use computed values
         setProfile({
           ...EMPTY_PROFILE,
           gpaUW: computedVals.gpaUW,
@@ -131,6 +182,30 @@ export function useProfile() {
     setLoaded(true);
   }, []);
 
+  // Re-sync when tab regains focus or another tab updates localStorage
+  useEffect(() => {
+    if (!loaded) return;
+
+    const onFocus = () => syncFromComputed();
+    const onStorage = (e: StorageEvent) => {
+      // Only re-sync if a source key changed
+      if (
+        e.key === "gpa-calc-v1" ||
+        e.key === "essay-grader-result" ||
+        e.key === "ec-evaluator-result"
+      ) {
+        syncFromComputed();
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [loaded, syncFromComputed]);
+
   // Save on change
   useEffect(() => {
     if (loaded) {
@@ -140,6 +215,16 @@ export function useProfile() {
 
   const updateField = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
     setProfile((prev) => ({ ...prev, [key]: value }));
+    // Mark auto-synced fields as manually overridden so future auto-syncs
+    // don't overwrite the user's edit.
+    const autoSyncedKeys: Array<keyof FieldOverrides> = [
+      "gpaUW", "gpaW", "essayCommonApp", "essayVspice", "ecBand", "ecStrength", "rigor",
+    ];
+    if (autoSyncedKeys.includes(key as keyof FieldOverrides)) {
+      const overrides = readOverrides();
+      overrides[key as keyof FieldOverrides] = true;
+      writeOverrides(overrides);
+    }
   }, []);
 
   const updateSAT = useCallback((field: keyof SATScores, value: string) => {
@@ -164,6 +249,7 @@ export function useProfile() {
       rigor: fresh.rigor,
     });
     localStorage.removeItem(PROFILE_STORAGE_KEY);
+    localStorage.removeItem(OVERRIDES_KEY);
   }, []);
 
   return { profile, computed, loaded, updateField, updateSAT, updateACT, resetToComputed };
