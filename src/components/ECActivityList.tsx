@@ -86,7 +86,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); onRemove(conv.id); }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/10 text-zinc-600 hover:text-red-400 transition-[background-color,color,border-color,opacity] duration-200"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/15 text-zinc-500 hover:text-red-300 transition-[background-color,color,border-color,opacity] duration-200"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

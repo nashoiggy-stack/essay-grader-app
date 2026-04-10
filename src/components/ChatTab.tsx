@@ -40,7 +40,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onInputChange(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-[#0c0c1a]/90 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
+                className="text-xs px-3 py-1.5 rounded-full bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
               >
                 {q}
               </motion.button>
