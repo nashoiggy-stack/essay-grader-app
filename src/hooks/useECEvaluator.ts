@@ -5,6 +5,7 @@ import type {
   ECConversation,
   ECMessage,
   ProfileEvaluation,
+  ActivityEvaluation,
 } from "@/lib/extracurricular-types";
 import { EC_STORAGE_KEY, EC_ACTIVITIES_KEY } from "@/lib/extracurricular-types";
 
@@ -26,6 +27,7 @@ export function useECEvaluator() {
   const [chatLoading, setChatLoading] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
   const [evalError, setEvalError] = useState("");
+  const [evalProgress, setEvalProgress] = useState<{ done: number; total: number } | null>(null);
   const [result, setResult] = useState<ProfileEvaluation | null>(null);
   const [saveFlash, setSaveFlash] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -159,27 +161,84 @@ export function useECEvaluator() {
 
     setEvaluating(true);
     setEvalError("");
+    setEvalProgress({ done: 0, total: doneConvs.length });
 
     try {
-      const res = await fetch("/api/ec-evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversations: doneConvs }),
+      // Step 1: Evaluate each activity in parallel, updating progress as each completes
+      let completed = 0;
+      const activityPromises = doneConvs.map(async (conv) => {
+        try {
+          const res = await fetch("/api/ec-evaluate-activity", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ conversation: conv }),
+          });
+          const data = await res.json();
+          completed += 1;
+          setEvalProgress({ done: completed, total: doneConvs.length });
+          if (data.error) {
+            return { ok: false as const, title: conv.title, error: data.error };
+          }
+          return { ok: true as const, activity: data.activity as ActivityEvaluation };
+        } catch (e) {
+          completed += 1;
+          setEvalProgress({ done: completed, total: doneConvs.length });
+          return {
+            ok: false as const,
+            title: conv.title,
+            error: e instanceof Error ? e.message : "Network error",
+          };
+        }
       });
 
-      const data = await res.json();
+      const results = await Promise.all(activityPromises);
+      const activities: ActivityEvaluation[] = [];
+      const failures: string[] = [];
+      for (const r of results) {
+        if (r.ok) activities.push(r.activity);
+        else failures.push(`"${r.title}": ${r.error.slice(0, 60)}`);
+      }
 
-      if (data.error) {
-        setEvalError(data.error);
+      if (activities.length === 0) {
+        setEvalError(`All activities failed to evaluate. ${failures[0] ?? ""}`);
         return;
       }
 
-      setResult(data.result);
-      localStorage.setItem(EC_STORAGE_KEY, JSON.stringify(data.result));
-    } catch {
-      setEvalError("Failed to evaluate. Please try again.");
+      if (failures.length > doneConvs.length / 2) {
+        setEvalError(`${failures.length} of ${doneConvs.length} activities failed. Please try again.`);
+        return;
+      }
+
+      // Step 2: Synthesize profile from the scored activities
+      const synthRes = await fetch("/api/ec-synthesize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activities }),
+      });
+      const synthData = await synthRes.json();
+
+      if (synthData.error) {
+        setEvalError(synthData.error);
+        return;
+      }
+
+      setResult(synthData.result);
+      localStorage.setItem(EC_STORAGE_KEY, JSON.stringify(synthData.result));
+
+      if (failures.length > 0) {
+        setEvalError(
+          `Note: ${failures.length} activit${failures.length === 1 ? "y" : "ies"} could not be evaluated and ${failures.length === 1 ? "was" : "were"} skipped.`
+        );
+      }
+    } catch (e) {
+      setEvalError(
+        e instanceof Error
+          ? `Failed to evaluate: ${e.message}`
+          : "Failed to evaluate. Please try again."
+      );
     } finally {
       setEvaluating(false);
+      setEvalProgress(null);
     }
   }, [conversations]);
 
@@ -217,6 +276,7 @@ export function useECEvaluator() {
     chatLoading,
     evaluating,
     evalError,
+    evalProgress,
     result,
     doneCount,
     saveFlash,

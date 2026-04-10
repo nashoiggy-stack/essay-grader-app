@@ -116,7 +116,13 @@ export default function ExtracurricularsPage() {
                 whileTap={{ scale: 0.98 }}
                 className="rounded-full bg-white px-8 py-3 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,color,opacity] duration-200"
               >
-                {ec.evaluating ? "Evaluating..." : `Evaluate ${ec.doneCount} Activit${ec.doneCount === 1 ? "y" : "ies"}`}
+                {ec.evaluating
+                  ? ec.evalProgress
+                    ? ec.evalProgress.done < ec.evalProgress.total
+                      ? `Evaluating ${ec.evalProgress.done}/${ec.evalProgress.total}...`
+                      : "Synthesizing profile..."
+                    : "Evaluating..."
+                  : `Evaluate ${ec.doneCount} Activit${ec.doneCount === 1 ? "y" : "ies"}`}
               </motion.button>
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             </div>
