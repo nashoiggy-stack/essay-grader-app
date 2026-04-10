@@ -54,7 +54,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-all min-h-[60vh]"
+        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
@@ -63,7 +63,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Drop zone */}
       <motion.div
-        className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-all cursor-pointer ${
+        className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer ${
           dragging ? "border-blue-500 bg-blue-500/10" : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
         }`}
         onDragOver={onDragOver}
@@ -94,8 +94,8 @@ export const EssayInput: React.FC<EssayInputProps> = ({
         <motion.button
           onClick={onGrade}
           disabled={loading}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           className="relative rounded-xl bg-blue-600 px-7 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
         >
           <motion.span
@@ -111,7 +111,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
         </motion.button>
         <button
           onClick={onClear}
-          className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-all"
+          className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-[border-color,box-shadow,background-color,color] duration-200"
         >
           Clear
         </button>

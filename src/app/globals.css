@@ -3,6 +3,17 @@
 :root {
   --background: #06060f;
   --foreground: #e4e4e7;
+
+  /* Emil Kowalski easing tokens — stronger than CSS defaults */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Duration tokens */
+  --duration-press: 160ms;
+  --duration-fast: 125ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
 }
 
 @theme inline {
@@ -53,6 +64,36 @@ body {
 
 .animate-pulse-glow {
   animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Button press feedback ──────────────────────────────────── */
+button, [role="button"], a.inline-flex {
+  transition: transform var(--duration-press) var(--ease-out),
+              background-color var(--duration-normal) var(--ease-out),
+              color var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out),
+              opacity var(--duration-normal) var(--ease-out);
+}
+button:active:not(:disabled), [role="button"]:active:not(:disabled), a.inline-flex:active {
+  transform: scale(0.97);
+}
+
+/* ── Hover gate for touch devices ───────────────────────────── */
+@media (hover: none) {
+  .hover\:-translate-y-1:hover { transform: none !important; }
+  .hover\:scale-\[1\.02\]:hover { transform: none !important; }
+  .hover\:bg-white\/\[0\.08\]:hover { background-color: inherit !important; }
 }
 
 /* Scrollbar */

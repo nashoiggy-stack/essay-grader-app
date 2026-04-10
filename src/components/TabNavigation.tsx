@@ -20,7 +20,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
       <button
         key={tab.id}
         onClick={() => onTabChange(tab.id)}
-        className={`relative px-5 py-3.5 text-sm font-medium transition-all whitespace-nowrap ${
+        className={`relative px-5 py-3.5 text-sm font-medium transition-[color] duration-200 whitespace-nowrap ${
           activeTab === tab.id ? "text-blue-400" : "text-zinc-500 hover:text-zinc-300"
         }`}
       >

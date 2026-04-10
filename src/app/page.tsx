@@ -46,19 +46,23 @@ function FeatureCard({
   index: number;
   smoothProgress: ReturnType<typeof useSpring>;
 }) {
-  const start = 0.4 + index * 0.03;
-  const end = start + 0.12;
+  const start = 0.4 + index * 0.025;
+  const end = start + 0.1;
   const featureOpacity = useTransform(smoothProgress, [start, end, 0.7, 0.78], [0, 1, 1, 0]);
-  const featureY = useTransform(smoothProgress, [start, end], [40, 0]);
-  const featureScale = useTransform(smoothProgress, [start, end], [0.9, 1]);
+  const featureY = useTransform(smoothProgress, [start, end], [30, 0]);
+  const featureScale = useTransform(smoothProgress, [start, end], [0.95, 1]);
+  const featureTransform = useTransform(
+    [featureY, featureScale] as const,
+    ([y, s]: number[]) => `translateY(${y}px) scale(${s})`
+  );
 
   const Icon = feature.icon;
 
   return (
-    <motion.div style={{ opacity: featureOpacity, y: featureY, scale: featureScale }}>
+    <motion.div style={{ opacity: featureOpacity, transform: featureTransform }}>
       <Link
         href={feature.href}
-        className="feature-card-depth block rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] group"
+        className="feature-card-depth block rounded-2xl p-4 sm:p-5 transition-[transform,background-color] duration-200 hover:-translate-y-1 hover:bg-white/[0.08] group"
       >
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
@@ -92,8 +96,8 @@ export default function LandingPage() {
     offset: ["start start", "end end"],
   });
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 120,
+    damping: 28,
     restDelta: 0.001,
   });
 
@@ -106,7 +110,7 @@ export default function LandingPage() {
 
   // Phase 2+6: Card rises and exits
   const cardY = useTransform(smoothProgress, [0, 0.05, 0.3, 0.85, 1], ["110%", "110%", "0%", "0%", "-110%"]);
-  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.75, 0.85], [0.85, 0.85, 1, 1, 0.85]);
+  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.75, 0.85], [0.92, 0.92, 1, 1, 0.92]);
   const cardRadius = useTransform(smoothProgress, [0.25, 0.4, 0.75, 0.85], [40, 0, 0, 40]);
 
   // Phase 5: Card content
@@ -115,8 +119,8 @@ export default function LandingPage() {
 
   // Phase 6: CTA
   const ctaOpacity = useTransform(smoothProgress, [0.78, 0.88], [0, 1]);
-  const ctaScale = useTransform(smoothProgress, [0.78, 0.88], [0.8, 1]);
-  const ctaBlur = useTransform(smoothProgress, [0.78, 0.88], [30, 0]);
+  const ctaScale = useTransform(smoothProgress, [0.78, 0.88], [0.95, 1]);
+  const ctaBlur = useTransform(smoothProgress, [0.78, 0.88], [12, 0]);
   const ctaBlurFilter = useTransform(ctaBlur, (v) => `blur(${v}px)`);
   const ctaPointerEvents = useTransform(ctaOpacity, (v) => (v > 0.5 ? "auto" : "none"));
 
@@ -226,13 +230,13 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
             <Link
               href="/essay"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-zinc-950 transition-all hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-zinc-950 transition-[transform,background-color] duration-200 hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.97]"
             >
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/profile"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-white transition-[background-color] duration-200 hover:bg-white/10"
             >
               <User className="w-4 h-4" /> My Profile
             </Link>

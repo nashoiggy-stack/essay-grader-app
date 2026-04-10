@@ -28,7 +28,7 @@ const ScoreBar = ({ label, value, max }: { label: string; value: number; max: nu
     </div>
     <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
       <div
-        className="h-full rounded-full bg-gradient-to-r from-white/40 to-white/80 transition-all duration-500"
+        className="h-full rounded-full bg-gradient-to-r from-white/40 to-white/80 transition-[width] duration-500"
         style={{ width: `${(value / max) * 100}%` }}
       />
     </div>

@@ -11,7 +11,7 @@ import { AP_SUBJECTS } from "@/lib/ap-scores";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all";
+  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
 
 function SourceBadge({ source }: { source: string }) {
@@ -57,7 +57,7 @@ export default function ProfilePage() {
           <div className="flex justify-end mb-6">
             <button
               onClick={resetToComputed}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-white/[0.06] rounded-lg px-3 py-1.5 hover:bg-white/[0.04] transition-all"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-white/[0.06] rounded-lg px-3 py-1.5 hover:bg-white/[0.04] transition-[background-color,color] duration-200"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.87"/></svg>
               Reset to calculated values

@@ -68,7 +68,7 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
       {/* Input */}
       <div className="mt-4 flex gap-2">
         <textarea
-          className="flex-1 rounded-xl bg-white/[0.03] border border-white/10 p-3 text-sm text-white placeholder-zinc-600 resize-none focus:border-white/20 focus:ring-1 focus:ring-white/10 focus:outline-none transition-all"
+          className="flex-1 rounded-xl bg-white/[0.03] border border-white/10 p-3 text-sm text-white placeholder-zinc-600 resize-none focus:border-white/20 focus:ring-1 focus:ring-white/10 focus:outline-none transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
           rows={2}
           placeholder={isEmpty ? "Describe your activity..." : "Add more detail or answer questions..."}
           value={chatInput}
@@ -82,14 +82,14 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
           <button
             onClick={onSend}
             disabled={!chatInput.trim() || chatLoading || conversation.done}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
           >
             Send
           </button>
           {conversation.messages.length >= 2 && !conversation.done && (
             <button
               onClick={onDone}
-              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-white/10 transition-all"
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-white/10 transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
             >
               Done
             </button>

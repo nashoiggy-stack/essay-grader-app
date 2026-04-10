@@ -39,7 +39,7 @@ export const NavBar: React.FC = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative px-3 lg:px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`relative px-3 lg:px-4 py-1.5 text-sm font-medium rounded-md transition-[color] duration-200 ${
                   isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
@@ -61,7 +61,7 @@ export const NavBar: React.FC = () => {
           {/* Profile link */}
           <Link
             href="/profile"
-            className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-all ${
+            className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-[color,background-color,opacity] ${
               pathname === "/profile"
                 ? "text-blue-400 bg-blue-500/10"
                 : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.05]"
@@ -80,7 +80,7 @@ export const NavBar: React.FC = () => {
               </span>
               <button
                 onClick={signOut}
-                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
+                className="text-xs text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-[color,background-color,opacity] hidden sm:block"
               >
                 Sign out
               </button>
@@ -91,7 +91,7 @@ export const NavBar: React.FC = () => {
               <Link
                 href="/"
                 onClick={signOut}
-                className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-all hidden sm:block"
+                className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 rounded-md hover:bg-white/[0.05] transition-[color,background-color,opacity] hidden sm:block"
               >
                 Sign in
               </Link>
@@ -137,7 +137,7 @@ export const NavBar: React.FC = () => {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-[color,background-color,opacity] ${
                       isActive
                         ? "bg-blue-500/10 text-blue-400"
                         : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
@@ -151,7 +151,7 @@ export const NavBar: React.FC = () => {
               <Link
                 href="/profile"
                 onClick={() => setMobileOpen(false)}
-                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-[color,background-color,opacity] ${
                   pathname === "/profile"
                     ? "bg-blue-500/10 text-blue-400"
                     : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200"
@@ -165,7 +165,7 @@ export const NavBar: React.FC = () => {
                   <p className="text-xs text-zinc-600 px-3 truncate">{user.email}</p>
                   <button
                     onClick={() => { signOut(); setMobileOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200 transition-all"
+                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200 transition-[color,background-color,opacity]"
                   >
                     Sign out
                   </button>

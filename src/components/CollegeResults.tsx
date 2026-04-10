@@ -46,7 +46,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedB
           <button
             key={key}
             onClick={() => setSort(key)}
-            className={`text-xs px-3 py-1 rounded-lg transition-all ${
+            className={`text-xs px-3 py-1 rounded-lg transition-[background-color,color,box-shadow] duration-200 ${
               sort === key
                 ? "bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
                 : "bg-[#0c0c1a]/90 text-zinc-500 hover:text-zinc-300"

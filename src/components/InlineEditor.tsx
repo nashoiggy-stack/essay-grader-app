@@ -128,7 +128,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                   <button
                     key={cat}
                     onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions(cat); }}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-[background-color,color,opacity,box-shadow] duration-200 ${
                       activeFocus === cat
                         ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
                         : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
@@ -145,7 +145,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                   <button
                     key={cat}
                     onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions(cat); }}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-[background-color,color,opacity,box-shadow] duration-200 ${
                       activeFocus === cat
                         ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
                         : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
@@ -160,7 +160,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => { setShowPicker(false); setActiveSuggestion(null); onFetchSuggestions("Lower Word Count"); }}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-[background-color,color,opacity,box-shadow] duration-200 ${
                     activeFocus === "Lower Word Count"
                       ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/30"
                       : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
@@ -209,7 +209,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
               <span
                 key={i}
                 onClick={() => setActiveSuggestion(isActive ? null : part.suggestionIndex)}
-                className={`${colors.bg} border-b-2 ${colors.border} cursor-pointer transition-all hover:opacity-80 ${
+                className={`${colors.bg} border-b-2 ${colors.border} cursor-pointer transition-[background-color,color,opacity,box-shadow] duration-200 hover:opacity-80 ${
                   s.type === "cut" ? "line-through decoration-red-500/50" : ""
                 } ${isActive ? "ring-1 ring-offset-1 ring-offset-transparent " + colors.border : ""}`}
               >

@@ -214,9 +214,9 @@ export default function Home() {
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
                 <motion.button
                   onClick={handleSave}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                     saveFlash
                       ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
                       : "bg-[#0c0c1a]/90 text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400 ring-1 ring-white/[0.06]"
