@@ -12,6 +12,8 @@ interface EssayInputProps {
   readonly wordCount: number;
   readonly loading: boolean;
   readonly error: string;
+  readonly errorCode?: string | null;
+  readonly canRetry?: boolean;
   readonly fileInputRef: React.RefObject<HTMLInputElement | null>;
   readonly onTextChange: (value: string) => void;
   readonly onDrop: (e: React.DragEvent) => void;
@@ -20,13 +22,14 @@ interface EssayInputProps {
   readonly onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readonly onOpenFilePicker: () => void;
   readonly onGrade: () => void;
+  readonly onRetry?: () => void;
   readonly onClear: () => void;
 }
 
 export const EssayInput: React.FC<EssayInputProps> = ({
-  essayText, file, dragging, wordCount, loading, error,
+  essayText, file, dragging, wordCount, loading, error, errorCode, canRetry,
   fileInputRef, onTextChange, onDrop, onDragOver, onDragLeave,
-  onFileChange, onOpenFilePicker, onGrade, onClear,
+  onFileChange, onOpenFilePicker, onGrade, onRetry, onClear,
 }) => {
   const { min, max } = APP_CONFIG.idealWordRange;
   const inRange = wordCount >= min && wordCount <= max;
@@ -143,7 +146,27 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             exit={{ opacity: 0 }}
             className="mt-5 rounded-xl border border-red-500/20 bg-red-500/5 p-4"
           >
-            <p className="text-sm text-red-400">{error}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-red-300">{error}</p>
+                {errorCode && errorCode !== "EMPTY_INPUT" && (
+                  <p className="mt-1 text-[10px] text-red-400/60 font-mono tabular-nums">
+                    Error: {errorCode}
+                  </p>
+                )}
+              </div>
+              {canRetry && onRetry && (
+                <button
+                  onClick={onRetry}
+                  className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 px-3 py-1.5 text-xs font-semibold transition-[background-color] duration-200"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.87"/>
+                  </svg>
+                  Try again
+                </button>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -185,6 +185,8 @@ export default function Home() {
             wordCount={essay.wordCount}
             loading={grading.loading}
             error={grading.error}
+            errorCode={grading.errorCode}
+            canRetry={grading.canRetry}
             fileInputRef={essay.fileInputRef}
             onTextChange={essay.setEssayText}
             onDrop={essay.handleDrop}
@@ -193,6 +195,7 @@ export default function Home() {
             onFileChange={essay.handleFileChange}
             onOpenFilePicker={essay.openFilePicker}
             onGrade={handleGrade}
+            onRetry={grading.retry}
             onClear={handleClear}
           />
         </ScrollReveal>
