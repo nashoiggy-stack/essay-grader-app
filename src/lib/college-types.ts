@@ -58,6 +58,8 @@ export interface CollegeFilters {
   essayVspice: string; // 0-4
 }
 
+export type ECBandInput = "" | "limited" | "developing" | "solid" | "strong" | "exceptional";
+
 export interface ChanceInputs {
   gpaUW: string;
   gpaW: string;
@@ -67,7 +69,7 @@ export interface ChanceInputs {
   apScores: { subject: string; score: 1 | 2 | 3 | 4 | 5 }[]; // optional AP exam scores
   rigor: "low" | "medium" | "high";
   major: string;
-  ecStrength: "low" | "medium" | "high";
+  ecBand: ECBandInput; // 5-band scale from EC Evaluator
   essayCommonApp: string; // 0-100
   essayVspice: string; // 0-4 (composite)
   collegeIndex: number | null;
@@ -100,7 +102,7 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   apScores: [],
   rigor: "medium",
   major: "",
-  ecStrength: "medium",
+  ecBand: "",
   essayCommonApp: "",
   essayVspice: "",
   collegeIndex: null,

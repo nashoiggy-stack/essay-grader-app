@@ -27,7 +27,7 @@ export function useChanceCalculator() {
         rigor: prev.rigor === "medium" && p.rigor ? p.rigor : prev.rigor,
         essayCommonApp: prev.essayCommonApp || p.essayCommonApp || "",
         essayVspice: prev.essayVspice || p.essayVspice || "",
-        ecStrength: prev.ecStrength === "medium" && p.ecStrength ? p.ecStrength : prev.ecStrength,
+        ecBand: prev.ecBand || p.ecBand || "",
         // Compute SAT/ACT composites from section scores
         sat: prev.sat || (p.sat?.readingWriting && p.sat?.math
           ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
@@ -122,8 +122,20 @@ export function useChanceCalculator() {
     if (inputs.rigor === "high") { score += 5; strengths.push("Strong course rigor signals academic readiness"); }
     else if (inputs.rigor === "low") { score -= 5; weaknesses.push("Consider taking more challenging courses"); }
 
-    if (inputs.ecStrength === "high") { score += 7; strengths.push("Strong extracurriculars strengthen your application"); }
-    else if (inputs.ecStrength === "low") { score -= 4; weaknesses.push("Deeper extracurricular involvement would help"); }
+    // ── EC band (5-level scale from EC Evaluator) ──
+    // Gradient: exceptional = best boost, limited = penalty. Unset = neutral.
+    const EC_BAND_ADJUSTMENT: Record<string, { delta: number; label: string }> = {
+      exceptional: { delta: 10, label: "Exceptional extracurriculars are a major strength" },
+      strong: { delta: 6, label: "Strong extracurriculars strengthen your application" },
+      solid: { delta: 2, label: "Solid extracurricular profile meets expectations" },
+      developing: { delta: -3, label: "Developing extracurriculars — deeper involvement would help" },
+      limited: { delta: -6, label: "Limited extracurriculars — consider building a meaningful commitment" },
+    };
+    if (inputs.ecBand && EC_BAND_ADJUSTMENT[inputs.ecBand]) {
+      const ec = EC_BAND_ADJUSTMENT[inputs.ecBand];
+      score += ec.delta;
+      (ec.delta >= 0 ? strengths : weaknesses).push(ec.label);
+    }
 
     // ── Essay scores (real numbers from grader) ──
     const essayCA = inputs.essayCommonApp ? parseFloat(inputs.essayCommonApp) : null;

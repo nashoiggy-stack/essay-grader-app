@@ -329,31 +329,23 @@ export default function ProfilePage() {
               <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Extracurriculars</h2>
               {computed?.ecBand && <SourceBadge source="EC Evaluator" />}
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>EC Band</label>
-                <div className={`${inputClass} flex items-center`}>
-                  {profile.ecBand ? (
-                    <span className="text-zinc-200 capitalize">
-                      {(EC_BAND_LABELS as Record<string, string>)[profile.ecBand] ?? profile.ecBand}
-                    </span>
-                  ) : (
-                    <span className="text-zinc-600">Not evaluated yet</span>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className={labelClass}>EC Strength</label>
-                <select
-                  value={profile.ecStrength}
-                  onChange={(e) => updateField("ecStrength", e.target.value as "low" | "medium" | "high")}
-                  className={`${inputClass} appearance-none cursor-pointer`}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
+            <div>
+              <label className={labelClass}>EC Band</label>
+              <select
+                value={profile.ecBand}
+                onChange={(e) => updateField("ecBand", e.target.value)}
+                className={`${inputClass} appearance-none cursor-pointer`}
+              >
+                <option value="">Not evaluated yet</option>
+                <option value="limited">Limited — few or inactive</option>
+                <option value="developing">Developing — building depth</option>
+                <option value="solid">Solid — active + some leadership</option>
+                <option value="strong">Strong — clear theme + impact</option>
+                <option value="exceptional">Exceptional — national/major impact</option>
+              </select>
+              <p className="mt-1.5 text-[10px] text-zinc-500">
+                Auto-fills from EC Evaluator. You can also set this manually.
+              </p>
             </div>
           </div>
         </ScrollReveal>

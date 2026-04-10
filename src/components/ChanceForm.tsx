@@ -113,13 +113,17 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         </select>
       </div>
       <div>
-        <label className={labelClass}>Extracurricular Strength</label>
-        <select className={selectClass} value={inputs.ecStrength}
-          onChange={(e) => onUpdate("ecStrength", e.target.value as ChanceInputs["ecStrength"])}>
-          <option value="low">Low — few activities</option>
-          <option value="medium">Medium — active involvement</option>
-          <option value="high">High — leadership &amp; impact</option>
+        <label className={labelClass}>Extracurricular Band</label>
+        <select className={selectClass} value={inputs.ecBand}
+          onChange={(e) => onUpdate("ecBand", e.target.value as ChanceInputs["ecBand"])}>
+          <option value="">Not set</option>
+          <option value="limited">Limited — few or inactive</option>
+          <option value="developing">Developing — building depth</option>
+          <option value="solid">Solid — active + some leadership</option>
+          <option value="strong">Strong — clear theme + impact</option>
+          <option value="exceptional">Exceptional — national/major impact</option>
         </select>
+        <p className="mt-1 text-[10px] text-zinc-500">Auto-fills from EC Evaluator.</p>
       </div>
       <div>
         <label className={labelClass}>Common App Score (0-100)</label>
