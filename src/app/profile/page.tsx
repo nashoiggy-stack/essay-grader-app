@@ -41,7 +41,7 @@ export default function ProfilePage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">

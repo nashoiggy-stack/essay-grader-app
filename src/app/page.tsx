@@ -234,15 +234,21 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
             <Link
               href="/essay"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-zinc-950 transition-[transform,background-color] duration-200 hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.97]"
+              className="group inline-flex items-center gap-3 rounded-full bg-white pl-6 sm:pl-8 pr-1.5 py-1.5 text-sm font-semibold text-zinc-950 transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] hover:bg-zinc-100 active:scale-[0.97]"
             >
-              Get Started <ArrowRight className="w-4 h-4" />
+              Get Started
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-950/10 transition-[transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
+                <ArrowRight className="w-4 h-4" />
+              </span>
             </Link>
             <Link
               href="/profile"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold text-white transition-[background-color] duration-200 hover:bg-white/10"
+              className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-6 sm:pl-8 pr-1.5 py-1.5 text-sm font-semibold text-white transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/10 hover:border-white/15"
             >
-              <User className="w-4 h-4" /> My Profile
+              My Profile
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 transition-[transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
+                <User className="w-4 h-4" />
+              </span>
             </Link>
           </div>
         </motion.div>

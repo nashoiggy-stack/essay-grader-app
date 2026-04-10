@@ -13,7 +13,7 @@ export default function ExtracurricularsPage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md mb-6">

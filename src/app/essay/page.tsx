@@ -112,7 +112,7 @@ export default function Home() {
         onRename={history.rename}
       />
 
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:py-20 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
 
         {/* ── Hero with Scroll Animation ─────────────────────────── */}
         <ContainerScroll
@@ -243,7 +243,8 @@ export default function Home() {
 
               {/* ── Inline Editor / Suggestions ──────────────────────── */}
               <ScrollReveal delay={0.15}>
-                <div className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06]">
+                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
+                <div className="glass rounded-2xl p-6 sm:p-8">
                   <h3 className="text-lg font-bold text-zinc-200 mb-1">Inline Suggestions</h3>
                   <p className="text-sm text-zinc-500 mb-5">
                     Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
@@ -264,11 +265,13 @@ export default function Home() {
                     essayModified={essayModified}
                   />
                 </div>
+                </div>
               </ScrollReveal>
 
               {/* Tabbed Content */}
               <ScrollReveal delay={0.2}>
-                <div className="glass rounded-2xl overflow-hidden ring-1 ring-white/[0.06]">
+                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
+                <div className="glass rounded-2xl overflow-hidden">
                   <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
                   <div className="p-6 sm:p-8">
@@ -301,6 +304,7 @@ export default function Home() {
                       )}
                     </AnimatePresence>
                   </div>
+                </div>
                 </div>
               </ScrollReveal>
 
