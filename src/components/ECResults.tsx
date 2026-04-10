@@ -26,6 +26,15 @@ const BAND_STYLES: Record<string, string> = {
   limited: "text-red-400",
 };
 
+// Color tokens per band for the reference chart
+const BAND_CHART_COLORS: Record<string, { fill: string; bg: string; border: string; text: string }> = {
+  limited:     { fill: "from-red-500/80 to-red-600/80",       bg: "bg-red-500/5",     border: "border-red-500/15",     text: "text-red-400" },
+  developing:  { fill: "from-orange-500/80 to-orange-600/80", bg: "bg-orange-500/5",  border: "border-orange-500/15",  text: "text-orange-400" },
+  solid:       { fill: "from-blue-500/80 to-blue-600/80",     bg: "bg-blue-500/5",    border: "border-blue-500/15",    text: "text-blue-400" },
+  strong:      { fill: "from-green-500/80 to-emerald-500/80", bg: "bg-emerald-500/5", border: "border-emerald-500/15", text: "text-green-400" },
+  exceptional: { fill: "from-amber-400/80 to-amber-500/80",   bg: "bg-amber-500/5",   border: "border-amber-500/15",   text: "text-amber-400" },
+};
+
 const ScoreBar = ({ label, value, max }: { label: string; value: number; max: number }) => (
   <div className="space-y-1">
     <div className="flex justify-between text-xs">
@@ -139,6 +148,92 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
             <p className="text-sm text-zinc-300 leading-relaxed">{nextStep}</p>
           </div>
         </div>
+
+        {/* ── Band reference chart ─────────────────────────────── */}
+        <details className="group mb-6 rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-zinc-500 font-medium">Band reference</p>
+              <p className="text-xs text-zinc-400 mt-0.5">See how score ranges map to each band</p>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180 shrink-0">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </summary>
+
+          <div className="px-4 pb-4 pt-1 space-y-2">
+            {BAND_ORDER.map((band, i) => {
+              const range = BAND_RANGES[band];
+              const width = range.max - range.min;
+              const isCurrent = band === result.band;
+              const colors = BAND_CHART_COLORS[band];
+              return (
+                <motion.div
+                  key={band}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + i * 0.05, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                  className={`rounded-lg border px-3 py-2.5 transition-[background-color,border-color] duration-200 ${
+                    isCurrent
+                      ? `${colors.bg} ${colors.border}`
+                      : "border-white/[0.04] hover:border-white/[0.08]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Label */}
+                    <div className="w-20 shrink-0 flex items-center gap-1.5">
+                      <span className={`text-xs font-semibold ${isCurrent ? colors.text : "text-zinc-400"}`}>
+                        {EC_BAND_LABELS[band]}
+                      </span>
+                      {isCurrent && (
+                        <span className="text-[9px] font-mono text-zinc-500">you</span>
+                      )}
+                    </div>
+
+                    {/* Proportional range bar */}
+                    <div className="flex-1 relative h-6 rounded-md bg-white/[0.03] overflow-hidden ring-1 ring-white/[0.04]">
+                      {/* The band's segment, positioned proportionally across 0-100 */}
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: 0.2 + i * 0.05, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+                        style={{
+                          left: `${range.min}%`,
+                          width: `${width}%`,
+                          transformOrigin: "left center",
+                        }}
+                        className={`absolute top-0 bottom-0 rounded-md bg-gradient-to-r ${colors.fill}`}
+                      />
+                      {/* Current score marker */}
+                      {isCurrent && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.9, duration: 0.3 }}
+                          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                          style={{ left: `calc(${score}% - 1px)` }}
+                        >
+                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white" />
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* Range label */}
+                    <div className="w-14 shrink-0 text-right">
+                      <span className={`text-[10px] font-mono tabular-nums ${isCurrent ? "text-zinc-200" : "text-zinc-600"}`}>
+                        {range.min}–{range.max}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            <p className="text-[10px] text-zinc-600 leading-relaxed mt-3 pt-3 border-t border-white/[0.04]">
+              Bands are categorical buckets. The 0–100 score inside each band shows where you land and how close you are to moving up. Your current position is marked.
+            </p>
+          </div>
+        </details>
 
         <p className="text-sm text-zinc-400 leading-relaxed mb-6">{result.bandExplanation}</p>
         <p className="text-sm text-zinc-500 leading-relaxed">{result.consistencyNote}</p>
