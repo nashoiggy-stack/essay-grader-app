@@ -79,7 +79,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onToggle}
-            className="fixed inset-0 z-40 bg-black/40"
+            className="fixed inset-0 z-40 bg-[#06060f]/60 backdrop-blur-sm"
           />
         )}
       </AnimatePresence>
