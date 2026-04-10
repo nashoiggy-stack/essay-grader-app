@@ -6,11 +6,11 @@ import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 
 const CLASS_COLORS = {
-  unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely" },
-  reach: { bg: "bg-orange-500/10", border: "border-orange-500/20", text: "text-orange-400", label: "Reach" },
-  target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target" },
-  likely: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Likely" },
-  safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety" },
+  unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
+  reach: { bg: "bg-orange-500/10", border: "border-orange-500/20", text: "text-orange-400", label: "Reach", ring: "ring-orange-500/25" },
+  target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target", ring: "ring-amber-500/25" },
+  likely: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Likely", ring: "ring-blue-500/25" },
+  safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety", ring: "ring-emerald-500/25" },
 } as const;
 
 // Map EC spike categories to college tags for matching
@@ -59,50 +59,77 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className={`rounded-xl bg-[#12121f] border ${colors.border} p-4 hover:bg-[#16162a] transition-colors`}
+      transition={{ delay: index * 0.03, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      className={`group rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.12] transition-[background-color,border-color] duration-300`}
     >
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div className="min-w-0">
-          <h4 className="text-sm font-semibold text-zinc-200 truncate">{c.name}</h4>
-          <p className="text-xs text-zinc-500">
+      {/* ── Header: Name + Fit Score dominant ──────────────────── */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.ring}`}>
+              {colors.label}
+            </span>
+            {c.usNewsRank && (
+              <span className="text-[10px] text-zinc-500 font-medium">
+                #{c.usNewsRank} US News
+              </span>
+            )}
+          </div>
+          <h4 className="text-base sm:text-lg font-semibold text-zinc-100 truncate leading-tight">
+            {c.name}
+          </h4>
+          <p className="text-[11px] text-zinc-500 mt-1">
             {c.state} &middot; {c.type === "public" ? "Public" : "Private"} &middot; {c.setting}
-            {c.usNewsRank && <> &middot; <span className="text-blue-400">#{c.usNewsRank} US News</span></>}
           </p>
         </div>
-        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.border}`}>
-          {colors.label}
-        </span>
+
+        {/* Fit Score — dominant visual anchor */}
+        <div className="shrink-0 text-right">
+          <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Fit</p>
+          <p className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${colors.text}`}>
+            {fitScore}
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 mt-3">
-        <Stat label="Accept Rate" value={`${c.acceptanceRate}%`} />
-        <Stat label="Avg UW GPA" value={c.avgGPAUW.toFixed(2)} />
-        <Stat label="Avg W GPA" value={c.avgGPAW.toFixed(2)} />
-        <Stat label="Fit Score" value={`${fitScore}`} />
+      {/* ── Hairline separator ──────────────────────────────────── */}
+      <div className="h-px bg-white/[0.05] -mx-5 sm:-mx-6 mb-4" />
+
+      {/* ── Stats row: horizontal with generous spacing ─────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3">
+        <MetaStat label="Accept Rate" value={`${c.acceptanceRate}%`} />
+        <MetaStat label="Avg GPA" value={c.avgGPAUW.toFixed(2)} secondary={`${c.avgGPAW.toFixed(2)} W`} />
+        <MetaStat label="SAT" value={`${c.sat25}–${c.sat75}`} />
+        <MetaStat label="ACT" value={`${c.act25}–${c.act75}`} />
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mt-2">
-        <Stat label="SAT Range" value={`${c.sat25}-${c.sat75}`} />
-        <Stat label="ACT Range" value={`${c.act25}-${c.act75}`} />
-      </div>
-
-      <p className="mt-3 text-xs text-zinc-500 leading-relaxed">{reason}</p>
+      {/* ── Reasoning (only if present) ─────────────────────────── */}
+      {reason && (
+        <p className="mt-4 pt-4 border-t border-white/[0.05] text-[12px] text-zinc-400 leading-relaxed">
+          {reason}
+        </p>
+      )}
 
       {spikeMatch && (
-        <p className="mt-2 text-[10px] text-blue-400/80 flex items-center gap-1">
-          <span>⭐</span> Your {spikeMatch} profile aligns with this school
+        <p className="mt-2 text-[11px] text-blue-400/80 flex items-center gap-1.5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Your {spikeMatch} profile aligns with this school
         </p>
       )}
     </motion.div>
   );
 };
 
-function Stat({ label, value }: { label: string; value: string }) {
+function MetaStat({ label, value, secondary }: { label: string; value: string; secondary?: string }) {
   return (
     <div>
-      <p className="text-[10px] text-zinc-600 uppercase tracking-wider">{label}</p>
-      <p className="text-sm font-mono text-zinc-300">{value}</p>
+      <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-1">{label}</p>
+      <p className="text-sm font-mono tabular-nums text-zinc-200">{value}</p>
+      {secondary && (
+        <p className="text-[10px] font-mono tabular-nums text-zinc-500 mt-0.5">{secondary}</p>
+      )}
     </div>
   );
 }
