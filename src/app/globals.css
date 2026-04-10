@@ -98,12 +98,9 @@ body::after {
   border-radius: var(--radius, 1rem);
 }
 
-/* Gradient text */
+/* Display headline — solid white, let the display font do the work */
 .text-gradient {
-  background: linear-gradient(135deg, #bfdbfe 0%, #60a5fa 30%, #3b82f6 60%, #2563eb 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
 }
 
 /* Shimmer loading */

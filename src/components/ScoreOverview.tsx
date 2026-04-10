@@ -10,7 +10,7 @@ interface ScoreOverviewProps {
 }
 
 export const ScoreOverview: React.FC<ScoreOverviewProps> = ({ result }) => (
-  <Card3D className="glass rounded-2xl p-8" glowColor="rgba(16, 185, 129, 0.1)">
+  <Card3D className="glass rounded-2xl p-8" glowColor="rgba(255, 255, 255, 0.04)">
     <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
       <AnimatedScore
         value={result.wordCount}
