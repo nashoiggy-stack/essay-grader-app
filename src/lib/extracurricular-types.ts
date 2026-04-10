@@ -10,6 +10,7 @@ export interface ECConversation {
   readonly messages: ECMessage[];
   readonly done: boolean;
   readonly title: string; // derived from first user message
+  readonly disabled?: boolean; // excluded from evaluation but not deleted
 }
 
 // ── Evaluation Results ──────────────────────────────────────────────────────

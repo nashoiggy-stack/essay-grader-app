@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Plus, Trash2, MessageSquare, Check } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Check, EyeOff, Eye } from "lucide-react";
 import type { ECConversation } from "@/lib/extracurricular-types";
 
 interface ECActivityListProps {
@@ -11,6 +11,7 @@ interface ECActivityListProps {
   readonly onSelect: (id: string) => void;
   readonly onRemove: (id: string) => void;
   readonly onAdd: () => void;
+  readonly onToggleDisabled?: (id: string) => void;
 }
 
 export const ECActivityList: React.FC<ECActivityListProps> = ({
@@ -19,6 +20,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
   onSelect,
   onRemove,
   onAdd,
+  onToggleDisabled,
 }) => {
   return (
     <div className="space-y-3">
@@ -51,6 +53,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
       <div className="space-y-2">
         {conversations.map((conv) => {
           const isActive = conv.id === activeConvId;
+          const isDisabled = !!conv.disabled;
           const msgCount = conv.messages.filter((m) => m.role === "user").length;
 
           return (
@@ -59,7 +62,9 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               className={`group relative rounded-xl border p-3 cursor-pointer transition-[background-color,color,border-color,opacity] duration-200 ${
-                isActive
+                isDisabled
+                  ? "border-white/[0.04] bg-white/[0.01] opacity-50 hover:opacity-70"
+                  : isActive
                   ? "border-white/20 bg-white/10"
                   : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
               }`}
@@ -68,28 +73,47 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    {conv.done ? (
+                    {isDisabled ? (
+                      <EyeOff className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                    ) : conv.done ? (
                       <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />
                     ) : (
                       <MessageSquare className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                     )}
-                    <span className="text-sm font-medium text-white truncate">
+                    <span className={`text-sm font-medium truncate ${isDisabled ? "text-zinc-500 line-through decoration-zinc-700" : "text-white"}`}>
                       {conv.title}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-zinc-500">
                     <span>{msgCount} message{msgCount !== 1 ? "s" : ""}</span>
-                    {conv.done && (
+                    {isDisabled ? (
+                      <span className="text-zinc-600">Excluded from evaluation</span>
+                    ) : conv.done ? (
                       <span className="text-green-400/70">Ready to evaluate</span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onRemove(conv.id); }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/15 text-zinc-500 hover:text-red-300 transition-[background-color,color,border-color,opacity] duration-200"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-[opacity] duration-200">
+                  {onToggleDisabled && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggleDisabled(conv.id); }}
+                      aria-label={isDisabled ? "Re-enable activity" : "Disable activity"}
+                      title={isDisabled ? "Re-enable this activity" : "Disable — keep but skip in evaluation"}
+                      className="p-1 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-[background-color,color] duration-200"
+                    >
+                      {isDisabled
+                        ? <Eye className="w-3.5 h-3.5" />
+                        : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRemove(conv.id); }}
+                    aria-label="Delete activity"
+                    className="p-1 rounded-lg hover:bg-red-500/15 text-zinc-500 hover:text-red-300 transition-[background-color,color] duration-200"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           );

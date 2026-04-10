@@ -88,6 +88,12 @@ export function useECEvaluator() {
     setActiveConvId(id);
   }, []);
 
+  const toggleDisabled = useCallback((id: string) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, disabled: !c.disabled } : c))
+    );
+  }, []);
+
   const sendMessage = useCallback(async () => {
     if (!chatInput.trim() || !activeConvId || chatLoading) return;
 
@@ -156,7 +162,9 @@ export function useECEvaluator() {
   }, [chatInput, activeConvId, chatLoading, conversations]);
 
   const evaluate = useCallback(async () => {
-    const doneConvs = conversations.filter((c) => c.done && c.messages.length > 0);
+    const doneConvs = conversations.filter(
+      (c) => c.done && c.messages.length > 0 && !c.disabled
+    );
     if (doneConvs.length === 0) return;
 
     setEvaluating(true);
@@ -289,7 +297,8 @@ export function useECEvaluator() {
     localStorage.removeItem(EC_STORAGE_KEY);
   }, []);
 
-  const doneCount = conversations.filter((c) => c.done).length;
+  const doneCount = conversations.filter((c) => c.done && !c.disabled).length;
+  const disabledCount = conversations.filter((c) => c.disabled).length;
 
   return {
     conversations,
@@ -302,6 +311,7 @@ export function useECEvaluator() {
     evalProgress,
     result,
     doneCount,
+    disabledCount,
     saveFlash,
     saveAll,
     chatEndRef,
@@ -311,6 +321,7 @@ export function useECEvaluator() {
     removeActivity,
     markDone,
     reopenActivity,
+    toggleDisabled,
     sendMessage,
     evaluate,
     resetAll,

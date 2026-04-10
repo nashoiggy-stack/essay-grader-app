@@ -67,6 +67,7 @@ export default function ExtracurricularsPage() {
                 onSelect={ec.selectActivity}
                 onRemove={ec.removeActivity}
                 onAdd={ec.startNewActivity}
+                onToggleDisabled={ec.toggleDisabled}
               />
             </div>
 
