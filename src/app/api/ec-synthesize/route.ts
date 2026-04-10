@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildProfileSynthesisPrompt } from "@/lib/ec-prompts";
+import { withAnthropicRetry } from "@/lib/anthropic-retry";
 import type {
   ActivityEvaluation,
   ProfileEvaluation,
@@ -41,13 +42,15 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildProfileSynthesisPrompt(summaries);
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 2000,
-      temperature: 0,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const response = await withAnthropicRetry(() =>
+      anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 2000,
+        temperature: 0,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: prompt }],
+      })
+    );
 
     const raw =
       response.content[0].type === "text" ? response.content[0].text : "";

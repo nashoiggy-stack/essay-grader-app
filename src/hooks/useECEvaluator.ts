@@ -209,16 +209,39 @@ export function useECEvaluator() {
         return;
       }
 
-      // Step 2: Synthesize profile from the scored activities
-      const synthRes = await fetch("/api/ec-synthesize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activities }),
-      });
-      const synthData = await synthRes.json();
+      // Step 2: Synthesize profile from the scored activities.
+      // Retry client-side on overload/transient errors so users don't lose
+      // their per-activity progress.
+      let synthData: { result?: ProfileEvaluation; error?: string } | null = null;
+      const synthMaxAttempts = 3;
+      for (let attempt = 0; attempt < synthMaxAttempts; attempt++) {
+        try {
+          const synthRes = await fetch("/api/ec-synthesize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ activities }),
+          });
+          synthData = await synthRes.json();
+          if (!synthData?.error) break;
+          const isOverloaded = /overload|529|503|rate/i.test(synthData.error);
+          if (!isOverloaded || attempt === synthMaxAttempts - 1) break;
+          // Wait before retrying: 1s, 3s
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1) * 2));
+        } catch (e) {
+          if (attempt === synthMaxAttempts - 1) {
+            synthData = { error: e instanceof Error ? e.message : "Network error" };
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1) * 2));
+        }
+      }
 
-      if (synthData.error) {
-        setEvalError(synthData.error);
+      if (!synthData || synthData.error || !synthData.result) {
+        setEvalError(
+          synthData?.error
+            ? `Claude was overloaded — your ${activities.length} activities are scored but the summary failed. Try evaluating again in a moment.`
+            : "Synthesis failed. Please try again."
+        );
         return;
       }
 

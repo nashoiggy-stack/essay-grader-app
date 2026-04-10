@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildSingleActivityPrompt } from "@/lib/ec-prompts";
+import { withAnthropicRetry } from "@/lib/anthropic-retry";
 import type {
   ECConversation,
   ActivityEvaluation,
@@ -34,13 +35,15 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildSingleActivityPrompt(conversation);
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1500,
-      temperature: 0,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const response = await withAnthropicRetry(() =>
+      anthropic.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1500,
+        temperature: 0,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: prompt }],
+      })
+    );
 
     const raw =
       response.content[0].type === "text" ? response.content[0].text : "";
