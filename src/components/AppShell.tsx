@@ -16,7 +16,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <AuthGate>
         <ProfileSync />
         <NavBarWrapper />
-        {children}
+        <div id="main-content">{children}</div>
       </AuthGate>
     </AuthProvider>
   );

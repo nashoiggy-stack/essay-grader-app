@@ -22,8 +22,8 @@ const FEATURES = [
 const CARD_STYLES = `
   .premium-depth-card {
     background: linear-gradient(145deg, #162C6D 0%, #0A101D 100%);
-    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9), 0 20px 40px -20px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.8);
-    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 40px 100px -20px rgba(10,16,29,0.95), 0 20px 40px -20px rgba(10,16,29,0.85), inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(10,16,29,0.8);
+    border: 1px solid rgba(255,255,255,0.06);
   }
   .card-sheen {
     position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 50;
@@ -32,8 +32,12 @@ const CARD_STYLES = `
   }
   .feature-card-depth {
     background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.08), inset 0 -1px 1px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 15px 30px rgba(10,16,29,0.5), inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -1px 1px rgba(10,16,29,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: border-color 200ms cubic-bezier(0.23,1,0.32,1), background-color 200ms cubic-bezier(0.23,1,0.32,1);
+  }
+  .feature-card-depth:hover {
+    border-color: rgba(255,255,255,0.14);
   }
 `;
 
