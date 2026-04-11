@@ -6,7 +6,10 @@ import { GRADING_SYSTEM_PROMPT } from "@/lib/prompts";
 import { ANTHROPIC_MODEL_PREMIUM as ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 import type { GradingResult } from "@/lib/types";
 
-export const maxDuration = 60;
+// Opus 4.6 takes 30-90s on a full 13-criterion grade. Bumping to 300 (Vercel
+// Pro max) gives headroom. The previous 60s cap caused client-side timeouts
+// to surface as "Network error" even when Anthropic was still working.
+export const maxDuration = 300;
 export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

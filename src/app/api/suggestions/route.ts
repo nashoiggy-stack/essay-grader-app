@@ -9,7 +9,9 @@ import {
 // this endpoint to Sonnet — the variable name in the call site stays the same.
 import { ANTHROPIC_MODEL_PREMIUM as ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 
-export const maxDuration = 60;
+// Opus 4.6 can exceed 60s on long essays with the full refined-alignment
+// rules. 300 is the Vercel Pro max.
+export const maxDuration = 300;
 export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

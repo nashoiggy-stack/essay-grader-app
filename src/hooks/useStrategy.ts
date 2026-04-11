@@ -130,23 +130,52 @@ export function useStrategy(): UseStrategyReturn {
       }
 
       setLoading(true);
+      // Abort at 290s — just below the serverless maxDuration of 300s.
+      // This gives us a clean client-side error instead of waiting for the
+      // browser's default fetch timeout.
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 290_000);
       try {
         const res = await fetch("/api/strategy", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ profile: p, analysis: a }),
+          signal: controller.signal,
         });
-        const data = await res.json();
+        // Detect the 504 Gateway Timeout that Vercel sends when the serverless
+        // function times out. Body is usually HTML, not JSON, so parse safely.
+        if (res.status === 504) {
+          setError(
+            "Generation timed out on the server. Opus is slow on large profiles — try again, or trim unused data (activities, essays) for a faster run.",
+          );
+          return;
+        }
+        let data: { error?: string } & Partial<StrategyResult>;
+        try {
+          data = await res.json();
+        } catch {
+          setError(
+            `Server returned an unexpected response (${res.status}). Try again in a moment.`,
+          );
+          return;
+        }
         if (!res.ok) {
-          setError(data.error || "Something went wrong.");
+          setError(data.error || `Request failed (${res.status}). Try again.`);
           return;
         }
         const parsed = data as StrategyResult;
         setResult(parsed);
         writeCached(p, parsed);
-      } catch {
-        setError("Network error. Please check your connection and try again.");
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          setError(
+            "Generation took longer than 5 minutes and was cancelled. This is unusual — try again, or contact support if it keeps happening.",
+          );
+        } else {
+          setError("Network error. Check your connection and try again.");
+        }
       } finally {
+        clearTimeout(timeoutId);
         setLoading(false);
       }
     },

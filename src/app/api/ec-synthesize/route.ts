@@ -10,7 +10,9 @@ import type {
   ProfileEvaluation,
 } from "@/lib/extracurricular-types";
 
-export const maxDuration = 60;
+// Opus 4.6 on holistic EC synthesis can take 40-90s for large portfolios.
+// 300 is the Vercel Pro max.
+export const maxDuration = 300;
 export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

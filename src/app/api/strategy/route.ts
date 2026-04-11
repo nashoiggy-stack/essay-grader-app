@@ -6,7 +6,11 @@ import type { StrategyProfile, StrategyAnalysis, StrategyResult } from "@/lib/st
 // essay grade / suggestions / ec-synthesize.
 import { ANTHROPIC_MODEL_PREMIUM as ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 
-export const maxDuration = 60;
+// Opus 4.6 on a 7-section reasoning task with ~3000 output tokens routinely
+// takes 60-120s. 300 is the Vercel Pro max. If you hit this ceiling too, the
+// next step is to trim the prompt (drop the raw profile block to just the
+// analysis block) — it'll lose some personalization but cut latency ~40%.
+export const maxDuration = 300;
 export const runtime = "nodejs";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
