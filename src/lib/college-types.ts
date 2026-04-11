@@ -167,3 +167,14 @@ export const MAJORS = [
   "Nursing", "Education", "English", "Mathematics", "Chemistry",
   "Physics", "History", "Art", "Music", "Pre-Med", "Pre-Law",
 ] as const;
+
+// ── Pinned Colleges ────────────────────────────────────────────────────────
+// Users pin schools they're actually considering. The Strategy Engine reads
+// this list as its primary source for school-list analysis.
+export interface PinnedCollege {
+  readonly name: string;         // matches College.name exactly
+  readonly pinnedAt: number;     // epoch ms — for stable ordering
+  readonly applicationPlan?: ApplicationPlan; // optional user override
+}
+
+export const PINNED_COLLEGES_KEY = "admitedge-pinned-colleges";

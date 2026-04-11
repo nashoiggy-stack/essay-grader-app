@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { motion } from "motion/react";
+import { Bookmark } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 
@@ -37,9 +38,16 @@ function getSpikeMatch(spikes: ProfileSpike[], tags: string[]): string | null {
 interface CollegeCardProps {
   readonly item: ClassifiedCollege;
   readonly index: number;
+  readonly isPinned?: boolean;
+  readonly onTogglePin?: (name: string) => void;
 }
 
-export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
+export const CollegeCard: React.FC<CollegeCardProps> = ({
+  item,
+  index,
+  isPinned = false,
+  onTogglePin,
+}) => {
   const { college: c, classification, reason, fitScore } = item;
   const colors = CLASS_COLORS[classification];
 
@@ -84,12 +92,37 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
           </p>
         </div>
 
-        {/* Fit Score — dominant visual anchor */}
-        <div className="shrink-0 text-right">
-          <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Fit</p>
-          <p className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${colors.text}`}>
-            {fitScore}
-          </p>
+        {/* Right column: pin + fit score */}
+        <div className="shrink-0 flex items-start gap-2">
+          {onTogglePin && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePin(c.name);
+              }}
+              aria-label={isPinned ? `Unpin ${c.name}` : `Pin ${c.name} to your list`}
+              aria-pressed={isPinned}
+              className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center transition-[background-color,color] duration-200 ${
+                isPinned
+                  ? "bg-blue-500/15 text-blue-300 hover:bg-blue-500/25"
+                  : "bg-white/[0.03] text-zinc-500 hover:bg-white/[0.08] hover:text-zinc-300"
+              }`}
+            >
+              <Bookmark
+                className="w-4 h-4"
+                strokeWidth={1.75}
+                fill={isPinned ? "currentColor" : "none"}
+              />
+            </button>
+          )}
+          {/* Fit Score — dominant visual anchor */}
+          <div className="text-right">
+            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Fit</p>
+            <p className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${colors.text}`}>
+              {fitScore}
+            </p>
+          </div>
         </div>
       </div>
 

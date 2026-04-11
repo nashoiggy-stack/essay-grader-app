@@ -7,6 +7,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeFiltersPanel } from "@/components/CollegeFilters";
 import { CollegeResults } from "@/components/CollegeResults";
 import { useCollegeFilter } from "@/hooks/useCollegeFilter";
+import { useCollegePins } from "@/hooks/useCollegePins";
 
 const TIERS = [
   { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", fit: "85-95", description: "Your stats are well above average and the school has a higher acceptance rate. You're very likely to be admitted." },
@@ -18,6 +19,7 @@ const TIERS = [
 
 export default function CollegesPage() {
   const { filters, updateFilter, resetFilters, results, sortedBy } = useCollegeFilter();
+  const { pinned, isPinned, togglePin } = useCollegePins();
   const [showGuide, setShowGuide] = useState(false);
 
   return (
@@ -86,7 +88,13 @@ export default function CollegesPage() {
         {/* Results */}
         <div className="mt-8">
           <ScrollReveal delay={0.15}>
-            <CollegeResults results={results} sortedBy={sortedBy} />
+            <CollegeResults
+              results={results}
+              sortedBy={sortedBy}
+              pinnedCount={pinned.length}
+              isPinned={isPinned}
+              onTogglePin={togglePin}
+            />
           </ScrollReveal>
         </div>
       </main>

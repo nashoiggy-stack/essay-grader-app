@@ -1,13 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
+import { Bookmark, ArrowRight } from "lucide-react";
 import type { ClassifiedCollege, Classification } from "@/lib/college-types";
 import { CollegeCard } from "./CollegeCard";
 
 interface CollegeResultsProps {
   readonly results: ClassifiedCollege[];
   readonly sortedBy: (key: "acceptanceRate" | "fit") => ClassifiedCollege[];
+  readonly pinnedCount?: number;
+  readonly isPinned?: (name: string) => boolean;
+  readonly onTogglePin?: (name: string) => void;
 }
 
 const GROUPS: { key: Classification; label: string; color: string }[] = [
@@ -18,7 +23,13 @@ const GROUPS: { key: Classification; label: string; color: string }[] = [
   { key: "unlikely", label: "Unlikely", color: "text-red-500" },
 ];
 
-export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedBy }) => {
+export const CollegeResults: React.FC<CollegeResultsProps> = ({
+  results,
+  sortedBy,
+  pinnedCount = 0,
+  isPinned,
+  onTogglePin,
+}) => {
   const [sort, setSort] = useState<"acceptanceRate" | "fit">("acceptanceRate");
 
   const sorted = sort === "fit" ? sortedBy("fit") : results;
@@ -39,6 +50,31 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedB
 
   return (
     <div className="space-y-8">
+      {/* Pinned-count CTA bar — directs users to Strategy Engine */}
+      {pinnedCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+          className="flex items-center justify-between gap-3 rounded-xl bg-blue-500/5 border border-blue-500/15 px-4 py-3"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Bookmark className="w-4 h-4 text-blue-300 shrink-0" fill="currentColor" />
+            <p className="text-sm text-zinc-200">
+              <span className="font-semibold text-blue-200">{pinnedCount}</span>
+              <span className="text-zinc-400"> school{pinnedCount === 1 ? "" : "s"} pinned to your list</span>
+            </p>
+          </div>
+          <Link
+            href="/strategy"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-200 px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
+          >
+            View Strategy
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </motion.div>
+      )}
+
       {/* Sort controls */}
       <div className="flex items-center gap-2">
         <span className="text-xs text-zinc-500">Sort by:</span>
@@ -71,7 +107,13 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({ results, sortedB
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {group.items.map((item, i) => (
-                <CollegeCard key={item.college.name} item={item} index={i} />
+                <CollegeCard
+                  key={item.college.name}
+                  item={item}
+                  index={i}
+                  isPinned={isPinned?.(item.college.name)}
+                  onTogglePin={onTogglePin}
+                />
               ))}
             </div>
           </div>
