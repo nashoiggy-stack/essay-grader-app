@@ -9,6 +9,7 @@ import {
   BAND_ORDER,
   computeReadinessScore,
   buildReadinessNextStep,
+  bandFromScore,
 } from "@/lib/extracurricular-types";
 
 const TIER_STYLES: Record<ActivityTier, { bg: string; border: string; text: string; label: string }> = {
@@ -59,12 +60,14 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
     () =>
       computeReadinessScore({
         activities: result.activities,
-        band: result.band,
         spikes: result.spikes,
       }),
     [result]
   );
-  const nextStep = useMemo(() => buildReadinessNextStep(result.band, score), [result.band, score]);
+  // Derive the displayed band from the continuous score — the score is the
+  // source of truth, the band is just a label.
+  const displayBand = useMemo(() => bandFromScore(score), [score]);
+  const nextStep = useMemo(() => buildReadinessNextStep(score), [score]);
 
   return (
     <div className="space-y-8">
@@ -78,8 +81,8 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
           <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-[0.35em] text-zinc-500 mb-2">Overall Band</p>
             <div className="flex items-baseline gap-3 mb-1">
-              <h2 className={`text-3xl font-bold tracking-tight ${BAND_STYLES[result.band] ?? "text-white"}`}>
-                {EC_BAND_LABELS[result.band]}
+              <h2 className={`text-3xl font-bold tracking-tight ${BAND_STYLES[displayBand] ?? "text-white"}`}>
+                {EC_BAND_LABELS[displayBand]}
               </h2>
               <span className="font-mono tabular-nums text-lg text-zinc-500">
                 {score}<span className="text-zinc-700">/100</span>
@@ -130,7 +133,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
             {BAND_ORDER.map((band) => (
               <span
                 key={band}
-                className={band === result.band ? "text-zinc-300" : ""}
+                className={band === displayBand ? "text-zinc-300" : ""}
               >
                 {EC_BAND_LABELS[band]}
               </span>
@@ -165,7 +168,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
             {BAND_ORDER.map((band, i) => {
               const range = BAND_RANGES[band];
               const width = range.max - range.min;
-              const isCurrent = band === result.band;
+              const isCurrent = band === displayBand;
               const colors = BAND_CHART_COLORS[band];
               return (
                 <motion.div

@@ -87,14 +87,19 @@ export const EC_ACTIVITIES_KEY = "ec-evaluator-activities";
 
 // ── Readiness Score ─────────────────────────────────────────────────────────
 
-// Each band maps to a score range. Gives students a continuous sense of
-// progress inside an otherwise categorical signal.
+// Contiguous band ranges — the label is DERIVED from the continuous score,
+// not the other way around. Ranges are [min, max] inclusive on min, with the
+// next band starting at the previous band's max. Used only for:
+//   1. bandFromScore() — deriving the qualitative label from a numeric score
+//   2. rendering the segmented progress bar
+//   3. generating the next-step narrative
+// The scoring function never clamps to these ranges.
 export const BAND_RANGES: Record<ECBand, { min: number; max: number }> = {
-  limited: { min: 0, max: 25 },
-  developing: { min: 25, max: 45 },
-  solid: { min: 45, max: 65 },
-  strong: { min: 65, max: 85 },
-  exceptional: { min: 85, max: 100 },
+  limited: { min: 0, max: 45 },
+  developing: { min: 45, max: 65 },
+  solid: { min: 65, max: 80 },
+  strong: { min: 80, max: 90 },
+  exceptional: { min: 90, max: 100 },
 };
 
 export const BAND_ORDER: readonly ECBand[] = [
@@ -105,71 +110,163 @@ export const BAND_ORDER: readonly ECBand[] = [
   "exceptional",
 ] as const;
 
+/**
+ * Derive the qualitative band label from a continuous score.
+ * Score → label is one-directional: the score is the source of truth.
+ */
+export function bandFromScore(score: number): ECBand {
+  if (score >= 90) return "exceptional";
+  if (score >= 80) return "strong";
+  if (score >= 65) return "solid";
+  if (score >= 45) return "developing";
+  return "limited";
+}
+
 interface ReadinessInput {
   readonly activities: readonly ActivityEvaluation[];
-  readonly band: ECBand;
   readonly spikes: readonly ProfileSpike[];
 }
 
 /**
- * Compute a 0-100 readiness score from an EC evaluation.
+ * Continuous 0-100 strength for a single activity.
  *
- * Scoring:
- * - Each activity contributes based on its tier + sub-scores
- * - Spike presence adds a small bonus (depth beats breadth)
- * - Result is clamped into the range of the LLM-assigned band so the
- *   number never contradicts the verdict
+ * Tier sets the floor + ceiling. Sub-scores fill the gap inside the tier,
+ * producing a smooth curve rather than a bucket.
+ *
+ * Tier 1 max = 100, Tier 2 max = 70, Tier 3 max = 44, Tier 4 max = 22.
+ * This reflects reality: a perfectly-executed club-president role (Tier 3)
+ * should never look as strong as a weakly-held Intel ISEF finalist (Tier 1).
  */
-export function computeReadinessScore(input: ReadinessInput): number {
-  const TIER_BASE: Record<ActivityTier, number> = { 1: 22, 2: 13, 3: 6, 4: 2 };
-  const TIER_BONUS_CAP: Record<ActivityTier, number> = { 1: 12, 2: 9, 3: 5, 4: 2 };
+function activityStrength(a: ActivityEvaluation): number {
+  const TIER_BASE: Record<ActivityTier, number> = { 1: 65, 2: 42, 3: 22, 4: 8 };
+  const TIER_CEIL: Record<ActivityTier, number> = { 1: 35, 2: 28, 3: 22, 4: 14 };
 
-  let total = 0;
-  for (const a of input.activities) {
-    const base = TIER_BASE[a.tier] ?? 0;
-    const cap = TIER_BONUS_CAP[a.tier] ?? 0;
-    const subscoreSum = a.scores.leadership + a.scores.impact + a.scores.commitment + a.scores.alignment;
-    // Max subscore sum is 4+4+4+2 = 14
-    const subBonus = (subscoreSum / 14) * cap;
-    total += base + subBonus;
-  }
+  const base = TIER_BASE[a.tier] ?? 8;
+  const ceil = TIER_CEIL[a.tier] ?? 14;
 
-  // Spike bonus — depth beats breadth
-  for (const spike of input.spikes) {
-    if (spike.strength === "dominant") total += 4;
-    else if (spike.strength === "strong") total += 2;
-    else total += 1;
-  }
+  const { leadership, impact, commitment, alignment } = a.scores;
+  // Weighted sub-score composite in [0, 1]. Impact weighted heaviest because
+  // "what did you actually change" is the single strongest admissions signal.
+  const norm =
+    (leadership / 4) * 0.3 +
+    (impact / 4) * 0.4 +
+    (commitment / 4) * 0.2 +
+    (alignment / 2) * 0.1;
 
-  // Clamp raw score to 0-100
-  const raw = Math.max(0, Math.min(100, Math.round(total)));
-
-  // Anchor to the LLM-assigned band so the number never contradicts the verdict.
-  const range = BAND_RANGES[input.band];
-  return Math.max(range.min, Math.min(range.max, raw));
+  return base + norm * ceil;
 }
 
 /**
- * Generate a next-step narrative sentence based on current band + score.
+ * Compute a continuous 0-100 readiness score from an EC evaluation.
+ *
+ * Model:
+ *   1. Each activity gets a continuous 0-100 strength (see activityStrength)
+ *   2. Top-k weighted average — strongest activity weighted highest, tail
+ *      activities contribute diminishing amounts (depth beats breadth)
+ *   3. Portfolio-level modifiers add decimal deltas for density signals
+ *      (leadership, measurable impact, commitment, spike depth, distinction)
+ *   4. Final value is rounded ONCE at the very end
+ *
+ * The score is NOT clamped to any band range. The qualitative band is a
+ * downstream derivation via bandFromScore().
  */
-export function buildReadinessNextStep(band: ECBand, score: number): string {
+export function computeReadinessScore(input: ReadinessInput): number {
+  const activities = input.activities;
+  if (activities.length === 0) return 0;
+
+  // 1. Per-activity continuous strength, sorted descending
+  const strengths = activities.map(activityStrength).sort((a, b) => b - a);
+
+  // 2. Top-k weighted aggregation. Weights are heavily front-loaded so the
+  //    strongest activity remains the dominant signal — a single Tier-1 win
+  //    should not be diluted by a long tail of Tier-3/Tier-4 supports.
+  //    Tail contributions still matter, but only at the margins.
+  const WEIGHTS = [1.0, 0.35, 0.22, 0.15, 0.1, 0.07, 0.05, 0.04];
+  const TAIL_WEIGHT = 0.03;
+
+  let weightedSum = 0;
+  let weightSum = 0;
+  for (let i = 0; i < strengths.length; i++) {
+    const w = WEIGHTS[i] ?? TAIL_WEIGHT;
+    weightedSum += strengths[i] * w;
+    weightSum += w;
+  }
+  let score = weightSum > 0 ? weightedSum / weightSum : 0;
+
+  // 3. Portfolio-level modifiers — decimal deltas, never snap to buckets.
+
+  // Leadership density — what fraction of activities show real leadership?
+  const leadDensity =
+    activities.filter((a) => a.scores.leadership >= 3).length / activities.length;
+  score += leadDensity * 3.0;
+
+  // Measurable-impact density — weighted most heavily because impact is
+  // the strongest discriminator in admissions.
+  const impactDensity =
+    activities.filter((a) => a.scores.impact >= 3).length / activities.length;
+  score += impactDensity * 3.5;
+
+  // Commitment density — sustained engagement across the portfolio.
+  const commitDensity =
+    activities.filter((a) => a.scores.commitment >= 3).length / activities.length;
+  score += commitDensity * 2.0;
+
+  // Spike depth bonus — the LLM already flagged the spikes, trust it as a
+  // small portfolio modifier rather than a dominant factor.
+  for (const spike of input.spikes) {
+    if (spike.strength === "dominant") score += 3.2;
+    else if (spike.strength === "strong") score += 2.1;
+    else score += 1.1;
+  }
+
+  // Distinction bonus — capped so a single perfect Tier 1 doesn't get
+  // repeatedly rewarded for existing.
+  const distinctionCount = activities.filter((a) => a.tier <= 2).length;
+  score += Math.min(distinctionCount, 3) * 1.2;
+
+  // Thin-portfolio penalty — 1-2 activities with a weak strongest signal
+  // should feel clearly below "solid".
+  if (activities.length <= 2 && strengths[0] < 40) {
+    score -= 3.0;
+  }
+
+  // Breadth reward — a portfolio of 6+ activities with a credible lead
+  // shows sustained engagement beyond the top hits.
+  if (activities.length >= 6 && strengths[0] >= 40) {
+    score += 1.5;
+  }
+
+  // Final clamp + single round. Decimal math above is preserved until here
+  // so small modifier deltas aren't lost to early rounding.
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/**
+ * Generate a next-step narrative sentence based on current score.
+ * Band is derived internally so callers don't need to pass it.
+ */
+export function buildReadinessNextStep(score: number): string {
+  const band = bandFromScore(score);
   const currentIdx = BAND_ORDER.indexOf(band);
   const nextBand = BAND_ORDER[currentIdx + 1];
   const range = BAND_RANGES[band];
   const nextRange = nextBand ? BAND_RANGES[nextBand] : null;
   const pointsToNext = nextRange ? nextRange.min - score : 0;
-  const bandProgress = (score - range.min) / (range.max - range.min);
+  const bandSpan = range.max - range.min;
+  const bandProgress = bandSpan > 0 ? (score - range.min) / bandSpan : 1;
 
   if (!nextBand) {
     return "You're in the top band — focus on essays and school fit now.";
   }
 
-  if (pointsToNext <= 3) {
+  if (pointsToNext <= 2) {
     return `You're right on the edge of ${EC_BAND_LABELS[nextBand]}. One more strong activity pushes you across.`;
   }
 
   if (bandProgress > 0.7) {
-    return `You're near the top of ${EC_BAND_LABELS[band]}. A Tier ${band === "strong" ? "1" : "2"} win or stronger leadership role moves you to ${EC_BAND_LABELS[nextBand]}.`;
+    return `You're near the top of ${EC_BAND_LABELS[band]}. A Tier ${
+      band === "strong" ? "1" : "2"
+    } win or stronger leadership role moves you to ${EC_BAND_LABELS[nextBand]}.`;
   }
 
   if (bandProgress < 0.3) {
