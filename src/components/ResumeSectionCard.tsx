@@ -23,6 +23,13 @@ interface Entry {
   readonly [k: string]: any;
 }
 
+export type RecategoryTarget =
+  | "activities"
+  | "communityService"
+  | "athletics"
+  | "summerExperience"
+  | "awards";
+
 interface ResumeSectionCardProps<T extends Entry> {
   readonly title: string;
   readonly entries: readonly T[];
@@ -36,12 +43,23 @@ interface ResumeSectionCardProps<T extends Entry> {
   readonly emptyLabel?: string;
   readonly extraHeaderAction?: React.ReactNode; // e.g. "Import from EC Evaluator" button
   readonly titleForEntry?: (e: T) => string;
+  // Optional: lets the user reassign an entry to a different resume section.
+  readonly currentSection?: RecategoryTarget;
+  readonly onRecategorize?: (id: string, target: RecategoryTarget) => void;
 }
 
 const inputClass =
   "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Component ────────────────────────────────────────────────────────────────
+
+const RECATEGORY_LABELS: Record<RecategoryTarget, string> = {
+  activities: "Activities",
+  communityService: "Community Service",
+  athletics: "Athletics",
+  summerExperience: "Summer Experience",
+  awards: "Awards & Honors",
+};
 
 export function ResumeSectionCard<T extends Entry>({
   title,
@@ -56,6 +74,8 @@ export function ResumeSectionCard<T extends Entry>({
   emptyLabel,
   extraHeaderAction,
   titleForEntry,
+  currentSection,
+  onRecategorize,
 }: ResumeSectionCardProps<T>) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
@@ -272,6 +292,36 @@ export function ResumeSectionCard<T extends Entry>({
                                 </div>
                               );
                             })}
+
+                            {/* Move to another section */}
+                            {currentSection && onRecategorize && (
+                              <div className="pt-2 border-t border-white/[0.04]">
+                                <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                                  Move to section
+                                </label>
+                                <select
+                                  value={currentSection}
+                                  onChange={(e) =>
+                                    onRecategorize(
+                                      entry.id,
+                                      e.target.value as RecategoryTarget
+                                    )
+                                  }
+                                  className={`${inputClass} appearance-none cursor-pointer`}
+                                >
+                                  {(
+                                    Object.entries(RECATEGORY_LABELS) as [
+                                      RecategoryTarget,
+                                      string,
+                                    ][]
+                                  ).map(([k, label]) => (
+                                    <option key={k} value={k}>
+                                      {label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                       )}

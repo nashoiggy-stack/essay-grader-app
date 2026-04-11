@@ -65,30 +65,79 @@ p {
 
 /* ── Print styles (Resume Helper PDF export) ────────────────── */
 @media print {
-  body {
+  /* Reset the full page chrome */
+  html, body {
     background: white !important;
-    color: black !important;
+    color: #111 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  body::after {
+  body::after, body::before {
     display: none !important;
   }
-  nav, header, footer, aside, [aria-hidden="true"] {
-    display: none !important;
+
+  /* Hide everything by default, then we'll reveal only the preview */
+  body * {
+    visibility: hidden;
   }
-  .print\:hidden {
-    display: none !important;
+  .resume-preview, .resume-preview * {
+    visibility: visible;
   }
+
+  /* Position the preview at the top of the printable page */
   .resume-preview {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    color: #111 !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     padding: 0 !important;
+    margin: 0 !important;
     max-width: none !important;
+    width: 100% !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 10.5pt !important;
+    line-height: 1.35 !important;
   }
-  .resume-section {
+
+  /* Typography overrides for print readability */
+  .resume-preview h1 {
+    font-size: 18pt !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    color: #111 !important;
+    margin: 0 0 4pt 0 !important;
+  }
+  .resume-preview h3 {
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: #333 !important;
+    padding-bottom: 2pt !important;
+    margin: 10pt 0 4pt 0 !important;
+    border-bottom: 1pt solid #999 !important;
+  }
+  .resume-preview p, .resume-preview li, .resume-preview span {
+    color: #222 !important;
+  }
+  .resume-preview .resume-section {
     page-break-inside: avoid;
+    margin-bottom: 8pt !important;
   }
+
+  /* Force everything in dark UI elements to be invisible */
+  .print\:hidden {
+    display: none !important;
+  }
+
   @page {
-    margin: 0.6in;
+    margin: 0.5in 0.6in;
     size: letter;
   }
 }

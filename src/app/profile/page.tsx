@@ -25,7 +25,8 @@ function SourceBadge({ source }: { source: string }) {
 }
 
 export default function ProfilePage() {
-  const { profile, computed, loaded, updateField, updateSAT, updateACT, resetToComputed } = useProfile();
+  const { profile, computed, loaded, updateField, updateSAT, updateACT, updateBasicInfo, resetToComputed } = useProfile();
+  const bi = profile.basicInfo ?? { name: "", email: "", phone: "", school: "", graduationYear: "", address: "" };
 
   if (!loaded) {
     return (
@@ -128,6 +129,78 @@ export default function ProfilePage() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.87"/></svg>
               Reset to calculated values
             </button>
+          </div>
+        </ScrollReveal>
+
+        {/* Basic Info — shared across resume + future tools */}
+        <ScrollReveal delay={0.08}>
+          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Basic Info</h2>
+              <span className="text-[10px] text-zinc-500">Used in Resume Helper</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Name</label>
+                <input
+                  type="text"
+                  placeholder="Your full name"
+                  value={bi.name}
+                  onChange={(e) => updateBasicInfo({ name: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Email</label>
+                <input
+                  type="email"
+                  placeholder="you@school.edu"
+                  value={bi.email}
+                  onChange={(e) => updateBasicInfo({ email: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Phone</label>
+                <input
+                  type="tel"
+                  placeholder="(555) 555-5555"
+                  value={bi.phone}
+                  onChange={(e) => updateBasicInfo({ phone: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Address (optional)</label>
+                <input
+                  type="text"
+                  placeholder="City, State"
+                  value={bi.address}
+                  onChange={(e) => updateBasicInfo({ address: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>School</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Lincoln High School"
+                  value={bi.school}
+                  onChange={(e) => updateBasicInfo({ school: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Graduation year</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 2026"
+                  value={bi.graduationYear}
+                  onChange={(e) => updateBasicInfo({ graduationYear: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+            </div>
           </div>
         </ScrollReveal>
 

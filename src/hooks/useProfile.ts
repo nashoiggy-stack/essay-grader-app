@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { UserProfile, SATScores, ACTScores } from "@/lib/profile-types";
-import { EMPTY_PROFILE, PROFILE_STORAGE_KEY } from "@/lib/profile-types";
+import type { UserProfile, SATScores, ACTScores, BasicStudentInfo } from "@/lib/profile-types";
+import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO } from "@/lib/profile-types";
 
 interface ComputedValues {
   gpaUW: string;
@@ -235,6 +235,13 @@ export function useProfile() {
     setProfile((prev) => ({ ...prev, act: { ...prev.act, [field]: value } }));
   }, []);
 
+  const updateBasicInfo = useCallback((patch: Partial<BasicStudentInfo>) => {
+    setProfile((prev) => ({
+      ...prev,
+      basicInfo: { ...(prev.basicInfo ?? EMPTY_BASIC_STUDENT_INFO), ...patch },
+    }));
+  }, []);
+
   const resetToComputed = useCallback(() => {
     const fresh = readComputedValues();
     setComputed(fresh);
@@ -252,5 +259,5 @@ export function useProfile() {
     localStorage.removeItem(OVERRIDES_KEY);
   }, []);
 
-  return { profile, computed, loaded, updateField, updateSAT, updateACT, resetToComputed };
+  return { profile, computed, loaded, updateField, updateSAT, updateACT, updateBasicInfo, resetToComputed };
 }

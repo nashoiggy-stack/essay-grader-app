@@ -14,6 +14,7 @@ import type {
 } from "@/lib/resume-types";
 import { EMPTY_RESUME, RESUME_STORAGE_KEY, generateResumeId } from "@/lib/resume-types";
 import { buildInitialResume, importFromECEvaluator } from "@/lib/resume-import";
+import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
 
 // ── List-section keys (everything except basicInfo / skills) ────────────────
 
@@ -74,9 +75,62 @@ export function useResume() {
     };
   }, [resume, loaded]);
 
-  // ── Basic info ────────────────────────────────────────────────────────────
+  // ── Re-sync from external sources on focus ────────────────────────────────
+  // If the profile page or another tab updates basicInfo / GPA, pull the
+  // freshest values into the resume.
+  useEffect(() => {
+    if (!loaded) return;
+
+    const syncFromExternal = () => {
+      try {
+        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+        if (!raw) return;
+        const profile = JSON.parse(raw) as { basicInfo?: BasicInfo };
+        if (profile.basicInfo) {
+          setResume((prev) => {
+            // Only fill empty fields — don't stomp user edits in the resume
+            const merged: BasicInfo = {
+              name: prev.basicInfo.name || profile.basicInfo!.name || "",
+              email: prev.basicInfo.email || profile.basicInfo!.email || "",
+              phone: prev.basicInfo.phone || profile.basicInfo!.phone || "",
+              school: prev.basicInfo.school || profile.basicInfo!.school || "",
+              graduationYear: prev.basicInfo.graduationYear || profile.basicInfo!.graduationYear || "",
+              address: prev.basicInfo.address || profile.basicInfo!.address || "",
+            };
+            return { ...prev, basicInfo: merged };
+          });
+        }
+      } catch { /* ignore */ }
+    };
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === PROFILE_STORAGE_KEY) syncFromExternal();
+    };
+
+    window.addEventListener("focus", syncFromExternal);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("focus", syncFromExternal);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [loaded]);
+
+  // ── Basic info — write-through to shared profile ──────────────────────────
+  //
+  // Resume basicInfo is mirrored into admitedge-profile.basicInfo so other
+  // tools (and future sessions) reuse it without re-typing.
   const updateBasicInfo = useCallback((patch: Partial<BasicInfo>) => {
-    setResume((prev) => ({ ...prev, basicInfo: { ...prev.basicInfo, ...patch } }));
+    setResume((prev) => {
+      const next = { ...prev, basicInfo: { ...prev.basicInfo, ...patch } };
+      // Mirror to shared profile
+      try {
+        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+        const profile = raw ? JSON.parse(raw) : {};
+        profile.basicInfo = next.basicInfo;
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+      } catch { /* ignore */ }
+      return next;
+    });
   }, []);
 
   // ── Skills ────────────────────────────────────────────────────────────────
@@ -194,10 +248,17 @@ export function useResume() {
     });
   }, []);
 
-  // ── Import from EC Evaluator ──────────────────────────────────────────────
+  // ── Import from EC Evaluator (distributed across sections) ────────────────
 
   const importFromECs = useCallback(() => {
-    const result = importFromECEvaluator(resume.activities);
+    const result = importFromECEvaluator({
+      activities: resume.activities,
+      communityService: resume.communityService,
+      athletics: resume.athletics,
+      summerExperience: resume.summerExperience,
+      awards: resume.awards,
+    });
+
     if (result.importedCount === 0) {
       setImportFlash(
         result.skippedCount > 0
@@ -208,14 +269,113 @@ export function useResume() {
       setResume((prev) => ({
         ...prev,
         activities: [...prev.activities, ...result.activities],
+        communityService: [...prev.communityService, ...result.communityService],
+        athletics: [...prev.athletics, ...result.athletics],
+        summerExperience: [...prev.summerExperience, ...result.summerExperience],
+        awards: [...prev.awards, ...result.awards],
       }));
+
+      // Build a distribution summary
+      const parts: string[] = [];
+      if (result.distribution.activities > 0) parts.push(`${result.distribution.activities} Activit${result.distribution.activities === 1 ? "y" : "ies"}`);
+      if (result.distribution.communityService > 0) parts.push(`${result.distribution.communityService} Community`);
+      if (result.distribution.athletics > 0) parts.push(`${result.distribution.athletics} Athletics`);
+      if (result.distribution.summerExperience > 0) parts.push(`${result.distribution.summerExperience} Summer`);
+      if (result.distribution.awards > 0) parts.push(`${result.distribution.awards} Awards`);
+
       setImportFlash(
-        `Imported ${result.importedCount} new activit${result.importedCount === 1 ? "y" : "ies"}` +
+        `Imported ${result.importedCount} entries — ${parts.join(", ")}` +
           (result.skippedCount > 0 ? ` (${result.skippedCount} duplicates skipped)` : "")
       );
     }
-    setTimeout(() => setImportFlash(null), 4000);
-  }, [resume.activities]);
+    setTimeout(() => setImportFlash(null), 5000);
+  }, [resume.activities, resume.communityService, resume.athletics, resume.summerExperience, resume.awards]);
+
+  // ── Move an activity to a different section ───────────────────────────────
+
+  type RecategorizableTarget =
+    | "activities"
+    | "communityService"
+    | "athletics"
+    | "summerExperience"
+    | "awards";
+
+  const recategorizeActivity = useCallback(
+    (id: string, target: RecategorizableTarget) => {
+      // Find the activity in any section
+      setResume((prev) => {
+        // Search all 5 sections for the entry
+        const sections: RecategorizableTarget[] = [
+          "activities", "communityService", "athletics", "summerExperience", "awards",
+        ];
+
+        for (const src of sections) {
+          if (src === target) continue;
+          const list = prev[src];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const found = list.find((e: any) => e.id === id);
+          if (!found) continue;
+
+          // Remove from source
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const withoutFromSrc = list.filter((e: any) => e.id !== id);
+
+          // Build a new entry shape for the target section, carrying as much data as possible
+          // Pull a "name" + "description" + "impact" from any shape
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const f = found as any;
+          const name: string = f.activityName ?? f.organization ?? f.sport ?? f.program ?? f.name ?? "";
+          const desc: string = f.description ?? f.achievements ?? "";
+          const impact: string = f.impact ?? f.achievements ?? "";
+
+          let newEntry: ActivityEntry | CommunityServiceEntry | AthleticsEntry | SummerExperienceEntry | AwardEntry;
+          switch (target) {
+            case "activities":
+              newEntry = {
+                id, activityName: name, role: f.role ?? "", grades: f.grades ?? "",
+                description: desc, leadership: !!f.leadership, impact,
+                source: f.source,
+              };
+              break;
+            case "communityService":
+              newEntry = {
+                id, organization: name, role: f.role ?? "", grades: f.grades ?? "",
+                description: desc, timeCommitment: f.timeCommitment ?? "",
+                source: f.source,
+              };
+              break;
+            case "athletics":
+              newEntry = {
+                id, sport: name, level: f.level ?? "", position: f.position ?? "",
+                grades: f.grades ?? "", achievements: impact || desc,
+                timeCommitment: f.timeCommitment ?? "",
+              };
+              break;
+            case "summerExperience":
+              newEntry = {
+                id, program: name, organization: f.organization ?? "",
+                duration: f.duration ?? "", description: desc, collegeCredit: !!f.collegeCredit,
+              };
+              break;
+            case "awards":
+              newEntry = {
+                id, name, grades: f.grades ?? "", description: desc,
+              };
+              break;
+          }
+
+          return {
+            ...prev,
+            [src]: withoutFromSrc,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            [target]: [...(prev[target] as any[]), newEntry],
+          };
+        }
+        return prev;
+      });
+    },
+    []
+  );
 
   // ── Save manually (explicit button) ───────────────────────────────────────
 
@@ -300,6 +460,7 @@ export function useResume() {
       moveEntry("summerExperience", id, dir),
     // Meta
     importFromECs,
+    recategorizeActivity,
     saveNow,
     resetResume,
   };

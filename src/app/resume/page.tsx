@@ -289,6 +289,8 @@ export default function ResumePage() {
                 onMove={r.moveAward}
                 onImprove={(id, fk, val) => handleImprove("awards", id, fk, val)}
                 improvingKey={improvingKey}
+                currentSection="awards"
+                onRecategorize={r.recategorizeActivity}
               />
 
               <ResumeSectionCard
@@ -302,6 +304,8 @@ export default function ResumePage() {
                 onImprove={(id, fk, val) => handleImprove("activities", id, fk, val)}
                 improvingKey={improvingKey}
                 titleForEntry={(e) => e.activityName || "New activity"}
+                currentSection="activities"
+                onRecategorize={r.recategorizeActivity}
                 extraHeaderAction={
                   <button
                     onClick={r.importFromECs}
@@ -324,6 +328,8 @@ export default function ResumePage() {
                 onImprove={(id, fk, val) => handleImprove("communityService", id, fk, val)}
                 improvingKey={improvingKey}
                 titleForEntry={(e) => e.organization || "New entry"}
+                currentSection="communityService"
+                onRecategorize={r.recategorizeActivity}
               />
 
               <ResumeSectionCard
@@ -337,6 +343,8 @@ export default function ResumePage() {
                 onImprove={(id, fk, val) => handleImprove("athletics", id, fk, val)}
                 improvingKey={improvingKey}
                 titleForEntry={(e) => e.sport || "New entry"}
+                currentSection="athletics"
+                onRecategorize={r.recategorizeActivity}
               />
 
               <ResumeSectionCard
@@ -350,6 +358,8 @@ export default function ResumePage() {
                 onImprove={(id, fk, val) => handleImprove("summerExperience", id, fk, val)}
                 improvingKey={improvingKey}
                 titleForEntry={(e) => e.program || "New entry"}
+                currentSection="summerExperience"
+                onRecategorize={r.recategorizeActivity}
               />
 
               {/* Skills */}
