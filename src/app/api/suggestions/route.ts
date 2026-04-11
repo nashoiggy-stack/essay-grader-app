@@ -5,6 +5,7 @@ import {
   SUGGESTIONS_SYSTEM_PROMPT,
   type SuggestionFocus,
 } from "@/lib/suggestions-prompt";
+import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     const focusPrompt = buildSuggestionsPrompt(focus);
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: ANTHROPIC_MODEL,
       max_tokens: 4096,
       temperature: 0,
       system: `${SUGGESTIONS_SYSTEM_PROMPT}\n\n${focusPrompt}`,

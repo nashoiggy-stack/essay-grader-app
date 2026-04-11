@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { GRADING_SYSTEM_PROMPT } from "@/lib/prompts";
+import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 import type { GradingResult } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: ANTHROPIC_MODEL,
       max_tokens: 3000,
       temperature: 0,
       system: GRADING_SYSTEM_PROMPT,

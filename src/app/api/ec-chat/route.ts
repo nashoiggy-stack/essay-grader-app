@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildECChatSystemPrompt } from "@/lib/ec-prompts";
+import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     messages.push({ role: "user", content: message });
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: ANTHROPIC_MODEL,
       max_tokens: 512,
       system: systemPrompt,
       messages,

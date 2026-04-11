@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildSingleActivityPrompt } from "@/lib/ec-prompts";
 import { withAnthropicRetry } from "@/lib/anthropic-retry";
+import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 import type {
   ECConversation,
   ActivityEvaluation,
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const response = await withAnthropicRetry(() =>
       anthropic.messages.create({
-        model: "claude-sonnet-4-6",
+        model: ANTHROPIC_MODEL,
         max_tokens: 1500,
         temperature: 0,
         system: SYSTEM_PROMPT,
@@ -73,10 +74,19 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ activity });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    // Surface the real Anthropic error body so the client can show it
+    let message = err instanceof Error ? err.message : String(err);
+    let status = 500;
+    if (err instanceof Anthropic.APIError) {
+      status = err.status ?? 500;
+      // Prefer the structured error message when available
+      const body = err.error as { error?: { message?: string } } | undefined;
+      const apiMessage = body?.error?.message ?? err.message;
+      message = `Anthropic ${status}: ${apiMessage}`;
+    }
     console.error("EC Activity error:", message);
     return NextResponse.json(
-      { error: `Failed to evaluate activity: ${message.slice(0, 120)}` },
+      { error: `Failed to evaluate activity: ${message.slice(0, 200)}` },
       { status: 500 }
     );
   }

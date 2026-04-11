@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildBulkActivityPrompt, type BulkActivityInput } from "@/lib/resume-prompts";
 import { withAnthropicRetry } from "@/lib/anthropic-retry";
+import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     const response = await withAnthropicRetry(() =>
       anthropic.messages.create({
-        model: "claude-sonnet-4-6",
+        model: ANTHROPIC_MODEL,
         max_tokens: maxTokens,
         temperature: 0.3,
         system: SYSTEM_PROMPT,

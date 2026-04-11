@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildProfileSynthesisPrompt } from "@/lib/ec-prompts";
 import { withAnthropicRetry } from "@/lib/anthropic-retry";
+import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 import type {
   ActivityEvaluation,
   ProfileEvaluation,
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     const response = await withAnthropicRetry(() =>
       anthropic.messages.create({
-        model: "claude-sonnet-4-6",
+        model: ANTHROPIC_MODEL,
         max_tokens: 2000,
         temperature: 0,
         system: SYSTEM_PROMPT,
@@ -80,10 +81,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ result });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    let message = err instanceof Error ? err.message : String(err);
+    if (err instanceof Anthropic.APIError) {
+      const body = err.error as { error?: { message?: string } } | undefined;
+      message = `Anthropic ${err.status ?? 500}: ${body?.error?.message ?? err.message}`;
+    }
     console.error("EC Synthesize error:", message);
     return NextResponse.json(
-      { error: `Failed to synthesize profile: ${message.slice(0, 120)}` },
+      { error: `Failed to synthesize profile: ${message.slice(0, 200)}` },
       { status: 500 }
     );
   }
