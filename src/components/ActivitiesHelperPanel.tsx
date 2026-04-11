@@ -231,9 +231,9 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
           <AnimatePresence>
             {Object.keys(bulkResults).length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+                initial={{ opacity: 0, transform: "translateY(8px)" }}
+                animate={{ opacity: 1, transform: "translateY(0px)" }}
+                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                 className="space-y-3 pt-2"
               >
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
@@ -371,10 +371,10 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
           <AnimatePresence>
             {singleResult && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, transform: "translateY(8px)" }}
+                animate={{ opacity: 1, transform: "translateY(0px)" }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
                 className="space-y-3 rounded-xl bg-[#0c0c1a]/60 border border-blue-500/20 p-4"
               >
                 <div>

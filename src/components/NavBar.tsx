@@ -32,8 +32,11 @@ export const NavBar: React.FC = () => {
           <div className="px-4 lg:px-5 flex items-center justify-between h-12">
             {/* Home button */}
             <Link href="/" className="flex items-center gap-2 shrink-0 group">
-              <AdmitEdgeLogo size={24} className="group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.4)] transition-[filter] duration-300" />
-              <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-[color] duration-200">
+              <AdmitEdgeLogo
+                size={24}
+                className="group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.4)] transition-[filter] duration-200 [transition-timing-function:var(--ease-out)]"
+              />
+              <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-[color] duration-200 [transition-timing-function:var(--ease-out)]">
                 AdmitEdge
               </span>
             </Link>
@@ -111,18 +114,29 @@ export const NavBar: React.FC = () => {
                 aria-label="Toggle menu"
               >
                 <motion.span
-                  animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.3, ease: EASE_EXPO }}
+                  animate={{
+                    transform: mobileOpen
+                      ? "translateY(5px) rotate(45deg)"
+                      : "translateY(0px) rotate(0deg)",
+                  }}
+                  transition={{ duration: 0.28, ease: EASE_EXPO }}
                   className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full origin-center"
                 />
                 <motion.span
-                  animate={mobileOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
-                  transition={{ duration: 0.2 }}
+                  animate={{
+                    opacity: mobileOpen ? 0 : 1,
+                    transform: mobileOpen ? "scaleX(0)" : "scaleX(1)",
+                  }}
+                  transition={{ duration: 0.18, ease: EASE_EXPO }}
                   className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full"
                 />
                 <motion.span
-                  animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.3, ease: EASE_EXPO }}
+                  animate={{
+                    transform: mobileOpen
+                      ? "translateY(-5px) rotate(-45deg)"
+                      : "translateY(0px) rotate(0deg)",
+                  }}
+                  transition={{ duration: 0.28, ease: EASE_EXPO }}
                   className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full origin-center"
                 />
               </button>
@@ -147,10 +161,10 @@ export const NavBar: React.FC = () => {
                 return (
                   <motion.div
                     key={item.href}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    transition={{ delay: 0.05 + i * 0.04, duration: 0.4, ease: EASE_EXPO }}
+                    initial={{ opacity: 0, transform: "translateY(20px)" }}
+                    animate={{ opacity: 1, transform: "translateY(0px)" }}
+                    exit={{ opacity: 0, transform: "translateY(10px)" }}
+                    transition={{ delay: 0.04 + i * 0.04, duration: 0.32, ease: EASE_EXPO }}
                     className="w-full"
                   >
                     <Link
@@ -169,10 +183,10 @@ export const NavBar: React.FC = () => {
               })}
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ delay: 0.05 + NAV_ITEMS.length * 0.04, duration: 0.4, ease: EASE_EXPO }}
+                initial={{ opacity: 0, transform: "translateY(20px)" }}
+                animate={{ opacity: 1, transform: "translateY(0px)" }}
+                exit={{ opacity: 0, transform: "translateY(10px)" }}
+                transition={{ delay: 0.04 + NAV_ITEMS.length * 0.04, duration: 0.32, ease: EASE_EXPO }}
                 className="w-full"
               >
                 <Link

@@ -100,7 +100,7 @@ export function ResumeSectionCard<T extends Entry>({
           className="flex items-center gap-2 text-left flex-1 min-w-0"
         >
           <ChevronDown
-            className={`w-4 h-4 text-zinc-500 shrink-0 transition-transform duration-300 ${
+            className={`w-4 h-4 text-zinc-500 shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
               collapsed ? "-rotate-90" : ""
             }`}
           />
@@ -117,7 +117,7 @@ export function ResumeSectionCard<T extends Entry>({
               onAdd();
               setCollapsed(false);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 px-3 py-1.5 text-xs font-semibold transition-[background-color] duration-200"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 px-3 py-1.5 text-xs font-semibold transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add
@@ -132,7 +132,10 @@ export function ResumeSectionCard<T extends Entry>({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            transition={{
+              height: { duration: 0.28, ease: [0.23, 1, 0.32, 1] },
+              opacity: { duration: 0.22, ease: [0.23, 1, 0.32, 1] },
+            }}
             className="overflow-hidden"
           >
             <div className="p-4 space-y-3">
@@ -159,10 +162,16 @@ export function ResumeSectionCard<T extends Entry>({
                   <motion.div
                     key={entry.id}
                     layout
-                    initial={{ opacity: 0, y: -4, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, scale: 0.96, height: 0, marginTop: 0 }}
-                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                    initial={{ opacity: 0, transform: "translateY(-4px)", height: 0 }}
+                    animate={{ opacity: 1, transform: "translateY(0px)", height: "auto" }}
+                    exit={{ opacity: 0, transform: "scale(0.97)", height: 0 }}
+                    transition={{
+                      layout: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
+                      height: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
+                      opacity: { duration: 0.2, ease: [0.23, 1, 0.32, 1] },
+                      transform: { duration: 0.22, ease: [0.23, 1, 0.32, 1] },
+                      default: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
+                    }}
                     className="rounded-xl bg-white/[0.02] border border-white/[0.05] overflow-hidden"
                   >
                     {/* Entry header */}
@@ -172,7 +181,7 @@ export function ResumeSectionCard<T extends Entry>({
                         className="flex items-center gap-2 flex-1 min-w-0 text-left"
                       >
                         <ChevronDown
-                          className={`w-3.5 h-3.5 text-zinc-600 shrink-0 transition-transform duration-300 ${
+                          className={`w-3.5 h-3.5 text-zinc-600 shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
                             isOpen ? "" : "-rotate-90"
                           }`}
                         />
@@ -219,7 +228,10 @@ export function ResumeSectionCard<T extends Entry>({
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+                          transition={{
+                            height: { duration: 0.24, ease: [0.23, 1, 0.32, 1] },
+                            opacity: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
+                          }}
                           className="overflow-hidden"
                         >
                           <div className="px-3 pb-3 pt-1 space-y-3 border-t border-white/[0.04]">
