@@ -228,13 +228,18 @@ export function importFromECEvaluator(
     }
     existingTitles.add(normalizeTitle(name));
 
-    // Classify into the right section
-    const target = classifyActivity({
-      title: name,
-      description,
-      category,
-      highlights: impact,
-    });
+    // Manual resume category override wins over auto-classification
+    let target: ResumeSectionTarget;
+    if (conv.resumeCategory && conv.resumeCategory !== "auto") {
+      target = conv.resumeCategory;
+    } else {
+      target = classifyActivity({
+        title: name,
+        description,
+        category,
+        highlights: impact,
+      });
+    }
     distribution[target] += 1;
 
     const id = generateResumeId();
@@ -328,7 +333,7 @@ export function importFromECEvaluator(
  * find. Called only when there's no saved resume in localStorage yet.
  */
 export function buildInitialResume(base: ResumeData): ResumeData {
-  const { basicInfo, gpaUW } = importFromProfile();
+  const { basicInfo, gpaUW, gpaW } = importFromProfile();
 
   const mergedBasicInfo: BasicInfo = {
     ...base.basicInfo,
@@ -340,15 +345,21 @@ export function buildInitialResume(base: ResumeData): ResumeData {
     address: basicInfo.address || base.basicInfo.address,
   };
 
-  // Seed an Education entry from the profile GPA if one is available
+  // Seed an Education entry from the profile GPA if one is available.
+  // Prefer unweighted as the "primary" gpa field for back-compat.
+  const hasGpa = gpaUW || gpaW;
   const education: readonly EducationEntry[] =
-    gpaUW && base.education.length === 0
+    hasGpa && base.education.length === 0
       ? [
           {
             id: generateResumeId(),
             school: mergedBasicInfo.school,
             graduationDate: mergedBasicInfo.graduationYear,
-            gpa: gpaUW,
+            gpa: gpaUW || gpaW || "",
+            gpaUnweighted: gpaUW || "",
+            gpaWeighted: gpaW || "",
+            gpaScale: gpaUW ? "4.00" : gpaW ? "5.00" : "",
+            classRank: "",
             source: "GPA Calculator",
           },
         ]

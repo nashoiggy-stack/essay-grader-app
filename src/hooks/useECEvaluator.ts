@@ -6,6 +6,7 @@ import type {
   ECMessage,
   ProfileEvaluation,
   ActivityEvaluation,
+  ResumeCategory,
 } from "@/lib/extracurricular-types";
 import { EC_STORAGE_KEY, EC_ACTIVITIES_KEY } from "@/lib/extracurricular-types";
 
@@ -91,6 +92,12 @@ export function useECEvaluator() {
   const toggleDisabled = useCallback((id: string) => {
     setConversations((prev) =>
       prev.map((c) => (c.id === id ? { ...c, disabled: !c.disabled } : c))
+    );
+  }, []);
+
+  const setResumeCategory = useCallback((id: string, category: ResumeCategory) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, resumeCategory: category } : c))
     );
   }, []);
 
@@ -322,6 +329,7 @@ export function useECEvaluator() {
     markDone,
     reopenActivity,
     toggleDisabled,
+    setResumeCategory,
     sendMessage,
     evaluate,
     resetAll,

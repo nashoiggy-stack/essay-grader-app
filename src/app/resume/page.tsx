@@ -18,7 +18,10 @@ const inputClass =
 const EDUCATION_FIELDS: readonly FieldSchema[] = [
   { key: "school", label: "School", type: "text", placeholder: "e.g. Lincoln High School" },
   { key: "graduationDate", label: "Graduation date", type: "text", placeholder: "e.g. May 2026" },
-  { key: "gpa", label: "GPA", type: "text", placeholder: "e.g. 3.95" },
+  { key: "gpaUnweighted", label: "Unweighted GPA", type: "text", placeholder: "e.g. 3.87" },
+  { key: "gpaWeighted", label: "Weighted GPA", type: "text", placeholder: "e.g. 4.52" },
+  { key: "gpaScale", label: "GPA scale", type: "text", placeholder: "e.g. 4.00 or 5.00" },
+  { key: "classRank", label: "Class rank (optional)", type: "text", placeholder: "e.g. 5/450" },
 ];
 
 const AWARD_FIELDS: readonly FieldSchema[] = [

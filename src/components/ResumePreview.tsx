@@ -84,13 +84,33 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ resume }) => {
       {/* Education */}
       {education.length > 0 && (
         <Section title="Education">
-          {education.map((e) => (
-            <EntryRow
-              key={e.id}
-              title={e.school || "—"}
-              meta={[e.graduationDate, e.gpa ? `GPA ${e.gpa}` : ""].filter(Boolean).join(" • ")}
-            />
-          ))}
+          {education.map((e) => {
+            // Build the GPA line: "GPA 3.87 / 4.00 UW • 4.52 / 4.00 W" etc.
+            const gpaParts: string[] = [];
+            if (e.gpaUnweighted) {
+              gpaParts.push(
+                `GPA ${e.gpaUnweighted}${e.gpaScale ? `/${e.gpaScale}` : ""} UW`
+              );
+            }
+            if (e.gpaWeighted) {
+              gpaParts.push(`${e.gpaWeighted} W`);
+            }
+            // Back-compat: legacy single "gpa" field
+            if (gpaParts.length === 0 && e.gpa) {
+              gpaParts.push(`GPA ${e.gpa}`);
+            }
+            if (e.classRank) {
+              gpaParts.push(`Rank ${e.classRank}`);
+            }
+            const metaParts = [e.graduationDate, gpaParts.join(" • ")].filter(Boolean);
+            return (
+              <EntryRow
+                key={e.id}
+                title={e.school || "—"}
+                meta={metaParts.join(" • ")}
+              />
+            );
+          })}
         </Section>
       )}
 

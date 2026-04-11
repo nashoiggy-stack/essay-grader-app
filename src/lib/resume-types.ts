@@ -17,8 +17,12 @@ export interface EducationEntry {
   readonly id: string;
   readonly school: string;
   readonly graduationDate: string;
-  readonly gpa: string;
-  readonly source?: string; // e.g. "GPA Calculator"
+  readonly gpa: string;           // legacy field — kept for back-compat, unused in forms
+  readonly gpaUnweighted: string; // e.g. "3.87"
+  readonly gpaWeighted: string;   // e.g. "4.52"
+  readonly gpaScale: string;      // e.g. "4.00" or "5.00"
+  readonly classRank: string;     // e.g. "5/450" or blank
+  readonly source?: string;       // e.g. "GPA Calculator"
 }
 
 export interface AwardEntry {

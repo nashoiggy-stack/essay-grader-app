@@ -3,7 +3,8 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Plus, Trash2, MessageSquare, Check, EyeOff, Eye } from "lucide-react";
-import type { ECConversation } from "@/lib/extracurricular-types";
+import type { ECConversation, ResumeCategory } from "@/lib/extracurricular-types";
+import { RESUME_CATEGORY_LABELS } from "@/lib/extracurricular-types";
 
 interface ECActivityListProps {
   readonly conversations: ECConversation[];
@@ -12,6 +13,7 @@ interface ECActivityListProps {
   readonly onRemove: (id: string) => void;
   readonly onAdd: () => void;
   readonly onToggleDisabled?: (id: string) => void;
+  readonly onSetResumeCategory?: (id: string, category: ResumeCategory) => void;
 }
 
 export const ECActivityList: React.FC<ECActivityListProps> = ({
@@ -21,6 +23,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
   onRemove,
   onAdd,
   onToggleDisabled,
+  onSetResumeCategory,
 }) => {
   return (
     <div className="space-y-3">
@@ -115,6 +118,35 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                   </button>
                 </div>
               </div>
+
+              {/* Resume category picker — sorts this activity into the right resume section */}
+              {onSetResumeCategory && !isDisabled && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-2.5 pt-2.5 border-t border-white/[0.04]"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600 font-medium shrink-0">
+                      Resume section
+                    </span>
+                    <select
+                      value={conv.resumeCategory ?? "auto"}
+                      onChange={(e) =>
+                        onSetResumeCategory(conv.id, e.target.value as ResumeCategory)
+                      }
+                      className="flex-1 min-w-0 text-[11px] bg-[#0c0c1a]/90 border border-white/[0.08] rounded-md px-2 py-1 text-zinc-300 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
+                    >
+                      {(Object.entries(RESUME_CATEGORY_LABELS) as [ResumeCategory, string][]).map(
+                        ([key, label]) => (
+                          <option key={key} value={key}>
+                            {label}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                </div>
+              )}
             </motion.div>
           );
         })}

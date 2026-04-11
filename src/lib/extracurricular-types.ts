@@ -5,12 +5,31 @@ export interface ECMessage {
   readonly content: string;
 }
 
+// Resume section a conversation maps to. "auto" lets the classifier decide.
+export type ResumeCategory =
+  | "auto"
+  | "activities"
+  | "communityService"
+  | "athletics"
+  | "summerExperience"
+  | "awards";
+
+export const RESUME_CATEGORY_LABELS: Record<ResumeCategory, string> = {
+  auto: "Auto-detect",
+  activities: "Activities",
+  communityService: "Community Service",
+  athletics: "Athletics",
+  summerExperience: "Summer Experience",
+  awards: "Awards & Honors",
+};
+
 export interface ECConversation {
   readonly id: string;
   readonly messages: ECMessage[];
   readonly done: boolean;
   readonly title: string; // derived from first user message
   readonly disabled?: boolean; // excluded from evaluation but not deleted
+  readonly resumeCategory?: ResumeCategory; // manual override for resume import
 }
 
 // ── Evaluation Results ──────────────────────────────────────────────────────

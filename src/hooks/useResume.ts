@@ -190,6 +190,10 @@ export function useResume() {
       school: "",
       graduationDate: "",
       gpa: "",
+      gpaUnweighted: "",
+      gpaWeighted: "",
+      gpaScale: "4.00",
+      classRank: "",
     });
   }, []);
 
