@@ -117,11 +117,17 @@ export function ResumeSectionCard<T extends Entry>({
           >
             <div className="p-4 space-y-3">
               {entries.length === 0 && (
-                <p className="text-[12px] text-zinc-600 italic text-center py-4">
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-[12px] text-zinc-600 italic text-center py-4"
+                >
                   {emptyLabel ?? "No entries yet. Click Add to get started."}
-                </p>
+                </motion.p>
               )}
 
+              <AnimatePresence initial={false}>
               {entries.map((entry, idx) => {
                 const isOpen = openId === entry.id;
                 const entryTitle =
@@ -130,8 +136,13 @@ export function ResumeSectionCard<T extends Entry>({
                   "New entry";
 
                 return (
-                  <div
+                  <motion.div
                     key={entry.id}
+                    layout
+                    initial={{ opacity: 0, y: -4, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, scale: 0.96, height: 0, marginTop: 0 }}
+                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                     className="rounded-xl bg-white/[0.02] border border-white/[0.05] overflow-hidden"
                   >
                     {/* Entry header */}
@@ -265,9 +276,10 @@ export function ResumeSectionCard<T extends Entry>({
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 );
               })}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}

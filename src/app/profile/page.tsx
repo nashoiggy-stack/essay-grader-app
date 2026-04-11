@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { useProfile } from "@/hooks/useProfile";
@@ -86,15 +87,24 @@ export default function ProfilePage() {
               </p>
             </div>
             <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 transition-[width] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
-                style={{ width: `${pct}%` }}
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400"
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.9, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
               />
             </div>
             <div className="mt-4 flex flex-wrap gap-1.5">
-              {sections.map((s) => (
-                <span
+              {sections.map((s, i) => (
+                <motion.span
                   key={s.key}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.4 + i * 0.05,
+                    ease: [0.23, 1, 0.32, 1],
+                  }}
                   className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
                     s.done
                       ? "bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/25"
@@ -102,7 +112,7 @@ export default function ProfilePage() {
                   }`}
                 >
                   {s.done ? "✓ " : ""}{s.key}
-                </span>
+                </motion.span>
               ))}
             </div>
           </div>

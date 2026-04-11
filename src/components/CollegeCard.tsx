@@ -57,10 +57,11 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({ item, index }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className={`group rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.12] transition-[background-color,border-color] duration-300`}
+      initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{ delay: index * 0.04, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+      whileHover={{ y: -2 }}
+      className={`group rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.14] hover:shadow-[0_8px_24px_rgba(10,16,29,0.6)] transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]`}
     >
       {/* ── Header: Name + Fit Score dominant ──────────────────── */}
       <div className="flex items-start justify-between gap-4 mb-4">

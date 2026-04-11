@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { AuroraBackground } from "@/components/AuroraBackground";
 
@@ -79,15 +80,20 @@ export default function GPAPage() {
         </div>
       </ContainerScroll>
 
-      {/* Actual GPA calculator iframe */}
-      <div className="-mt-32">
+      {/* Actual GPA calculator iframe — fades in after hero */}
+      <motion.div
+        className="-mt-32"
+        initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 0.7, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      >
         <iframe
           src="/gpa-calculator.html"
           className="w-full border-0 bg-transparent"
           style={{ height: "2400px", minHeight: "100vh" }}
           title="GPA Calculator"
         />
-      </div>
+      </motion.div>
     </AuroraBackground>
   );
 }
