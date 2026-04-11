@@ -129,6 +129,14 @@ export default function LandingPage() {
   const ctaBlurFilter = useTransform(ctaBlur, (v) => `blur(${v}px)`);
   const ctaPointerEvents = useTransform(ctaOpacity, (v) => (v > 0.5 ? "auto" : "none"));
 
+  // Scroll indicator — visible during hero (0-0.12) and during card arrival (0.3-0.65)
+  // Fades out once the card is fully presented and user is browsing features
+  const scrollHintOpacity = useTransform(
+    smoothProgress,
+    [0, 0.12, 0.3, 0.5, 0.65, 0.75],
+    [1, 1, 0, 0.9, 0.9, 0]
+  );
+
   // Mouse sheen (desktop only)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -302,6 +310,31 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Scroll indicator — only visible on the first two phases */}
+        <motion.div
+          style={{ opacity: scrollHintOpacity }}
+          className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-2"
+          aria-hidden="true"
+        >
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.4em] text-white/60 font-medium">
+            Scroll
+          </span>
+          <div className="relative w-px h-10 sm:h-12 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 bottom-0 bg-gradient-to-b from-transparent via-white/30 to-transparent" />
+            <motion.div
+              initial={{ y: "-100%" }}
+              animate={{ y: "100%" }}
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: [0.23, 1, 0.32, 1],
+                repeatDelay: 0.3,
+              }}
+              className="absolute left-0 right-0 h-4 bg-gradient-to-b from-transparent via-white/80 to-transparent"
+            />
+          </div>
+        </motion.div>
       </div>
     </div>
   );
