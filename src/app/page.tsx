@@ -89,10 +89,15 @@ export default function LandingPage() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
+  // UNDO [shader-delay]: if the shader flashes/pops on first paint, revert
+  // by changing the `0` below back to `500`. The original 500ms delay was
+  // added to hide shader compile-time jank on slow devices; removing it
+  // eliminates the visible blank-hero gap before "Your edge in college
+  // admissions" lights up.
   const [shaderReady, setShaderReady] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShaderReady(true), 500);
+    const timer = setTimeout(() => setShaderReady(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
