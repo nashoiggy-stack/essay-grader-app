@@ -4,6 +4,53 @@ import { useState, useRef } from "react";
 import type { GradingResult } from "@/lib/types";
 import { APP_CONFIG } from "@/data/mockData";
 
+// ── UNDO [grade-cache] ──────────────────────────────────────────────────────
+// Client-side content-hash cache: same essay text → same cached result →
+// same score every time. Fixes the "grade the same essay 3 times, get 3
+// scores" problem caused by temperature:0 being only near-deterministic on
+// Anthropic's API (no seed param available).
+//
+// To revert: delete this block AND the two call sites inside grade() marked
+// with `UNDO [grade-cache]`.
+//
+// To invalidate every user's cache without a deploy: bump GRADING_CACHE_VERSION
+// — the next read will miss and the next grade will refresh the cached entry.
+// ────────────────────────────────────────────────────────────────────────────
+
+const GRADING_CACHE_VERSION = "v1";
+const GRADING_CACHE_PREFIX = "essay-grader-cache";
+
+function hashEssay(text: string): string {
+  // djb2 — not cryptographic, just a stable string key for localStorage
+  let hash = 5381;
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) + hash) ^ text.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function gradingCacheKey(text: string): string {
+  return `${GRADING_CACHE_PREFIX}:${GRADING_CACHE_VERSION}:${hashEssay(text)}`;
+}
+
+function readCachedGrade(text: string): GradingResult | null {
+  try {
+    const raw = localStorage.getItem(gradingCacheKey(text));
+    return raw ? (JSON.parse(raw) as GradingResult) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedGrade(text: string, result: GradingResult): void {
+  try {
+    localStorage.setItem(gradingCacheKey(text), JSON.stringify(result));
+  } catch {
+    // Quota exceeded or disabled — cache silently degrades, grading still works.
+  }
+}
+// end UNDO [grade-cache]
+
 interface UseGradingReturn {
   readonly result: GradingResult | null;
   readonly loading: boolean;
@@ -38,6 +85,29 @@ export function useGrading(): UseGradingReturn {
     }
 
     lastArgsRef.current = { essayText, file };
+
+    // UNDO [grade-cache]: delete this block to always hit the API.
+    // Cache lookup: text-input only (file uploads have no stable client hash
+    // without parsing them first). If we have a cached result for this exact
+    // essay text, return it immediately — no loading state, no API call.
+    if (!hasFile && hasText) {
+      const trimmed = essayText.trim();
+      const cached = readCachedGrade(trimmed);
+      if (cached) {
+        setResult(cached);
+        // Mirror the side-effect the API path writes so Chance Calculator
+        // auto-fill stays consistent.
+        try {
+          localStorage.setItem("essay-grader-result", JSON.stringify({
+            rawScore: cached.rawScore,
+            vspiceComposite: cached.vspiceComposite,
+          }));
+        } catch {}
+        return;
+      }
+    }
+    // end UNDO [grade-cache]
+
     setLoading(true);
 
     try {
@@ -64,6 +134,13 @@ export function useGrading(): UseGradingReturn {
       }
 
       setResult(data as GradingResult);
+
+      // UNDO [grade-cache]: delete this if-block to stop writing cached grades.
+      // Write-through: store the fresh result keyed by essay text so the
+      // next rapid-fire re-grade returns the exact same scores.
+      if (!hasFile && hasText) {
+        writeCachedGrade(essayText.trim(), data as GradingResult);
+      }
 
       // Save scores to localStorage so Chance Calculator can auto-fill essay strength
       try {
