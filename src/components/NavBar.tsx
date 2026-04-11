@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/resume", label: "Resume" },
   { href: "/colleges", label: "Colleges" },
   { href: "/chances", label: "Chances" },
+  { href: "/strategy", label: "Strategy" },
 ] as const;
 
 const SPRING = { type: "spring" as const, stiffness: 350, damping: 30 };
