@@ -1,3 +1,43 @@
+// ── UNDO [application-plan] ─────────────────────────────────────────────────
+// To fully revert the application-plan feature, remove every block tagged
+// `UNDO [application-plan]` across:
+//   - src/lib/college-types.ts
+//   - src/lib/admissions.ts
+//   - src/data/colleges.ts
+//   - src/hooks/useChanceCalculator.ts
+//   - src/components/ChanceForm.tsx
+//   - src/components/ChanceResult.tsx
+// The field on College is optional and the ChanceInputs default is "RD",
+// so removing the tagged regions restores the original behavior with no
+// data migration required.
+// ────────────────────────────────────────────────────────────────────────────
+
+// UNDO [application-plan]: remove this block (ApplicationPlan + ApplicationOption)
+export type ApplicationPlan =
+  | "RD"
+  | "EA"
+  | "REA"
+  | "SCEA"
+  | "ED"
+  | "ED2"
+  | "Rolling";
+
+export interface ApplicationOption {
+  readonly type: ApplicationPlan;
+  readonly binding?: boolean; // true only for ED / ED2
+}
+
+export const APPLICATION_PLAN_LABELS: Record<ApplicationPlan, string> = {
+  RD: "Regular Decision",
+  EA: "Early Action",
+  REA: "Restrictive Early Action",
+  SCEA: "Single-Choice Early Action",
+  ED: "Early Decision",
+  ED2: "Early Decision II",
+  Rolling: "Rolling Admission",
+};
+// end UNDO [application-plan]
+
 export interface College {
   readonly name: string;
   readonly state: string;
@@ -17,6 +57,9 @@ export interface College {
   readonly tags: string[]; // e.g. ["selective", "tech", "research", "collaborative"]
   readonly usNewsRank: number | null;
   readonly region: string;
+  // UNDO [application-plan]: remove this field. It is optional, so removing it
+  // does not require touching the data file; callers fall back to RD-only.
+  readonly applicationOptions?: readonly ApplicationOption[];
 }
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
@@ -73,6 +116,10 @@ export interface ChanceInputs {
   essayCommonApp: string; // 0-100
   essayVspice: string; // 0-4 (composite)
   collegeIndex: number | null;
+  // UNDO [application-plan]: remove this field. Default "RD" means removing
+  // it and deleting the reset-on-college-change effect restores the original
+  // behavior exactly.
+  applicationPlan: ApplicationPlan;
 }
 
 export const EMPTY_FILTERS: CollegeFilters = {
@@ -106,6 +153,8 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   essayCommonApp: "",
   essayVspice: "",
   collegeIndex: null,
+  // UNDO [application-plan]: remove this line.
+  applicationPlan: "RD",
 };
 
 export const REGIONS = [

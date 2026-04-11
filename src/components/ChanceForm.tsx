@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import type { ChanceInputs } from "@/lib/college-types";
+import type { ChanceInputs, ApplicationPlan } from "@/lib/college-types";
 import type { College } from "@/lib/college-types";
+// UNDO [application-plan]: remove APPLICATION_PLAN_LABELS and getApplicationOptions imports
+import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
+import { getApplicationOptions } from "@/lib/admissions";
 import { AP_SUBJECTS } from "@/lib/ap-scores";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -68,6 +71,52 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           ))}
         </select>
       </div>
+
+      {/* UNDO [application-plan]: remove this entire block (the plan selector). */}
+      {inputs.collegeIndex !== null && (() => {
+        const selectedCollege = colleges[inputs.collegeIndex];
+        if (!selectedCollege) return null;
+        const options = getApplicationOptions(selectedCollege);
+        if (options.length <= 1) {
+          // Single option — render as a static chip rather than a dropdown.
+          const only = options[0];
+          return (
+            <div className="col-span-2 sm:col-span-3">
+              <label className={labelClass}>Application Plan</label>
+              <div className="inline-flex items-center gap-2 rounded-lg bg-white/[0.04] border border-white/[0.06] px-3 py-2 text-sm text-zinc-300">
+                <span>{APPLICATION_PLAN_LABELS[only.type]}</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-600">
+                  only option
+                </span>
+              </div>
+            </div>
+          );
+        }
+        const bindingNote = options.some((o) => o.binding);
+        return (
+          <div className="col-span-2 sm:col-span-3">
+            <label className={labelClass}>Application Plan</label>
+            <select
+              className={selectClass}
+              value={inputs.applicationPlan}
+              onChange={(e) => onUpdate("applicationPlan", e.target.value as ApplicationPlan)}
+            >
+              {options.map((o) => (
+                <option key={o.type} value={o.type}>
+                  {APPLICATION_PLAN_LABELS[o.type]}
+                  {o.binding ? " — binding" : ""}
+                </option>
+              ))}
+            </select>
+            {bindingNote && (
+              <p className="mt-1 text-[10px] text-zinc-600">
+                Binding plans require you to attend if admitted.
+              </p>
+            )}
+          </div>
+        );
+      })()}
+      {/* end UNDO [application-plan] */}
 
       {/* Stats */}
       <div>

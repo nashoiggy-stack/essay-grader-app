@@ -7,6 +7,8 @@ import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
 import {
   compareGPA, compareTests, selectivityPenalty, majorAdjustment,
   scoreToBand, BAND_LABELS, essayScoreAdjustment,
+  // UNDO [application-plan]: remove these two imports
+  applicationPlanAdjustment, defaultApplicationPlan,
 } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
 
@@ -52,6 +54,20 @@ export function useChanceCalculator() {
   const resetInputs = () => setInputs(EMPTY_CHANCE_INPUTS);
 
   const college = inputs.collegeIndex !== null ? COLLEGES[inputs.collegeIndex] : null;
+
+  // UNDO [application-plan]: delete this effect. Without it, stale plans
+  // simply never rematch the new college's options and the helper falls back
+  // to RD, which is still safe — but the UX of the plan selector would be
+  // confusing.
+  useEffect(() => {
+    if (!college) return;
+    const validPlans = (college.applicationOptions ?? [{ type: "RD" as const }]).map(
+      (o) => o.type,
+    );
+    if (!validPlans.includes(inputs.applicationPlan)) {
+      setInputs((prev) => ({ ...prev, applicationPlan: defaultApplicationPlan(college) }));
+    }
+  }, [college, inputs.applicationPlan]);
 
   const result = useMemo((): ChanceResult | null => {
     if (!college) return null;
@@ -145,6 +161,25 @@ export function useChanceCalculator() {
     for (const s of essayResult.signals) {
       (s.delta >= 0 ? strengths : weaknesses).push(s.label);
     }
+
+    // UNDO [application-plan]: remove this block. The plan adjustment is
+    // deliberately the LAST signal applied so the pre-plan score can gate it
+    // (weak-profile floor in the helper). Order matters here.
+    const preScore = score;
+    const planResult = applicationPlanAdjustment(
+      inputs.applicationPlan,
+      college.acceptanceRate,
+      preScore,
+      college.name,
+    );
+    score += planResult.adjustment;
+    // Plan boosts are never negative by construction (see admissions.ts).
+    // A zero-delta signal (Rolling, or elite-capped weak profile) is still
+    // informational, so always push to strengths for display.
+    if (planResult.signal) {
+      strengths.push(planResult.signal.label);
+    }
+    // end UNDO [application-plan]
 
     score = Math.max(5, Math.min(95, Math.round(score)));
 

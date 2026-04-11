@@ -1,6 +1,8 @@
-import type { College } from "@/lib/college-types";
+import type { College, ApplicationOption } from "@/lib/college-types";
 
-export const COLLEGES: College[] = [
+// UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
+// and delete the UNDO block at the bottom of this file.
+const RAW_COLLEGES: College[] = [
   // ── Ivy League ──────────────────────────────────────────────────────────────
   { name: "Harvard University", state: "MA", type: "private", size: "medium", setting: "urban", acceptanceRate: 3, avgGPAUW: 3.95, avgGPAW: 4.50, sat25: 1480, sat75: 1580, act25: 34, act75: 36, testPolicy: "required", topMajors: ["Economics", "Computer Science", "Political Science"], competitiveMajors: [], tags: [], usNewsRank: 3, region: "Northeast" },
   { name: "Yale University", state: "CT", type: "private", size: "medium", setting: "urban", acceptanceRate: 4, avgGPAUW: 3.95, avgGPAW: 4.50, sat25: 1470, sat75: 1570, act25: 34, act75: 36, testPolicy: "required", topMajors: ["Economics", "Political Science", "History"], competitiveMajors: [], tags: [], usNewsRank: 5, region: "Northeast" },
@@ -77,3 +79,128 @@ export const COLLEGES: College[] = [
   { name: "Middlebury College", state: "VT", type: "private", size: "small", setting: "rural", acceptanceRate: 13, avgGPAUW: 3.88, avgGPAW: 4.38, sat25: 1370, sat75: 1510, act25: 32, act75: 34, testPolicy: "optional", topMajors: ["Economics", "Political Science", "English"], competitiveMajors: [], tags: [], usNewsRank: null, region: "Northeast" },
   { name: "Bowdoin College", state: "ME", type: "private", size: "small", setting: "suburban", acceptanceRate: 9, avgGPAUW: 3.90, avgGPAW: 4.45, sat25: 1390, sat75: 1530, act25: 33, act75: 35, testPolicy: "optional", topMajors: ["Economics", "Mathematics", "Biology"], competitiveMajors: [], tags: [], usNewsRank: null, region: "Northeast" },
 ];
+
+// ── UNDO [application-plan] ─────────────────────────────────────────────────
+// Everything below is the application-plan data layer. To revert:
+//   1. Delete this entire block (from this comment to "end UNDO").
+//   2. Rename `RAW_COLLEGES` at the top of the file back to
+//      `export const COLLEGES`.
+// Nothing else in the codebase reads `RAW_COLLEGES` directly.
+// ────────────────────────────────────────────────────────────────────────────
+
+// Option presets — small reusable arrays so the lookup map stays readable.
+const RD: readonly ApplicationOption[] = [{ type: "RD" }];
+const RD_ROLLING: readonly ApplicationOption[] = [{ type: "RD" }, { type: "Rolling" }];
+const RD_EA: readonly ApplicationOption[] = [{ type: "RD" }, { type: "EA" }];
+const RD_SCEA: readonly ApplicationOption[] = [{ type: "RD" }, { type: "SCEA" }];
+const RD_REA: readonly ApplicationOption[] = [{ type: "RD" }, { type: "REA" }];
+const RD_ED: readonly ApplicationOption[] = [
+  { type: "RD" },
+  { type: "ED", binding: true },
+];
+const RD_ED_ED2: readonly ApplicationOption[] = [
+  { type: "RD" },
+  { type: "ED", binding: true },
+  { type: "ED2", binding: true },
+];
+const RD_EA_ED: readonly ApplicationOption[] = [
+  { type: "RD" },
+  { type: "EA" },
+  { type: "ED", binding: true },
+];
+const RD_EA_ED_ED2: readonly ApplicationOption[] = [
+  { type: "RD" },
+  { type: "EA" },
+  { type: "ED", binding: true },
+  { type: "ED2", binding: true },
+];
+
+/**
+ * Per-college application-plan options. Based on publicly documented
+ * policies. Schools not listed here fall back to RD-only automatically
+ * via getApplicationOptions() in admissions.ts.
+ */
+const APPLICATION_OPTIONS_BY_NAME: Record<string, readonly ApplicationOption[]> = {
+  // ── Ivy League ──
+  "Harvard University": RD_SCEA,
+  "Yale University": RD_SCEA,
+  "Princeton University": RD_SCEA,
+  "Columbia University": RD_ED,
+  "University of Pennsylvania": RD_ED,
+  "Brown University": RD_ED,
+  "Dartmouth College": RD_ED,
+  "Cornell University": RD_ED,
+
+  // ── Top Privates ──
+  "MIT": RD_EA,
+  "Stanford University": RD_REA,
+  "Duke University": RD_ED,
+  "Northwestern University": RD_ED,
+  "Johns Hopkins University": RD_ED_ED2,
+  "Caltech": RD_REA,
+  "Rice University": RD_ED,
+  "Vanderbilt University": RD_ED_ED2,
+  "Washington University in St. Louis": RD_ED_ED2,
+  "Emory University": RD_ED_ED2,
+  "Georgetown University": RD_REA,
+  "Carnegie Mellon University": RD_ED,
+  "University of Notre Dame": RD_REA,
+  "University of Southern California": RD_EA,
+  "Tufts University": RD_ED_ED2,
+  "NYU": RD_ED_ED2,
+  "Boston College": RD_EA_ED_ED2,
+  "Wake Forest University": RD_ED_ED2,
+  "Boston University": RD_ED_ED2,
+  "Northeastern University": RD_EA_ED,
+  "Tulane University": RD_EA_ED_ED2,
+  "Villanova University": RD_EA_ED_ED2,
+  "Case Western Reserve University": RD_EA_ED_ED2,
+
+  // ── Top Public / State Flagships ──
+  // UC system runs a single RD-only cycle.
+  "UCLA": RD,
+  "UC Berkeley": RD,
+  "UC San Diego": RD,
+  "UC Davis": RD,
+  "UC Santa Barbara": RD,
+  "UC Irvine": RD,
+  "University of Michigan": RD_EA,
+  "University of Virginia": RD_EA_ED,
+  "UNC Chapel Hill": RD_EA,
+  "Georgia Tech": RD_EA,
+  "University of Florida": RD_EA,
+  "UT Austin": RD,
+  "University of Wisconsin-Madison": RD_EA,
+  "University of Illinois Urbana-Champaign": RD_EA,
+  "Ohio State University": RD_EA,
+  "Penn State University": RD_ROLLING,
+  "University of Washington": RD,
+  "Purdue University": RD_EA,
+  "University of Maryland": RD_EA,
+  "Virginia Tech": RD_EA,
+  "Indiana University Bloomington": RD_ROLLING,
+  "University of Georgia": RD_EA,
+  "Clemson University": RD_EA,
+  "University of Pittsburgh": RD_ROLLING,
+  "Michigan State University": RD_ROLLING,
+  "University of Minnesota": RD_ROLLING,
+  "Texas A&M University": RD,
+  "University of Colorado Boulder": RD_EA,
+  "Arizona State University": RD_ROLLING,
+  "University of Arizona": RD_ROLLING,
+  "Rutgers University": RD,
+  "University of Connecticut": RD_EA,
+
+  // ── Liberal Arts ──
+  "Williams College": RD_ED,
+  "Amherst College": RD_ED,
+  "Pomona College": RD_ED_ED2,
+  "Middlebury College": RD_ED_ED2,
+  "Bowdoin College": RD_ED_ED2,
+};
+
+export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
+  const opts = APPLICATION_OPTIONS_BY_NAME[c.name];
+  return opts ? { ...c, applicationOptions: opts } : c;
+});
+// end UNDO [application-plan]

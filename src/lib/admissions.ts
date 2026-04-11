@@ -1,4 +1,10 @@
-import type { College, Classification, ChanceBand } from "./college-types";
+import type {
+  College,
+  Classification,
+  ChanceBand,
+  ApplicationPlan,
+  ApplicationOption,
+} from "./college-types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -396,3 +402,153 @@ export function essayScoreAdjustment(
 
   return { adjustment: Math.round(adjustment), signals };
 }
+
+// ── UNDO [application-plan] ─────────────────────────────────────────────────
+// Everything below this marker (getApplicationOptions, applicationPlanAdjustment)
+// is part of the application-plan feature. To revert, delete this block
+// entirely. Nothing above depends on these symbols.
+// ────────────────────────────────────────────────────────────────────────────
+
+const DEFAULT_APPLICATION_OPTIONS: readonly ApplicationOption[] = [{ type: "RD" }];
+
+/**
+ * Normalize a college's application options. Colleges without the field fall
+ * back to RD-only so callers never have to null-check, and UI always has
+ * something to render.
+ */
+export function getApplicationOptions(college: College): readonly ApplicationOption[] {
+  if (college.applicationOptions && college.applicationOptions.length > 0) {
+    return college.applicationOptions;
+  }
+  return DEFAULT_APPLICATION_OPTIONS;
+}
+
+/**
+ * Return the default plan for a college when the user hasn't chosen one yet,
+ * or when the current plan is no longer valid after a college switch.
+ * Prefers RD; otherwise the first declared option.
+ */
+export function defaultApplicationPlan(college: College): ApplicationPlan {
+  const opts = getApplicationOptions(college);
+  const rd = opts.find((o) => o.type === "RD");
+  return rd ? rd.type : opts[0].type;
+}
+
+/**
+ * Fixed, hand-tuned per-plan boost table.
+ *
+ * IMPORTANT: These numbers are NOT derived from ED vs RD acceptance rate
+ * differences. Early-round acceptance rates are misleading because the early
+ * pool is loaded with athletes, legacies, recruited applicants, and
+ * institutional priorities. Scaling a boost off that ratio would pretend the
+ * model captures hooks it doesn't actually see.
+ *
+ * Instead, these values reflect the *residual* early advantage for otherwise
+ * identical applicants, as reported in admissions research. They are:
+ *
+ *   - Small enough that no single plan can shift a profile more than one band
+ *   - Strictly ordered: RD < EA < REA/SCEA < ED/ED2
+ *   - Capped further at elite schools (acceptance rate ≤ 10%) because the
+ *     plan advantage is demonstrably smaller the more selective the school
+ *
+ * Do NOT rescale these based on published ED acceptance rates.
+ */
+const PLAN_BOOST_NON_ELITE: Record<ApplicationPlan, number> = {
+  RD: 0,
+  Rolling: 0,
+  EA: 1,
+  REA: 2,
+  SCEA: 2,
+  ED: 4,
+  ED2: 4,
+};
+
+const PLAN_BOOST_ELITE: Record<ApplicationPlan, number> = {
+  RD: 0,
+  Rolling: 0,
+  EA: 1,
+  REA: 2,
+  SCEA: 2,
+  ED: 3,
+  ED2: 3,
+};
+
+const ELITE_THRESHOLD = 10; // acceptance rate <= this counts as elite
+const WEAK_PROFILE_FLOOR = 30; // below this, no plan boost applies
+const MAX_PLAN_BOOST = 5; // absolute cap (bands are 15-20 pts wide)
+
+/**
+ * Adjustment for the chosen application plan.
+ *
+ * Guardrails enforced here (all necessary — do not remove any individually):
+ *
+ *   1. Lookup-table boosts are strictly ordered EA ≤ REA/SCEA ≤ ED.
+ *   2. Elite schools (≤10% acceptance) use a tighter table that caps ED at +3.
+ *   3. Weak pre-plan profiles (<30) receive no boost. ED does not rescue
+ *      unqualified applicants — binding commitment is not a bypass.
+ *   4. Absolute cap of +5 on any boost. Bands are 15-20 points wide, so a 5
+ *      point boost can shift at most one band.
+ */
+export function applicationPlanAdjustment(
+  plan: ApplicationPlan,
+  acceptanceRate: number,
+  preScore: number,
+  collegeName: string,
+): { adjustment: number; signal: Signal | null } {
+  // RD and Rolling never contribute a numeric boost.
+  if (plan === "RD" || plan === "Rolling") {
+    if (plan === "Rolling") {
+      return {
+        adjustment: 0,
+        signal: {
+          label: `Rolling admissions at ${collegeName} — applying early in the cycle maximizes your timing advantage`,
+          delta: 0,
+        },
+      };
+    }
+    return { adjustment: 0, signal: null };
+  }
+
+  const isElite = acceptanceRate <= ELITE_THRESHOLD;
+  const table = isElite ? PLAN_BOOST_ELITE : PLAN_BOOST_NON_ELITE;
+  let boost = table[plan];
+
+  // Guardrail 3: weak profile floor.
+  if (preScore < WEAK_PROFILE_FLOOR) {
+    boost = 0;
+  }
+
+  // Guardrail 4: absolute cap.
+  boost = Math.min(MAX_PLAN_BOOST, Math.max(0, boost));
+
+  if (boost === 0) {
+    return { adjustment: 0, signal: null };
+  }
+
+  const label = buildApplicationPlanLabel(plan, isElite, collegeName);
+  return { adjustment: boost, signal: { label, delta: boost / 10 } };
+}
+
+function buildApplicationPlanLabel(
+  plan: ApplicationPlan,
+  isElite: boolean,
+  collegeName: string,
+): string {
+  const eliteNote = isElite
+    ? ` At ${collegeName}, application plan only modestly affects outcomes.`
+    : "";
+  switch (plan) {
+    case "EA":
+      return `Early Action may provide a slight timing advantage.${eliteNote}`;
+    case "REA":
+    case "SCEA":
+      return `Restrictive Early Action may provide a modest early-application advantage.${eliteNote}`;
+    case "ED":
+    case "ED2":
+      return `Binding Early Decision may provide a stronger advantage due to your commitment to attend.${eliteNote}`;
+    default:
+      return "";
+  }
+}
+
+// end UNDO [application-plan]
