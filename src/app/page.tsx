@@ -314,14 +314,16 @@ export default function LandingPage() {
         {/* Scroll indicator — only visible on the first two phases */}
         <motion.div
           style={{ opacity: scrollHintOpacity }}
-          className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-2"
+          className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
           aria-hidden="true"
         >
-          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.4em] text-white/60 font-medium">
+          <span className="text-[12px] sm:text-[13px] uppercase tracking-[0.45em] text-white font-semibold">
             Scroll
           </span>
-          <div className="relative w-px h-10 sm:h-12 overflow-hidden">
-            <div className="absolute inset-x-0 top-0 bottom-0 bg-gradient-to-b from-transparent via-white/30 to-transparent" />
+          <div className="relative w-[2px] h-14 sm:h-16 rounded-full overflow-hidden">
+            {/* Full track — always visible */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/60 to-white/40" />
+            {/* Animated pulse — bright trickle down the line */}
             <motion.div
               initial={{ y: "-100%" }}
               animate={{ y: "100%" }}
@@ -329,9 +331,9 @@ export default function LandingPage() {
                 duration: 1.8,
                 repeat: Infinity,
                 ease: [0.23, 1, 0.32, 1],
-                repeatDelay: 0.3,
+                repeatDelay: 0.25,
               }}
-              className="absolute left-0 right-0 h-4 bg-gradient-to-b from-transparent via-white/80 to-transparent"
+              className="absolute left-0 right-0 h-6 bg-gradient-to-b from-transparent via-white to-transparent"
             />
           </div>
         </motion.div>
