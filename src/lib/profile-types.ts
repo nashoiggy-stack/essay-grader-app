@@ -15,6 +15,17 @@ export interface APScoreProfile {
   readonly score: 1 | 2 | 3 | 4 | 5;
 }
 
+// Shared student identity used by resume, cover letters, etc.
+// Optional — tools degrade gracefully when basicInfo is absent.
+export interface BasicStudentInfo {
+  readonly name: string;
+  readonly email: string;
+  readonly phone: string;
+  readonly school: string;
+  readonly graduationYear: string;
+  readonly address: string;
+}
+
 export interface UserProfile {
   // GPA — auto-filled from GPA calculator
   gpaUW: string;
@@ -37,7 +48,19 @@ export interface UserProfile {
 
   // Course rigor — auto-filled from weighted GPA
   rigor: "low" | "medium" | "high";
+
+  // Shared student identity (used by resume, future cover letters, etc.)
+  basicInfo?: BasicStudentInfo;
 }
+
+export const EMPTY_BASIC_STUDENT_INFO: BasicStudentInfo = {
+  name: "",
+  email: "",
+  phone: "",
+  school: "",
+  graduationYear: "",
+  address: "",
+};
 
 export const EMPTY_PROFILE: UserProfile = {
   gpaUW: "",
@@ -50,6 +73,7 @@ export const EMPTY_PROFILE: UserProfile = {
   ecBand: "",
   ecStrength: "medium",
   rigor: "medium",
+  basicInfo: EMPTY_BASIC_STUDENT_INFO,
 };
 
 export const PROFILE_STORAGE_KEY = "admitedge-profile";

@@ -9,12 +9,13 @@ const ShaderLines = dynamic(
   () => import("@/components/ui/shader-lines").then((m) => ({ default: m.ShaderLines })),
   { ssr: false }
 );
-import { PenLine, Calculator, ClipboardList, School, BarChart3, ArrowRight, User } from "lucide-react";
+import { PenLine, Calculator, ClipboardList, FileText, School, BarChart3, ArrowRight, User } from "lucide-react";
 
 const FEATURES = [
   { href: "/essay", icon: PenLine, title: "Essay Grader", description: "AI essay grading with 7 criteria + VSPICE rubric.", stat: "7+V", statLabel: "Criteria" },
   { href: "/gpa", icon: Calculator, title: "GPA Calculator", description: "Weighted and unweighted GPA across HS and college scales.", stat: "4", statLabel: "Scales" },
-  { href: "/extracurriculars", icon: ClipboardList, title: "EC Evaluator", description: "Conversational activity evaluation with tier ratings.", stat: "4", statLabel: "Tiers" },
+  { href: "/extracurriculars", icon: ClipboardList, title: "EC Evaluator", description: "Conversational activity evaluation with tier ratings.", stat: "5", statLabel: "Bands" },
+  { href: "/resume", icon: FileText, title: "Resume Helper", description: "College admissions resume builder with AI rewriting.", stat: "8", statLabel: "Sections" },
   { href: "/colleges", icon: School, title: "College List", description: "5-tier college list filtered by your profile.", stat: "80+", statLabel: "Schools" },
   { href: "/chances", icon: BarChart3, title: "Chances", description: "Admission chance estimates with interactive map.", stat: "5", statLabel: "Bands" },
 ];
@@ -283,12 +284,12 @@ export default function LandingPage() {
                   Everything you need.
                 </h2>
                 <p className="text-blue-100/50 text-xs sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed hidden sm:block">
-                  Five integrated tools that share data automatically. Your GPA fills into your
+                  Six integrated tools that share data automatically. Your GPA fills into your
                   college list. Your essay score adjusts your chances. Everything connects.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-4">
                 {FEATURES.map((feature, i) => (
                   <FeatureCard
                     key={feature.href}

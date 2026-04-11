@@ -21,6 +21,7 @@ async function syncToCloud(userId: string) {
     const essayRaw = localStorage.getItem("essay-grader-result");
     const ecActivitiesRaw = localStorage.getItem("ec-evaluator-activities");
     const ecResultRaw = localStorage.getItem("ec-evaluator-result");
+    const resumeRaw = localStorage.getItem("admitedge-resume");
 
     const { error } = await supabase
       .from("user_profiles")
@@ -31,6 +32,7 @@ async function syncToCloud(userId: string) {
         essay_data: essayRaw ? JSON.parse(essayRaw) : null,
         ec_activities: ecActivitiesRaw ? JSON.parse(ecActivitiesRaw) : null,
         ec_result: ecResultRaw ? JSON.parse(ecResultRaw) : null,
+        resume_data: resumeRaw ? JSON.parse(resumeRaw) : null,
       }, { onConflict: "user_id" });
 
     if (error) {
@@ -47,7 +49,7 @@ export async function loadFromCloud(userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, updated_at")
+      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, resume_data, updated_at")
       .eq("user_id", userId)
       .single();
 
@@ -77,6 +79,10 @@ export async function loadFromCloud(userId: string): Promise<boolean> {
 
     if (data.ec_result && !localStorage.getItem("ec-evaluator-result")) {
       localStorage.setItem("ec-evaluator-result", JSON.stringify(data.ec_result));
+    }
+
+    if (data.resume_data && !localStorage.getItem("admitedge-resume")) {
+      localStorage.setItem("admitedge-resume", JSON.stringify(data.resume_data));
     }
 
     return true;

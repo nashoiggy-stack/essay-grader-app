@@ -63,6 +63,36 @@ p {
   top: 16px;
 }
 
+/* ── Print styles (Resume Helper PDF export) ────────────────── */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  body::after {
+    display: none !important;
+  }
+  nav, header, footer, aside, [aria-hidden="true"] {
+    display: none !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  .resume-preview {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .resume-section {
+    page-break-inside: avoid;
+  }
+  @page {
+    margin: 0.6in;
+    size: letter;
+  }
+}
+
 /* ── Noise texture overlay ──────────────────────────────────── */
 body::after {
   content: "";

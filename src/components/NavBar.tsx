@@ -8,10 +8,11 @@ import { useAuthContext } from "./AuthProvider";
 import { AdmitEdgeLogo } from "./AdmitEdgeLogo";
 
 const NAV_ITEMS = [
-  { href: "/essay", label: "Essay Grader" },
-  { href: "/gpa", label: "GPA Calc" },
+  { href: "/essay", label: "Essay" },
+  { href: "/gpa", label: "GPA" },
   { href: "/extracurriculars", label: "ECs" },
-  { href: "/colleges", label: "College List" },
+  { href: "/resume", label: "Resume" },
+  { href: "/colleges", label: "Colleges" },
   { href: "/chances", label: "Chances" },
 ] as const;
 
