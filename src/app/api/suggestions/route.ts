@@ -5,7 +5,9 @@ import {
   SUGGESTIONS_SYSTEM_PROMPT,
   type SuggestionFocus,
 } from "@/lib/suggestions-prompt";
-import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
+// UNDO [opus-upgrade]: delete the ` as ANTHROPIC_MODEL` alias below to revert
+// this endpoint to Sonnet — the variable name in the call site stays the same.
+import { ANTHROPIC_MODEL_PREMIUM as ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";

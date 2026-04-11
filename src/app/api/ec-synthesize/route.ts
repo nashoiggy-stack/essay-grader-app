@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildProfileSynthesisPrompt } from "@/lib/ec-prompts";
 import { withAnthropicRetry } from "@/lib/anthropic-retry";
-import { ANTHROPIC_MODEL } from "@/lib/anthropic-model";
+// UNDO [opus-upgrade]: delete the ` as ANTHROPIC_MODEL` alias below to revert
+// this endpoint to Sonnet — the variable name in the call site stays the same.
+import { ANTHROPIC_MODEL_PREMIUM as ANTHROPIC_MODEL } from "@/lib/anthropic-model";
 import type {
   ActivityEvaluation,
   ProfileEvaluation,
