@@ -31,7 +31,53 @@ RULES FOR WHAT TO KEEP:
 - Words essential for rhythm, flow, and voice
 - Surprising, unique insight and self-awareness
 
-For each suggestion, specify whether it's a CUT (remove entirely) or REWRITE (replace with something shorter).`;
+For each suggestion, specify whether it's a CUT (remove entirely) or REWRITE (replace with something shorter).
+
+==================================================
+REFINED SCORE ALIGNMENT RULE (FINAL)
+==================================================
+
+Suggestions must be strongly aligned with reducing the essay toward the 650-word target.
+
+REQUIREMENTS:
+
+1. Each suggestion must target a clear instance of wordiness, redundancy, or filler.
+
+2. Each change should be HIGH-LIKELIHOOD to reduce word count without losing meaning:
+   - remove filler, weak adverbs, and prepositional chains
+   - collapse redundant phrasing into tight alternatives
+   - cut entire sentences that restate what a vivid example already showed
+
+3. Avoid low-impact or neutral edits:
+   - do NOT include cuts that save only one or two words with no real gain
+   - prioritize high-impact trims only
+
+4. Do NOT fabricate impact:
+   - do NOT claim a cut is substantial if it is cosmetic or trivial
+
+==================================================
+CROSS-DIMENSION SAFETY
+==================================================
+
+Cuts must NOT significantly harm:
+- clarity
+- structure and narrative flow
+- coherence
+- natural voice, rhythm, or essential meaning
+
+If a cut reduces word count but degrades readability:
+→ refine it or discard it
+
+==================================================
+QUALITY FILTER
+==================================================
+
+Only include cuts that:
+- materially reduce word count
+- would feel tighter to an admissions reader without feeling rushed
+
+If a cut is marginal:
+→ omit it`;
   }
 
   return `You are an expert Ivy League admissions essay coach helping a high school junior improve their Common App essay. Focus specifically on raising the "${focus}" score.
@@ -44,7 +90,53 @@ Generate inline suggestions that are specific, actionable, and reference exact t
 - **REWRITE** for improvement (blue) — rephrase for clarity, impact, or voice
 - **STRENGTHEN** for depth (purple) — deepen vulnerability, passion, or insight
 
-Every suggestion must directly serve the goal of raising the "${focus}" score. Be specific about WHY each change helps.`;
+Every suggestion must directly serve the goal of raising the "${focus}" score. Be specific about WHY each change helps.
+
+==================================================
+REFINED SCORE ALIGNMENT RULE (FINAL)
+==================================================
+
+Suggestions must be strongly aligned with improving the "${focus}" score.
+
+REQUIREMENTS:
+
+1. Each suggestion must target a clear weakness relevant to the "${focus}" dimension.
+
+2. Each change should be HIGH-LIKELIHOOD to improve the score based on the rubric:
+   - add missing signals (reflection, specificity, voice, etc.)
+   - strengthen weak signals
+   - remove harmful or generic content
+
+3. Avoid low-impact or neutral edits:
+   - do NOT include suggestions that are unlikely to meaningfully affect the score
+   - prioritize high-impact improvements only
+
+4. Do NOT fabricate impact:
+   - do NOT claim a suggestion improves the score if it is only stylistic or minimal
+
+==================================================
+CROSS-DIMENSION SAFETY
+==================================================
+
+Improvements must NOT significantly harm:
+- clarity
+- structure
+- coherence
+- natural voice
+
+If a suggestion improves "${focus}" but degrades readability:
+→ refine it or discard it
+
+==================================================
+QUALITY FILTER
+==================================================
+
+Only include suggestions that:
+- materially improve the essay
+- would likely be recognized by an admissions reader as stronger
+
+If a suggestion is marginal:
+→ omit it`;
 }
 
 function getCriterionContext(focus: SuggestionFocus): string {
