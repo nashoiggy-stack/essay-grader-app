@@ -15,24 +15,96 @@ interface QualField {
   readonly getDetail: (c: College) => string | null;    // expanded description
 }
 
+// ── Tag label maps — strict definitions, no heuristics ────────────────────
+// Tags are derived DIRECTLY from the qualitative classifications on College.
+// Never from Tier3, never from vibeTags[0], never guessed.
+
+const SOCIAL_SCENE_LABEL: Record<string, string> = {
+  high: "Active",
+  moderate: "Moderate",
+  low: "Quiet / Niche",
+};
+
+const GREEK_ROLE_LABEL: Record<string, string> = {
+  dominant: "Dominant",
+  present: "Present",
+  minimal: "Minimal",
+};
+
+const COLLAB_LABEL: Record<string, string> = {
+  collaborative: "Collaborative",
+  mixed: "Mixed",
+  competitive: "Competitive",
+};
+
+const ARCHETYPE_LABEL: Record<string, string> = {
+  preprofessional: "Preprofessional",
+  intellectual: "Intellectual",
+  balanced: "Balanced",
+  entrepreneurial: "Entrepreneurial",
+  "service-oriented": "Service-Oriented",
+};
+
+const VIBE_LABEL: Record<string, string> = {
+  intense: "Intense",
+  rigorous: "Rigorous",
+  moderate: "Moderate",
+  relaxed: "Relaxed",
+};
+
+const GRADE_LABEL: Record<string, string> = {
+  deflation: "Grade Deflation",
+  neutral: "Neutral",
+  inflation: "Grade Inflation",
+};
+
+const SOCIAL_STYLE_LABEL: Record<string, string> = {
+  "campus-centered": "Campus-Centered",
+  "city-integrated": "City-Integrated",
+  mixed: "Mixed",
+};
+
+const LOCATION_LABEL: Record<string, string> = {
+  urban: "Urban",
+  suburban: "Suburban",
+  "college-town": "College Town",
+  rural: "Rural",
+};
+
+const CLIMATE_LABEL: Record<string, string> = {
+  "discussion-heavy": "Discussion-Heavy",
+  "research-heavy": "Research-Heavy",
+  "preprofessional-focused": "Career-Focused",
+  balanced: "Balanced",
+};
+
+// Helper: read classification tag, fallback gracefully
+function qTag(c: College, field: string, labelMap: Record<string, string>): string | null {
+  const q = c.qualitative;
+  if (!q) return null;
+  const val = (q as unknown as Record<string, string>)[field];
+  return val ? (labelMap[val] ?? val.charAt(0).toUpperCase() + val.slice(1)) : null;
+}
+
 // ── Campus fields ──────────────────────────────────────────────────────────
 
 const CAMPUS_FIELDS: QualField[] = [
   {
     key: "socialScene",
     label: "Social Scene",
-    getTag: (c) => {
-      if (c.campusDetails?.socialScene) return c.socialScene === "high" ? "Active" : c.socialScene === "low" ? "Quiet" : "Moderate";
-      return c.socialScene ? c.socialScene.charAt(0).toUpperCase() + c.socialScene.slice(1) : null;
-    },
+    getTag: (c) => qTag(c, "socialSceneType", SOCIAL_SCENE_LABEL),
     getDetail: (c) => c.campusDetails?.socialScene ?? null,
   },
   {
     key: "greekLife",
     label: "Greek Life",
     getTag: (c) => {
-      if (c.greekLifePct != null) return `${c.greekLifePct}%`;
-      return c.greekLifePresence ? c.greekLifePresence.charAt(0).toUpperCase() + c.greekLifePresence.slice(1) : null;
+      // Show % when available, classification label as fallback
+      if (c.greekLifePct != null && c.greekLifePct > 0) {
+        const role = qTag(c, "greekLifeRole", GREEK_ROLE_LABEL);
+        return `${c.greekLifePct}%${role ? ` · ${role}` : ""}`;
+      }
+      return qTag(c, "greekLifeRole", GREEK_ROLE_LABEL);
     },
     getDetail: (c) => c.campusDetails?.greekLife ?? null,
   },
@@ -42,89 +114,90 @@ const CAMPUS_FIELDS: QualField[] = [
     getTag: (c) => {
       if (c.sportsCulture === "high") return "Game Day School";
       if (c.sportsCulture === "low") return "Minimal";
-      return c.sportsCulture ? "Moderate" : null;
+      return "Moderate";
     },
     getDetail: (c) => c.campusDetails?.sportsCulture ?? null,
   },
   {
-    key: "housing",
-    label: "Housing",
-    getTag: (c) => c.campusCohesion === "high" ? "Strong Residential" : c.campusCohesion === "low" ? "Commuter-Friendly" : "Mixed",
+    key: "socialStyle",
+    label: "Social Style",
+    getTag: (c) => qTag(c, "socialStyle", SOCIAL_STYLE_LABEL),
     getDetail: (c) => c.campusDetails?.housing ?? null,
   },
   {
     key: "environment",
-    label: "Campus Feel",
-    getTag: (c) => c.setting ? c.setting.charAt(0).toUpperCase() + c.setting.slice(1) : null,
+    label: "Location Type",
+    getTag: (c) => qTag(c, "locationType", LOCATION_LABEL),
     getDetail: (c) => c.campusDetails?.environment ?? null,
   },
 ];
 
 const CULTURE_FIELDS: QualField[] = [
   {
-    key: "vibe",
-    label: "Vibe",
-    getTag: (c) => c.vibeTags?.slice(0, 2).join(", ") ?? null,
+    key: "academicVibe",
+    label: "Academic Vibe",
+    getTag: (c) => qTag(c, "academicVibe", VIBE_LABEL),
     getDetail: (c) => c.cultureDetails?.vibe ?? null,
   },
   {
     key: "collaboration",
     label: "Collaboration",
-    getTag: (c) => {
-      if (c.cultureDetails?.collaboration) return c.academicIntensity === "high" ? "Intense + Collaborative" : "Collaborative";
-      return null;
-    },
+    getTag: (c) => qTag(c, "collaborationStyle", COLLAB_LABEL),
     getDetail: (c) => c.cultureDetails?.collaboration ?? null,
   },
   {
     key: "studentType",
     label: "Student Profile",
-    getTag: (c) => c.vibeTags?.[0] ?? null,
+    getTag: (c) => qTag(c, "studentArchetype", ARCHETYPE_LABEL),
     getDetail: (c) => c.cultureDetails?.studentType ?? null,
   },
   {
-    key: "academicCulture",
-    label: "Academic Culture",
-    getTag: (c) => c.academicIntensity === "high" ? "Intense" : c.academicIntensity === "low" ? "Relaxed" : "Balanced",
+    key: "gradeCulture",
+    label: "Grade Culture",
+    getTag: (c) => qTag(c, "gradeCulture", GRADE_LABEL),
     getDetail: (c) => c.cultureDetails?.academicCulture ?? null,
+  },
+  {
+    key: "intellectualClimate",
+    label: "Intellectual Climate",
+    getTag: (c) => qTag(c, "intellectualClimate", CLIMATE_LABEL),
+    getDetail: (c) => null, // no separate description — vibe covers this
   },
 ];
 
 const LOCATION_FIELDS: QualField[] = [
   {
-    key: "cityIntegration",
-    label: "City Integration",
+    key: "locationType",
+    label: "Location Type",
     getTag: (c) => {
-      // Use the school's setting as the primary signal — Yale is "urban"
-      // even though it's 75 miles from NYC, because New Haven IS a city.
-      // Distance is secondary, for distinguishing within a setting tier.
-      if (c.setting === "urban") {
-        return c.distanceToCityMiles != null && c.distanceToCityMiles <= 5
-          ? "In the city"
-          : "Urban";
-      }
-      if (c.setting === "suburban") {
-        if (c.distanceToCityMiles != null && c.distanceToCityMiles <= 15) return "Near city";
-        return "Suburban";
-      }
-      if (c.setting === "rural") {
-        if (c.distanceToCityMiles != null && c.distanceToCityMiles <= 40) return "College town";
-        return "Rural";
-      }
-      return c.proximityToCity ? c.proximityToCity.charAt(0).toUpperCase() + c.proximityToCity.slice(1) : null;
+      // Primary: read from strict classification. Fallback: derive from setting.
+      const q = c.qualitative?.locationType;
+      if (q) return LOCATION_LABEL[q] ?? q;
+      // Legacy fallback for schools without qualitative yet
+      if (c.setting === "urban") return "Urban";
+      if (c.setting === "suburban") return "Suburban";
+      if (c.setting === "rural") return "Rural";
+      return null;
     },
     getDetail: (c) => c.locationDetails?.cityIntegration ?? null,
   },
   {
     key: "internshipAccess",
     label: "Internship Access",
-    getTag: (c) => c.internshipStrength === "high" ? "Strong" : c.internshipStrength === "low" ? "Limited" : "Moderate",
+    getTag: (c) => {
+      // Show distance to city as concrete data when available
+      if (c.distanceToCityMiles != null) {
+        if (c.distanceToCityMiles <= 5) return "In-city";
+        return `${c.distanceToCityMiles} mi to metro`;
+      }
+      return c.internshipStrength === "high" ? "Strong" : c.internshipStrength === "low" ? "Limited" : "Moderate";
+    },
     getDetail: (c) => c.locationDetails?.internshipAccess ?? null,
   },
   {
     key: "surroundings",
     label: "Surroundings",
-    getTag: (c) => c.weather ?? c.setting ?? null,
+    getTag: (c) => c.weather ?? null,
     getDetail: (c) => c.locationDetails?.surroundings ?? null,
   },
 ];

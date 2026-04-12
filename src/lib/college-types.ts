@@ -100,8 +100,10 @@ export interface College {
   readonly sportsCulture?: Tier3;
   readonly campusCohesion?: Tier3;
 
-  // Structured qualitative descriptions — 1-2 sentences, school-specific.
-  // These replace vague tier labels as the primary UI display.
+  // Structured qualitative: strict classifications + descriptions.
+  // Classifications are the source of truth for tag labels.
+  // Descriptions are 1-2 sentences for expanded detail.
+  readonly qualitative?: QualitativeClassifications;
   readonly campusDetails?: CampusDetails;
   readonly cultureDetails?: CultureDetails;
   readonly locationDetails?: LocationDetails;
@@ -147,30 +149,106 @@ export interface GenderBreakdown {
   readonly female?: number;
 }
 
-// ── Structured qualitative descriptions ─────────────────────────────────────
-// Each field is 1-2 sentences, school-specific, never generic filler.
-// These are the primary user-facing display; tier labels (Tier3) are kept
-// internally for comparison logic but are NOT the main UI output.
+// ── Strict qualitative classifications ───────────────────────────────────────
+//
+// Each classification uses a fixed enum with a real-world definition.
+// Tags are derived FROM these enums, never guessed from Tier3 values.
+// Descriptions are 1-2 sentences, school-specific, never generic filler.
+
+// LOCATION: based on actual geography, NOT distance to NYC
+export type LocationType =
+  | "urban"          // integrated with a major metro (Columbia, NYU, BU)
+  | "suburban"       // near a major city, 30-60 min access (Princeton, Villanova)
+  | "college-town"   // town dominated by the university (Ann Arbor, Chapel Hill)
+  | "rural";         // isolated, low population, limited access (Dartmouth, Cornell)
+
+// COLLABORATION style
+export type CollaborationStyle =
+  | "collaborative"  // group-oriented, shared work culture (MIT psets, Rice colleges)
+  | "mixed"          // varies by major or department
+  | "competitive";   // grade-conscious, high comparison (pre-med heavy, curve-graded)
+
+// STUDENT archetype
+export type StudentArchetype =
+  | "preprofessional" // career-focused: finance, consulting, tech pipelines
+  | "intellectual"    // theory-driven, discussion-heavy, academia-leaning
+  | "balanced"        // genuine mix (only use when truly neither-dominant)
+  | "entrepreneurial" // startup/innovation-focused
+  | "service-oriented"; // mission/community driven
+
+// ACADEMIC VIBE
+export type AcademicVibe =
+  | "intense"        // heavy workload, high pressure, demanding
+  | "rigorous"       // challenging but manageable, well-supported
+  | "moderate"       // standard college workload
+  | "relaxed";       // lighter workload, flexible pacing
+
+// GRADE CULTURE
+export type GradeCulture =
+  | "deflation"      // harder grading (Princeton, MIT, Berkeley)
+  | "neutral"        // standard grading
+  | "inflation";     // easier grading (Harvard, Stanford, Brown)
+
+// PARTY / SOCIAL SCENE
+export type SocialSceneType =
+  | "high"           // frequent large events, dominant social activity
+  | "moderate"       // active but not dominant
+  | "low";           // limited or niche, intellectual/small-group focused
+
+// GREEK LIFE role
+export type GreekLifeRole =
+  | "dominant"       // major part of social structure (>25%)
+  | "present"        // exists but not dominant (10-25%)
+  | "minimal";       // small role (<10%)
+
+// SOCIAL STYLE
+export type SocialStyle =
+  | "campus-centered"  // activity mostly on campus
+  | "city-integrated"  // social life heavily off-campus
+  | "mixed";           // blend of both
+
+// INTELLECTUAL CLIMATE
+export type IntellectualClimate =
+  | "discussion-heavy"      // seminars, debate, humanities-leaning
+  | "research-heavy"        // labs, projects, STEM-leaning
+  | "preprofessional-focused" // career prep dominates intellectual life
+  | "balanced";             // genuine mix
 
 export interface CampusDetails {
-  readonly socialScene?: string;     // what social life actually looks/feels like
-  readonly greekLife?: string;        // role of Greek life on campus
-  readonly sportsCulture?: string;    // how central athletics are to daily life
-  readonly housing?: string;          // residential experience
-  readonly environment?: string;      // physical campus + surrounding area feel
+  readonly socialScene?: string;
+  readonly greekLife?: string;
+  readonly sportsCulture?: string;
+  readonly housing?: string;
+  readonly environment?: string;
 }
 
 export interface CultureDetails {
-  readonly vibe?: string;             // overall atmosphere in 1-2 sentences
-  readonly collaboration?: string;    // how students work together (or compete)
-  readonly studentType?: string;      // who attends — archetype description
-  readonly academicCulture?: string;  // attitude toward coursework + intellectual life
+  readonly vibe?: string;
+  readonly collaboration?: string;
+  readonly studentType?: string;
+  readonly academicCulture?: string;
 }
 
 export interface LocationDetails {
-  readonly cityIntegration?: string;  // how the school connects to its city
-  readonly internshipAccess?: string; // practical access to career opportunities
-  readonly surroundings?: string;     // what's around campus
+  readonly cityIntegration?: string;
+  readonly internshipAccess?: string;
+  readonly surroundings?: string;
+}
+
+// ── Structured classifications (used for tag derivation) ────────────────────
+// These live on College and are the SOURCE OF TRUTH for tag labels.
+// The UI reads these directly — never derives tags from Tier3 values.
+
+export interface QualitativeClassifications {
+  readonly locationType: LocationType;
+  readonly collaborationStyle: CollaborationStyle;
+  readonly studentArchetype: StudentArchetype;
+  readonly academicVibe: AcademicVibe;
+  readonly gradeCulture: GradeCulture;
+  readonly socialSceneType: SocialSceneType;
+  readonly greekLifeRole: GreekLifeRole;
+  readonly socialStyle: SocialStyle;
+  readonly intellectualClimate: IntellectualClimate;
 }
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
