@@ -110,44 +110,37 @@ Prefer fewer, higher-impact suggestions over many small ones.`;
   }
 
   if (focus === "Lower Word Count") {
-    return `You are an expert college essay editor helping a high school junior trim their Common App essay to fit the 650-word limit while MAINTAINING or IMPROVING the essay's quality scores.
+    return `Focus: trim the essay to fit the 650-word limit while MAINTAINING or IMPROVING quality scores. Make it more concise and submission-ready.
 
-Your goal is to make the essay MORE CONCISE and SUBMISSION-READY — tighter prose that scores the same or better, never worse.
+IMPORTANT: You MUST return valid JSON using the exact format specified in your system prompt above. Use ONLY "cut" and "rewrite" as type values (lowercase). Do NOT use any other format.
 
-Apply these four cutting strategies in order of precision:
+Apply these cutting strategies in order of precision:
 
-1. **Word by word** — Cut filler words: "that", "very", "really", "just", "in order to", "due to the fact that", unnecessary adverbs. Use contractions ("I would" → "I'd").
-2. **Phrase by phrase** — Cut prepositional phrases that don't add meaning. Replace wordy phrases with single words ("at this point in time" → "now").
-3. **Line by line** — Cut entire sentences that restate something already shown. If you gave a vivid example, cut the "this shows that I am..." sentence — trust the reader.
-4. **Idea by idea** — Cut repeated themes or redundant anecdotes. If two paragraphs make the same point, merge or cut one.
+1. Word by word — Cut filler: "that", "very", "really", "just", "in order to", "due to the fact that", adverbs. Use contractions.
+2. Phrase by phrase — Cut empty prepositional phrases. Replace wordy phrases with single words.
+3. Line by line — Cut sentences that restate what a vivid example already showed. Trust the reader.
+4. Idea by idea — Merge or cut redundant paragraphs that make the same point twice.
 
-WHAT TO CUT (safe — improves scores):
-- Redundant "tell" sentences after a "show" moment (improves Writing Skills)
-- Filler words and weak adverbs (improves Writing Skills)
-- Vague generalizations that add nothing specific (improves Authenticity)
-- Background/context that isn't essential to YOUR story (improves Compelling Story)
-- Cliche phrases that weaken voice (improves Authenticity AND Expression)
+SAFE TO CUT (improves scores):
+- Redundant "tell" sentences after a "show" moment (Writing Skills up)
+- Filler words and weak adverbs (Writing Skills up)
+- Vague generalizations (Authenticity up)
+- Unnecessary background (Compelling Story up)
+- Cliche phrases (Authenticity + Expression up)
 
-WHAT TO NEVER CUT (would lower scores):
-- Specific sensory details that show personality (Authenticity, Passion)
-- Reflection beats ("I realized..." / "What changed was...") (Insight, Values)
-- Moments of vulnerability or emotional honesty (Vulnerability, Selflessness)
-- Unique voice — dialogue, humor, unusual phrasing (Expression, Authenticity)
-- The narrative arc — hook, tension, resolution (Compelling Story)
-- Forward-looking statements about growth or goals (Ambition)
+NEVER CUT (would lower scores):
+- Specific sensory details (Authenticity, Passion)
+- Reflection beats — "I realized..." (Insight, Values)
+- Vulnerability or emotional honesty (Vulnerability)
+- Unique voice — dialogue, humor, unusual phrasing (Expression)
+- Narrative arc — hook, tension, resolution (Compelling Story)
+- Forward-looking growth statements (Ambition)
 
-For each suggestion, use ONLY these types (lowercase):
-- "cut" — remove the text entirely, replacement should be ""
-- "rewrite" — replace with a shorter version that preserves meaning
+For "cut" type: set replacement to "" (empty string).
+For "rewrite" type: set replacement to a shorter version that preserves meaning.
 
-SCORE PROTECTION RULE (CRITICAL):
-Every cut or rewrite must make the essay EQUALLY STRONG OR STRONGER — never weaker. Concise writing scores HIGHER on Writing Skills, and removing filler often reveals the authentic voice underneath, which improves Authenticity. A well-trimmed essay is a better essay.
-
-If a cut would remove something that contributes to ANY scoring dimension (Insight, Values, Passion, Vulnerability, etc.):
-→ DO NOT cut it, even if it saves 20 words
-→ The 650-word limit is less important than essay quality
-
-Only cut text that is DEAD WEIGHT — text that adds nothing to any dimension.`;
+SCORE PROTECTION (CRITICAL):
+Every suggestion must make the essay equally strong or stronger. Concise writing scores HIGHER. Only cut DEAD WEIGHT — text that contributes to zero scoring dimensions. If a passage contributes to ANY dimension, keep it even if cutting it saves 20 words.`;
   }
 
   return `You are an expert Ivy League admissions essay coach helping a high school junior improve their Common App essay. Focus specifically on raising the "${focus}" score.

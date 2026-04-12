@@ -54,11 +54,40 @@ export async function POST(req: NextRequest) {
     try {
       parsed = JSON.parse(text);
     } catch {
-      console.error("Failed to parse suggestions JSON:", text.slice(0, 500));
-      return NextResponse.json(
-        { error: "Failed to parse suggestions. Please try again." },
-        { status: 500 }
-      );
+      // Aggressive recovery: try to extract JSON from mixed text/JSON responses.
+      // The model sometimes prepends explanatory text before the JSON object.
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch {
+          // Also try extracting a bare array
+          const arrMatch = text.match(/\[[\s\S]*\]/);
+          if (arrMatch) {
+            try {
+              parsed = { suggestions: JSON.parse(arrMatch[0]) };
+            } catch {
+              console.error("Failed to parse suggestions JSON after recovery:", text.slice(0, 500));
+              return NextResponse.json(
+                { error: "Failed to parse suggestions. Please try again." },
+                { status: 500 }
+              );
+            }
+          } else {
+            console.error("Failed to parse suggestions JSON:", text.slice(0, 500));
+            return NextResponse.json(
+              { error: "Failed to parse suggestions. Please try again." },
+              { status: 500 }
+            );
+          }
+        }
+      } else {
+        console.error("No JSON found in suggestions response:", text.slice(0, 500));
+        return NextResponse.json(
+          { error: "Failed to parse suggestions. Please try again." },
+          { status: 500 }
+        );
+      }
     }
 
     // Normalize response shape: the model should return { suggestions: [...] }
