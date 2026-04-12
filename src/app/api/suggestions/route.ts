@@ -61,6 +61,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Normalize response shape: the model should return { suggestions: [...] }
+    // but might return a bare array or use different casing. Handle gracefully.
+    if (Array.isArray(parsed)) {
+      parsed = { suggestions: parsed };
+    }
+    if (!parsed.suggestions && Array.isArray(parsed.Suggestions)) {
+      parsed = { suggestions: parsed.Suggestions };
+    }
+    // Normalize type casing — the model sometimes returns "CUT" / "REWRITE"
+    if (Array.isArray(parsed.suggestions)) {
+      parsed.suggestions = parsed.suggestions.map(
+        (s: { type?: string; [k: string]: unknown }) => ({
+          ...s,
+          type: typeof s.type === "string" ? s.type.toLowerCase() : s.type,
+        })
+      );
+    }
+
     return NextResponse.json(parsed);
   } catch (err) {
     console.error("Suggestions error:", err);
