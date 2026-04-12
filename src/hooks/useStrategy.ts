@@ -71,6 +71,31 @@ function writeCached(profile: StrategyProfile, result: StrategyResult): void {
   }
 }
 
+// ── Stable "last result" persistence ────────────────────────────────────────
+// The hash-based cache only hits when the profile is byte-identical to the
+// generation that produced the result. If any field drifts between sessions
+// (GPA recalculation, essay timestamp, etc.) the hash misses and the user
+// sees an empty page. This stable key always holds the most recent result
+// regardless of profile changes, so the user never loses their strategy.
+const LAST_RESULT_KEY = "admitedge-strategy-last-result";
+
+function readLastResult(): StrategyResult | null {
+  try {
+    const raw = localStorage.getItem(LAST_RESULT_KEY);
+    return raw ? (JSON.parse(raw) as StrategyResult) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLastResult(result: StrategyResult): void {
+  try {
+    localStorage.setItem(LAST_RESULT_KEY, JSON.stringify(result));
+  } catch {
+    // Quota or disabled — silently degrade.
+  }
+}
+
 // ── Hook ────────────────────────────────────────────────────────────────────
 
 export interface UseStrategyReturn {
@@ -90,15 +115,25 @@ export function useStrategy(): UseStrategyReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Load profile + analysis + cached result on mount and whenever refresh() is called
+  // Load profile + analysis + cached/last result on mount and refresh()
   const refresh = useCallback(() => {
     try {
       const p = readStrategyProfile();
       const a = runStrategyAnalysis(p);
       setProfile(p);
       setAnalysis(a);
+      // 1. Try exact-match hash cache (profile unchanged since last gen)
       const cached = readCached(p);
-      setResult(cached);
+      if (cached) {
+        setResult(cached);
+      } else {
+        // 2. Fall back to the most recent result regardless of profile drift.
+        // This ensures the user always sees their last strategy on page load
+        // even if some field (GPA recalc, essay timestamp, etc.) shifted the
+        // profile hash since the last generation.
+        const last = readLastResult();
+        setResult(last);
+      }
       setError("");
     } catch (e) {
       setError(
@@ -166,6 +201,7 @@ export function useStrategy(): UseStrategyReturn {
         const parsed = data as StrategyResult;
         setResult(parsed);
         writeCached(p, parsed);
+        writeLastResult(parsed);
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") {
           setError(
