@@ -1,4 +1,5 @@
 import type { College, ApplicationOption } from "@/lib/college-types";
+import { COLLEGE_EXTENDED_DATA } from "./college-extended";
 
 // UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
 // and delete the UNDO block at the bottom of this file.
@@ -201,6 +202,9 @@ const APPLICATION_OPTIONS_BY_NAME: Record<string, readonly ApplicationOption[]> 
 
 export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
   const opts = APPLICATION_OPTIONS_BY_NAME[c.name];
-  return opts ? { ...c, applicationOptions: opts } : c;
+  const ext = COLLEGE_EXTENDED_DATA[c.name];
+  // Merge layers: base data ← application options ← extended comparison data.
+  // Spread order ensures extended fields never overwrite core admissions stats.
+  return { ...c, ...(opts ? { applicationOptions: opts } : {}), ...(ext ?? {}) };
 });
 // end UNDO [application-plan]

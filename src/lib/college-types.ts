@@ -38,7 +38,13 @@ export const APPLICATION_PLAN_LABELS: Record<ApplicationPlan, string> = {
 };
 // end UNDO [application-plan]
 
+// Tier types used across the extended college profile. "low" | "medium" | "high"
+// is deliberately coarse — normalized tiers are better than fake precision when
+// exact data isn't publicly available.
+export type Tier3 = "low" | "medium" | "high";
+
 export interface College {
+  // ── Core (original) ──────────────────────────────────────────────────────
   readonly name: string;
   readonly state: string;
   readonly type: "public" | "private";
@@ -57,9 +63,47 @@ export interface College {
   readonly tags: string[]; // e.g. ["selective", "tech", "research", "collaborative"]
   readonly usNewsRank: number | null;
   readonly region: string;
-  // UNDO [application-plan]: remove this field. It is optional, so removing it
-  // does not require touching the data file; callers fall back to RD-only.
+  // UNDO [application-plan]: remove this field.
   readonly applicationOptions?: readonly ApplicationOption[];
+
+  // ── Extended (all optional — used by comparison engine) ──────────────────
+
+  // Location
+  readonly city?: string;
+  readonly selectivityTier?: "ultra" | "high" | "medium" | "low";
+
+  // Academics
+  readonly academicIntensity?: Tier3;
+  readonly researchStrength?: Tier3;
+  readonly internshipStrength?: Tier3;
+  readonly knownFor?: readonly string[];        // e.g. ["Core Curriculum", "Entrepreneurship"]
+  readonly flexibility?: Tier3;                 // ease of exploring across disciplines
+  readonly coreCurriculum?: "open" | "moderate" | "structured"; // open = pick anything, structured = strong core reqs
+
+  // Career / Outcomes
+  readonly topIndustries?: readonly string[];    // e.g. ["Finance", "Consulting", "Tech"]
+  readonly careerPipelines?: readonly string[];  // e.g. ["Wall Street", "Big Tech", "Med School"]
+  readonly gradSchoolStrength?: Tier3;
+
+  // Campus / Life
+  readonly vibeTags?: readonly string[];         // e.g. ["collaborative", "preprofessional", "artsy"]
+  readonly socialScene?: Tier3;
+  readonly greekLifePresence?: Tier3;
+  readonly sportsCulture?: Tier3;
+  readonly campusCohesion?: Tier3;
+
+  // Location extras
+  readonly proximityToCity?: Tier3;
+  readonly weather?: string;                     // e.g. "Cold winters", "Year-round mild"
+
+  // Cost
+  readonly costTier?: Tier3;
+  readonly strongFinancialAid?: boolean;
+  readonly strongMeritAid?: boolean;
+
+  // Demographics
+  readonly diversityIndex?: Tier3;
+  readonly percentInternational?: number | null; // 0-100, null if unavailable
 }
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";

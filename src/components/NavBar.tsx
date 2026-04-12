@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/resume", label: "Resume" },
   { href: "/colleges", label: "Colleges" },
   { href: "/chances", label: "Chances" },
+  { href: "/compare", label: "Compare" },
   { href: "/strategy", label: "Strategy" },
 ] as const;
 

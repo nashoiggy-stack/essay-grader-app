@@ -9,7 +9,7 @@ const ShaderLines = dynamic(
   () => import("@/components/ui/shader-lines").then((m) => ({ default: m.ShaderLines })),
   { ssr: false }
 );
-import { PenLine, Calculator, ClipboardList, FileText, School, BarChart3, ArrowRight, User } from "lucide-react";
+import { PenLine, Calculator, ClipboardList, FileText, School, BarChart3, ArrowRight, User, Compass, GitCompareArrows } from "lucide-react";
 
 const FEATURES = [
   { href: "/essay", icon: PenLine, title: "Essay Grader", description: "AI essay grading with 7 criteria + VSPICE rubric.", stat: "7+V", statLabel: "Criteria" },
@@ -18,6 +18,8 @@ const FEATURES = [
   { href: "/resume", icon: FileText, title: "Resume Helper", description: "College admissions resume builder with AI rewriting.", stat: "8", statLabel: "Sections" },
   { href: "/colleges", icon: School, title: "College List", description: "5-tier college list filtered by your profile.", stat: "80+", statLabel: "Schools" },
   { href: "/chances", icon: BarChart3, title: "Chances", description: "Admission chance estimates with interactive map.", stat: "5", statLabel: "Bands" },
+  { href: "/compare", icon: GitCompareArrows, title: "Compare", description: "Side-by-side college comparison across admissions, culture, outcomes, and fit.", stat: "8", statLabel: "Dimensions" },
+  { href: "/strategy", icon: Compass, title: "Strategy", description: "AI consultant that reads your full profile and builds an admissions game plan.", stat: "7", statLabel: "Sections" },
 ];
 
 const CARD_STYLES = `
