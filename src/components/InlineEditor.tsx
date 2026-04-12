@@ -15,6 +15,12 @@ type IntentGroup = {
 
 const INTENT_GROUPS: readonly IntentGroup[] = [
   {
+    key: "overall",
+    label: "Overall Score",
+    description: "Optimize across the full rubric — highest-leverage edits.",
+    categories: ["Improve Overall Common App Score", "Improve Overall VSPICE Score"],
+  },
+  {
     key: "voice",
     label: "Voice",
     description: "Make it sound like you — honest, specific, real.",
@@ -73,7 +79,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
 }) => {
   const [activeSuggestion, setActiveSuggestion] = useState<number | null>(null);
   const [showPicker, setShowPicker] = useState(false);
-  const [openGroup, setOpenGroup] = useState<string | null>("voice");
+  const [openGroup, setOpenGroup] = useState<string | null>("overall");
 
   const highlightedParts = useMemo(() => {
     if (!suggestions.length) return null;
