@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { GRADING_SYSTEM_PROMPT } from "@/lib/prompts";
+import { VSPICE_PITFALLS, VSPICE_BONUSES } from "@/lib/rubrics";
 // UNDO [opus-upgrade]: delete the ` as ANTHROPIC_MODEL` alias below to revert
 // this endpoint to Sonnet — the variable name in the call site stays the same.
 import { ANTHROPIC_MODEL_PREMIUM as ANTHROPIC_MODEL } from "@/lib/anthropic-model";
@@ -112,31 +113,55 @@ export async function POST(req: NextRequest) {
       commonScores.reduce((sum, c) => sum + c.score, 0) / commonScores.length
     );
 
-    // Compute VSPICE composite as total out of 24 (6 dimensions × 4 pts each)
-    // plus pitfall deductions and bonus additions.
+    // Compute VSPICE composite: sum of 6 dimensions (each 1-4) + bonuses - pitfalls.
+    // Max base = 24. Bonuses can push above, pitfalls can pull below, clamped 0-24.
     const vspiceScores = Object.values(parsed.vspice) as { score: number }[];
     const vspiceRawTotal = vspiceScores.reduce((sum, c) => sum + c.score, 0);
 
-    // Pitfall deductions: -1 (minor), -2 (moderate), -3 (severe) per detected pitfall
-    // Pitfall labels in the rubric start with "-1", "-2", or "-3"
+    // Build lookup sets from the actual rubric items for reliable matching.
+    const pitfallPoints: { items: readonly string[]; pts: number }[] = [
+      { items: VSPICE_PITFALLS.severe.items, pts: 3 },
+      { items: VSPICE_PITFALLS.moderate.items, pts: 2 },
+      { items: VSPICE_PITFALLS.minor.items, pts: 1 },
+    ];
+    const bonusPoints: { items: readonly string[]; pts: number }[] = [
+      { items: VSPICE_BONUSES.difference.items, pts: 3 },
+      { items: VSPICE_BONUSES.standout.items, pts: 2 },
+      { items: VSPICE_BONUSES.nice.items, pts: 1 },
+    ];
+
+    // Match each detected pitfall/bonus to its rubric group by checking if the
+    // returned string contains or matches any rubric item (fuzzy substring match
+    // since the model may slightly rephrase or truncate).
     let pitfallDeduction = 0;
-    const pitfalls: string[] = parsed.pitfalls ?? [];
-    for (const p of pitfalls) {
-      if (p.includes("-3") || p.includes("severe") || p.includes("rejected")) pitfallDeduction += 3;
-      else if (p.includes("-2") || p.includes("moderate") || p.includes("definitely")) pitfallDeduction += 2;
-      else pitfallDeduction += 1;
+    for (const p of (parsed.pitfalls ?? []) as string[]) {
+      const pLower = p.toLowerCase();
+      let matched = false;
+      for (const group of pitfallPoints) {
+        if (group.items.some((item) => pLower.includes(item.slice(0, 40).toLowerCase()))) {
+          pitfallDeduction += group.pts;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) pitfallDeduction += 1; // unknown pitfall = minor
     }
 
-    // Bonus additions: +1 (nice), +2 (standout), +3 (difference) per detected bonus
     let bonusAddition = 0;
-    const bonuses: string[] = parsed.bonuses ?? [];
-    for (const b of bonuses) {
-      if (b.includes("+3") || b.includes("difference") || b.includes("acceptance")) bonusAddition += 3;
-      else if (b.includes("+2") || b.includes("standout") || b.includes("stand out")) bonusAddition += 2;
-      else bonusAddition += 1;
+    for (const b of (parsed.bonuses ?? []) as string[]) {
+      const bLower = b.toLowerCase();
+      let matched = false;
+      for (const group of bonusPoints) {
+        if (group.items.some((item) => bLower.includes(item.slice(0, 40).toLowerCase()))) {
+          bonusAddition += group.pts;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) bonusAddition += 1; // unknown bonus = nice
     }
 
-    // Final VSPICE composite: raw total + bonuses - pitfalls, clamped to 0-24
+    // Final: base (sum of 6 scores) + bonuses - pitfalls, clamped to 0-24
     const vspiceComposite = Math.max(0, Math.min(24, vspiceRawTotal + bonusAddition - pitfallDeduction));
 
     // Adjusted score with word count penalty
