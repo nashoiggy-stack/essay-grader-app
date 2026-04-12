@@ -272,7 +272,7 @@ JSON format:
 }
 
 RULES:
-- Return 6-12 suggestions, ordered by impact (most impactful first)
+- Return as many suggestions as you can find that are genuinely useful, ordered by impact (most impactful first). There is no cap — if an essay has 20 real improvements, return all 20. Only omit suggestions that are truly marginal.
 - "original" MUST be an exact, verbatim substring from the essay (case-sensitive, punctuation-exact)
 - For "add" type: "original" is the sentence AFTER which to insert. "replacement" is the new text to add.
 - For "cut" type: "replacement" should be empty string ""
