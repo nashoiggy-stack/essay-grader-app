@@ -105,9 +105,30 @@ export interface College {
   readonly diversityIndex?: Tier3;
   readonly percentInternational?: number | null; // 0-100, null if unavailable
 
+  // Detailed demographics — percentage breakdowns (each 0-100, should sum ~100)
+  readonly demographics?: DemographicBreakdown;
+  readonly genderBreakdown?: GenderBreakdown;
+  readonly undergradPopulation?: number;
+  readonly inStatePercent?: number;   // 0-100, primarily meaningful for publics
+
   // Search aliases — common abbreviations and nicknames so users can search
   // by "UPenn", "UMich", "Cal", etc. Not displayed, only used for matching.
   readonly aliases?: readonly string[];
+}
+
+export interface DemographicBreakdown {
+  readonly white?: number;
+  readonly asian?: number;
+  readonly hispanic?: number;
+  readonly black?: number;
+  readonly multiracial?: number;
+  readonly international?: number;
+  readonly other?: number;
+}
+
+export interface GenderBreakdown {
+  readonly male?: number;
+  readonly female?: number;
 }
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";

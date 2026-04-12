@@ -17,6 +17,7 @@ import {
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CompareSelector } from "@/components/CompareSelector";
+import { DemographicsCard, generateDemographicInsights, type DemoInsight } from "@/components/DemographicsChart";
 import type { College, Classification, Tier3 } from "@/lib/college-types";
 import {
   compareColleges,
@@ -256,6 +257,8 @@ export default function ComparePage() {
               >
                 {activeTab === "fit" && comparison.fit ? (
                   <FitTab fits={comparison.fit} />
+                ) : activeTab === "demographics" ? (
+                  <DemographicsTab colleges={selected} />
                 ) : (
                   <ComparisonGrid
                     rows={tabSections[activeTab]}
@@ -584,5 +587,43 @@ function getFieldContext(field: string): string {
   return (
     contexts[field] ??
     "Click to expand for context on what this means for your decision."
+  );
+}
+
+// ── Demographics tab (chart-based, replaces the generic grid) ──────────────
+
+function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
+  const insights = useMemo(() => generateDemographicInsights(colleges), [colleges]);
+
+  return (
+    <div className="space-y-5">
+      {/* Demographic insights */}
+      {insights.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {insights.map((ins, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] ring-1 ring-white/[0.08] text-zinc-300"
+            >
+              <Crown className="w-3 h-3 text-amber-300" />
+              <span className="text-zinc-400">{ins.label}:</span>
+              <span className="font-semibold text-zinc-100">{ins.collegeName}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Side-by-side donut charts */}
+      <div
+        className="grid gap-3"
+        style={{
+          gridTemplateColumns: `repeat(${Math.min(colleges.length, 4)}, minmax(0, 1fr))`,
+        }}
+      >
+        {colleges.map((c) => (
+          <DemographicsCard key={c.name} college={c} />
+        ))}
+      </div>
+    </div>
   );
 }
