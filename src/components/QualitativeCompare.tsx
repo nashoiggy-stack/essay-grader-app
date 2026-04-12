@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown } from "lucide-react";
 import type { College } from "@/lib/college-types";
+import { CompareSection } from "./CompareVisuals";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -209,7 +210,8 @@ function QualRow({
   );
 }
 
-// ── Section wrapper ─────────────────────────────────────────────────────────
+// ── Section wrapper — composes CompareSection to avoid duplicating
+//    the expand/collapse pattern ─────────────────────────────────────���───────
 
 function QualSection({
   title,
@@ -222,57 +224,24 @@ function QualSection({
   colleges: readonly College[];
   defaultExpanded?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.02] transition-colors"
+    <CompareSection title={title} defaultExpanded={defaultExpanded}>
+      {/* Column headers */}
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}
       >
-        <h3 className="text-[12px] font-bold text-zinc-200 uppercase tracking-[0.12em]">
-          {title}
-        </h3>
-        <ChevronDown
-          className={`w-4 h-4 text-zinc-500 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
-            expanded ? "" : "-rotate-90"
-          }`}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{
-              height: { duration: 0.24, ease: [0.23, 1, 0.32, 1] },
-              opacity: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
-            }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-5 space-y-4 border-t border-white/[0.04] pt-4">
-              {/* Column headers */}
-              <div
-                className="grid gap-2"
-                style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}
-              >
-                {colleges.map((c) => (
-                  <p key={c.name} className="text-[10px] text-zinc-500 font-medium truncate px-2.5">
-                    {c.name.length > 20 ? c.name.split(" ").slice(0, 2).join(" ") : c.name}
-                  </p>
-                ))}
-              </div>
-              {/* Rows */}
-              {fields.map((f) => (
-                <QualRow key={f.key} field={f} colleges={colleges} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        {colleges.map((c) => (
+          <p key={c.name} className="text-[10px] text-zinc-500 font-medium truncate px-2.5">
+            {c.name.length > 20 ? c.name.split(" ").slice(0, 2).join(" ") : c.name}
+          </p>
+        ))}
+      </div>
+      {/* Rows */}
+      {fields.map((f) => (
+        <QualRow key={f.key} field={f} colleges={colleges} />
+      ))}
+    </CompareSection>
   );
 }
 

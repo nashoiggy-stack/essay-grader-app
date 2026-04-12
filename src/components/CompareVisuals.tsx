@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Crown, ChevronDown, Info } from "lucide-react";
+import { COLLEGES } from "@/data/colleges";
 
 // ── Normalization + color system ────────────────────────────────────────────
 //
@@ -68,7 +69,7 @@ function normalizeEntries(
       rank = "neutral";
     } else if (e.value === bestVal) {
       rank = "best";
-    } else if (e.value === worstVal && validValues.length > 2) {
+    } else if (e.value === worstVal) {
       rank = "worst";
     } else {
       rank = "mid";
@@ -170,13 +171,16 @@ export function RangeBar({
               {shortName(entry.name)}
             </span>
             <div className="flex-1 h-7 rounded-lg bg-white/[0.025] overflow-hidden relative">
+              {/* Position via static `left` (no animation), animate only
+                  width — avoids marginLeft layout thrashing. */}
               <motion.div
-                initial={{ width: 0, marginLeft: `${leftPct}%` }}
-                animate={{ width: `${widthPct}%`, marginLeft: `${leftPct}%` }}
+                initial={{ width: 0 }}
+                animate={{ width: `${widthPct}%` }}
                 transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                className={`h-full rounded-md bg-gradient-to-r ${
+                className={`absolute top-0 bottom-0 rounded-md bg-gradient-to-r ${
                   isBest ? RANK_COLORS.best : RANK_COLORS.mid
                 }`}
+                style={{ left: `${leftPct}%` }}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2.5">
                 <span className={`text-[11px] font-mono tabular-nums font-semibold ${
@@ -371,22 +375,23 @@ export function TagRow({
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+// Build alias lookup once from the COLLEGES data so shortName stays in sync
+// with the dataset's aliases field instead of maintaining a separate map.
+const ALIAS_LOOKUP = new Map<string, string>();
+for (const c of COLLEGES) {
+  if (c.aliases && c.aliases.length > 0 && c.name.length > 18) {
+    // Pick the shortest alias as the display abbreviation
+    const shortest = [...c.aliases].sort((a, b) => a.length - b.length)[0];
+    if (shortest.length < c.name.length) {
+      ALIAS_LOOKUP.set(c.name, shortest);
+    }
+  }
+}
+
 function shortName(name: string): string {
-  // Abbreviate long names for bar labels
-  const abbreviations: Record<string, string> = {
-    "University of Pennsylvania": "UPenn",
-    "University of Southern California": "USC",
-    "Washington University in St. Louis": "WashU",
-    "University of Illinois Urbana-Champaign": "UIUC",
-    "University of Wisconsin-Madison": "UW-Madison",
-    "Carnegie Mellon University": "CMU",
-    "Johns Hopkins University": "JHU",
-    "Case Western Reserve University": "Case Western",
-    "University of Colorado Boulder": "CU Boulder",
-    "Michigan State University": "MSU",
-  };
-  if (abbreviations[name]) return abbreviations[name];
-  // For other long names, take first 2 words
+  const alias = ALIAS_LOOKUP.get(name);
+  if (alias) return alias;
+  // For long names without aliases, take first 2 words
   const words = name.split(" ");
   if (words.length > 2 && name.length > 20) return words.slice(0, 2).join(" ");
   return name;
