@@ -48,58 +48,17 @@ Think of it like a grade: 90 = A, 80 = B, 70 = C, 60 = D, below 50 = F.
 - Below 50: Needs fundamental rework. Missing the criterion almost entirely.
 
 KEY CALIBRATION POINTS:
-- A 70 is NOT a bad score. It means "average among all college applicants" — a perfectly normal essay. Most students start here.
-- A 75-79 means "above average, shows real effort" — this is a good essay that needs polish.
-- An 80+ means "genuinely strong" — this essay would help, not hurt, an application.
-- An 85+ means "this is a competitive advantage" — admissions readers would take notice.
+- A 70 is NOT a bad score. It means "average among all college applicants" — a perfectly normal essay.
+- An 80+ means "genuinely strong."
+- An 85+ means "competitive advantage."
 - Reserve sub-60 for essays with fundamental problems (no structure, no voice, all cliches).
 
-ANTI-HARSHNESS RULES:
-- A 17-year-old who writes with genuine voice, tells a real story, and shows self-awareness is writing an above-average essay at minimum. Score the core dimensions (Authenticity, Story, Writing) at 80+ if the voice is real.
-- Do NOT require perfection across all dimensions to average 85+. An essay with a powerful narrative arc and authentic voice but underdeveloped ambition should STILL average 83-88.
-- The low 70s should be the floor for any essay that has a real voice and tells an actual story — even if the story isn't perfectly structured.
-
-## ASYMMETRY RULE (IMPORTANT)
-
-Admissions readers reward standout strengths more than they penalize missing elements. Your scoring must reflect this:
-
-- If Authenticity, Compelling Story, and Writing Skills are all 85+, the essay is genuinely strong. Other dimensions should NOT drag the average below ~82.
-- Strengths carry more weight than weaknesses. A brilliant, authentic narrative with weaker explicit ambition is a BETTER essay than a formulaic one that checks every box.
-- Ask yourself: "Would a real admissions reader put this essay in the 'strong' pile?" If yes, the average should be 80+.
-
-## CATEGORY INTERPRETATION RULES
-
-PASSION:
-- Passion does NOT require listing a specific academic subject, club, or STEM project.
-- Passion can be shown through: the WAY the student writes about something (energy, specificity, sensory detail), lived experience, intellectual curiosity about anything, care for people or ideas.
-- If the student clearly cares deeply about their topic, Passion should score 80+, even if they never mention a formal extracurricular.
-
-AMBITION:
-- Ambition can be implicit. A student who describes growth and forward momentum has ambition, even without a 5-year plan.
-- Do NOT require a concrete career goal or college-specific connection. A thoughtful "I want to keep exploring this" counts.
-- Score ambition based on the student's posture toward the future, not the specificity of their plan.
-
-VALUES:
-- Values can be inferred from actions and choices described in the essay — they do NOT need to be stated explicitly.
-- If the essay shows the student making a hard choice, caring about someone, or standing up for something, Values should score well.
-
-## NARRATIVE STRENGTH FLOOR
-
-If all three of these are strong (≥80):
-- Authenticity
-- Compelling Story
-- Writing Skills
-
-Then the student has written a genuinely good essay. Even if Passion or Ambition are less developed, the overall average should NOT fall below approximately 82-84. This reflects how real admissions readers evaluate: a powerful authentic story carries the application even when not every dimension is maximized.
-
-## POSITIVE SCALING
-
-If the essay demonstrates:
-- A clear, emotionally resonant narrative arc (beginning → tension → resolution)
-- Genuine vulnerability or emotional honesty
-- A distinctive voice that couldn't belong to another student
-
-Then give a mental +3 to +5 uplift to each dimension that benefits from the narrative strength. Strong storytelling elevates everything — it makes insight feel deeper, values feel more real, and even ambition feel more grounded.
+STRICTNESS RULES:
+- Grade each dimension independently on its own merits. Do NOT inflate one dimension because another is strong.
+- Do NOT give bonus points for effort, emotion, or good intentions. Score what is on the page.
+- A mediocre essay should get mediocre scores. Do not soften scores to be encouraging.
+- If a dimension is underdeveloped or absent, score it accordingly — even if the rest of the essay is strong.
+- Every dimension must earn its score independently.
 
 ## VSPICE RUBRIC — 6 Dimensions (score each 1-4)
 
