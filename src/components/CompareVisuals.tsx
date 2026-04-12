@@ -1,22 +1,55 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Crown, ChevronDown, Info } from "lucide-react";
 import { COLLEGES } from "@/data/colleges";
 
-// ── Normalization + color system ────────────────────────────────────────────
+// ── Per-school color system ─────────────────────────────────────────────────
+//
+// Each selected school gets a consistent color that carries through every
+// bar, card, chart, and header. This is THE primary visual tracking signal
+// — users identify "their school" by color, not by reading name labels.
+//
+// 4 distinct hues chosen for dark-theme legibility + color-blind safety:
+//   Slot 0 = blue    (primary, trustworthy)
+//   Slot 1 = emerald (positive, distinct from blue)
+//   Slot 2 = amber   (warm, distinct from cool tones)
+//   Slot 3 = violet  (unique, doesn't clash with the above)
+
+export const SCHOOL_COLORS = [
+  { name: "blue",    bar: "from-blue-500 to-blue-400",    bg: "bg-blue-500/8",    border: "border-blue-500/25",  text: "text-blue-300",    dot: "bg-blue-400",    hex: "#60a5fa" },
+  { name: "emerald", bar: "from-emerald-500 to-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/25", text: "text-emerald-300", dot: "bg-emerald-400", hex: "#34d399" },
+  { name: "amber",   bar: "from-amber-500 to-amber-400",  bg: "bg-amber-500/8",   border: "border-amber-500/25", text: "text-amber-300",   dot: "bg-amber-400",   hex: "#fbbf24" },
+  { name: "violet",  bar: "from-violet-500 to-violet-400", bg: "bg-violet-500/8",  border: "border-violet-500/25", text: "text-violet-300",  dot: "bg-violet-400",  hex: "#a78bfa" },
+] as const;
+
+export type SchoolColor = (typeof SCHOOL_COLORS)[number];
+
+/** Map school name → assigned color index. Built from the selection order. */
+export function buildSchoolColorMap(names: readonly string[]): Map<string, SchoolColor> {
+  const map = new Map<string, SchoolColor>();
+  names.forEach((name, i) => map.set(name, SCHOOL_COLORS[i % SCHOOL_COLORS.length]));
+  return map;
+}
+
+// React context so all nested components can access school colors without prop drilling
+const SchoolColorCtx = createContext<Map<string, SchoolColor>>(new Map());
+export const SchoolColorProvider = SchoolColorCtx.Provider;
+export function useSchoolColor(name: string): SchoolColor {
+  const map = useContext(SchoolColorCtx);
+  return map.get(name) ?? SCHOOL_COLORS[0];
+}
+
+// ── Normalization + rank system ─────────────────────────────────────────────
 //
 // All bars use RELATIVE normalization among the selected schools:
 //   highest value → 100% width
 //   others → proportional to highest
 //
-// Color rules:
-//   best   → emerald (subtle)
-//   middle → neutral blue
-//   worst  → muted red (never aggressive)
-//   tie    → both get emerald
-//   close values (within 5% of range) → all neutral, no crown
+// Rank coloring:
+//   best → crown icon (no bar color change — bar uses SCHOOL color)
+//   close values (within 5%) → no crown
 
 type BarEntry = { name: string; value: number };
 
@@ -99,28 +132,40 @@ export function MetricBar({
     [entries, invertBest],
   );
 
+  const colorMap = useContext(SchoolColorCtx);
+
   return (
     <div className="space-y-1.5">
       {normalized.map((entry) => {
         const pct = Math.max(3, entry.normalized * 100);
-        const colors = RANK_COLORS[entry.rank];
-        const textColor = RANK_TEXT[entry.rank];
+        // Use per-school color if available, fall back to rank-based
+        const schoolColor = colorMap.get(entry.name);
+        const barGradient = schoolColor ? schoolColor.bar : RANK_COLORS[entry.rank];
         const isBest = entry.rank === "best" && showCrown;
 
         return (
-          <div key={entry.name} className="flex items-center gap-2.5">
-            <span className="text-[10px] text-zinc-500 w-16 sm:w-24 truncate shrink-0 text-right font-medium">
-              {shortName(entry.name)}
-            </span>
-            <div className="flex-1 h-7 rounded-lg bg-white/[0.025] overflow-hidden relative">
+          <div key={entry.name} className="flex items-center gap-2.5 group">
+            <div className="flex items-center gap-1.5 w-16 sm:w-24 shrink-0 justify-end">
+              {schoolColor && (
+                <span className={`w-2 h-2 rounded-full ${schoolColor.dot} shrink-0`} />
+              )}
+              <span className="text-[10px] text-zinc-400 truncate font-medium">
+                {shortName(entry.name)}
+              </span>
+            </div>
+            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-white/[0.05] transition-colors duration-150">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                className={`h-full rounded-lg bg-gradient-to-r ${colors}`}
+                className={`h-full rounded-lg bg-gradient-to-r ${barGradient} ${
+                  isBest ? "opacity-100" : "opacity-75"
+                }`}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2.5">
-                <span className={`text-[11px] font-mono tabular-nums font-semibold ${textColor}`}>
+                <span className={`text-[12px] font-mono tabular-nums font-bold ${
+                  schoolColor ? "text-white" : "text-zinc-200"
+                }`}>
                   {entry.value > 0 ? format(entry.value) : "—"}
                 </span>
                 {isBest && <Crown className="w-3 h-3 text-amber-300/80" />}
@@ -154,6 +199,7 @@ export function RangeBar({
   globalMax,
   format = (lo, hi) => `${lo}–${hi}`,
 }: RangeBarProps) {
+  const colorMap = useContext(SchoolColorCtx);
   const range = globalMax - globalMin || 1;
   const bestHigh = Math.max(...entries.map((e) => e.high));
   const isClose = (bestHigh - Math.min(...entries.map((e) => e.high))) < range * 0.03;
@@ -164,28 +210,31 @@ export function RangeBar({
         const leftPct = ((entry.low - globalMin) / range) * 100;
         const widthPct = Math.max(3, ((entry.high - entry.low) / range) * 100);
         const isBest = entry.high === bestHigh && !isClose;
+        const schoolColor = colorMap.get(entry.name);
+        const barGradient = schoolColor ? schoolColor.bar : (isBest ? RANK_COLORS.best : RANK_COLORS.mid);
 
         return (
-          <div key={entry.name} className="flex items-center gap-2.5">
-            <span className="text-[10px] text-zinc-500 w-16 sm:w-24 truncate shrink-0 text-right font-medium">
-              {shortName(entry.name)}
-            </span>
-            <div className="flex-1 h-7 rounded-lg bg-white/[0.025] overflow-hidden relative">
-              {/* Position via static `left` (no animation), animate only
-                  width — avoids marginLeft layout thrashing. */}
+          <div key={entry.name} className="flex items-center gap-2.5 group">
+            <div className="flex items-center gap-1.5 w-16 sm:w-24 shrink-0 justify-end">
+              {schoolColor && (
+                <span className={`w-2 h-2 rounded-full ${schoolColor.dot} shrink-0`} />
+              )}
+              <span className="text-[10px] text-zinc-400 truncate font-medium">
+                {shortName(entry.name)}
+              </span>
+            </div>
+            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-white/[0.05] transition-colors duration-150">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${widthPct}%` }}
                 transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                className={`absolute top-0 bottom-0 rounded-md bg-gradient-to-r ${
-                  isBest ? RANK_COLORS.best : RANK_COLORS.mid
+                className={`absolute top-0 bottom-0 rounded-md bg-gradient-to-r ${barGradient} ${
+                  isBest ? "opacity-100" : "opacity-75"
                 }`}
                 style={{ left: `${leftPct}%` }}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2.5">
-                <span className={`text-[11px] font-mono tabular-nums font-semibold ${
-                  isBest ? RANK_TEXT.best : RANK_TEXT.mid
-                }`}>
+                <span className="text-[12px] font-mono tabular-nums font-bold text-white">
                   {format(entry.low, entry.high)}
                 </span>
                 {isBest && <Crown className="w-3 h-3 text-amber-300/80" />}

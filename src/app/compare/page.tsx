@@ -21,6 +21,8 @@ import { DemographicsCard, generateDemographicInsights, type DemoInsight } from 
 import {
   MetricBar, RangeBar, MetricCard, CompareSection, CompareRow, TagRow,
   formatCurrency, formatPct, formatRatio,
+  buildSchoolColorMap, SchoolColorProvider, SCHOOL_COLORS,
+  type SchoolColor,
 } from "@/components/CompareVisuals";
 import { CampusTab, CultureTab } from "@/components/QualitativeCompare";
 import type { College, Classification, Tier3 } from "@/lib/college-types";
@@ -111,6 +113,12 @@ export default function ComparePage() {
   useEffect(() => {
     setProfileData(readProfileForFit());
   }, []);
+
+  // Build per-school color map from selection order (stable across tabs)
+  const schoolColorMap = useMemo(
+    () => buildSchoolColorMap(selected.map((c) => c.name)),
+    [selected],
+  );
 
   // Comparison only runs when the user explicitly confirms their selection.
   // Any add/remove resets confirmed so the user must re-confirm.
@@ -212,8 +220,9 @@ export default function ComparePage() {
           </div>
         )}
 
-        {/* Comparison content */}
+        {/* Comparison content — wrapped in school color provider */}
         {comparison && (
+          <SchoolColorProvider value={schoolColorMap}>
           <div className="mt-8 space-y-6">
             {/* Decision insights bar */}
             {comparison.insights.length > 0 && (
@@ -229,9 +238,24 @@ export default function ComparePage() {
               </ScrollReveal>
             )}
 
+            {/* School color legend */}
+            <div className="flex items-center justify-center gap-4 sm:gap-6 py-2">
+              {selected.map((c) => {
+                const sc = schoolColorMap.get(c.name) ?? SCHOOL_COLORS[0];
+                return (
+                  <div key={c.name} className="flex items-center gap-1.5">
+                    <span className={`w-2.5 h-2.5 rounded-full ${sc.dot}`} />
+                    <span className={`text-[11px] font-semibold ${sc.text}`}>
+                      {c.name.length > 18 ? (c.aliases?.[0] ?? c.name.split(" ").slice(0, 2).join(" ")) : c.name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Tabs */}
             <ScrollReveal delay={0.14}>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+              <div className="sticky top-16 z-30 bg-[#06060f]/90 backdrop-blur-md -mx-4 px-4 py-2 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none rounded-b-xl">
                 {visibleTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.key;
@@ -288,6 +312,7 @@ export default function ComparePage() {
               </motion.div>
             </AnimatePresence>
           </div>
+          </SchoolColorProvider>
         )}
 
         {/* Placeholder — shown when no comparison is active */}
