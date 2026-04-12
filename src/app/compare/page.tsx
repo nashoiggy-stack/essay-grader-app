@@ -97,6 +97,7 @@ const FIT_COLORS: Record<Classification, { text: string; bg: string; ring: strin
 
 export default function ComparePage() {
   const [selected, setSelected] = useState<College[]>([]);
+  const [confirmed, setConfirmed] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("admissions");
   const [profileData, setProfileData] = useState<ReturnType<typeof readProfileForFit>>(null);
 
@@ -104,20 +105,26 @@ export default function ComparePage() {
     setProfileData(readProfileForFit());
   }, []);
 
+  // Comparison only runs when the user explicitly confirms their selection.
+  // Any add/remove resets confirmed so the user must re-confirm.
   const comparison = useMemo<FullComparison | null>(() => {
-    if (selected.length < 2) return null;
+    if (!confirmed || selected.length < 2) return null;
     return compareColleges(selected, profileData);
-  }, [selected, profileData]);
+  }, [selected, profileData, confirmed]);
 
   const onAdd = (c: College) => {
     if (selected.length >= 4) return;
     if (selected.some((s) => s.name === c.name)) return;
     setSelected((prev) => [...prev, c]);
+    setConfirmed(false);
   };
 
   const onRemove = (name: string) => {
     setSelected((prev) => prev.filter((c) => c.name !== name));
+    setConfirmed(false);
   };
+
+  const canConfirm = selected.length >= 2 && !confirmed;
 
   const tabSections: Record<TabKey, readonly CategoryComparison[]> = comparison
     ? {
@@ -168,6 +175,33 @@ export default function ComparePage() {
             onRemove={onRemove}
           />
         </ScrollReveal>
+
+        {/* Done selecting / edit selection button */}
+        {selected.length >= 2 && (
+          <div className="mt-6 flex justify-center">
+            {canConfirm ? (
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                onClick={() => setConfirmed(true)}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-100 transition-colors"
+              >
+                <Sparkles className="w-4 h-4" />
+                Compare {selected.length} Schools
+              </motion.button>
+            ) : confirmed ? (
+              <button
+                type="button"
+                onClick={() => setConfirmed(false)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-white/[0.08] transition-colors"
+              >
+                Edit Selection
+              </button>
+            ) : null}
+          </div>
+        )}
 
         {/* Comparison content */}
         {comparison && (
@@ -233,13 +267,15 @@ export default function ComparePage() {
           </div>
         )}
 
-        {/* Placeholder before 2 schools selected */}
+        {/* Placeholder — shown when no comparison is active */}
         {!comparison && (
           <div className="mt-8 rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-12 text-center">
             <p className="text-zinc-500">
               {selected.length === 0
                 ? "Search for schools above — or import your pinned list from the College List Builder."
-                : "Add one more school to start comparing."}
+                : selected.length === 1
+                  ? "Add one more school, then press Compare."
+                  : "Press Compare above to see the side-by-side breakdown."}
             </p>
           </div>
         )}
