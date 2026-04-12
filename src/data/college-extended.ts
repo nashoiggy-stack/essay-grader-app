@@ -29,6 +29,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 7100,
     inStatePercent: 15,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 95, studentFacultyRatio: 5, fourYearGradRate: 86, avgStartingSalary: 89000, pctEmployed6Mo: 95, medianEarnings10Yr: 95000, greekLifePct: 12, distanceToCityMiles: 2, annualCostEstimate: 82000, avgNetPrice: 18000,
   },
   "Yale University": {
     city: "New Haven",
@@ -58,6 +59,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 6500,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 97, studentFacultyRatio: 6, fourYearGradRate: 87, avgStartingSalary: 83000, pctEmployed6Mo: 93, medianEarnings10Yr: 90000, greekLifePct: 10, distanceToCityMiles: 75, annualCostEstimate: 83000, avgNetPrice: 17000,
   },
   "Princeton University": {
     city: "Princeton",
@@ -87,6 +89,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 51, female: 49 },
     undergradPopulation: 5500,
     inStatePercent: 12,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 96, studentFacultyRatio: 5, fourYearGradRate: 89, avgStartingSalary: 88000, pctEmployed6Mo: 94, medianEarnings10Yr: 98000, greekLifePct: 10, distanceToCityMiles: 50, annualCostEstimate: 82000, avgNetPrice: 16000,
   },
   "Columbia University": {
     city: "New York",
@@ -116,6 +119,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 8900,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 95, studentFacultyRatio: 6, fourYearGradRate: 88, avgStartingSalary: 85000, pctEmployed6Mo: 94, medianEarnings10Yr: 97000, greekLifePct: 15, distanceToCityMiles: 0, annualCostEstimate: 84000, avgNetPrice: 19000,
   },
   "University of Pennsylvania": {
     city: "Philadelphia",
@@ -145,6 +149,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 10000,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 96, studentFacultyRatio: 6, fourYearGradRate: 86, avgStartingSalary: 92000, pctEmployed6Mo: 95, medianEarnings10Yr: 110000, greekLifePct: 25, distanceToCityMiles: 0, annualCostEstimate: 84000, avgNetPrice: 22000,
   },
   "Brown University": {
     city: "Providence",
@@ -174,6 +179,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 7200,
     inStatePercent: 8,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 95, studentFacultyRatio: 6, fourYearGradRate: 86, avgStartingSalary: 78000, pctEmployed6Mo: 92, medianEarnings10Yr: 84000, greekLifePct: 8, distanceToCityMiles: 50, annualCostEstimate: 83000, avgNetPrice: 19000,
   },
   "Dartmouth College": {
     city: "Hanover",
@@ -203,6 +209,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 4400,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 93, studentFacultyRatio: 7, fourYearGradRate: 87, avgStartingSalary: 82000, pctEmployed6Mo: 94, medianEarnings10Yr: 92000, greekLifePct: 60, distanceToCityMiles: 120, annualCostEstimate: 83000, avgNetPrice: 20000,
   },
   "Cornell University": {
     city: "Ithaca",
@@ -232,6 +239,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 51, female: 49 },
     undergradPopulation: 15500,
     inStatePercent: 10,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 90, studentFacultyRatio: 9, fourYearGradRate: 88, avgStartingSalary: 82000, pctEmployed6Mo: 93, medianEarnings10Yr: 94000, greekLifePct: 22, distanceToCityMiles: 250, annualCostEstimate: 82000, avgNetPrice: 22000,
   },
   "MIT": {
     city: "Cambridge",
@@ -261,6 +269,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 54, female: 46 },
     undergradPopulation: 4600,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 97, studentFacultyRatio: 3, fourYearGradRate: 87, avgStartingSalary: 108000, pctEmployed6Mo: 96, medianEarnings10Yr: 115000, greekLifePct: 25, distanceToCityMiles: 2, annualCostEstimate: 82000, avgNetPrice: 19000,
   },
   "Stanford University": {
     city: "Stanford",
@@ -290,6 +299,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 7800,
     inStatePercent: 8,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 96, studentFacultyRatio: 5, fourYearGradRate: 75, avgStartingSalary: 95000, pctEmployed6Mo: 95, medianEarnings10Yr: 104000, greekLifePct: 15, distanceToCityMiles: 35, annualCostEstimate: 82000, avgNetPrice: 16000,
   },
   "Duke University": {
     city: "Durham",
@@ -319,6 +329,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 6700,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 95, studentFacultyRatio: 6, fourYearGradRate: 86, avgStartingSalary: 82000, pctEmployed6Mo: 94, medianEarnings10Yr: 93000, greekLifePct: 40, distanceToCityMiles: 25, annualCostEstimate: 83000, avgNetPrice: 21000,
   },
   "Northwestern University": {
     city: "Evanston",
@@ -348,6 +359,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 8900,
     inStatePercent: 12,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 93, studentFacultyRatio: 6, fourYearGradRate: 86, avgStartingSalary: 78000, pctEmployed6Mo: 93, medianEarnings10Yr: 88000, greekLifePct: 35, distanceToCityMiles: 12, annualCostEstimate: 82000, avgNetPrice: 24000,
   },
   "Johns Hopkins University": {
     city: "Baltimore",
@@ -377,6 +389,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 6100,
     inStatePercent: 10,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 94, studentFacultyRatio: 7, fourYearGradRate: 88, avgStartingSalary: 78000, pctEmployed6Mo: 93, medianEarnings10Yr: 85000, greekLifePct: 20, distanceToCityMiles: 40, annualCostEstimate: 82000, avgNetPrice: 24000,
   },
   "Caltech": {
     city: "Pasadena",
@@ -406,6 +419,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 54, female: 46 },
     undergradPopulation: 1000,
     inStatePercent: 5,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 99, studentFacultyRatio: 3, fourYearGradRate: 85, avgStartingSalary: 105000, pctEmployed6Mo: 94, medianEarnings10Yr: 112000, greekLifePct: 0, distanceToCityMiles: 12, annualCostEstimate: 82000, avgNetPrice: 22000,
   },
   "Rice University": {
     city: "Houston",
@@ -435,6 +449,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 4100,
     inStatePercent: 8,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 92, studentFacultyRatio: 6, fourYearGradRate: 87, avgStartingSalary: 76000, pctEmployed6Mo: 92, medianEarnings10Yr: 82000, greekLifePct: 2, distanceToCityMiles: 0, annualCostEstimate: 75000, avgNetPrice: 20000,
   },
   "Vanderbilt University": {
     city: "Nashville",
@@ -464,6 +479,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 7100,
     inStatePercent: 10,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 93, studentFacultyRatio: 7, fourYearGradRate: 88, avgStartingSalary: 72000, pctEmployed6Mo: 92, medianEarnings10Yr: 82000, greekLifePct: 35, distanceToCityMiles: 0, annualCostEstimate: 80000, avgNetPrice: 23000,
   },
   "Washington University in St. Louis": {
     city: "St. Louis",
@@ -493,6 +509,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 46, female: 54 },
     undergradPopulation: 8100,
     inStatePercent: 10,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 90, studentFacultyRatio: 7, fourYearGradRate: 87, avgStartingSalary: 72000, pctEmployed6Mo: 92, medianEarnings10Yr: 82000, greekLifePct: 28, distanceToCityMiles: 8, annualCostEstimate: 80000, avgNetPrice: 28000,
   },
   "Emory University": {
     city: "Atlanta",
@@ -522,6 +539,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 44, female: 56 },
     undergradPopulation: 7100,
     inStatePercent: 15,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 90, studentFacultyRatio: 9, fourYearGradRate: 86, avgStartingSalary: 68000, pctEmployed6Mo: 91, medianEarnings10Yr: 78000, greekLifePct: 28, distanceToCityMiles: 0, annualCostEstimate: 79000, avgNetPrice: 28000,
   },
   "Georgetown University": {
     city: "Washington",
@@ -551,6 +569,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 45, female: 55 },
     undergradPopulation: 7900,
     inStatePercent: 10,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 88, studentFacultyRatio: 11, fourYearGradRate: 90, avgStartingSalary: 74000, pctEmployed6Mo: 93, medianEarnings10Yr: 88000, greekLifePct: 8, distanceToCityMiles: 0, annualCostEstimate: 82000, avgNetPrice: 27000,
   },
   "Carnegie Mellon University": {
     city: "Pittsburgh",
@@ -580,6 +599,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 52, female: 48 },
     undergradPopulation: 7300,
     inStatePercent: 8,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 85, studentFacultyRatio: 5, fourYearGradRate: 82, avgStartingSalary: 95000, pctEmployed6Mo: 94, medianEarnings10Yr: 104000, greekLifePct: 15, distanceToCityMiles: 0, annualCostEstimate: 81000, avgNetPrice: 33000,
   },
   "University of Notre Dame": {
     city: "Notre Dame",
@@ -609,6 +629,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 52, female: 48 },
     undergradPopulation: 8900,
     inStatePercent: 10,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 84, studentFacultyRatio: 10, fourYearGradRate: 92, avgStartingSalary: 72000, pctEmployed6Mo: 93, medianEarnings10Yr: 82000, greekLifePct: 0, distanceToCityMiles: 90, annualCostEstimate: 80000, avgNetPrice: 29000,
   },
   "University of Southern California": {
     city: "Los Angeles",
@@ -638,6 +659,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 21000,
     inStatePercent: 25,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 85, studentFacultyRatio: 9, fourYearGradRate: 78, avgStartingSalary: 72000, pctEmployed6Mo: 91, medianEarnings10Yr: 84000, greekLifePct: 22, distanceToCityMiles: 0, annualCostEstimate: 82000, avgNetPrice: 36000,
   },
   "Tufts University": {
     city: "Medford",
@@ -667,6 +689,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 6700,
     inStatePercent: 8,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 85, studentFacultyRatio: 9, fourYearGradRate: 87, avgStartingSalary: 70000, pctEmployed6Mo: 91, medianEarnings10Yr: 80000, greekLifePct: 10, distanceToCityMiles: 5, annualCostEstimate: 80000, avgNetPrice: 29000,
   },
   "NYU": {
     city: "New York",
@@ -696,6 +719,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 44, female: 56 },
     undergradPopulation: 29000,
     inStatePercent: 20,
+    avgGPARange: "3.7-3.9", pctTopTenClass: 75, studentFacultyRatio: 9, fourYearGradRate: 73, avgStartingSalary: 68000, pctEmployed6Mo: 90, medianEarnings10Yr: 75000, greekLifePct: 5, distanceToCityMiles: 0, annualCostEstimate: 83000, avgNetPrice: 40000,
   },
   "Boston College": {
     city: "Chestnut Hill",
@@ -725,6 +749,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 46, female: 54 },
     undergradPopulation: 9900,
     inStatePercent: 15,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 80, studentFacultyRatio: 12, fourYearGradRate: 89, avgStartingSalary: 68000, pctEmployed6Mo: 92, medianEarnings10Yr: 80000, greekLifePct: 0, distanceToCityMiles: 5, annualCostEstimate: 78000, avgNetPrice: 32000,
   },
   "Wake Forest University": {
     city: "Winston-Salem",
@@ -754,6 +779,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 46, female: 54 },
     undergradPopulation: 5400,
     inStatePercent: 20,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 75, studentFacultyRatio: 10, fourYearGradRate: 82, avgStartingSalary: 62000, pctEmployed6Mo: 90, medianEarnings10Yr: 72000, greekLifePct: 33, distanceToCityMiles: 25, annualCostEstimate: 77000, avgNetPrice: 35000,
   },
   "Boston University": {
     city: "Boston",
@@ -783,6 +809,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 43, female: 57 },
     undergradPopulation: 18500,
     inStatePercent: 12,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 60, studentFacultyRatio: 10, fourYearGradRate: 80, avgStartingSalary: 66000, pctEmployed6Mo: 91, medianEarnings10Yr: 72000, greekLifePct: 8, distanceToCityMiles: 0, annualCostEstimate: 78000, avgNetPrice: 35000,
   },
   "Northeastern University": {
     city: "Boston",
@@ -812,6 +839,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 44, female: 56 },
     undergradPopulation: 16000,
     inStatePercent: 10,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 55, studentFacultyRatio: 15, fourYearGradRate: 72, avgStartingSalary: 70000, pctEmployed6Mo: 92, medianEarnings10Yr: 78000, greekLifePct: 5, distanceToCityMiles: 0, annualCostEstimate: 78000, avgNetPrice: 33000,
   },
   "Tulane University": {
     city: "New Orleans",
@@ -841,6 +869,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 43, female: 57 },
     undergradPopulation: 8000,
     inStatePercent: 8,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 55, studentFacultyRatio: 8, fourYearGradRate: 73, avgStartingSalary: 62000, pctEmployed6Mo: 88, medianEarnings10Yr: 68000, greekLifePct: 30, distanceToCityMiles: 0, annualCostEstimate: 77000, avgNetPrice: 38000,
   },
   "Villanova University": {
     city: "Villanova",
@@ -870,6 +899,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 7000,
     inStatePercent: 30,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 65, studentFacultyRatio: 11, fourYearGradRate: 87, avgStartingSalary: 68000, pctEmployed6Mo: 92, medianEarnings10Yr: 78000, greekLifePct: 25, distanceToCityMiles: 15, annualCostEstimate: 76000, avgNetPrice: 37000,
   },
   "Case Western Reserve University": {
     city: "Cleveland",
@@ -899,6 +929,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 55, female: 45 },
     undergradPopulation: 5900,
     inStatePercent: 20,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 65, studentFacultyRatio: 11, fourYearGradRate: 72, avgStartingSalary: 68000, pctEmployed6Mo: 90, medianEarnings10Yr: 72000, greekLifePct: 18, distanceToCityMiles: 0, annualCostEstimate: 75000, avgNetPrice: 30000,
   },
   "UCLA": {
     city: "Los Angeles",
@@ -928,6 +959,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 44, female: 56 },
     undergradPopulation: 32400,
     inStatePercent: 85,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 97, studentFacultyRatio: 18, fourYearGradRate: 73, avgStartingSalary: 62000, pctEmployed6Mo: 89, medianEarnings10Yr: 70000, greekLifePct: 8, distanceToCityMiles: 0, annualCostEstimate: 36000, avgNetPrice: 16000,
   },
   "UC Berkeley": {
     city: "Berkeley",
@@ -957,6 +989,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 32100,
     inStatePercent: 83,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 95, studentFacultyRatio: 20, fourYearGradRate: 76, avgStartingSalary: 72000, pctEmployed6Mo: 91, medianEarnings10Yr: 80000, greekLifePct: 10, distanceToCityMiles: 10, annualCostEstimate: 38000, avgNetPrice: 18000,
   },
   "University of Michigan": {
     city: "Ann Arbor",
@@ -986,6 +1019,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 50, female: 50 },
     undergradPopulation: 33000,
     inStatePercent: 52,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 82, studentFacultyRatio: 15, fourYearGradRate: 79, avgStartingSalary: 68000, pctEmployed6Mo: 92, medianEarnings10Yr: 78000, greekLifePct: 18, distanceToCityMiles: 40, annualCostEstimate: 33000, avgNetPrice: 18000,
   },
   "University of Virginia": {
     city: "Charlottesville",
@@ -1015,6 +1049,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 45, female: 55 },
     undergradPopulation: 17500,
     inStatePercent: 66,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 89, studentFacultyRatio: 15, fourYearGradRate: 88, avgStartingSalary: 65000, pctEmployed6Mo: 92, medianEarnings10Yr: 74000, greekLifePct: 30, distanceToCityMiles: 70, annualCostEstimate: 34000, avgNetPrice: 16000,
   },
   "UNC Chapel Hill": {
     city: "Chapel Hill",
@@ -1044,6 +1079,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 41, female: 59 },
     undergradPopulation: 20200,
     inStatePercent: 82,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 78, studentFacultyRatio: 13, fourYearGradRate: 82, avgStartingSalary: 58000, pctEmployed6Mo: 89, medianEarnings10Yr: 64000, greekLifePct: 18, distanceToCityMiles: 25, annualCostEstimate: 27000, avgNetPrice: 14000,
   },
   "Georgia Tech": {
     city: "Atlanta",
@@ -1073,6 +1109,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 58, female: 42 },
     undergradPopulation: 18700,
     inStatePercent: 58,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 90, studentFacultyRatio: 22, fourYearGradRate: 44, avgStartingSalary: 76000, pctEmployed6Mo: 93, medianEarnings10Yr: 88000, greekLifePct: 25, distanceToCityMiles: 0, annualCostEstimate: 30000, avgNetPrice: 14000,
   },
   "University of Florida": {
     city: "Gainesville",
@@ -1102,6 +1139,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 45, female: 55 },
     undergradPopulation: 35200,
     inStatePercent: 90,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 75, studentFacultyRatio: 17, fourYearGradRate: 70, avgStartingSalary: 58000, pctEmployed6Mo: 88, medianEarnings10Yr: 62000, greekLifePct: 18, distanceToCityMiles: 75, annualCostEstimate: 28000, avgNetPrice: 14000,
   },
   "UT Austin": {
     city: "Austin",
@@ -1131,6 +1169,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 41000,
     inStatePercent: 90,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 73, studentFacultyRatio: 18, fourYearGradRate: 58, avgStartingSalary: 62000, pctEmployed6Mo: 89, medianEarnings10Yr: 68000, greekLifePct: 12, distanceToCityMiles: 0, annualCostEstimate: 29000, avgNetPrice: 15000,
   },
   "University of Wisconsin-Madison": {
     city: "Madison",
@@ -1160,6 +1199,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 35500,
     inStatePercent: 57,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 55, studentFacultyRatio: 17, fourYearGradRate: 62, avgStartingSalary: 60000, pctEmployed6Mo: 89, medianEarnings10Yr: 66000, greekLifePct: 10, distanceToCityMiles: 0, annualCostEstimate: 28000, avgNetPrice: 16000,
   },
   "University of Illinois Urbana-Champaign": {
     city: "Champaign",
@@ -1189,6 +1229,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 52, female: 48 },
     undergradPopulation: 35000,
     inStatePercent: 75,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 55, studentFacultyRatio: 20, fourYearGradRate: 58, avgStartingSalary: 66000, pctEmployed6Mo: 90, medianEarnings10Yr: 70000, greekLifePct: 22, distanceToCityMiles: 130, annualCostEstimate: 32000, avgNetPrice: 18000,
   },
   "Ohio State University": {
     city: "Columbus",
@@ -1218,6 +1259,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 51, female: 49 },
     undergradPopulation: 47000,
     inStatePercent: 78,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 50, studentFacultyRatio: 19, fourYearGradRate: 60, avgStartingSalary: 56000, pctEmployed6Mo: 88, medianEarnings10Yr: 62000, greekLifePct: 12, distanceToCityMiles: 0, annualCostEstimate: 28000, avgNetPrice: 17000,
   },
   "Penn State University": {
     city: "University Park",
@@ -1247,6 +1289,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 53, female: 47 },
     undergradPopulation: 41000,
     inStatePercent: 72,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 40, studentFacultyRatio: 15, fourYearGradRate: 61, avgStartingSalary: 58000, pctEmployed6Mo: 88, medianEarnings10Yr: 64000, greekLifePct: 17, distanceToCityMiles: 140, annualCostEstimate: 30000, avgNetPrice: 18000,
   },
   "University of Washington": {
     city: "Seattle",
@@ -1276,6 +1319,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 36800,
     inStatePercent: 75,
+    avgGPARange: "3.7-3.9", pctTopTenClass: 70, studentFacultyRatio: 21, fourYearGradRate: 66, avgStartingSalary: 68000, pctEmployed6Mo: 91, medianEarnings10Yr: 72000, greekLifePct: 12, distanceToCityMiles: 0, annualCostEstimate: 29000, avgNetPrice: 14000,
   },
   "Purdue University": {
     city: "West Lafayette",
@@ -1305,6 +1349,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 57, female: 43 },
     undergradPopulation: 38400,
     inStatePercent: 55,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 45, studentFacultyRatio: 13, fourYearGradRate: 55, avgStartingSalary: 66000, pctEmployed6Mo: 90, medianEarnings10Yr: 70000, greekLifePct: 18, distanceToCityMiles: 65, annualCostEstimate: 24000, avgNetPrice: 14000,
   },
   "University of Maryland": {
     city: "College Park",
@@ -1334,6 +1379,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 52, female: 48 },
     undergradPopulation: 31000,
     inStatePercent: 75,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 55, studentFacultyRatio: 18, fourYearGradRate: 67, avgStartingSalary: 64000, pctEmployed6Mo: 90, medianEarnings10Yr: 68000, greekLifePct: 12, distanceToCityMiles: 8, annualCostEstimate: 28000, avgNetPrice: 16000,
   },
   "Virginia Tech": {
     city: "Blacksburg",
@@ -1363,6 +1409,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 57, female: 43 },
     undergradPopulation: 30400,
     inStatePercent: 72,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 40, studentFacultyRatio: 14, fourYearGradRate: 63, avgStartingSalary: 62000, pctEmployed6Mo: 89, medianEarnings10Yr: 66000, greekLifePct: 18, distanceToCityMiles: 160, annualCostEstimate: 27000, avgNetPrice: 16000,
   },
   "Indiana University Bloomington": {
     city: "Bloomington",
@@ -1392,6 +1439,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 34000,
     inStatePercent: 55,
+    avgGPARange: "3.4-3.7", pctTopTenClass: 35, studentFacultyRatio: 16, fourYearGradRate: 57, avgStartingSalary: 56000, pctEmployed6Mo: 87, medianEarnings10Yr: 58000, greekLifePct: 20, distanceToCityMiles: 50, annualCostEstimate: 26000, avgNetPrice: 14000,
   },
   "UC San Diego": {
     city: "San Diego",
@@ -1421,6 +1469,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 51, female: 49 },
     undergradPopulation: 33100,
     inStatePercent: 85,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 90, studentFacultyRatio: 19, fourYearGradRate: 62, avgStartingSalary: 64000, pctEmployed6Mo: 89, medianEarnings10Yr: 70000, greekLifePct: 10, distanceToCityMiles: 15, annualCostEstimate: 35000, avgNetPrice: 16000,
   },
   "UC Davis": {
     city: "Davis",
@@ -1450,6 +1499,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 42, female: 58 },
     undergradPopulation: 31100,
     inStatePercent: 87,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 80, studentFacultyRatio: 20, fourYearGradRate: 58, avgStartingSalary: 58000, pctEmployed6Mo: 87, medianEarnings10Yr: 62000, greekLifePct: 8, distanceToCityMiles: 15, annualCostEstimate: 34000, avgNetPrice: 16000,
   },
   "UC Santa Barbara": {
     city: "Santa Barbara",
@@ -1479,6 +1529,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 23800,
     inStatePercent: 85,
+    avgGPARange: "3.7-4.0", pctTopTenClass: 85, studentFacultyRatio: 18, fourYearGradRate: 60, avgStartingSalary: 60000, pctEmployed6Mo: 88, medianEarnings10Yr: 64000, greekLifePct: 10, distanceToCityMiles: 90, annualCostEstimate: 35000, avgNetPrice: 16000,
   },
   "UC Irvine": {
     city: "Irvine",
@@ -1508,6 +1559,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 46, female: 54 },
     undergradPopulation: 29600,
     inStatePercent: 88,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 80, studentFacultyRatio: 18, fourYearGradRate: 60, avgStartingSalary: 60000, pctEmployed6Mo: 88, medianEarnings10Yr: 64000, greekLifePct: 10, distanceToCityMiles: 40, annualCostEstimate: 34000, avgNetPrice: 14000,
   },
   "University of Georgia": {
     city: "Athens",
@@ -1537,6 +1589,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 43, female: 57 },
     undergradPopulation: 30700,
     inStatePercent: 80,
+    avgGPARange: "3.6-3.9", pctTopTenClass: 50, studentFacultyRatio: 17, fourYearGradRate: 62, avgStartingSalary: 54000, pctEmployed6Mo: 87, medianEarnings10Yr: 58000, greekLifePct: 22, distanceToCityMiles: 65, annualCostEstimate: 26000, avgNetPrice: 15000,
   },
   "Clemson University": {
     city: "Clemson",
@@ -1566,6 +1619,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 51, female: 49 },
     undergradPopulation: 22600,
     inStatePercent: 64,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 40, studentFacultyRatio: 16, fourYearGradRate: 56, avgStartingSalary: 54000, pctEmployed6Mo: 87, medianEarnings10Yr: 58000, greekLifePct: 22, distanceToCityMiles: 30, annualCostEstimate: 26000, avgNetPrice: 16000,
   },
   "University of Pittsburgh": {
     city: "Pittsburgh",
@@ -1595,6 +1649,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 20500,
     inStatePercent: 68,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 42, studentFacultyRatio: 14, fourYearGradRate: 64, avgStartingSalary: 58000, pctEmployed6Mo: 88, medianEarnings10Yr: 62000, greekLifePct: 10, distanceToCityMiles: 0, annualCostEstimate: 27000, avgNetPrice: 17000,
   },
   "Michigan State University": {
     city: "East Lansing",
@@ -1624,6 +1679,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 39200,
     inStatePercent: 78,
+    avgGPARange: "3.4-3.7", pctTopTenClass: 30, studentFacultyRatio: 16, fourYearGradRate: 52, avgStartingSalary: 54000, pctEmployed6Mo: 86, medianEarnings10Yr: 58000, greekLifePct: 10, distanceToCityMiles: 85, annualCostEstimate: 26000, avgNetPrice: 16000,
   },
   "University of Minnesota": {
     city: "Minneapolis",
@@ -1653,6 +1709,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 37200,
     inStatePercent: 70,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 45, studentFacultyRatio: 17, fourYearGradRate: 60, avgStartingSalary: 58000, pctEmployed6Mo: 88, medianEarnings10Yr: 62000, greekLifePct: 8, distanceToCityMiles: 0, annualCostEstimate: 28000, avgNetPrice: 16000,
   },
   "Texas A&M University": {
     city: "College Station",
@@ -1682,6 +1739,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 52, female: 48 },
     undergradPopulation: 55300,
     inStatePercent: 92,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 50, studentFacultyRatio: 20, fourYearGradRate: 54, avgStartingSalary: 60000, pctEmployed6Mo: 88, medianEarnings10Yr: 64000, greekLifePct: 8, distanceToCityMiles: 95, annualCostEstimate: 26000, avgNetPrice: 16000,
   },
   "University of Colorado Boulder": {
     city: "Boulder",
@@ -1711,6 +1769,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 55, female: 45 },
     undergradPopulation: 31600,
     inStatePercent: 55,
+    avgGPARange: "3.4-3.7", pctTopTenClass: 35, studentFacultyRatio: 18, fourYearGradRate: 48, avgStartingSalary: 56000, pctEmployed6Mo: 86, medianEarnings10Yr: 60000, greekLifePct: 12, distanceToCityMiles: 25, annualCostEstimate: 28000, avgNetPrice: 18000,
   },
   "Arizona State University": {
     city: "Tempe",
@@ -1740,6 +1799,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 65000,
     inStatePercent: 62,
+    avgGPARange: "3.2-3.6", pctTopTenClass: 35, studentFacultyRatio: 22, fourYearGradRate: 38, avgStartingSalary: 52000, pctEmployed6Mo: 84, medianEarnings10Yr: 56000, greekLifePct: 8, distanceToCityMiles: 10, annualCostEstimate: 28000, avgNetPrice: 15000,
   },
   "University of Arizona": {
     city: "Tucson",
@@ -1769,6 +1829,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 38000,
     inStatePercent: 60,
+    avgGPARange: "3.2-3.6", pctTopTenClass: 30, studentFacultyRatio: 17, fourYearGradRate: 42, avgStartingSalary: 50000, pctEmployed6Mo: 83, medianEarnings10Yr: 54000, greekLifePct: 8, distanceToCityMiles: 0, annualCostEstimate: 27000, avgNetPrice: 15000,
   },
   "Rutgers University": {
     city: "New Brunswick",
@@ -1798,6 +1859,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 50, female: 50 },
     undergradPopulation: 36000,
     inStatePercent: 85,
+    avgGPARange: "3.4-3.7", pctTopTenClass: 40, studentFacultyRatio: 16, fourYearGradRate: 60, avgStartingSalary: 60000, pctEmployed6Mo: 88, medianEarnings10Yr: 66000, greekLifePct: 8, distanceToCityMiles: 30, annualCostEstimate: 30000, avgNetPrice: 18000,
   },
   "University of Connecticut": {
     city: "Storrs",
@@ -1827,6 +1889,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 19600,
     inStatePercent: 77,
+    avgGPARange: "3.5-3.8", pctTopTenClass: 40, studentFacultyRatio: 16, fourYearGradRate: 67, avgStartingSalary: 58000, pctEmployed6Mo: 88, medianEarnings10Yr: 64000, greekLifePct: 5, distanceToCityMiles: 85, annualCostEstimate: 29000, avgNetPrice: 16000,
   },
   "Williams College": {
     city: "Williamstown",
@@ -1856,6 +1919,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 2200,
     inStatePercent: 5,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 91, studentFacultyRatio: 7, fourYearGradRate: 91, avgStartingSalary: 72000, pctEmployed6Mo: 92, medianEarnings10Yr: 80000, greekLifePct: 0, distanceToCityMiles: 150, annualCostEstimate: 78000, avgNetPrice: 18000,
   },
   "Amherst College": {
     city: "Amherst",
@@ -1885,6 +1949,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 49, female: 51 },
     undergradPopulation: 1900,
     inStatePercent: 5,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 90, studentFacultyRatio: 7, fourYearGradRate: 90, avgStartingSalary: 68000, pctEmployed6Mo: 91, medianEarnings10Yr: 76000, greekLifePct: 0, distanceToCityMiles: 90, annualCostEstimate: 78000, avgNetPrice: 17000,
   },
   "Pomona College": {
     city: "Claremont",
@@ -1914,6 +1979,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 1800,
     inStatePercent: 15,
+    avgGPARange: "3.9-4.0", pctTopTenClass: 90, studentFacultyRatio: 8, fourYearGradRate: 89, avgStartingSalary: 68000, pctEmployed6Mo: 91, medianEarnings10Yr: 74000, greekLifePct: 0, distanceToCityMiles: 35, annualCostEstimate: 78000, avgNetPrice: 16000,
   },
   "Middlebury College": {
     city: "Middlebury",
@@ -1943,6 +2009,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 47, female: 53 },
     undergradPopulation: 2800,
     inStatePercent: 5,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 80, studentFacultyRatio: 9, fourYearGradRate: 88, avgStartingSalary: 62000, pctEmployed6Mo: 90, medianEarnings10Yr: 70000, greekLifePct: 0, distanceToCityMiles: 180, annualCostEstimate: 77000, avgNetPrice: 22000,
   },
   "Bowdoin College": {
     city: "Brunswick",
@@ -1972,6 +2039,7 @@ export const COLLEGE_EXTENDED_DATA: Record<string, Partial<College>> = {
     genderBreakdown: { male: 48, female: 52 },
     undergradPopulation: 1900,
     inStatePercent: 8,
+    avgGPARange: "3.8-4.0", pctTopTenClass: 84, studentFacultyRatio: 9, fourYearGradRate: 90, avgStartingSalary: 64000, pctEmployed6Mo: 91, medianEarnings10Yr: 72000, greekLifePct: 0, distanceToCityMiles: 30, annualCostEstimate: 76000, avgNetPrice: 18000,
   },
 };
 
