@@ -94,10 +94,21 @@ const LOCATION_FIELDS: QualField[] = [
     key: "cityIntegration",
     label: "City Integration",
     getTag: (c) => {
-      if (c.distanceToCityMiles != null) {
-        if (c.distanceToCityMiles <= 5) return "In the city";
-        if (c.distanceToCityMiles <= 20) return "Near city";
-        return "Rural / remote";
+      // Use the school's setting as the primary signal — Yale is "urban"
+      // even though it's 75 miles from NYC, because New Haven IS a city.
+      // Distance is secondary, for distinguishing within a setting tier.
+      if (c.setting === "urban") {
+        return c.distanceToCityMiles != null && c.distanceToCityMiles <= 5
+          ? "In the city"
+          : "Urban";
+      }
+      if (c.setting === "suburban") {
+        if (c.distanceToCityMiles != null && c.distanceToCityMiles <= 15) return "Near city";
+        return "Suburban";
+      }
+      if (c.setting === "rural") {
+        if (c.distanceToCityMiles != null && c.distanceToCityMiles <= 40) return "College town";
+        return "Rural";
       }
       return c.proximityToCity ? c.proximityToCity.charAt(0).toUpperCase() + c.proximityToCity.slice(1) : null;
     },
