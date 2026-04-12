@@ -40,10 +40,10 @@ export const ScoreOverview: React.FC<ScoreOverviewProps> = ({ result }) => (
         delay={400}
       />
       <AnimatedScore
-        value={Math.round(result.vspiceComposite * 25)}
-        max={100}
+        value={result.vspiceComposite}
+        max={24}
         label="VSPICE"
-        sub={`${result.vspiceComposite}/4 composite`}
+        sub={`${result.vspiceComposite}/24 (incl. bonuses & pitfalls)`}
         delay={600}
       />
     </div>

@@ -181,8 +181,8 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           onChange={(e) => onUpdate("essayCommonApp", e.target.value)} />
       </div>
       <div>
-        <label className={labelClass}>VSPICE Score (0-4)</label>
-        <input type="number" step="0.1" min="0" max="4" placeholder="From Essay Grader"
+        <label className={labelClass}>VSPICE Score (0-24)</label>
+        <input type="number" step="1" min="0" max="24" placeholder="From Essay Grader"
           className={inputClass} value={inputs.essayVspice}
           onChange={(e) => onUpdate("essayVspice", e.target.value)} />
       </div>

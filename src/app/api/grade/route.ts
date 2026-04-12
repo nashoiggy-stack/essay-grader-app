@@ -112,13 +112,32 @@ export async function POST(req: NextRequest) {
       commonScores.reduce((sum, c) => sum + c.score, 0) / commonScores.length
     );
 
-    // Compute VSPICE composite (average of 6 dimensions, kept on 1-4 scale)
+    // Compute VSPICE composite as total out of 24 (6 dimensions × 4 pts each)
+    // plus pitfall deductions and bonus additions.
     const vspiceScores = Object.values(parsed.vspice) as { score: number }[];
-    const vspiceComposite =
-      Math.round(
-        (vspiceScores.reduce((sum, c) => sum + c.score, 0) / vspiceScores.length) *
-          100
-      ) / 100;
+    const vspiceRawTotal = vspiceScores.reduce((sum, c) => sum + c.score, 0);
+
+    // Pitfall deductions: -1 (minor), -2 (moderate), -3 (severe) per detected pitfall
+    // Pitfall labels in the rubric start with "-1", "-2", or "-3"
+    let pitfallDeduction = 0;
+    const pitfalls: string[] = parsed.pitfalls ?? [];
+    for (const p of pitfalls) {
+      if (p.includes("-3") || p.includes("severe") || p.includes("rejected")) pitfallDeduction += 3;
+      else if (p.includes("-2") || p.includes("moderate") || p.includes("definitely")) pitfallDeduction += 2;
+      else pitfallDeduction += 1;
+    }
+
+    // Bonus additions: +1 (nice), +2 (standout), +3 (difference) per detected bonus
+    let bonusAddition = 0;
+    const bonuses: string[] = parsed.bonuses ?? [];
+    for (const b of bonuses) {
+      if (b.includes("+3") || b.includes("difference") || b.includes("acceptance")) bonusAddition += 3;
+      else if (b.includes("+2") || b.includes("standout") || b.includes("stand out")) bonusAddition += 2;
+      else bonusAddition += 1;
+    }
+
+    // Final VSPICE composite: raw total + bonuses - pitfalls, clamped to 0-24
+    const vspiceComposite = Math.max(0, Math.min(24, vspiceRawTotal + bonusAddition - pitfallDeduction));
 
     // Adjusted score with word count penalty
     const { adjustedScore, penalty } = computeAdjustedScore(rawScore, words);

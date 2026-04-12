@@ -33,7 +33,7 @@ export interface StrategyTests {
 
 export interface StrategyEssay {
   readonly summaryScore: number | null;    // rawScore from profile (0-100)
-  readonly vspice: number | null;            // vspiceComposite (0-4)
+  readonly vspice: number | null;            // vspiceComposite (0-24)
   readonly latest: GradingResult | null;    // most recent full grade from history
 }
 

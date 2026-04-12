@@ -361,7 +361,7 @@ export function scoreToBand(score: number): ChanceBand {
 
 export function essayScoreAdjustment(
   commonAppScore: number | null, // 0-100
-  vspiceComposite: number | null // 0-4
+  vspiceComposite: number | null // 0-24
 ): { adjustment: number; signals: Signal[] } {
   const signals: Signal[] = [];
   let adjustment = 0;
@@ -385,18 +385,19 @@ export function essayScoreAdjustment(
     }
   }
 
-  // VSPICE composite (0-4) — normalize to a -5 to +5 range
+  // VSPICE composite (0-24 scale: 6 dimensions × 4 pts + bonuses - pitfalls)
+  // Average is ~15 (6 × 2.5). Normalize to a -5 to +5 range.
   if (vspiceComposite !== null) {
-    const normalized = (vspiceComposite - 2.5) / 1.5; // 2.5 is "average"
+    const normalized = (vspiceComposite - 15) / 9; // 15 is ~average, 24 is max
     const boost = Math.max(-4, Math.min(4, normalized * 5));
     adjustment += boost;
 
-    if (vspiceComposite >= 3.2) {
-      signals.push({ label: `Strong VSPICE score (${vspiceComposite.toFixed(1)}/4) — shows depth of character`, delta: boost });
-    } else if (vspiceComposite >= 2.3) {
-      signals.push({ label: `Solid VSPICE score (${vspiceComposite.toFixed(1)}/4)`, delta: boost });
+    if (vspiceComposite >= 19) {
+      signals.push({ label: `Strong VSPICE score (${vspiceComposite}/24) — shows depth of character`, delta: boost });
+    } else if (vspiceComposite >= 14) {
+      signals.push({ label: `Solid VSPICE score (${vspiceComposite}/24)`, delta: boost });
     } else {
-      signals.push({ label: `VSPICE score (${vspiceComposite.toFixed(1)}/4) could be strengthened`, delta: boost });
+      signals.push({ label: `VSPICE score (${vspiceComposite}/24) could be strengthened`, delta: boost });
     }
   }
 
