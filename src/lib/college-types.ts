@@ -72,47 +72,57 @@ export interface College {
   readonly city?: string;
   readonly selectivityTier?: "ultra" | "high" | "medium" | "low";
 
-  // Academics
-  readonly academicIntensity?: Tier3;
-  readonly researchStrength?: Tier3;
-  readonly internshipStrength?: Tier3;
-  readonly knownFor?: readonly string[];        // e.g. ["Core Curriculum", "Entrepreneurship"]
-  readonly flexibility?: Tier3;                 // ease of exploring across disciplines
-  readonly coreCurriculum?: "open" | "moderate" | "structured"; // open = pick anything, structured = strong core reqs
+  // Academics — quantitative first, tier fallback only when no number exists
+  readonly academicIntensity?: Tier3;           // fallback: no clean numeric proxy
+  readonly researchStrength?: Tier3;            // fallback: no clean numeric proxy
+  readonly internshipStrength?: Tier3;          // fallback: no clean numeric proxy
+  readonly knownFor?: readonly string[];
+  readonly flexibility?: Tier3;                 // fallback: no clean numeric proxy
+  readonly coreCurriculum?: "open" | "moderate" | "structured";
+  readonly avgGPARange?: string;                // e.g. "3.8-4.0" — display string
+  readonly pctTopTenClass?: number;             // 0-100, % of freshmen from top 10% of HS class
+  readonly studentFacultyRatio?: number;        // e.g. 6 means 6:1
+  readonly fourYearGradRate?: number;           // 0-100
 
-  // Career / Outcomes
-  readonly topIndustries?: readonly string[];    // e.g. ["Finance", "Consulting", "Tech"]
-  readonly careerPipelines?: readonly string[];  // e.g. ["Wall Street", "Big Tech", "Med School"]
-  readonly gradSchoolStrength?: Tier3;
+  // Career / Outcomes — quantitative
+  readonly topIndustries?: readonly string[];
+  readonly careerPipelines?: readonly string[];
+  readonly gradSchoolStrength?: Tier3;          // fallback: hard to quantify
+  readonly avgStartingSalary?: number;          // USD, approximate median for all majors
+  readonly pctEmployed6Mo?: number;             // 0-100, % employed/grad school within 6 months
+  readonly medianEarnings10Yr?: number;         // USD, College Scorecard 10-year median
 
-  // Campus / Life
-  readonly vibeTags?: readonly string[];         // e.g. ["collaborative", "preprofessional", "artsy"]
+  // Campus / Life — mostly qualitative (no clean numeric alternatives)
+  readonly vibeTags?: readonly string[];
   readonly socialScene?: Tier3;
   readonly greekLifePresence?: Tier3;
+  readonly greekLifePct?: number;               // 0-100, % of students in Greek orgs
   readonly sportsCulture?: Tier3;
   readonly campusCohesion?: Tier3;
 
-  // Location extras
+  // Location — quantitative where possible
   readonly proximityToCity?: Tier3;
-  readonly weather?: string;                     // e.g. "Cold winters", "Year-round mild"
+  readonly distanceToCityMiles?: number;        // miles to nearest major city center
+  readonly weather?: string;
 
-  // Cost
-  readonly costTier?: Tier3;
+  // Cost — quantitative
+  readonly costTier?: Tier3;                    // kept as fallback label
+  readonly annualCostEstimate?: number;         // USD, sticker price (before aid)
+  readonly avgNetPrice?: number;                // USD, average net price after aid
   readonly strongFinancialAid?: boolean;
   readonly strongMeritAid?: boolean;
 
   // Demographics
   readonly diversityIndex?: Tier3;
-  readonly percentInternational?: number | null; // 0-100, null if unavailable
+  readonly percentInternational?: number | null;
 
-  // Detailed demographics — percentage breakdowns (each 0-100, should sum ~100)
+  // Detailed demographics
   readonly demographics?: DemographicBreakdown;
   readonly genderBreakdown?: GenderBreakdown;
   readonly undergradPopulation?: number;
-  readonly inStatePercent?: number;   // 0-100, primarily meaningful for publics
+  readonly inStatePercent?: number;
 
-  // Search aliases — common abbreviations and nicknames so users can search
-  // by "UPenn", "UMich", "Cal", etc. Not displayed, only used for matching.
+  // Search aliases
   readonly aliases?: readonly string[];
 }
 

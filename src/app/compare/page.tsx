@@ -18,6 +18,10 @@ import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CompareSelector } from "@/components/CompareSelector";
 import { DemographicsCard, generateDemographicInsights, type DemoInsight } from "@/components/DemographicsChart";
+import {
+  CompareBar, MetricCard, CompareSection, CompareRow, TagRow,
+  formatCurrency, formatPct, formatRatio,
+} from "@/components/CompareVisuals";
 import type { College, Classification, Tier3 } from "@/lib/college-types";
 import {
   compareColleges,
@@ -259,6 +263,14 @@ export default function ComparePage() {
                   <FitTab fits={comparison.fit} />
                 ) : activeTab === "demographics" ? (
                   <DemographicsTab colleges={selected} />
+                ) : activeTab === "admissions" ? (
+                  <AdmissionsTab colleges={selected} />
+                ) : activeTab === "academics" ? (
+                  <AcademicsTab colleges={selected} />
+                ) : activeTab === "outcomes" ? (
+                  <OutcomesTab colleges={selected} />
+                ) : activeTab === "cost" ? (
+                  <CostTab colleges={selected} />
                 ) : (
                   <ComparisonGrid
                     rows={tabSections[activeTab]}
@@ -624,6 +636,308 @@ function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
           <DemographicsCard key={c.name} college={c} />
         ))}
       </div>
+    </div>
+  );
+}
+
+// ── Quantitative tab renderers ─────────────────────────────────────────────
+
+function barValues(colleges: readonly College[], field: keyof College, invertBest = false) {
+  const vals = colleges.map((c) => ({
+    name: c.name,
+    value: (c[field] as number | null | undefined) ?? 0,
+    isBest: false,
+  }));
+  if (vals.length === 0) return { values: vals, min: 0, max: 100 };
+  const nums = vals.map((v) => v.value).filter((v) => v > 0);
+  const best = invertBest ? Math.min(...nums) : Math.max(...nums);
+  const marked = vals.map((v) => ({ ...v, isBest: v.value === best && v.value > 0 }));
+  return {
+    values: marked,
+    min: Math.min(...nums, 0),
+    max: Math.max(...nums, 1),
+  };
+}
+
+function metricCards(colleges: readonly College[], field: keyof College, fmt: (v: number) => string, label: string, invertBest = false) {
+  const nums = colleges.map((c) => (c[field] as number | null | undefined) ?? 0).filter((v) => v > 0);
+  const best = invertBest ? Math.min(...nums) : Math.max(...nums);
+  return colleges.map((c) => {
+    const v = (c[field] as number | null | undefined) ?? null;
+    return {
+      name: c.name,
+      value: v != null && v > 0 ? fmt(v) : "—",
+      label,
+      isBest: v === best && v != null && v > 0,
+    };
+  });
+}
+
+function AdmissionsTab({ colleges }: { colleges: readonly College[] }) {
+  const ar = barValues(colleges, "acceptanceRate", true);
+  return (
+    <div className="space-y-5">
+      <CompareSection title="Acceptance Rate">
+        <CompareBar
+          values={ar.values}
+          min={0}
+          max={100}
+          unit="%"
+          invertBest
+          gradient="from-emerald-500 to-emerald-400"
+        />
+        <p className="text-[10px] text-zinc-600 mt-2">Lower is more selective. Sub-10% = extremely competitive.</p>
+      </CompareSection>
+
+      <CompareSection title="Test Score Ranges">
+        <CompareRow label="SAT Range (25th–75th)" context="The middle 50% of enrolled students. Above the 75th strengthens your app.">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+            {colleges.map((c) => (
+              <MetricCard
+                key={c.name}
+                value={`${c.sat25}–${c.sat75}`}
+                label={c.name.split(" ").slice(0, 2).join(" ")}
+                isBest={c.sat75 === Math.max(...colleges.map((cc) => cc.sat75))}
+              />
+            ))}
+          </div>
+        </CompareRow>
+        <CompareRow label="ACT Range (25th–75th)">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+            {colleges.map((c) => (
+              <MetricCard
+                key={c.name}
+                value={`${c.act25}–${c.act75}`}
+                label={c.name.split(" ").slice(0, 2).join(" ")}
+                isBest={c.act75 === Math.max(...colleges.map((cc) => cc.act75))}
+              />
+            ))}
+          </div>
+        </CompareRow>
+      </CompareSection>
+
+      <CompareSection title="Freshman Class Profile">
+        <CompareRow label="% from Top 10% of HS Class" context="Higher = more academically competitive peer group.">
+          <CompareBar
+            values={barValues(colleges, "pctTopTenClass").values}
+            min={0}
+            max={100}
+            unit="%"
+            gradient="from-blue-500 to-blue-400"
+          />
+        </CompareRow>
+      </CompareSection>
+
+      <CompareSection title="Test Policy & Applications" defaultExpanded={false}>
+        <CompareRow label="Test Policy">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+            {colleges.map((c) => (
+              <MetricCard
+                key={c.name}
+                value={c.testPolicy === "required" ? "Required" : c.testPolicy === "blind" ? "Test Blind" : "Optional"}
+                label={c.name.split(" ").slice(0, 2).join(" ")}
+              />
+            ))}
+          </div>
+        </CompareRow>
+      </CompareSection>
+    </div>
+  );
+}
+
+function AcademicsTab({ colleges }: { colleges: readonly College[] }) {
+  return (
+    <div className="space-y-5">
+      <CompareSection title="Academic Metrics">
+        <CompareRow label="Student:Faculty Ratio" context="Lower = more personal attention. Under 10:1 is excellent.">
+          <CompareBar
+            values={barValues(colleges, "studentFacultyRatio", true).values}
+            min={0}
+            max={Math.max(...colleges.map((c) => c.studentFacultyRatio ?? 25), 25)}
+            format={formatRatio}
+            invertBest
+            gradient="from-violet-500 to-violet-400"
+          />
+        </CompareRow>
+        <CompareRow label="4-Year Graduation Rate" context="Higher = more students finish on time. Below 60% signals potential issues.">
+          <CompareBar
+            values={barValues(colleges, "fourYearGradRate").values}
+            min={0}
+            max={100}
+            unit="%"
+            gradient="from-emerald-500 to-teal-400"
+          />
+        </CompareRow>
+      </CompareSection>
+
+      <CompareSection title="Strengths & Programs">
+        <CompareRow label="Known For">
+          <TagRow
+            colleges={colleges.map((c) => ({
+              name: c.name,
+              tags: c.knownFor ?? [],
+            }))}
+            field="knownFor"
+          />
+        </CompareRow>
+        <CompareRow label="Strong Majors">
+          <TagRow
+            colleges={colleges.map((c) => ({
+              name: c.name,
+              tags: c.topMajors ?? [],
+            }))}
+            field="topMajors"
+          />
+        </CompareRow>
+      </CompareSection>
+
+      <CompareSection title="Academic Character" defaultExpanded={false}>
+        <CompareRow label="Core Curriculum">
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+            {colleges.map((c) => (
+              <MetricCard
+                key={c.name}
+                value={c.coreCurriculum === "open" ? "Open" : c.coreCurriculum === "structured" ? "Structured" : "Moderate"}
+                label={c.name.split(" ").slice(0, 2).join(" ")}
+                context={c.coreCurriculum === "open" ? "Maximum freedom" : c.coreCurriculum === "structured" ? "Significant required courses" : undefined}
+              />
+            ))}
+          </div>
+        </CompareRow>
+      </CompareSection>
+    </div>
+  );
+}
+
+function OutcomesTab({ colleges }: { colleges: readonly College[] }) {
+  const hasSalary = colleges.some((c) => c.avgStartingSalary);
+  const has10Yr = colleges.some((c) => c.medianEarnings10Yr);
+  const hasEmploy = colleges.some((c) => c.pctEmployed6Mo);
+
+  return (
+    <div className="space-y-5">
+      {hasSalary && (
+        <CompareSection title="Starting Salary">
+          <CompareRow label="Average Starting Salary" context="Median salary for recent graduates across all majors.">
+            <CompareBar
+              values={barValues(colleges, "avgStartingSalary").values}
+              min={40000}
+              max={Math.max(...colleges.map((c) => c.avgStartingSalary ?? 0), 120000)}
+              format={formatCurrency}
+              gradient="from-emerald-500 to-emerald-400"
+            />
+          </CompareRow>
+        </CompareSection>
+      )}
+
+      {has10Yr && (
+        <CompareSection title="10-Year Earnings">
+          <CompareRow label="Median Earnings (10 yrs post-enrollment)" context="College Scorecard data. Reflects career trajectory, not just first job.">
+            <CompareBar
+              values={barValues(colleges, "medianEarnings10Yr").values}
+              min={40000}
+              max={Math.max(...colleges.map((c) => c.medianEarnings10Yr ?? 0), 150000)}
+              format={formatCurrency}
+              gradient="from-amber-500 to-amber-400"
+            />
+          </CompareRow>
+        </CompareSection>
+      )}
+
+      {hasEmploy && (
+        <CompareSection title="Employment">
+          <CompareRow label="% Employed or in Grad School (6 months)" context="Higher = stronger career services and employer demand.">
+            <CompareBar
+              values={barValues(colleges, "pctEmployed6Mo").values}
+              min={60}
+              max={100}
+              unit="%"
+              gradient="from-blue-500 to-blue-400"
+            />
+          </CompareRow>
+        </CompareSection>
+      )}
+
+      <CompareSection title="Career Pipelines">
+        <CompareRow label="Top Industries">
+          <TagRow
+            colleges={colleges.map((c) => ({
+              name: c.name,
+              tags: c.topIndustries ?? [],
+            }))}
+            field="topIndustries"
+          />
+        </CompareRow>
+        <CompareRow label="Pipelines">
+          <TagRow
+            colleges={colleges.map((c) => ({
+              name: c.name,
+              tags: c.careerPipelines ?? [],
+            }))}
+            field="careerPipelines"
+          />
+        </CompareRow>
+      </CompareSection>
+    </div>
+  );
+}
+
+function CostTab({ colleges }: { colleges: readonly College[] }) {
+  const hasSticker = colleges.some((c) => c.annualCostEstimate);
+  const hasNet = colleges.some((c) => c.avgNetPrice);
+
+  return (
+    <div className="space-y-5">
+      {hasSticker && (
+        <CompareSection title="Sticker Price">
+          <CompareRow label="Annual Cost (Tuition + Room & Board)" context="Before financial aid. The number on the bill — most students pay less.">
+            <CompareBar
+              values={barValues(colleges, "annualCostEstimate", true).values}
+              min={0}
+              max={Math.max(...colleges.map((c) => c.annualCostEstimate ?? 0), 90000)}
+              format={formatCurrency}
+              invertBest
+              gradient="from-red-500 to-orange-400"
+            />
+          </CompareRow>
+        </CompareSection>
+      )}
+
+      {hasNet && (
+        <CompareSection title="Average Net Price">
+          <CompareRow label="What families actually pay (after all aid)" context="The real cost for the average family. Lower = more generous aid.">
+            <CompareBar
+              values={barValues(colleges, "avgNetPrice", true).values}
+              min={0}
+              max={Math.max(...colleges.map((c) => c.avgNetPrice ?? 0), 60000)}
+              format={formatCurrency}
+              invertBest
+              gradient="from-emerald-500 to-teal-400"
+            />
+          </CompareRow>
+        </CompareSection>
+      )}
+
+      <CompareSection title="Financial Aid">
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+          {colleges.map((c) => (
+            <div key={c.name} className="space-y-2">
+              <MetricCard
+                value={c.strongFinancialAid ? "Yes" : "No"}
+                label="Meets full need"
+                isBest={c.strongFinancialAid === true}
+                color={c.strongFinancialAid ? "text-emerald-300" : "text-zinc-500"}
+              />
+              <MetricCard
+                value={c.strongMeritAid ? "Yes" : "No"}
+                label="Merit scholarships"
+                isBest={c.strongMeritAid === true}
+                color={c.strongMeritAid ? "text-emerald-300" : "text-zinc-500"}
+              />
+            </div>
+          ))}
+        </div>
+      </CompareSection>
     </div>
   );
 }
