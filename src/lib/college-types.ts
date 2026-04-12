@@ -92,17 +92,23 @@ export interface College {
   readonly pctEmployed6Mo?: number;             // 0-100, % employed/grad school within 6 months
   readonly medianEarnings10Yr?: number;         // USD, College Scorecard 10-year median
 
-  // Campus / Life — mostly qualitative (no clean numeric alternatives)
+  // Campus / Life — tier retained internally, descriptions are user-facing
   readonly vibeTags?: readonly string[];
   readonly socialScene?: Tier3;
   readonly greekLifePresence?: Tier3;
-  readonly greekLifePct?: number;               // 0-100, % of students in Greek orgs
+  readonly greekLifePct?: number;
   readonly sportsCulture?: Tier3;
   readonly campusCohesion?: Tier3;
 
+  // Structured qualitative descriptions — 1-2 sentences, school-specific.
+  // These replace vague tier labels as the primary UI display.
+  readonly campusDetails?: CampusDetails;
+  readonly cultureDetails?: CultureDetails;
+  readonly locationDetails?: LocationDetails;
+
   // Location — quantitative where possible
   readonly proximityToCity?: Tier3;
-  readonly distanceToCityMiles?: number;        // miles to nearest major city center
+  readonly distanceToCityMiles?: number;
   readonly weather?: string;
 
   // Cost — quantitative
@@ -139,6 +145,32 @@ export interface DemographicBreakdown {
 export interface GenderBreakdown {
   readonly male?: number;
   readonly female?: number;
+}
+
+// ── Structured qualitative descriptions ─────────────────────────────────────
+// Each field is 1-2 sentences, school-specific, never generic filler.
+// These are the primary user-facing display; tier labels (Tier3) are kept
+// internally for comparison logic but are NOT the main UI output.
+
+export interface CampusDetails {
+  readonly socialScene?: string;     // what social life actually looks/feels like
+  readonly greekLife?: string;        // role of Greek life on campus
+  readonly sportsCulture?: string;    // how central athletics are to daily life
+  readonly housing?: string;          // residential experience
+  readonly environment?: string;      // physical campus + surrounding area feel
+}
+
+export interface CultureDetails {
+  readonly vibe?: string;             // overall atmosphere in 1-2 sentences
+  readonly collaboration?: string;    // how students work together (or compete)
+  readonly studentType?: string;      // who attends — archetype description
+  readonly academicCulture?: string;  // attitude toward coursework + intellectual life
+}
+
+export interface LocationDetails {
+  readonly cityIntegration?: string;  // how the school connects to its city
+  readonly internshipAccess?: string; // practical access to career opportunities
+  readonly surroundings?: string;     // what's around campus
 }
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";

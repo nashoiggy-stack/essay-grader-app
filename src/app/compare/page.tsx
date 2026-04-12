@@ -22,6 +22,7 @@ import {
   MetricBar, RangeBar, MetricCard, CompareSection, CompareRow, TagRow,
   formatCurrency, formatPct, formatRatio,
 } from "@/components/CompareVisuals";
+import { CampusTab, CultureTab } from "@/components/QualitativeCompare";
 import type { College, Classification, Tier3 } from "@/lib/college-types";
 import {
   compareColleges,
@@ -74,6 +75,7 @@ const TABS = [
   { key: "admissions", label: "Admissions", icon: BarChart3 },
   { key: "academics", label: "Academics", icon: GraduationCap },
   { key: "campus", label: "Campus", icon: Building2 },
+  { key: "culture", label: "Culture", icon: Sparkles },
   { key: "outcomes", label: "Outcomes", icon: TrendingUp },
   { key: "cost", label: "Cost", icon: DollarSign },
   { key: "demographics", label: "Demographics", icon: Users },
@@ -136,6 +138,7 @@ export default function ComparePage() {
         admissions: comparison.admissions,
         academics: comparison.academics,
         campus: comparison.campus,
+        culture: [],  // handled by CultureTab component
         outcomes: comparison.outcomes,
         cost: comparison.cost,
         demographics: comparison.demographics,
@@ -145,6 +148,7 @@ export default function ComparePage() {
         admissions: [],
         academics: [],
         campus: [],
+        culture: [],
         outcomes: [],
         cost: [],
         demographics: [],
@@ -271,6 +275,10 @@ export default function ComparePage() {
                   <OutcomesTab colleges={selected} />
                 ) : activeTab === "cost" ? (
                   <CostTab colleges={selected} />
+                ) : activeTab === "campus" ? (
+                  <CampusTab colleges={selected} />
+                ) : activeTab === "culture" ? (
+                  <CultureTab colleges={selected} />
                 ) : (
                   <ComparisonGrid
                     rows={tabSections[activeTab]}
