@@ -104,6 +104,10 @@ export interface College {
   // Demographics
   readonly diversityIndex?: Tier3;
   readonly percentInternational?: number | null; // 0-100, null if unavailable
+
+  // Search aliases — common abbreviations and nicknames so users can search
+  // by "UPenn", "UMich", "Cal", etc. Not displayed, only used for matching.
+  readonly aliases?: readonly string[];
 }
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
