@@ -19,7 +19,7 @@ import { APP_CONFIG } from "@/data/mockData";
 
 // Bump when the grading prompt changes materially so cached scores don't
 // stick around with the old calibration. v4 = strict grading restored.
-const GRADING_CACHE_VERSION = "v4";
+const GRADING_CACHE_VERSION = "v5";
 const GRADING_CACHE_PREFIX = "essay-grader-cache";
 
 function hashEssay(text: string): string {

@@ -110,11 +110,11 @@ Prefer fewer, higher-impact suggestions over many small ones.`;
   }
 
   if (focus === "Lower Word Count") {
-    return `Focus: trim the essay to fit the 650-word limit while MAINTAINING or IMPROVING quality scores. Make it more concise and submission-ready.
+    return `You are an expert Ivy League admissions essay coach. Your ONLY job is to reduce the essay's word count while MAINTAINING or IMPROVING every scoring dimension. Make it more concise and submission-ready.
 
-IMPORTANT: You MUST return valid JSON using the exact format specified in your system prompt above. Use ONLY "cut" and "rewrite" as type values (lowercase). Do NOT use any other format.
+Return between 6 and 12 suggestions. Use ONLY "cut" and "rewrite" as type values (lowercase). Do NOT use "add" or "strengthen".
 
-Apply these cutting strategies in order of precision:
+CUTTING STRATEGIES (apply in order of precision):
 
 1. Word by word — Cut filler: "that", "very", "really", "just", "in order to", "due to the fact that", adverbs. Use contractions.
 2. Phrase by phrase — Cut empty prepositional phrases. Replace wordy phrases with single words.
@@ -139,8 +139,21 @@ NEVER CUT (would lower scores):
 For "cut" type: set replacement to "" (empty string).
 For "rewrite" type: set replacement to a shorter version that preserves meaning.
 
-SCORE PROTECTION (CRITICAL):
-Every suggestion must make the essay equally strong or stronger. Concise writing scores HIGHER. Only cut DEAD WEIGHT — text that contributes to zero scoring dimensions. If a passage contributes to ANY dimension, keep it even if cutting it saves 20 words.`;
+==================================================
+SCORE PROTECTION (CRITICAL)
+==================================================
+
+Only include suggestions that improve clarity, concision, or flow WITHOUT reducing meaning, insight, authenticity, or narrative strength. If a cut would remove important content, do not include it.
+
+Every suggestion must make the essay equally strong or stronger. Concise writing scores HIGHER. Only cut DEAD WEIGHT — text that contributes to zero scoring dimensions. If a passage contributes to ANY dimension, keep it even if cutting it saves 20 words.
+
+VALIDATION — before including each suggestion, confirm:
+- Does it improve Writing Skills, Clarity, or Flow? → YES = include
+- Does it reduce meaning or insight? → YES = discard
+- Does it weaken emotional depth or authenticity? → YES = discard
+- Is the impact neutral or cosmetic? → YES = discard
+
+Return ONLY high-impact improvements that a reader would recognize as making the essay tighter AND stronger.`;
   }
 
   return `You are an expert Ivy League admissions essay coach helping a high school junior improve their Common App essay. Focus specifically on raising the "${focus}" score.
@@ -178,27 +191,39 @@ REQUIREMENTS:
    - do NOT claim a suggestion improves the score if it is only stylistic or minimal
 
 ==================================================
-CROSS-DIMENSION SAFETY
+CROSS-CATEGORY SAFETY (CRITICAL)
 ==================================================
 
-Improvements must NOT significantly harm:
-- clarity
-- structure
-- coherence
-- natural voice
+A suggestion that raises "${focus}" must NOT cause ANY other category to drop.
 
-If a suggestion improves "${focus}" but degrades readability:
-→ refine it or discard it
+Protected categories (Common App 7):
+  Authenticity, Compelling Story, Insight, Values, Writing Skills, Passion, Ambition
+
+Protected categories (VSPICE 6):
+  Vulnerability, Selflessness, Perseverance, Initiative, Curiosity, Expression
+
+RULES:
+- Prefer NET-POSITIVE edits that improve multiple categories at once
+- An edit that improves one category while preserving all others is acceptable
+- An edit that improves one category but HARMS any other category → DISCARD IT
+- The only exception: if the gain is clearly substantial AND no major category drops meaningfully — but when in doubt, discard
+
+VALIDATION — before including each suggestion, confirm:
+1. Which categories does this edit improve? (must be at least one)
+2. Does this edit lower ANY of the 13 protected categories? → YES = discard
+3. Is the overall impact neutral or cosmetic? → YES = discard
+4. Would an admissions reader recognize the essay as stronger? → NO = discard
 
 ==================================================
 QUALITY FILTER
 ==================================================
 
 Only include suggestions that:
-- materially improve the essay
-- would likely be recognized by an admissions reader as stronger
+- materially improve the essay with clear positive impact
+- improve at least one category without harming any other
+- would be recognized by an admissions reader as making the essay stronger
 
-If a suggestion is marginal:
+If a suggestion is marginal, risky, or trades one score for another:
 → omit it`;
 }
 
@@ -220,6 +245,48 @@ function getCriterionContext(focus: SuggestionFocus): string {
   };
   return contexts[focus] || "";
 }
+
+// ── Stage 2: Filter prompt ────────────────────────────────────────────────
+// Called with the original essay + Stage 1 suggestions. Returns only the
+// surviving suggestions in the same JSON schema. Uses Sonnet for speed.
+export const FILTER_SYSTEM_PROMPT = `You are validating essay suggestions before they are shown to the user. You return ONLY valid JSON, no markdown.
+
+You will receive the original essay and a list of candidate suggestions. Your job is to keep ONLY high-quality, net-positive suggestions.
+
+A valid suggestion MUST:
+- improve at least one Common App category (Authenticity, Compelling Story, Insight, Values, Writing Skills, Passion, Ambition) or VSPICE category (Vulnerability, Selflessness, Perseverance, Initiative, Curiosity, Expression)
+- NOT reduce any other major category
+- preserve meaning, authenticity, narrative strength, and voice
+
+REJECT suggestions that:
+- are generic or vague ("add more detail" without showing what)
+- are low-impact or cosmetic only
+- reduce insight, emotional depth, or reflection
+- weaken the story arc or narrative tension
+- make the essay sound artificial, overly formal, or unlike the student
+- fabricate details the student didn't write
+
+PREFER suggestions that:
+- improve multiple categories at once
+- deepen reflection or self-awareness
+- strengthen the narrative arc
+- improve clarity without flattening voice
+- are specific and concrete
+
+Return the surviving suggestions in the EXACT same JSON format:
+{
+  "suggestions": [
+    {
+      "type": "cut" | "add" | "rewrite" | "strengthen",
+      "original": "<exact text — must match the original suggestion's text>",
+      "replacement": "<text>",
+      "reason": "<1 sentence>"
+    }
+  ]
+}
+
+If ALL suggestions are weak, return { "suggestions": [] }.
+Do NOT add new suggestions — only keep or remove existing ones.`;
 
 export const SUGGESTIONS_SYSTEM_PROMPT = `You are an expert college essay editor. You return ONLY valid JSON, no markdown.
 
