@@ -34,19 +34,30 @@ ${COMMON_APP_CRITERIA.map((c) => `### ${c.name}\n${c.description}`).join("\n\n")
 
 ## SCORING CALIBRATION (CRITICAL — read carefully)
 
-Use the full range of the 1-100 scale. Most real Ivy-accepted essays land in the 80-92 range, not the 70s.
+Scores should correlate with percentile rank among all Common App essays.
+Think of it like a grade: 90 = A, 80 = B, 70 = C, 60 = D, below 50 = F.
 
-- 93-100: Truly exceptional. Would stand out in any applicant pool. Publishable quality.
-- 85-92: Strong. Competitive for top schools. The essay works — minor improvements possible but not blocking.
-- 78-84: Good. Solid essay that would be competitive at many schools. Has clear strengths with room to grow.
-- 65-77: Developing. Shows potential but has meaningful weaknesses. Needs revision to compete at top schools.
-- 50-64: Below average for competitive applicants. Significant gaps in this dimension.
-- 1-49: Needs major rework. Missing the criterion almost entirely.
+- 95-100: Top 1%. Truly exceptional — would stand out in any Ivy applicant pool. Publishable quality.
+- 90-94: Top 5%. Excellent — a strong admit-pile essay at selective schools. Polished, distinctive, memorable.
+- 85-89: Top 15%. Very good — competitive at top schools. Clear strengths, minor room to improve.
+- 80-84: Top 25%. Good — a solid essay that works well. Would be competitive at most selective schools.
+- 75-79: Top 40%. Above average — the essay has real merit but also clear areas for growth. Competitive at many strong schools.
+- 70-74: Average (50th percentile). A competent essay — not weak, but not yet standing out. Comparable to what a typical college-bound student submits.
+- 60-69: Below average. Has identifiable weaknesses that would hurt competitiveness. Needs meaningful revision.
+- 50-59: Weak. Significant gaps — missing voice, structure, or substance.
+- Below 50: Needs fundamental rework. Missing the criterion almost entirely.
+
+KEY CALIBRATION POINTS:
+- A 70 is NOT a bad score. It means "average among all college applicants" — a perfectly normal essay. Most students start here.
+- A 75-79 means "above average, shows real effort" — this is a good essay that needs polish.
+- An 80+ means "genuinely strong" — this essay would help, not hurt, an application.
+- An 85+ means "this is a competitive advantage" — admissions readers would take notice.
+- Reserve sub-60 for essays with fundamental problems (no structure, no voice, all cliches).
 
 ANTI-HARSHNESS RULES:
-- A 17-year-old who writes with genuine voice, tells a real story, and shows self-awareness is writing a STRONG essay. Score it in the 80s, not the 70s.
-- Do NOT require perfection across all dimensions to score in the 80s. An essay with a powerful narrative arc and authentic voice but underdeveloped ambition should STILL average 83-88.
-- The 70s should be reserved for essays that are genuinely mediocre or have real structural problems — not for strong essays that happen to be imperfect.
+- A 17-year-old who writes with genuine voice, tells a real story, and shows self-awareness is writing an above-average essay at minimum. Score the core dimensions (Authenticity, Story, Writing) at 80+ if the voice is real.
+- Do NOT require perfection across all dimensions to average 85+. An essay with a powerful narrative arc and authentic voice but underdeveloped ambition should STILL average 83-88.
+- The low 70s should be the floor for any essay that has a real voice and tells an actual story — even if the story isn't perfectly structured.
 
 ## ASYMMETRY RULE (IMPORTANT)
 

@@ -18,8 +18,8 @@ import { APP_CONFIG } from "@/data/mockData";
 // ────────────────────────────────────────────────────────────────────────────
 
 // Bump when the grading prompt changes materially so cached scores don't
-// stick around with the old calibration. v2 = recalibrated scoring bands.
-const GRADING_CACHE_VERSION = "v2";
+// stick around with the old calibration. v3 = percentile-correlated bands.
+const GRADING_CACHE_VERSION = "v3";
 const GRADING_CACHE_PREFIX = "essay-grader-cache";
 
 function hashEssay(text: string): string {
