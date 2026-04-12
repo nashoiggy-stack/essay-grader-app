@@ -15,6 +15,7 @@ import type {
   StrategyTests,
   StrategyEssay,
 } from "./strategy-types";
+import { DREAM_SCHOOL_KEY } from "./strategy-types";
 import type { UserProfile } from "./profile-types";
 import type { ProfileEvaluation } from "./extracurricular-types";
 import type { GradingResult, SavedEssay } from "./types";
@@ -188,11 +189,28 @@ function buildPinnedSchools(
 
 // ── Public reader ───────────────────────────────────────────────────────────
 
+function readDreamSchool(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(DREAM_SCHOOL_KEY);
+    if (!raw) return null;
+    const trimmed = raw.trim();
+    // Accept both a plain string and a JSON-quoted string for backward compat.
+    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+      return JSON.parse(trimmed) as string;
+    }
+    return trimmed.length > 0 ? trimmed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function readStrategyProfile(): StrategyProfile {
   const profile = readUserProfile();
   const ec = readEcEvaluation();
   const essayHistory = readEssayHistory();
   const pins = readPinnedCollegeList();
+  const dreamSchool = readDreamSchool();
 
   const gpa = buildGpa(profile);
   const tests = buildTests(profile);
@@ -204,6 +222,7 @@ export function readStrategyProfile(): StrategyProfile {
   const hasEc = ec != null && Array.isArray(ec.activities) && ec.activities.length > 0;
   const hasEssay = essay != null;
   const hasPinnedSchools = pinnedSchools.length > 0;
+  const hasDreamSchool = dreamSchool != null && dreamSchool.length > 0;
 
   return {
     gpa,
@@ -211,6 +230,7 @@ export function readStrategyProfile(): StrategyProfile {
     ec,
     essay,
     pinnedSchools,
+    dreamSchool,
     intendedMajor: "", // reserved — profile doesn't track a persistent major yet
     basicInfo:
       profile?.basicInfo?.name || profile?.basicInfo?.graduationYear
@@ -224,5 +244,6 @@ export function readStrategyProfile(): StrategyProfile {
     hasEc,
     hasEssay,
     hasPinnedSchools,
+    hasDreamSchool,
   };
 }

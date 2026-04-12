@@ -48,6 +48,7 @@ export interface StrategyProfile {
   readonly ec: ProfileEvaluation | null;
   readonly essay: StrategyEssay | null;
   readonly pinnedSchools: readonly StrategyPinnedSchool[];
+  readonly dreamSchool: string | null;       // admitedge-dream-school localStorage
   readonly intendedMajor: string;            // from admitedge-profile if present, else ""
   readonly basicInfo: { name: string; graduationYear: string } | null;
   // Flags for the empty-state / missing-data UI
@@ -56,7 +57,15 @@ export interface StrategyProfile {
   readonly hasEc: boolean;
   readonly hasEssay: boolean;
   readonly hasPinnedSchools: boolean;
+  readonly hasDreamSchool: boolean;
 }
+
+// Storage key for the user's dream school selection (just the college name).
+export const DREAM_SCHOOL_KEY = "admitedge-dream-school";
+
+// Storage key for the persistent action-plan checkbox state, keyed by the
+// strategy result's generatedAt timestamp so re-runs reset the checklist.
+export const ACTION_CHECKLIST_KEY = "admitedge-strategy-action-checklist";
 
 // ── Analysis output (deterministic, no prose) ───────────────────────────────
 
@@ -158,8 +167,25 @@ export interface StrategyResult {
   readonly applicationStrategy: StrategyResultSection;
   readonly actionPlan: StrategyResultSection;     // bullets are required here
   readonly competitiveness: StrategyResultSection;
+  // Optional: present only if a dream school is set in localStorage.
+  // Contains the ED/EA decision and dream-school-specific reasoning.
+  readonly dreamSchool?: DreamSchoolSection;
   readonly generatedAt: number;
 }
 
+export type EdVerdict = "yes" | "conditional" | "no";
+
+export interface DreamSchoolSection {
+  readonly title: string;
+  readonly schoolName: string;
+  readonly edVerdict: EdVerdict;
+  readonly verdictHeadline: string;           // short — e.g. "ED is the right move"
+  readonly reasoning: string;                 // 3-5 sentences, consultant voice
+  readonly whatWouldChangeThis: readonly string[]; // 2-3 specific levers
+}
+
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
-export const STRATEGY_CACHE_VERSION = "v1";
+// Bump to v2 because the result shape now includes an optional dreamSchool
+// section. Old cached results without it would render fine, but the version
+// bump forces a fresh call so the LLM actually generates that section.
+export const STRATEGY_CACHE_VERSION = "v2";

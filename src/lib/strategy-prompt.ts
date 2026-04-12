@@ -125,6 +125,40 @@ OUTPUT STRUCTURE (return exactly this JSON shape):
   }
 }
 
+DREAM SCHOOL SECTION — include ONLY if a "dreamSchool" field is present
+in the raw profile and is not null. This is the student's #1 target, and
+they expect direct, high-conviction guidance.
+
+If the dream school is present, add this extra top-level field to your
+output:
+
+  "dreamSchool": {
+    "title": "Dream School: <exact school name>",
+    "schoolName": "<exact school name>",
+    "edVerdict": "yes" | "conditional" | "no",
+    "verdictHeadline": "<6-10 words — e.g. 'ED is the clear right move'>",
+    "reasoning": "<3-5 sentences. Name the school by name. Reference the student's academic and EC fit. Explain why you chose the edVerdict. Acknowledge tradeoffs (binding commitment, restricts other options). Reference the student's overall competitiveness vs the school's selectivity.>",
+    "whatWouldChangeThis": [
+      "<specific lever 1 — e.g. 'A 1500+ SAT (currently 1420) would push this from conditional to yes'>",
+      "<specific lever 2>",
+      "<specific lever 3>"
+    ]
+  }
+
+edVerdict rules (base on the student's current profile + school's plans):
+- "yes" — student is a real contender (classification is target or better
+  at a reach school; school offers ED; using the ED slot here has the
+  highest expected marginal value)
+- "conditional" — student is close to competitive but has a clear weakness
+  to close first (the whatWouldChangeThis list should be tight and concrete)
+- "no" — school is a significant overreach OR student's profile has a
+  fundamental gap that ED cannot overcome OR a stronger ED option exists
+  elsewhere on their pinned list
+
+The dreamSchool section is ADDITIONAL to the 7 required sections above,
+not a replacement. All 7 must still be present. If dreamSchool is null in
+the raw profile, DO NOT include the dreamSchool field in your output.
+
 RULES:
 - Return ONLY JSON, no markdown, no explanation.
 - Every section must reference specific data from the raw profile.
@@ -132,7 +166,10 @@ RULES:
 - Action Plan bullets must be specific, not abstract.
 - If the analysis flags "missing-ec-data" or similar, the output must tell
   the student exactly which tool to run, not just "add more data."
-- Never contradict the analysis numbers.`;
+- Never contradict the analysis numbers.
+- If the dream school is not in the pinned list, still write the dreamSchool
+  section — use the school's public profile for reference, and flag the
+  missing pin as a small caveat at the end of the reasoning.`;
 
 export function buildStrategyPrompt(
   profile: StrategyProfile,
@@ -201,6 +238,7 @@ export function buildStrategyPrompt(
       fitScore: s.classified.fitScore,
       reason: s.classified.reason,
     })),
+    dreamSchool: profile.dreamSchool,
     student: profile.basicInfo,
   };
 
