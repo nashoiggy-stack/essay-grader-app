@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { UserProfile, SATScores, ACTScores, BasicStudentInfo } from "@/lib/profile-types";
 import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO } from "@/lib/profile-types";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 interface ComputedValues {
   gpaUW: string;
@@ -216,10 +217,10 @@ export function useProfile() {
     };
   }, [loaded, syncFromComputed]);
 
-  // Save on change
+  // Save on change — notify downstream hooks (chance calc, college filter)
   useEffect(() => {
     if (loaded) {
-      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+      setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(profile));
     }
   }, [profile, loaded]);
 
