@@ -96,6 +96,18 @@ function extractSuggestions(raw: string): { suggestions: Suggestion[] } {
 
 async function generateSuggestions(essayText: string, focus: SuggestionFocus): Promise<Suggestion[]> {
   const focusPrompt = buildSuggestionsPrompt(focus);
+  const wordCount = essayText.split(/\s+/).filter(Boolean).length;
+
+  // For Lower Word Count, tell the model the exact word count and target
+  // so it knows how aggressive to be (models are bad at counting words).
+  let userContent: string;
+  if (focus === "Lower Word Count") {
+    const wordsOver = Math.max(0, wordCount - 650);
+    const target = wordCount > 650 ? "600-650" : wordCount > 550 ? "~600" : "preserve length";
+    userContent = `This essay is currently ${wordCount} words${wordsOver > 0 ? ` (${wordsOver} words over the 650 limit)` : ""}. Target: ${target} words. You need to find cuts and rewrites that remove at least ${wordsOver > 0 ? wordsOver : "10-30"} words total.\n\nGenerate inline suggestions to reduce the word count.\n\n---\n${essayText}\n---`;
+  } else {
+    userContent = `Here is the essay to analyze. Generate inline suggestions focused on "${focus}".\n\n---\n${essayText}\n---`;
+  }
 
   const message = await anthropic.messages.create({
     model: ANTHROPIC_MODEL,
@@ -105,7 +117,7 @@ async function generateSuggestions(essayText: string, focus: SuggestionFocus): P
     messages: [
       {
         role: "user",
-        content: `Here is the essay to analyze. Generate inline suggestions focused on "${focus}".\n\n---\n${essayText}\n---`,
+        content: userContent,
       },
     ],
   });
