@@ -138,6 +138,118 @@ async function filterSuggestions(essayText: string, stage1: Suggestion[]): Promi
   return extractSuggestions(text).suggestions;
 }
 
+// ── Server-side original-text repair ─────────────────────────────────────
+// The model frequently misquotes the essay: smart quotes vs straight quotes,
+// collapsed whitespace, em-dashes vs hyphens, truncated passages, etc.
+// This function tries progressively looser matching strategies to fix each
+// suggestion's `original` field so it's an exact substring of the essay.
+
+function normalizeText(s: string): string {
+  return s
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")   // smart single quotes
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')   // smart double quotes
+    .replace(/[\u2013\u2014]/g, "-")                 // en/em dashes
+    .replace(/\u2026/g, "...")                        // ellipsis character
+    .replace(/\s+/g, " ")                             // collapse whitespace
+    .trim();
+}
+
+function repairOriginals(essayText: string, suggestions: Suggestion[]): Suggestion[] {
+  const essayNorm = normalizeText(essayText);
+  const result: Suggestion[] = [];
+
+  for (const s of suggestions) {
+    // Strategy 1: exact match — already good
+    if (essayText.includes(s.original)) {
+      result.push(s);
+      continue;
+    }
+
+    // Strategy 2: normalized match — fix quotes/whitespace/dashes
+    const origNorm = normalizeText(s.original);
+    const normIdx = essayNorm.indexOf(origNorm);
+    if (normIdx !== -1) {
+      // Map the normalized index back to the original essay text
+      const realOriginal = findRealSubstring(essayText, essayNorm, normIdx, origNorm.length);
+      if (realOriginal) {
+        result.push({ ...s, original: realOriginal });
+        continue;
+      }
+    }
+
+    // Strategy 3: case-insensitive normalized match
+    const normIdxCI = essayNorm.toLowerCase().indexOf(origNorm.toLowerCase());
+    if (normIdxCI !== -1) {
+      const realOriginal = findRealSubstring(essayText, essayNorm, normIdxCI, origNorm.length);
+      if (realOriginal) {
+        result.push({ ...s, original: realOriginal });
+        continue;
+      }
+    }
+
+    // Strategy 4: first 60 chars match (model truncated the passage)
+    if (origNorm.length > 60) {
+      const prefix = origNorm.slice(0, 60);
+      const prefixIdx = essayNorm.indexOf(prefix);
+      if (prefixIdx !== -1) {
+        // Find the end: look for the last 40 chars
+        const suffix = origNorm.slice(-40);
+        const suffixIdx = essayNorm.indexOf(suffix, prefixIdx);
+        if (suffixIdx !== -1) {
+          const endIdx = suffixIdx + suffix.length;
+          const realOriginal = findRealSubstring(essayText, essayNorm, prefixIdx, endIdx - prefixIdx);
+          if (realOriginal) {
+            result.push({ ...s, original: realOriginal });
+            continue;
+          }
+        }
+      }
+    }
+
+    // No match found — drop this suggestion
+    console.warn(`[suggestions] Dropped unmatched original (${s.original.slice(0, 50)}...)`);
+  }
+
+  return result;
+}
+
+/** Map a position+length in normalized text back to the original essay */
+function findRealSubstring(original: string, normalized: string, normStart: number, normLen: number): string | null {
+  // Walk through original text, tracking position in normalized space
+  let origIdx = 0;
+  let normIdx = 0;
+
+  // Find the start position in the original
+  while (normIdx < normStart && origIdx < original.length) {
+    if (/\s/.test(original[origIdx])) {
+      // Consume all whitespace in original = 1 space in normalized
+      while (origIdx < original.length && /\s/.test(original[origIdx])) origIdx++;
+      normIdx++; // the single space
+    } else {
+      origIdx++;
+      normIdx++;
+    }
+  }
+  const realStart = origIdx;
+
+  // Find the end position
+  let consumed = 0;
+  while (consumed < normLen && origIdx < original.length) {
+    if (/\s/.test(original[origIdx])) {
+      while (origIdx < original.length && /\s/.test(original[origIdx])) origIdx++;
+      consumed++; // single space in normalized
+    } else {
+      origIdx++;
+      consumed++;
+    }
+  }
+
+  const realEnd = origIdx;
+  const sub = original.substring(realStart, realEnd);
+  // Verify the extraction actually works
+  return original.includes(sub) ? sub : null;
+}
+
 // ── Route handler ───────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -176,7 +288,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ suggestions: finalSuggestions });
+    // ── Server-side match repair ──────────────────────────────────────
+    // The model often slightly misquotes the essay (smart quotes, extra
+    // spaces, truncated text). Fix originals server-side so the client
+    // filter doesn't silently drop them.
+    const repaired = repairOriginals(essayText, finalSuggestions);
+    console.log(`[suggestions] ${focus}: ${finalSuggestions.length} generated, ${repaired.length} matched`);
+
+    return NextResponse.json({ suggestions: repaired });
   } catch (err) {
     console.error("Suggestions error:", err);
     return NextResponse.json(
