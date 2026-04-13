@@ -27,11 +27,17 @@ export function useSuggestions(essayText: string): UseSuggestionsReturn {
     setActiveFocus(focus);
     setLoading(true);
 
+    // 4-minute client timeout — Opus can take 30-90s per call, and the
+    // 2-stage pipeline doubles that. Browser default (~60s) is too short.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 240_000);
+
     try {
       const res = await fetch("/api/suggestions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ essayText: text, focus }),
+        signal: controller.signal,
       });
 
       const data = await res.json();
@@ -45,9 +51,14 @@ export function useSuggestions(essayText: string): UseSuggestionsReturn {
         (s: InlineSuggestion) => text.includes(s.original)
       );
       setSuggestions(valid);
-    } catch {
-      setError("Network error getting suggestions.");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("Request timed out. The AI is taking too long — please try again.");
+      } else {
+        setError("Network error getting suggestions.");
+      }
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };

@@ -154,21 +154,26 @@ export async function POST(req: NextRequest) {
     // Stage 1: Generate
     const stage1 = await generateSuggestions(essayText, focus);
 
-    // Stage 2: Filter (with fallback)
+    // Stage 2: Filter — skip for Lower Word Count (already tightly constrained,
+    // and the second Opus call doubles latency causing client-side timeouts)
     let finalSuggestions: Suggestion[];
-    try {
-      const filtered = await filterSuggestions(essayText, stage1);
-
-      if (filtered.length > 0) {
-        finalSuggestions = filtered;
-      } else {
-        // Stage 2 returned empty — fallback to top 6 from Stage 1
-        finalSuggestions = stage1.slice(0, 6);
-      }
-    } catch (filterErr) {
-      // Stage 2 failed entirely — fallback to Stage 1 output
-      console.error("Stage 2 filter failed, using Stage 1 output:", filterErr);
+    if (focus === "Lower Word Count") {
       finalSuggestions = stage1;
+    } else {
+      try {
+        const filtered = await filterSuggestions(essayText, stage1);
+
+        if (filtered.length > 0) {
+          finalSuggestions = filtered;
+        } else {
+          // Stage 2 returned empty — fallback to top 6 from Stage 1
+          finalSuggestions = stage1.slice(0, 6);
+        }
+      } catch (filterErr) {
+        // Stage 2 failed entirely — fallback to Stage 1 output
+        console.error("Stage 2 filter failed, using Stage 1 output:", filterErr);
+        finalSuggestions = stage1;
+      }
     }
 
     return NextResponse.json({ suggestions: finalSuggestions });
