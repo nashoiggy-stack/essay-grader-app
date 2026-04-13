@@ -15,21 +15,77 @@ import { computeApAcademicSupport } from "@/lib/ap-scores";
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
 
-  // ── Auto-fill from profile (localStorage) ──────────────────────────────
-  const fillFromProfile = useCallback(() => {
+  // ── Auto-fill from profile + source keys (direct read) ─────────────────
+  // Reads admitedge-profile first, then overlays fresh values directly from
+  // source keys (essay-grader-result, ec-evaluator-result, gpa-calc-v1).
+  // This works even when useProfile isn't mounted (e.g. user is on /chances).
+  const fillFromSources = useCallback(() => {
     try {
       const raw = localStorage.getItem("admitedge-profile");
-      if (!raw) return;
-      const p = JSON.parse(raw);
+      const p = raw ? JSON.parse(raw) : {};
+
+      // Direct reads from source tools (fresher than profile)
+      let essayCA = p.essayCommonApp || "";
+      let essayV = p.essayVspice || "";
+      try {
+        const er = localStorage.getItem("essay-grader-result");
+        if (er) {
+          const e = JSON.parse(er);
+          if (e?.rawScore != null) essayCA = String(e.rawScore);
+          if (e?.vspiceComposite != null) essayV = String(e.vspiceComposite);
+        }
+      } catch { /* ignore */ }
+
+      let ecBand = p.ecBand || "";
+      try {
+        const ecr = localStorage.getItem("ec-evaluator-result");
+        if (ecr) {
+          const e = JSON.parse(ecr);
+          if (e?.band) ecBand = e.band;
+        }
+      } catch { /* ignore */ }
+
+      let gpaUW = p.gpaUW || "";
+      let gpaW = p.gpaW || "";
+      let rigor: "low" | "medium" | "high" = p.rigor || "medium";
+      try {
+        const gr = localStorage.getItem("gpa-calc-v1");
+        if (gr) {
+          const state = JSON.parse(gr);
+          if (state?.years?.length) {
+            const COL_UW: Record<string, number> = {
+              "A+":4,"A":4,"A−":3.7,"B+":3.3,"B":3,"B−":2.7,"C+":2.3,"C":2,"C−":1.7,"D+":1,"D":1,"F":0,
+            };
+            const COL_BONUS: Record<string, number> = { CP:0, Honors:0.5, DE:1, HDE:1, AP:1 };
+            let uw = 0, w = 0, tc = 0;
+            for (const year of state.years) {
+              for (const row of year.rows) {
+                if (!row.grade || row.nonCore) continue;
+                const cr = parseFloat(row.credits) || 1;
+                const base = COL_UW[row.grade] ?? 0;
+                uw += base * cr;
+                w += (row.grade === "F" ? 0 : base + (COL_BONUS[row.level] ?? 0)) * cr;
+                tc += cr;
+              }
+            }
+            if (tc > 0) {
+              const cw = w / tc;
+              gpaUW = (uw / tc).toFixed(2);
+              gpaW = cw.toFixed(2);
+              rigor = cw >= 4.4 ? "high" : cw >= 4.0 ? "medium" : "low";
+            }
+          }
+        }
+      } catch { /* ignore */ }
 
       setInputs((prev) => ({
         ...prev,
-        gpaUW: p.gpaUW || prev.gpaUW || "",
-        gpaW: p.gpaW || prev.gpaW || "",
-        rigor: p.rigor || prev.rigor,
-        essayCommonApp: p.essayCommonApp || prev.essayCommonApp || "",
-        essayVspice: p.essayVspice || prev.essayVspice || "",
-        ecBand: p.ecBand || prev.ecBand || "",
+        gpaUW: gpaUW || prev.gpaUW || "",
+        gpaW: gpaW || prev.gpaW || "",
+        rigor: rigor || prev.rigor,
+        essayCommonApp: essayCA || prev.essayCommonApp || "",
+        essayVspice: essayV || prev.essayVspice || "",
+        ecBand: ecBand || prev.ecBand || "",
         sat: (p.sat?.readingWriting && p.sat?.math
           ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
           : prev.sat) || "",
@@ -40,22 +96,22 @@ export function useChanceCalculator() {
         apScores: prev.apScores.length > 0 ? prev.apScores : (p.apScores ?? []),
       }));
     } catch (e) {
-      console.warn("Could not read profile:", e);
+      console.warn("Could not read sources:", e);
     }
   }, []);
 
-  // Initial load + re-fill when profile updates from other tools
+  // Initial load + re-fill when any source updates
   useEffect(() => {
-    fillFromProfile();
+    fillFromSources();
 
-    const onProfileUpdated = () => fillFromProfile();
-    window.addEventListener("profile-source-updated", onProfileUpdated);
-    window.addEventListener("cloud-sync-loaded", onProfileUpdated);
+    const onUpdated = () => fillFromSources();
+    window.addEventListener("profile-source-updated", onUpdated);
+    window.addEventListener("cloud-sync-loaded", onUpdated);
     return () => {
-      window.removeEventListener("profile-source-updated", onProfileUpdated);
-      window.removeEventListener("cloud-sync-loaded", onProfileUpdated);
+      window.removeEventListener("profile-source-updated", onUpdated);
+      window.removeEventListener("cloud-sync-loaded", onUpdated);
     };
-  }, [fillFromProfile]);
+  }, [fillFromSources]);
 
   const updateInput = <K extends keyof ChanceInputs>(key: K, value: ChanceInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
