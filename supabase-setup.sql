@@ -9,6 +9,12 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   essay_data JSONB DEFAULT NULL,
   ec_activities JSONB DEFAULT NULL,
   ec_result JSONB DEFAULT NULL,
+  resume_data JSONB DEFAULT NULL,
+  essay_history JSONB DEFAULT NULL,
+  pinned_colleges JSONB DEFAULT NULL,
+  dream_school TEXT DEFAULT NULL,
+  strategy_result JSONB DEFAULT NULL,
+  action_checklist JSONB DEFAULT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(user_id)
 );

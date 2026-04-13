@@ -1,11 +1,29 @@
 "use client";
 
 import { supabase } from "./supabase";
-import type { UserProfile } from "./profile-types";
 import { PROFILE_STORAGE_KEY } from "./profile-types";
 
 const SYNC_DEBOUNCE_MS = 2000;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
+
+// ── All localStorage keys that participate in cloud sync ──────────────────
+// Maps localStorage key → Supabase column name.
+export const CLOUD_SYNC_MAP: Record<string, string> = {
+  [PROFILE_STORAGE_KEY]:              "profile_data",
+  "gpa-calc-v1":                      "gpa_data",
+  "essay-grader-result":              "essay_data",
+  "ec-evaluator-activities":          "ec_activities",
+  "ec-evaluator-result":              "ec_result",
+  "admitedge-resume":                 "resume_data",
+  "essay-grader-history":             "essay_history",
+  "admitedge-pinned-colleges":        "pinned_colleges",
+  "admitedge-dream-school":           "dream_school",
+  "admitedge-strategy-last-result":   "strategy_result",
+  "admitedge-strategy-action-checklist": "action_checklist",
+};
+
+/** All localStorage keys tracked by cloud sync. */
+export const SYNC_KEYS = Object.keys(CLOUD_SYNC_MAP);
 
 // ── Save to Supabase (debounced) ────────────────────────────────────────────
 
@@ -16,78 +34,65 @@ export function scheduleSyncToCloud(userId: string) {
 
 async function syncToCloud(userId: string) {
   try {
-    const profileRaw = localStorage.getItem(PROFILE_STORAGE_KEY);
-    const gpaRaw = localStorage.getItem("gpa-calc-v1");
-    const essayRaw = localStorage.getItem("essay-grader-result");
-    const ecActivitiesRaw = localStorage.getItem("ec-evaluator-activities");
-    const ecResultRaw = localStorage.getItem("ec-evaluator-result");
-    const resumeRaw = localStorage.getItem("admitedge-resume");
+    // Build upsert payload from all tracked localStorage keys
+    const row: Record<string, unknown> = { user_id: userId };
+
+    for (const [lsKey, column] of Object.entries(CLOUD_SYNC_MAP)) {
+      const raw = localStorage.getItem(lsKey);
+      if (raw === null) {
+        row[column] = null;
+        continue;
+      }
+      // dream_school is stored as a plain string, not JSON
+      if (column === "dream_school") {
+        // Strip JSON quotes if present (backward compat)
+        row[column] = raw.startsWith('"') ? JSON.parse(raw) : raw;
+      } else {
+        try { row[column] = JSON.parse(raw); } catch { row[column] = null; }
+      }
+    }
 
     const { error } = await supabase
       .from("user_profiles")
-      .upsert({
-        user_id: userId,
-        profile_data: profileRaw ? JSON.parse(profileRaw) : {},
-        gpa_data: gpaRaw ? JSON.parse(gpaRaw) : null,
-        essay_data: essayRaw ? JSON.parse(essayRaw) : null,
-        ec_activities: ecActivitiesRaw ? JSON.parse(ecActivitiesRaw) : null,
-        ec_result: ecResultRaw ? JSON.parse(ecResultRaw) : null,
-        resume_data: resumeRaw ? JSON.parse(resumeRaw) : null,
-      }, { onConflict: "user_id" });
+      .upsert(row, { onConflict: "user_id" });
 
-    if (error) {
-      console.warn("Profile sync failed:", error.message);
-    }
+    if (error) console.warn("Cloud sync failed:", error.message);
   } catch (e) {
-    console.warn("Profile sync error:", e);
+    console.warn("Cloud sync error:", e);
   }
 }
 
 // ── Load from Supabase ──────────────────────────────────────────────────────
+// Cloud-first: always overwrites localStorage with cloud data on sign-in.
+// This ensures the user sees the same state on every device/browser.
 
 export async function loadFromCloud(userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, resume_data, updated_at")
+      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, resume_data, essay_history, pinned_colleges, dream_school, strategy_result, action_checklist, updated_at")
       .eq("user_id", userId)
       .single();
 
     if (error || !data) return false;
 
-    // Only overwrite localStorage if cloud data is newer or local is empty
-    const localProfile = localStorage.getItem(PROFILE_STORAGE_KEY);
+    // Write each cloud column back to its localStorage key
+    const row = data as Record<string, unknown>;
+    for (const [lsKey, column] of Object.entries(CLOUD_SYNC_MAP)) {
+      const value = row[column];
+      if (value === null || value === undefined) continue;
 
-    if (data.profile_data && Object.keys(data.profile_data).length > 0) {
-      // If no local profile exists, use cloud data
-      if (!localProfile) {
-        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data.profile_data));
+      if (column === "dream_school") {
+        // Store as plain string
+        localStorage.setItem(lsKey, typeof value === "string" ? value : String(value));
+      } else {
+        localStorage.setItem(lsKey, JSON.stringify(value));
       }
-    }
-
-    if (data.gpa_data && !localStorage.getItem("gpa-calc-v1")) {
-      localStorage.setItem("gpa-calc-v1", JSON.stringify(data.gpa_data));
-    }
-
-    if (data.essay_data && !localStorage.getItem("essay-grader-result")) {
-      localStorage.setItem("essay-grader-result", JSON.stringify(data.essay_data));
-    }
-
-    if (data.ec_activities && !localStorage.getItem("ec-evaluator-activities")) {
-      localStorage.setItem("ec-evaluator-activities", JSON.stringify(data.ec_activities));
-    }
-
-    if (data.ec_result && !localStorage.getItem("ec-evaluator-result")) {
-      localStorage.setItem("ec-evaluator-result", JSON.stringify(data.ec_result));
-    }
-
-    if (data.resume_data && !localStorage.getItem("admitedge-resume")) {
-      localStorage.setItem("admitedge-resume", JSON.stringify(data.resume_data));
     }
 
     return true;
   } catch (e) {
-    console.warn("Profile load error:", e);
+    console.warn("Cloud load error:", e);
     return false;
   }
 }
