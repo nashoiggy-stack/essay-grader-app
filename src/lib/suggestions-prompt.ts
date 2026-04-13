@@ -114,56 +114,67 @@ Prefer fewer, higher-impact suggestions over many small ones.`;
 
 GOAL:
 - If essay > 650 words → aggressively reduce into 600–650 range
-- If essay 550–650 → lightly optimize toward ~600–640
+- If essay 550–650 → optimize toward ~600–640 with meaningful improvements
 - If essay 480–550 → preserve length, only improve concision
 - NEVER reduce below 480 words
 
 Use ONLY "cut" and "rewrite" as type values (lowercase). Do NOT use "add" or "strengthen".
 
-STRATEGY (apply in this order):
+CORE REQUIREMENT:
+- You MUST return at least 3 suggestions
+- Prefer 6–12 suggestions when possible
+- If the essay is already strong, still identify meaningful refinements
+- Do NOT return 0–2 suggestions under any circumstance
 
-1. STRUCTURAL CUTS (highest impact)
+STRATEGY (apply in order of impact):
+
+1. STRUCTURAL CUTS (REQUIRED to consider first)
 - Remove redundant paragraphs or repeated themes
 - Merge paragraphs that make the same point
-- Cut background/context that doesn't directly develop the student
+- Cut non-essential background/context
+- At least ONE suggestion must be structural IF essay > 550 words
 
 2. SENTENCE-LEVEL CUTS
-- Remove sentences that explain what is already shown
-- Cut "this shows that…" / "I learned that…" when obvious
-- Replace 2 sentences with 1 where possible
+- Remove sentences that restate what is already shown
+- Cut "this shows that…" explanations
+- Combine sentences to reduce length while improving flow
 
 3. PHRASE COMPRESSION
 - Replace wordy phrases:
   - "in order to" → "to"
   - "due to the fact that" → "because"
-- Remove filler words:
-  - "very", "really", "just", "that" (when unnecessary)
+- Remove filler:
+  - "very", "really", "just", unnecessary "that"
 
-4. MICRO-EDITS
+4. MICRO-REFINEMENT
 - Use contractions where natural
-- Remove redundant adjectives/adverbs
-- Tighten dialogue and transitions
-
-CRITICAL RULES:
-- DO NOT weaken storytelling, voice, or emotional impact
-- DO NOT remove key narrative moments or reflection
-- DO NOT make the essay feel rushed or choppy
-- DO NOT reduce below 480 words
-- PRIORITIZE high-impact cuts over small trims
+- Tighten transitions and dialogue
+- Remove redundant modifiers
 
 For "cut" type: set replacement to "" (empty string).
 For "rewrite" type: set replacement to a shorter version that preserves meaning.
 
+QUALITY CONTROL (VERY IMPORTANT):
+Before returning each suggestion, verify:
+- It improves clarity OR impact (not just cuts words)
+- It does NOT weaken storytelling, voice, or emotional depth
+- It does NOT make the essay feel rushed or fragmented
+
+REJECTION RULES:
+- Do NOT include trivial edits (e.g., removing 1–2 words unless part of a larger rewrite)
+- Do NOT include neutral changes with no real benefit
+- If a suggestion is weak → replace it with a stronger one
+
 OUTPUT REQUIREMENTS:
-- Return 8–15 suggestions (more than usual, since this is structural)
-- Prioritize largest word savings first
-- Clearly indicate which suggestions remove the most words
-- Include an "impact" field: "high", "medium", or "low" based on word savings
+- Return 3–12 suggestions
+- Prioritize highest word reduction and impact first
+- Clearly indicate strongest edits
+- Include an "impact" field: "high", "medium", or "low"
 
 DEFINITION OF SUCCESS:
-- Essay moves meaningfully toward 600–650 words in ONE pass
-- Clarity and impact are preserved or improved
-- Not just trimming — actual compression and refinement
+- Essay meaningfully moves toward ideal word range in ONE pass
+- Suggestions are noticeable, not minor tweaks
+- Every change improves or preserves quality
 
 ==================================================
 SCORE PROTECTION (CRITICAL)
