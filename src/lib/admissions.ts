@@ -317,8 +317,8 @@ export function classifyCollege(
     fitScore = Math.min(fitScore, 70);
   }
 
-  // Selective-tagged schools with <25% acceptance can't be safety — cap at likely
-  if (classification === "safety" && college.tags.includes("selective")) {
+  // Schools under 30% acceptance can't be safety — cap at likely
+  if (classification === "safety" && college.acceptanceRate < 30) {
     classification = "likely";
     fitScore = Math.min(fitScore, 82);
   }

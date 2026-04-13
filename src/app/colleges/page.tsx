@@ -10,11 +10,11 @@ import { useCollegeFilter } from "@/hooks/useCollegeFilter";
 import { useCollegePins } from "@/hooks/useCollegePins";
 
 const TIERS = [
-  { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", fit: "85-95", description: "Your stats are well above average and the school has a higher acceptance rate. You're very likely to be admitted." },
-  { label: "Likely", color: "bg-blue-500", textColor: "text-blue-400", fit: "65-84", description: "Your stats are above the school's averages. Strong chance, but not guaranteed." },
-  { label: "Target", color: "bg-amber-500", textColor: "text-amber-400", fit: "40-64", description: "Your stats are within the school's range. Realistic but not a given." },
-  { label: "Reach", color: "bg-orange-500", textColor: "text-orange-400", fit: "15-39", description: "Your stats are below range. Possible with strong essays, ECs, and luck." },
-  { label: "Unlikely", color: "bg-red-500", textColor: "text-red-500", fit: "5-14", description: "Stats significantly below. Would require exceptional circumstances." },
+  { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", fit: "80-95", description: "Your stats are well above average and the school has a higher acceptance rate. You're very likely to be admitted. Schools under 30% acceptance can never be a safety." },
+  { label: "Likely", color: "bg-blue-500", textColor: "text-blue-400", fit: "65-88", description: "Your stats are above the school's averages. Strong chance, but not guaranteed. Schools under 15% acceptance are capped at Target — no school that selective can be classified as Likely, even with perfect stats." },
+  { label: "Target", color: "bg-amber-500", textColor: "text-amber-400", fit: "40-75", description: "Your stats are within the school's typical range. This is realistic but competitive. Highly selective schools (under 15% acceptance, like Ivy League) are always classified here at best, even if your stats are strong — admissions at these schools are never predictable." },
+  { label: "Reach", color: "bg-orange-500", textColor: "text-orange-400", fit: "15-39", description: "Your stats are below the school's typical range. Admission is possible with strong essays, extracurriculars, and institutional fit." },
+  { label: "Unlikely", color: "bg-red-500", textColor: "text-red-500", fit: "5-14", description: "Stats are significantly below the school's range. Would require exceptional circumstances." },
 ];
 
 export default function CollegesPage() {
