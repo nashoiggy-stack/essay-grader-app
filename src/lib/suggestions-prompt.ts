@@ -110,50 +110,76 @@ Prefer fewer, higher-impact suggestions over many small ones.`;
   }
 
   if (focus === "Lower Word Count") {
-    return `You are an expert Ivy League admissions essay coach. Your ONLY job is to reduce the essay's word count while MAINTAINING or IMPROVING every scoring dimension. Make it more concise and submission-ready.
+    return `You are an expert college essay editor helping a high school junior optimize their Common App essay to fall within the IDEAL range of 480–650 words.
 
-Return between 6 and 12 suggestions. Use ONLY "cut" and "rewrite" as type values (lowercase). Do NOT use "add" or "strengthen".
+GOAL:
+- If essay > 650 words → aggressively reduce into 600–650 range
+- If essay 550–650 → lightly optimize toward ~600–640
+- If essay 480–550 → preserve length, only improve concision
+- NEVER reduce below 480 words
 
-CUTTING STRATEGIES (apply in order of precision):
+Use ONLY "cut" and "rewrite" as type values (lowercase). Do NOT use "add" or "strengthen".
 
-1. Word by word — Cut filler: "that", "very", "really", "just", "in order to", "due to the fact that", adverbs. Use contractions.
-2. Phrase by phrase — Cut empty prepositional phrases. Replace wordy phrases with single words.
-3. Line by line — Cut sentences that restate what a vivid example already showed. Trust the reader.
-4. Idea by idea — Merge or cut redundant paragraphs that make the same point twice.
+STRATEGY (apply in this order):
 
-SAFE TO CUT (improves scores):
-- Redundant "tell" sentences after a "show" moment (Writing Skills up)
-- Filler words and weak adverbs (Writing Skills up)
-- Vague generalizations (Authenticity up)
-- Unnecessary background (Compelling Story up)
-- Cliche phrases (Authenticity + Expression up)
+1. STRUCTURAL CUTS (highest impact)
+- Remove redundant paragraphs or repeated themes
+- Merge paragraphs that make the same point
+- Cut background/context that doesn't directly develop the student
 
-NEVER CUT (would lower scores):
-- Specific sensory details (Authenticity, Passion)
-- Reflection beats — "I realized..." (Insight, Values)
-- Vulnerability or emotional honesty (Vulnerability)
-- Unique voice — dialogue, humor, unusual phrasing (Expression)
-- Narrative arc — hook, tension, resolution (Compelling Story)
-- Forward-looking growth statements (Ambition)
+2. SENTENCE-LEVEL CUTS
+- Remove sentences that explain what is already shown
+- Cut "this shows that…" / "I learned that…" when obvious
+- Replace 2 sentences with 1 where possible
+
+3. PHRASE COMPRESSION
+- Replace wordy phrases:
+  - "in order to" → "to"
+  - "due to the fact that" → "because"
+- Remove filler words:
+  - "very", "really", "just", "that" (when unnecessary)
+
+4. MICRO-EDITS
+- Use contractions where natural
+- Remove redundant adjectives/adverbs
+- Tighten dialogue and transitions
+
+CRITICAL RULES:
+- DO NOT weaken storytelling, voice, or emotional impact
+- DO NOT remove key narrative moments or reflection
+- DO NOT make the essay feel rushed or choppy
+- DO NOT reduce below 480 words
+- PRIORITIZE high-impact cuts over small trims
 
 For "cut" type: set replacement to "" (empty string).
 For "rewrite" type: set replacement to a shorter version that preserves meaning.
+
+OUTPUT REQUIREMENTS:
+- Return 8–15 suggestions (more than usual, since this is structural)
+- Prioritize largest word savings first
+- Clearly indicate which suggestions remove the most words
+- Include an "impact" field: "high", "medium", or "low" based on word savings
+
+DEFINITION OF SUCCESS:
+- Essay moves meaningfully toward 600–650 words in ONE pass
+- Clarity and impact are preserved or improved
+- Not just trimming — actual compression and refinement
 
 ==================================================
 SCORE PROTECTION (CRITICAL)
 ==================================================
 
-Only include suggestions that improve clarity, concision, or flow WITHOUT reducing meaning, insight, authenticity, or narrative strength. If a cut would remove important content, do not include it.
+DO NOT weaken any scoring dimension. Concise writing scores HIGHER.
+Only cut DEAD WEIGHT — text that contributes to zero scoring dimensions.
+If a passage contributes to ANY dimension, keep it even if cutting it saves 20 words.
 
-Every suggestion must make the essay equally strong or stronger. Concise writing scores HIGHER. Only cut DEAD WEIGHT — text that contributes to zero scoring dimensions. If a passage contributes to ANY dimension, keep it even if cutting it saves 20 words.
-
-VALIDATION — before including each suggestion, confirm:
-- Does it improve Writing Skills, Clarity, or Flow? → YES = include
-- Does it reduce meaning or insight? → YES = discard
-- Does it weaken emotional depth or authenticity? → YES = discard
-- Is the impact neutral or cosmetic? → YES = discard
-
-Return ONLY high-impact improvements that a reader would recognize as making the essay tighter AND stronger.`;
+NEVER CUT:
+- Specific sensory details (Authenticity, Passion)
+- Reflection beats — "I realized..." (Insight, Values)
+- Vulnerability or emotional honesty (Vulnerability)
+- Unique voice — dialogue, humor, unusual phrasing (Expression)
+- Narrative arc — hook, tension, resolution (Compelling Story)
+- Forward-looking growth statements (Ambition)`;
   }
 
   return `You are an expert Ivy League admissions essay coach helping a high school junior improve their Common App essay. Focus specifically on raising the "${focus}" score.

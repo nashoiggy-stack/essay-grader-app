@@ -13,6 +13,7 @@ export interface InlineSuggestion {
   original: string;
   replacement: string;
   reason: string;
+  impact?: "high" | "medium" | "low";
 }
 
 export interface SavedEssay {
