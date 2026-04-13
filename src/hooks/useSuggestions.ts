@@ -46,10 +46,58 @@ export function useSuggestions(essayText: string): UseSuggestionsReturn {
         return;
       }
 
-      // Filter to only suggestions whose original text actually exists in the essay
-      const valid = (data.suggestions || []).filter(
-        (s: InlineSuggestion) => text.includes(s.original)
-      );
+      // Filter to only suggestions whose original text actually exists in the essay.
+      // Normalize whitespace for matching (model sometimes collapses newlines or
+      // extra spaces) but keep the original text for display/replacement.
+      const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
+      const normalizedEssay = normalize(text);
+
+      const all: InlineSuggestion[] = data.suggestions || [];
+      const valid = all.filter((s: InlineSuggestion) => {
+        // Try exact match first
+        if (text.includes(s.original)) return true;
+        // Try whitespace-normalized match
+        if (normalizedEssay.includes(normalize(s.original))) return true;
+        return false;
+      });
+
+      // Fix originals that only matched after normalization — find the actual
+      // substring in the essay so accept/dismiss works correctly.
+      for (const s of valid) {
+        if (!text.includes(s.original)) {
+          const normOrig = normalize(s.original);
+          // Find the position in the normalized essay, then map back
+          const idx = normalizedEssay.indexOf(normOrig);
+          if (idx !== -1) {
+            // Walk through the original text to find the matching span
+            let origIdx = 0, normIdx = 0;
+            while (normIdx < idx && origIdx < text.length) {
+              if (/\s/.test(text[origIdx])) {
+                // consume all whitespace in original, one space in normalized
+                while (origIdx < text.length && /\s/.test(text[origIdx])) origIdx++;
+                normIdx++; // the single space in normalized
+              } else {
+                origIdx++;
+                normIdx++;
+              }
+            }
+            const start = origIdx;
+            let matchLen = 0;
+            normIdx = 0;
+            while (normIdx < normOrig.length && (start + matchLen) < text.length) {
+              if (/\s/.test(text[start + matchLen])) {
+                while ((start + matchLen) < text.length && /\s/.test(text[start + matchLen])) matchLen++;
+                normIdx++; // single space
+              } else {
+                matchLen++;
+                normIdx++;
+              }
+            }
+            s.original = text.substring(start, start + matchLen);
+          }
+        }
+      }
+
       setSuggestions(valid);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {

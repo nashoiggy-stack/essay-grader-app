@@ -334,9 +334,10 @@ JSON format:
   "suggestions": [
     {
       "type": "cut" | "add" | "rewrite" | "strengthen",
-      "original": "<exact text from the essay to highlight — must be a verbatim substring>",
+      "original": "<exact text from the essay to highlight — must be a VERBATIM, CHARACTER-FOR-CHARACTER substring copied directly from the essay. Do not paraphrase, reword, or approximate. Copy-paste the exact text.>",
       "replacement": "<new text to replace it with, or empty string for cuts, or text to insert for adds>",
-      "reason": "<1 sentence explaining why this change improves the essay>"
+      "reason": "<1 sentence explaining why this change improves the essay>",
+      "impact": "high" | "medium" | "low"
     }
   ]
 }
