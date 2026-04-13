@@ -9,6 +9,7 @@ import type {
   ResumeCategory,
 } from "@/lib/extracurricular-types";
 import { EC_STORAGE_KEY, EC_ACTIVITIES_KEY } from "@/lib/extracurricular-types";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -261,7 +262,7 @@ export function useECEvaluator() {
       }
 
       setResult(synthData.result);
-      localStorage.setItem(EC_STORAGE_KEY, JSON.stringify(synthData.result));
+      setItemAndNotify(EC_STORAGE_KEY, JSON.stringify(synthData.result));
 
       if (failures.length > 0) {
         setEvalError(
@@ -282,9 +283,9 @@ export function useECEvaluator() {
 
   const saveAll = useCallback(() => {
     try {
-      localStorage.setItem(EC_ACTIVITIES_KEY, JSON.stringify(conversations));
+      setItemAndNotify(EC_ACTIVITIES_KEY, JSON.stringify(conversations));
       if (result) {
-        localStorage.setItem(EC_STORAGE_KEY, JSON.stringify(result));
+        setItemAndNotify(EC_STORAGE_KEY, JSON.stringify(result));
       }
       setSaveFlash(true);
       setTimeout(() => setSaveFlash(false), 1500);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { COLLEGES } from "@/data/colleges";
 import type { ChanceInputs, ChanceResult, ChanceBand } from "@/lib/college-types";
 import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
@@ -16,7 +16,7 @@ export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
 
   // ── Auto-fill from profile (localStorage) ──────────────────────────────
-  useEffect(() => {
+  const fillFromProfile = useCallback(() => {
     try {
       const raw = localStorage.getItem("admitedge-profile");
       if (!raw) return;
@@ -24,28 +24,38 @@ export function useChanceCalculator() {
 
       setInputs((prev) => ({
         ...prev,
-        gpaUW: prev.gpaUW || p.gpaUW || "",
-        gpaW: prev.gpaW || p.gpaW || "",
-        rigor: prev.rigor === "medium" && p.rigor ? p.rigor : prev.rigor,
-        essayCommonApp: prev.essayCommonApp || p.essayCommonApp || "",
-        essayVspice: prev.essayVspice || p.essayVspice || "",
-        ecBand: prev.ecBand || p.ecBand || "",
-        // Compute SAT/ACT composites from section scores
-        sat: prev.sat || (p.sat?.readingWriting && p.sat?.math
+        gpaUW: p.gpaUW || prev.gpaUW || "",
+        gpaW: p.gpaW || prev.gpaW || "",
+        rigor: p.rigor || prev.rigor,
+        essayCommonApp: p.essayCommonApp || prev.essayCommonApp || "",
+        essayVspice: p.essayVspice || prev.essayVspice || "",
+        ecBand: p.ecBand || prev.ecBand || "",
+        sat: (p.sat?.readingWriting && p.sat?.math
           ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
-          : ""),
-        // ACT composite excludes science
-        act: prev.act || (p.act?.english && p.act?.math && p.act?.reading
+          : prev.sat) || "",
+        act: (p.act?.english && p.act?.math && p.act?.reading
           ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading)) / 3))
-          : ""),
-        actScience: prev.actScience || p.act?.science || "",
-        // Auto-fill AP scores from profile
+          : prev.act) || "",
+        actScience: p.act?.science || prev.actScience || "",
         apScores: prev.apScores.length > 0 ? prev.apScores : (p.apScores ?? []),
       }));
     } catch (e) {
       console.warn("Could not read profile:", e);
     }
   }, []);
+
+  // Initial load + re-fill when profile updates from other tools
+  useEffect(() => {
+    fillFromProfile();
+
+    const onProfileUpdated = () => fillFromProfile();
+    window.addEventListener("profile-source-updated", onProfileUpdated);
+    window.addEventListener("cloud-sync-loaded", onProfileUpdated);
+    return () => {
+      window.removeEventListener("profile-source-updated", onProfileUpdated);
+      window.removeEventListener("cloud-sync-loaded", onProfileUpdated);
+    };
+  }, [fillFromProfile]);
 
   const updateInput = <K extends keyof ChanceInputs>(key: K, value: ChanceInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { COLLEGES } from "@/data/colleges";
 import type { CollegeFilters, ClassifiedCollege } from "@/lib/college-types";
 import { EMPTY_FILTERS as DEFAULT_FILTERS } from "@/lib/college-types";
@@ -10,7 +10,7 @@ export function useCollegeFilter() {
   const [filters, setFilters] = useState<CollegeFilters>(DEFAULT_FILTERS);
 
   // ── Auto-fill from profile (localStorage) ──────────────────────────────────
-  useEffect(() => {
+  const fillFromProfile = useCallback(() => {
     try {
       const raw = localStorage.getItem("admitedge-profile");
       if (!raw) return;
@@ -18,21 +18,33 @@ export function useCollegeFilter() {
 
       setFilters((prev) => ({
         ...prev,
-        gpaUW: prev.gpaUW || p.gpaUW || "",
-        gpaW: prev.gpaW || p.gpaW || "",
-        sat: prev.sat || (p.sat?.readingWriting && p.sat?.math
+        gpaUW: p.gpaUW || prev.gpaUW || "",
+        gpaW: p.gpaW || prev.gpaW || "",
+        sat: (p.sat?.readingWriting && p.sat?.math
           ? String(parseInt(p.sat.readingWriting) + parseInt(p.sat.math))
-          : ""),
-        act: prev.act || (p.act?.english && p.act?.math && p.act?.reading && p.act?.science
+          : prev.sat) || "",
+        act: (p.act?.english && p.act?.math && p.act?.reading && p.act?.science
           ? String(Math.round((parseInt(p.act.english) + parseInt(p.act.math) + parseInt(p.act.reading) + parseInt(p.act.science)) / 4))
-          : ""),
-        essayCommonApp: prev.essayCommonApp || p.essayCommonApp || "",
-        essayVspice: prev.essayVspice || p.essayVspice || "",
+          : prev.act) || "",
+        essayCommonApp: p.essayCommonApp || prev.essayCommonApp || "",
+        essayVspice: p.essayVspice || prev.essayVspice || "",
       }));
     } catch (e) {
       console.warn("Could not read profile:", e);
     }
   }, []);
+
+  useEffect(() => {
+    fillFromProfile();
+
+    const onUpdated = () => fillFromProfile();
+    window.addEventListener("profile-source-updated", onUpdated);
+    window.addEventListener("cloud-sync-loaded", onUpdated);
+    return () => {
+      window.removeEventListener("profile-source-updated", onUpdated);
+      window.removeEventListener("cloud-sync-loaded", onUpdated);
+    };
+  }, [fillFromProfile]);
 
   const updateFilter = <K extends keyof CollegeFilters>(key: K, value: CollegeFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

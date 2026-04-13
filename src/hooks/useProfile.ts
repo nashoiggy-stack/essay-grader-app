@@ -186,23 +186,33 @@ export function useProfile() {
   useEffect(() => {
     if (!loaded) return;
 
+    const SOURCE_KEYS = ["gpa-calc-v1", "essay-grader-result", "ec-evaluator-result"];
+
     const onFocus = () => syncFromComputed();
+
+    // Cross-tab: StorageEvent
     const onStorage = (e: StorageEvent) => {
-      // Only re-sync if a source key changed
-      if (
-        e.key === "gpa-calc-v1" ||
-        e.key === "essay-grader-result" ||
-        e.key === "ec-evaluator-result"
-      ) {
-        syncFromComputed();
-      }
+      if (e.key && SOURCE_KEYS.includes(e.key)) syncFromComputed();
     };
+
+    // Same-tab: custom event dispatched by setItemAndNotify
+    const onSourceUpdated = (e: Event) => {
+      const key = (e as CustomEvent).detail?.key;
+      if (SOURCE_KEYS.includes(key)) syncFromComputed();
+    };
+
+    // Cloud restore: re-read everything after cloud data loads
+    const onCloudLoaded = () => syncFromComputed();
 
     window.addEventListener("focus", onFocus);
     window.addEventListener("storage", onStorage);
+    window.addEventListener("profile-source-updated", onSourceUpdated);
+    window.addEventListener("cloud-sync-loaded", onCloudLoaded);
     return () => {
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("profile-source-updated", onSourceUpdated);
+      window.removeEventListener("cloud-sync-loaded", onCloudLoaded);
     };
   }, [loaded, syncFromComputed]);
 

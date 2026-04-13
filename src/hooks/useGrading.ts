@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import type { GradingResult } from "@/lib/types";
 import { APP_CONFIG } from "@/data/mockData";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 // ── UNDO [grade-cache] ──────────────────────────────────────────────────────
 // Client-side content-hash cache: same essay text → same cached result →
@@ -100,7 +101,7 @@ export function useGrading(): UseGradingReturn {
         // Mirror the side-effect the API path writes so Chance Calculator
         // auto-fill stays consistent.
         try {
-          localStorage.setItem("essay-grader-result", JSON.stringify({
+          setItemAndNotify("essay-grader-result", JSON.stringify({
             rawScore: cached.rawScore,
             vspiceComposite: cached.vspiceComposite,
           }));
@@ -146,7 +147,7 @@ export function useGrading(): UseGradingReturn {
 
       // Save scores to localStorage so Chance Calculator can auto-fill essay strength
       try {
-        localStorage.setItem("essay-grader-result", JSON.stringify({
+        setItemAndNotify("essay-grader-result", JSON.stringify({
           rawScore: (data as GradingResult).rawScore,
           vspiceComposite: (data as GradingResult).vspiceComposite,
         }));
