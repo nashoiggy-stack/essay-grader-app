@@ -1,10 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { AuroraBackground } from "@/components/AuroraBackground";
+import { TranscriptUpload } from "@/components/TranscriptUpload";
 
 export default function GPAPage() {
+  const [iframeKey, setIframeKey] = useState(0);
+
+  const reloadIframe = () => {
+    // Force the iframe to remount so it re-reads localStorage
+    setIframeKey((k) => k + 1);
+  };
+
   return (
     <AuroraBackground>
       <ContainerScroll
@@ -80,14 +89,25 @@ export default function GPAPage() {
         </div>
       </ContainerScroll>
 
+      {/* Transcript upload — AI-powered grade extraction */}
+      <motion.div
+        className="-mt-28 relative z-10"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+      >
+        <TranscriptUpload onSuccess={reloadIframe} />
+      </motion.div>
+
       {/* Actual GPA calculator iframe — fades in after hero */}
       <motion.div
-        className="-mt-32"
+        className=""
         initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.7, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
       >
         <iframe
+          key={iframeKey}
           src="/gpa-calculator.html"
           className="w-full border-0 bg-transparent"
           style={{ height: "2400px", minHeight: "100vh" }}
