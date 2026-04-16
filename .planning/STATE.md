@@ -21,3 +21,8 @@
 - Landing page currently shows text but GSAP scroll may still have timing issues on Vercel
 - Supabase credentials hardcoded in source
 - Zero test coverage
+
+## Accumulated Context
+
+### Roadmap Evolution
+- Phase 6 added: Background picker with light/dark theme (localhost-only)

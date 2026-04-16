@@ -48,3 +48,13 @@ Phase 3 (Testing) → after Phase 2 (needs clean code to test)
 Phase 4 (Resume) → after Phase 1 (needs working landing page with link)
 Phase 5 (Polish) → after Phase 3 (needs stable foundation)
 ```
+
+### Phase 6: Background picker with light/dark theme (localhost-only)
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 6 to break down)
