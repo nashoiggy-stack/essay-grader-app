@@ -122,6 +122,23 @@ export function bandFromScore(score: number): ECBand {
   return "limited";
 }
 
+/**
+ * Derive the band that should be displayed for an evaluation result.
+ * The UI shows bandFromScore(computeReadinessScore(...)), so readers
+ * (profile, chances, colleges) must use this to stay in sync with what
+ * the EC evaluator actually displayed.
+ */
+export function bandFromEvaluation(r: {
+  readonly activities: readonly ActivityEvaluation[];
+  readonly spikes: readonly ProfileSpike[];
+}): ECBand {
+  const score = computeReadinessScore({
+    activities: r.activities,
+    spikes: r.spikes,
+  });
+  return bandFromScore(score);
+}
+
 interface ReadinessInput {
   readonly activities: readonly ActivityEvaluation[];
   readonly spikes: readonly ProfileSpike[];

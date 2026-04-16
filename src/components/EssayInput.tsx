@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Card3D } from "./Card3D";
 import { APP_CONFIG, LOADING_TEXT, UPLOAD_ACCEPT } from "@/data/mockData";
@@ -33,26 +33,70 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 }) => {
   const { min, max } = APP_CONFIG.idealWordRange;
   const inRange = wordCount >= min && wordCount <= max;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!essayText) return;
+    try {
+      await navigator.clipboard.writeText(essayText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard API blocked (insecure context, etc.) — fall back silently
+    }
+  };
 
   return (
     <Card3D className="glass rounded-2xl p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2">
         <label className="text-sm font-medium text-zinc-300">Your essay</label>
-        {essayText && (
-          <motion.span
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`text-xs font-mono px-2.5 py-1 rounded-full ${
-              inRange
-                ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
-                : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
-            }`}
-          >
-            {wordCount} words
-            {inRange ? " — ideal" : wordCount < min ? ` — ${min - wordCount} short` : ` — ${wordCount - max} over`}
-          </motion.span>
-        )}
+        <div className="flex items-center gap-2">
+          {essayText && (
+            <motion.button
+              onClick={handleCopy}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ring-1 transition-[background-color,color,box-shadow] duration-200 ${
+                copied
+                  ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
+                  : "bg-[#0c0c1a]/90 text-zinc-400 ring-white/[0.06] hover:text-zinc-200 hover:bg-white/[0.05]"
+              }`}
+              title="Copy essay to clipboard"
+            >
+              {copied ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Copied
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Copy
+                </>
+              )}
+            </motion.button>
+          )}
+          {essayText && (
+            <motion.span
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`text-xs font-mono px-2.5 py-1 rounded-full ${
+                inRange
+                  ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
+                  : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
+              }`}
+            >
+              {wordCount} words
+              {inRange ? " — ideal" : wordCount < min ? ` — ${min - wordCount} short` : ` — ${wordCount - max} over`}
+            </motion.span>
+          )}
+        </div>
       </div>
 
       {/* Textarea */}

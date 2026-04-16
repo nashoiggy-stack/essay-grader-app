@@ -9,7 +9,7 @@ interface UseAuthReturn {
   readonly guest: boolean;
   readonly loading: boolean;
   readonly error: string;
-  readonly signIn: (email: string, password: string) => Promise<void>;
+  readonly signIn: (email: string, password: string) => Promise<boolean>;
   readonly signUp: (email: string, password: string) => Promise<string | null>;
   readonly signOut: () => Promise<void>;
   readonly enterAsGuest: () => void;
@@ -38,10 +38,14 @@ export function useAuth(): UseAuthReturn {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<boolean> => {
     setError("");
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    if (err) setError(err.message);
+    if (err) {
+      setError(err.message);
+      return false;
+    }
+    return true;
   };
 
   const signUp = async (email: string, password: string): Promise<string | null> => {

@@ -11,6 +11,7 @@ import {
   applicationPlanAdjustment, defaultApplicationPlan,
 } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
+import { bandFromEvaluation } from "@/lib/extracurricular-types";
 
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
@@ -41,7 +42,15 @@ export function useChanceCalculator() {
         const ecr = localStorage.getItem("ec-evaluator-result");
         if (ecr) {
           const e = JSON.parse(ecr);
-          if (e?.band) ecBand = e.band;
+          // Derive from readiness score to match what the EC evaluator UI shows
+          if (Array.isArray(e?.activities) && e.activities.length > 0) {
+            ecBand = bandFromEvaluation({
+              activities: e.activities,
+              spikes: Array.isArray(e.spikes) ? e.spikes : [],
+            });
+          } else if (e?.band) {
+            ecBand = e.band;
+          }
         }
       } catch { /* ignore */ }
 

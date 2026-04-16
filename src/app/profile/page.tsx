@@ -389,13 +389,13 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className={labelClass}>VSPICE Composite (0-4)</label>
+                <label className={labelClass}>VSPICE Composite (0-24)</label>
                 <input
                   type="number"
                   min="0"
-                  max="4"
-                  step="0.1"
-                  placeholder="e.g. 3.2"
+                  max="24"
+                  step="1"
+                  placeholder="e.g. 18"
                   value={profile.essayVspice}
                   onChange={(e) => updateField("essayVspice", e.target.value)}
                   className={inputClass}
@@ -446,7 +446,7 @@ export default function ProfilePage() {
               <SummaryItem label="SAT" value={satComposite !== null ? String(satComposite) : "—"} />
               <SummaryItem label="ACT" value={actComposite !== null ? String(actComposite) : "—"} />
               <SummaryItem label="Essay" value={profile.essayCommonApp ? `${profile.essayCommonApp}/100` : "—"} />
-              <SummaryItem label="VSPICE" value={profile.essayVspice ? `${profile.essayVspice}/4` : "—"} />
+              <SummaryItem label="VSPICE" value={profile.essayVspice ? `${profile.essayVspice}/24` : "—"} />
               <SummaryItem label="ECs" value={profile.ecBand ? (EC_BAND_LABELS as Record<string, string>)[profile.ecBand] ?? profile.ecBand : "—"} />
               <SummaryItem label="Rigor" value={profile.rigor.charAt(0).toUpperCase() + profile.rigor.slice(1)} />
             </div>

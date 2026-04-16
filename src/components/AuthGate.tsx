@@ -220,10 +220,17 @@ function LoginScreen() {
     setSuccessMsg("");
 
     if (mode === "signin") {
-      await signIn(email, password);
-      fireCelebration();
-      setShowSuccess(true);
-      setTimeout(() => router.push("/"), 1500);
+      const ok = await signIn(email, password);
+      if (ok) {
+        fireCelebration();
+        setShowSuccess(true);
+        setTimeout(() => router.push("/"), 1500);
+      }
+      // On failure, useAuth sets `error` which is already shown in the UI.
+      // Clear the password so the user can retype without ghosting the field.
+      else {
+        setPassword("");
+      }
     } else {
       const msg = await signUp(email, password);
       if (msg) {

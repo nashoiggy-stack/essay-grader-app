@@ -9,7 +9,7 @@ interface AuthContextValue {
   readonly guest: boolean;
   readonly loading: boolean;
   readonly error: string;
-  readonly signIn: (email: string, password: string) => Promise<void>;
+  readonly signIn: (email: string, password: string) => Promise<boolean>;
   readonly signUp: (email: string, password: string) => Promise<string | null>;
   readonly signOut: () => Promise<void>;
   readonly enterAsGuest: () => void;

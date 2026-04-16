@@ -8,8 +8,28 @@ import type {
   ActivityEvaluation,
   ResumeCategory,
 } from "@/lib/extracurricular-types";
-import { EC_STORAGE_KEY, EC_ACTIVITIES_KEY } from "@/lib/extracurricular-types";
+import {
+  EC_STORAGE_KEY,
+  EC_ACTIVITIES_KEY,
+  computeReadinessScore,
+  bandFromScore,
+} from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
+
+/**
+ * Reconcile the band field with the computed readiness score.
+ * ECResults.tsx displays bandFromScore(computeReadinessScore(...)) — the
+ * saved result.band from the model can drift from this. Force them to
+ * match so downstream tools (profile, chances, colleges) show the same
+ * band as the EC evaluator UI.
+ */
+function reconcileBand(result: ProfileEvaluation): ProfileEvaluation {
+  const score = computeReadinessScore({
+    activities: result.activities,
+    spikes: result.spikes,
+  });
+  return { ...result, band: bandFromScore(score) };
+}
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -43,7 +63,15 @@ export function useECEvaluator() {
         if (saved.length > 0) setConversations(saved);
       }
       const resultRaw = localStorage.getItem(EC_STORAGE_KEY);
-      if (resultRaw) setResult(JSON.parse(resultRaw));
+      if (resultRaw) {
+        // Reconcile on load so a stored result with a drifted band is fixed
+        const parsed: ProfileEvaluation = JSON.parse(resultRaw);
+        const reconciled = reconcileBand(parsed);
+        setResult(reconciled);
+        if (reconciled.band !== parsed.band) {
+          setItemAndNotify(EC_STORAGE_KEY, JSON.stringify(reconciled));
+        }
+      }
     } catch {
       // ignore
     }
@@ -261,8 +289,9 @@ export function useECEvaluator() {
         return;
       }
 
-      setResult(synthData.result);
-      setItemAndNotify(EC_STORAGE_KEY, JSON.stringify(synthData.result));
+      const reconciled = reconcileBand(synthData.result);
+      setResult(reconciled);
+      setItemAndNotify(EC_STORAGE_KEY, JSON.stringify(reconciled));
 
       if (failures.length > 0) {
         setEvalError(

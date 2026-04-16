@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { UserProfile, SATScores, ACTScores, BasicStudentInfo } from "@/lib/profile-types";
 import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO } from "@/lib/profile-types";
+import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
 
 interface ComputedValues {
@@ -71,12 +72,23 @@ function readComputedValues(): ComputedValues {
     const ecRaw = localStorage.getItem("ec-evaluator-result");
     if (ecRaw) {
       const r = JSON.parse(ecRaw);
-      if (r?.band) {
-        result.ecBand = r.band;
+      // Derive band from the readiness score — same source-of-truth as the
+      // EC evaluator UI. Fall back to r.band only if activities are missing.
+      let band: string | undefined;
+      if (Array.isArray(r?.activities) && r.activities.length > 0) {
+        band = bandFromEvaluation({
+          activities: r.activities,
+          spikes: Array.isArray(r.spikes) ? r.spikes : [],
+        });
+      } else if (r?.band) {
+        band = r.band;
+      }
+      if (band) {
+        result.ecBand = band;
         const map: Record<string, "low" | "medium" | "high"> = {
           exceptional: "high", strong: "high", solid: "medium", developing: "low", limited: "low",
         };
-        result.ecStrength = map[r.band] ?? "medium";
+        result.ecStrength = map[band] ?? "medium";
       }
     }
   } catch { /* ignore */ }
@@ -189,17 +201,42 @@ export function useProfile() {
 
     const SOURCE_KEYS = ["gpa-calc-v1", "essay-grader-result", "ec-evaluator-result"];
 
+    // When a source tool produces a fresh result, it should be authoritative —
+    // clear stale manual overrides for the fields it owns so auto-sync wins.
+    const OVERRIDES_BY_SOURCE: Record<string, Array<keyof FieldOverrides>> = {
+      "gpa-calc-v1": ["gpaUW", "gpaW", "rigor"],
+      "essay-grader-result": ["essayCommonApp", "essayVspice"],
+      "ec-evaluator-result": ["ecBand", "ecStrength"],
+    };
+
+    const clearOverridesFor = (key: string) => {
+      const fields = OVERRIDES_BY_SOURCE[key];
+      if (!fields) return;
+      const current = readOverrides();
+      let changed = false;
+      for (const f of fields) {
+        if (current[f]) { delete current[f]; changed = true; }
+      }
+      if (changed) writeOverrides(current);
+    };
+
     const onFocus = () => syncFromComputed();
 
     // Cross-tab: StorageEvent
     const onStorage = (e: StorageEvent) => {
-      if (e.key && SOURCE_KEYS.includes(e.key)) syncFromComputed();
+      if (e.key && SOURCE_KEYS.includes(e.key)) {
+        clearOverridesFor(e.key);
+        syncFromComputed();
+      }
     };
 
     // Same-tab: custom event dispatched by setItemAndNotify
     const onSourceUpdated = (e: Event) => {
       const key = (e as CustomEvent).detail?.key;
-      if (SOURCE_KEYS.includes(key)) syncFromComputed();
+      if (SOURCE_KEYS.includes(key)) {
+        clearOverridesFor(key);
+        syncFromComputed();
+      }
     };
 
     // Cloud restore: re-read everything after cloud data loads
