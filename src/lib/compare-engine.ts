@@ -268,8 +268,38 @@ export function compareDemographics(colleges: readonly College[]): CategoryCompa
 // ── Decision insights ──────────────────────────────────────────────────────
 
 /**
+ * Picks the college with the strictly highest score. Returns null if the
+ * comparison set is empty OR multiple colleges tie for the top score — ties
+ * shouldn't award a "winner" because the result would depend on input order
+ * (the source of the first-college-always-wins bug).
+ */
+function uniqueTopBy<T>(
+  items: readonly T[],
+  scoreFn: (item: T) => number,
+): T | null {
+  if (items.length === 0) return null;
+  let topScore = -Infinity;
+  let topIndex = -1;
+  let tied = false;
+  for (let i = 0; i < items.length; i++) {
+    const s = scoreFn(items[i]);
+    if (s > topScore) {
+      topScore = s;
+      topIndex = i;
+      tied = false;
+    } else if (s === topScore) {
+      tied = true;
+    }
+  }
+  if (topIndex === -1 || tied) return null;
+  return items[topIndex];
+}
+
+/**
  * Generate 3-6 non-obvious decision insights from the comparison set.
- * Deterministic — picks winners by field and creates one-line insights.
+ * Deterministic — picks strict winners by field and creates one-line
+ * insights. Insights for ties are skipped entirely rather than defaulting
+ * to the first-listed college.
  */
 export function generateComparisonInsights(
   colleges: readonly College[],
@@ -277,20 +307,24 @@ export function generateComparisonInsights(
   if (colleges.length < 2) return [];
   const insights: ComparisonInsight[] = [];
 
-  // Most selective
-  const mostSelective = [...colleges].sort((a, b) => a.acceptanceRate - b.acceptanceRate)[0];
-  insights.push({
-    label: "Most selective",
-    collegeName: mostSelective.name,
-    detail: `${mostSelective.acceptanceRate}% acceptance rate`,
-    category: "admissions",
-  });
+  // Most selective — lowest acceptanceRate. Use negative score for
+  // uniqueTopBy, which picks the strictly highest.
+  const mostSelective = uniqueTopBy(colleges, (c) => -c.acceptanceRate);
+  if (mostSelective) {
+    insights.push({
+      label: "Most selective",
+      collegeName: mostSelective.name,
+      detail: `${mostSelective.acceptanceRate}% acceptance rate`,
+      category: "admissions",
+    });
+  }
 
-  // Best for research
-  const bestResearch = [...colleges].sort(
-    (a, b) => (TIER3_SCORE[b.researchStrength ?? "low"] ?? 0) - (TIER3_SCORE[a.researchStrength ?? "low"] ?? 0),
-  )[0];
-  if (bestResearch.researchStrength === "high") {
+  // Strongest research — must have a strictly top tier AND that tier is "high".
+  const bestResearch = uniqueTopBy(
+    colleges,
+    (c) => TIER3_SCORE[c.researchStrength ?? "low"] ?? 0,
+  );
+  if (bestResearch && bestResearch.researchStrength === "high") {
     insights.push({
       label: "Strongest research",
       collegeName: bestResearch.name,
@@ -299,11 +333,12 @@ export function generateComparisonInsights(
     });
   }
 
-  // Best campus vibe
-  const bestCohesion = [...colleges].sort(
-    (a, b) => (TIER3_SCORE[b.campusCohesion ?? "low"] ?? 0) - (TIER3_SCORE[a.campusCohesion ?? "low"] ?? 0),
-  )[0];
-  if (bestCohesion.campusCohesion && bestCohesion.campusCohesion !== "low") {
+  // Best campus community — strict winner on campusCohesion tier.
+  const bestCohesion = uniqueTopBy(
+    colleges,
+    (c) => TIER3_SCORE[c.campusCohesion ?? "low"] ?? 0,
+  );
+  if (bestCohesion && bestCohesion.campusCohesion && bestCohesion.campusCohesion !== "low") {
     insights.push({
       label: "Best campus community",
       collegeName: bestCohesion.name,
@@ -312,11 +347,9 @@ export function generateComparisonInsights(
     });
   }
 
-  // Best for career pipelines (pick the one with most pipelines listed)
-  const bestCareer = [...colleges].sort(
-    (a, b) => (b.careerPipelines?.length ?? 0) - (a.careerPipelines?.length ?? 0),
-  )[0];
-  if (bestCareer.careerPipelines && bestCareer.careerPipelines.length > 0) {
+  // Strongest career pipelines — strict winner by number of pipelines listed.
+  const bestCareer = uniqueTopBy(colleges, (c) => c.careerPipelines?.length ?? 0);
+  if (bestCareer && bestCareer.careerPipelines && bestCareer.careerPipelines.length > 0) {
     insights.push({
       label: `Strongest for ${bestCareer.careerPipelines[0]}`,
       collegeName: bestCareer.name,
@@ -325,28 +358,41 @@ export function generateComparisonInsights(
     });
   }
 
-  // Best financial aid
-  const bestAid = colleges.find((c) => c.strongFinancialAid);
-  if (bestAid) {
+  // Best financial aid — only highlight if exactly one college has the flag.
+  // If all of them meet need (common for the Ivy set), the insight is noise.
+  const aidColleges = colleges.filter((c) => c.strongFinancialAid === true);
+  if (aidColleges.length === 1) {
     insights.push({
       label: "Best financial aid",
-      collegeName: bestAid.name,
+      collegeName: aidColleges[0].name,
       detail: "Meets 100% demonstrated need",
       category: "cost",
     });
   }
 
-  // Most flexible academics
-  const mostFlexible = [...colleges].sort(
-    (a, b) => (TIER3_SCORE[b.flexibility ?? "low"] ?? 0) - (TIER3_SCORE[a.flexibility ?? "low"] ?? 0),
-  )[0];
-  if (mostFlexible.flexibility === "high" || mostFlexible.coreCurriculum === "open") {
+  // Most academic freedom — prefer a strict open-curriculum winner, else
+  // strict winner on the flexibility tier.
+  const openCurriculum = colleges.filter((c) => c.coreCurriculum === "open");
+  if (openCurriculum.length === 1) {
     insights.push({
       label: "Most academic freedom",
-      collegeName: mostFlexible.name,
-      detail: mostFlexible.coreCurriculum === "open" ? "Open curriculum" : "High flexibility",
+      collegeName: openCurriculum[0].name,
+      detail: "Open curriculum",
       category: "academics",
     });
+  } else {
+    const mostFlexible = uniqueTopBy(
+      colleges,
+      (c) => TIER3_SCORE[c.flexibility ?? "low"] ?? 0,
+    );
+    if (mostFlexible && mostFlexible.flexibility === "high") {
+      insights.push({
+        label: "Most academic freedom",
+        collegeName: mostFlexible.name,
+        detail: "High flexibility",
+        category: "academics",
+      });
+    }
   }
 
   return insights.slice(0, 6);

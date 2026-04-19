@@ -1,5 +1,6 @@
 import type { College, ApplicationOption } from "@/lib/college-types";
 import { COLLEGE_EXTENDED_DATA, COLLEGE_ALIASES } from "./college-extended";
+import { CDS_DATA } from "./cds-data";
 
 // UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
 // and delete the UNDO block at the bottom of this file.
@@ -269,12 +270,22 @@ const APPLICATION_OPTIONS_BY_NAME: Record<string, readonly ApplicationOption[]> 
 export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
   const opts = APPLICATION_OPTIONS_BY_NAME[c.name];
   const ext = COLLEGE_EXTENDED_DATA[c.name];
+  const cds = CDS_DATA[c.name]?.data;
   const aliases = COLLEGE_ALIASES[c.name];
-  // Merge layers: base data ← application options ← extended data ← aliases.
+  // Merge layers (later keys win):
+  //   base data  ←  application options  ←  hand-curated extended data  ←
+  //   CDS-authoritative fields (scripts/cds-sync.ts)  ←  aliases.
+  // CDS values intentionally OVERRIDE the hand-curated estimates so acceptance
+  // rates, test score ranges, demographics, etc. reflect each college's actual
+  // Common Data Set rather than rounded-by-hand numbers. Qualitative fields
+  // (vibeTags, knownFor, qualitative, campusDetails, cultureDetails,
+  // locationDetails, topIndustries, careerPipelines) are never present on
+  // cds and therefore survive unchanged.
   return {
     ...c,
     ...(opts ? { applicationOptions: opts } : {}),
     ...(ext ?? {}),
+    ...(cds ?? {}),
     ...(aliases ? { aliases } : {}),
   };
 });

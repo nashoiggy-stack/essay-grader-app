@@ -84,6 +84,17 @@ export interface College {
   readonly studentFacultyRatio?: number;        // e.g. 6 means 6:1
   readonly fourYearGradRate?: number;           // 0-100
 
+  // ── CDS-authoritative fields ─────────────────────────────────────────────
+  // Sourced from each college's Common Data Set PDF via scripts/cds-sync.ts.
+  // When present, these override the hand-curated estimates for the same
+  // concept (e.g. acceptanceRate, pctTopTenClass).
+  readonly yield?: number;                        // 0-100, % of admitted who enrolled (CDS C1)
+  readonly edAdmitRate?: number;                  // 0-100, Early Decision admit rate (CDS C21)
+  readonly eaAdmitRate?: number;                  // 0-100, Early Action admit rate (CDS C21)
+  readonly regularDecisionAdmitRate?: number;     // 0-100, RD-only admit rate (CDS C1/C21 derived)
+  readonly top10HSPercent?: number;               // 0-100, CDS-reported top 10% of HS class (CDS C11)
+  readonly avgGPACDS?: number;                    // CDS-reported average HS GPA of enrolled freshmen (CDS C12)
+
   // Career / Outcomes — quantitative
   readonly topIndustries?: readonly string[];
   readonly careerPipelines?: readonly string[];

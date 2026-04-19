@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cds-sync cache (PDFs + per-college extraction JSON)
+/scripts/cds-cache/
+# cds-sync one-off run logs
+/last-run.log
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:cds": "tsx scripts/cds-sync.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
@@ -29,7 +30,8 @@
     "react-dom": "19.2.4",
     "react-use-measure": "^2.1.7",
     "tailwind-merge": "^3.5.0",
-    "three": "^0.183.2"
+    "three": "^0.183.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -42,6 +44,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "zod": "^3.23.8"
   }
 }
