@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Young_Serif } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
+import { Providers } from "@/components/Providers";
+import { BackgroundPicker } from "@/components/BackgroundPicker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,11 +52,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased dark`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#06060f] text-zinc-200">
+      <body className="min-h-full flex flex-col">
         <a href="#main-content" className="skip-link">Skip to content</a>
-        <AppShell>{children}</AppShell>
+        <Providers>
+          <AppShell>{children}</AppShell>
+          <BackgroundPicker />
+        </Providers>
       </body>
     </html>
   );

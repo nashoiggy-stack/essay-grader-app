@@ -20,6 +20,7 @@ export const CLOUD_SYNC_MAP: Record<string, string> = {
   "admitedge-dream-school":           "dream_school",
   "admitedge-strategy-last-result":   "strategy_result",
   "admitedge-strategy-action-checklist": "action_checklist",
+  "admitedge-bg-preference":           "bg_preference",
 };
 
 /** All localStorage keys tracked by cloud sync. */
@@ -43,9 +44,8 @@ async function syncToCloud(userId: string) {
         row[column] = null;
         continue;
       }
-      // dream_school is stored as a plain string, not JSON
-      if (column === "dream_school") {
-        // Strip JSON quotes if present (backward compat)
+      // dream_school and bg_preference are stored as plain strings, not JSON
+      if (column === "dream_school" || column === "bg_preference") {
         row[column] = raw.startsWith('"') ? JSON.parse(raw) : raw;
       } else {
         try { row[column] = JSON.parse(raw); } catch { row[column] = null; }
@@ -70,7 +70,7 @@ export async function loadFromCloud(userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, resume_data, essay_history, pinned_colleges, dream_school, strategy_result, action_checklist, updated_at")
+      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, resume_data, essay_history, pinned_colleges, dream_school, strategy_result, action_checklist, bg_preference, updated_at")
       .eq("user_id", userId)
       .single();
 
@@ -82,8 +82,8 @@ export async function loadFromCloud(userId: string): Promise<boolean> {
       const value = row[column];
       if (value === null || value === undefined) continue;
 
-      if (column === "dream_school") {
-        // Store as plain string
+      if (column === "dream_school" || column === "bg_preference") {
+        // Stored as plain strings
         localStorage.setItem(lsKey, typeof value === "string" ? value : String(value));
       } else {
         localStorage.setItem(lsKey, JSON.stringify(value));

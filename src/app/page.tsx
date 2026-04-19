@@ -9,6 +9,7 @@ const ShaderLines = dynamic(
   () => import("@/components/ui/shader-lines").then((m) => ({ default: m.ShaderLines })),
   { ssr: false }
 );
+
 import { PenLine, Calculator, ClipboardList, FileText, School, BarChart3, ArrowRight, User, Compass, GitCompareArrows } from "lucide-react";
 
 const FEATURES = [
@@ -166,7 +167,22 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div ref={sectionRef} style={{ height: "700vh" }}>
+    <div
+      ref={sectionRef}
+      data-landing-page=""
+      className="bg-zinc-950"
+      style={
+        {
+          height: "700vh",
+          // Lock dark theme tokens for the landing page regardless of picker.
+          ["--bg-base" as string]: "#0a0a14",
+          ["--bg-surface" as string]: "#0f0f1a",
+          ["--text-primary" as string]: "#e4e4e7",
+          ["--text-muted" as string]: "#a1a1aa",
+          ["--border-token" as string]: "rgba(255, 255, 255, 0.08)",
+        } as React.CSSProperties
+      }
+    >
       <div
         className="relative w-full bg-zinc-950 text-white"
         style={{
@@ -191,7 +207,7 @@ export default function LandingPage() {
           }}
         />
 
-        {/* UNDO SHADER: Remove this div to revert hero shader */}
+        {/* Hero background: WebGL shader */}
         {shaderReady && (
           <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: heroOpacity }}>
             <ShaderLines />
@@ -220,7 +236,7 @@ export default function LandingPage() {
           </h1>
         </motion.div>
 
-        {/* UNDO SHADER: Remove this div to revert CTA shader */}
+        {/* CTA background: WebGL shader */}
         {shaderReady && (
           <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: ctaOpacity }}>
             <ShaderLines />
@@ -269,13 +285,13 @@ export default function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Deep blue card */}
+        {/* Deep blue card / Orbit features */}
         <div
           className="absolute top-0 left-0 w-full h-full z-20 flex items-center justify-center pointer-events-none"
         >
           <motion.div
             ref={cardRef}
-            className="premium-depth-card relative overflow-hidden flex items-center justify-center pointer-events-auto w-full h-full"
+            className="relative overflow-hidden flex items-center justify-center pointer-events-auto w-full h-full premium-depth-card"
             style={{
               y: cardY,
               scale: cardScale,

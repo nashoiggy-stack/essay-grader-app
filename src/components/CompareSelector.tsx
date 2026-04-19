@@ -209,7 +209,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
                 className="absolute left-0 right-0 top-full mt-1.5 rounded-xl border border-white/[0.1] shadow-[0_24px_64px_rgba(0,0,0,0.7),0_8px_24px_rgba(0,0,0,0.5)] overflow-hidden z-50 max-h-[320px] overflow-y-auto"
-                style={{ backgroundColor: "#0d0d1a" }}
+                style={{ backgroundColor: "var(--bg-elevated, #0d0d1a)" }}
               >
                 {results.length === 0 ? (
                   <div className="px-3 py-4 text-center text-[12px] text-zinc-500">

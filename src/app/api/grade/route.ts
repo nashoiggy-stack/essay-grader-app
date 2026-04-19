@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { GRADING_SYSTEM_PROMPT } from "@/lib/prompts";
+import { GRADING_SYSTEM_PROMPT, GRADING_SYSTEM_PROMPT_STRICT } from "@/lib/prompts";
 import { VSPICE_PITFALLS, VSPICE_BONUSES } from "@/lib/rubrics";
 // UNDO [opus-upgrade]: delete the ` as ANTHROPIC_MODEL` alias below to revert
 // this endpoint to Sonnet — the variable name in the call site stays the same.
@@ -74,11 +74,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Local-only flag to swap in the stricter personal-statement grader.
+    const useStrictGrader = process.env.USE_STRICT_GRADER === "true";
+    const systemPrompt = useStrictGrader ? GRADING_SYSTEM_PROMPT_STRICT : GRADING_SYSTEM_PROMPT;
+
     const message = await anthropic.messages.create({
       model: ANTHROPIC_MODEL,
-      max_tokens: 3000,
+      max_tokens: useStrictGrader ? 4096 : 3000,
       temperature: 0,
-      system: GRADING_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [
         {
           role: "user",

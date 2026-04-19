@@ -5,9 +5,17 @@ import { motion } from "motion/react";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { TranscriptUpload } from "@/components/TranscriptUpload";
+import { useBackground } from "@/components/BackgroundProvider";
 
 export default function GPAPage() {
   const [iframeKey, setIframeKey] = useState(0);
+  const { background } = useBackground();
+  // Iframe is a separate document — its viewport canvas color comes from
+  // its own `color-scheme`, NOT inherited from the parent's CSS. Match the
+  // active picker theme so the iframe canvas (which is what shows when the
+  // iframe content body is transparent) doesn't default to white.
+  const iframeColorScheme: "light" | "dark" =
+    background === "light" ? "light" : "dark";
 
   const reloadIframe = () => {
     // Force the iframe to remount so it re-reads localStorage
@@ -99,18 +107,22 @@ export default function GPAPage() {
         <TranscriptUpload onSuccess={reloadIframe} />
       </motion.div>
 
-      {/* Actual GPA calculator iframe — fades in after hero */}
+      {/* Actual GPA calculator iframe — transparent so the active theme's
+          html-canvas bg shows through naturally. */}
       <motion.div
-        className=""
         initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.7, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
       >
         <iframe
-          key={iframeKey}
-          src="/gpa-calculator.html"
+          key={`${iframeKey}-${iframeColorScheme}`}
+          src={`/gpa-calculator.html?theme=${iframeColorScheme}`}
           className="w-full border-0 bg-transparent"
-          style={{ height: "2400px", minHeight: "100vh" }}
+          style={{
+            height: "2400px",
+            minHeight: "100vh",
+            colorScheme: iframeColorScheme,
+          }}
           title="GPA Calculator"
         />
       </motion.div>
