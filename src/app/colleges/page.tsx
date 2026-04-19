@@ -50,10 +50,12 @@ export default function CollegesPage() {
           </button>
         </motion.div>
 
-        {/* Guide */}
+        {/* Guide — canonical legend for tiers + Fit Score. Opened by the
+            "What do these tiers mean?" button above AND by the "?" icon
+            next to the Fit Score sort control in CollegeResults. */}
         <AnimatePresence>
           {showGuide && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-8">
+            <motion.div id="fit-score-guide" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-8">
               <div className="rounded-2xl bg-[#12121f] border border-white/[0.08] p-6">
                 <h3 className="text-sm font-bold text-zinc-200 mb-4">Classification Tiers & Fit Scores</h3>
                 <div className="space-y-3 mb-6">
@@ -71,7 +73,10 @@ export default function CollegesPage() {
                 <div className="border-t border-white/[0.06] pt-4">
                   <h4 className="text-xs font-semibold text-zinc-300 mb-2">What is Fit Score?</h4>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    Fit Score (0-95) measures how your academic stats compare to a school&apos;s admitted student averages. Higher = stronger match. It doesn&apos;t account for ECs, recommendations, or demonstrated interest.
+                    Fit Score (5&ndash;95) estimates how your profile lines up with each school&apos;s typical admit. It weighs your <span className="text-zinc-300">GPA</span> (unweighted and weighted) against the school&apos;s averages, your <span className="text-zinc-300">SAT/ACT</span> against its 25th&ndash;75th percentile range, and applies a small adjustment from your <span className="text-zinc-300">essay scores</span> if you&apos;ve graded them. Higher = stronger match.
+                  </p>
+                  <p className="text-xs text-zinc-500 leading-relaxed mt-2">
+                    At highly selective schools (&lt;15% acceptance) the score is capped at 70, and at schools under 30% it&apos;s capped at 82 &mdash; admission there also depends on essays, recommendations, ECs, and demonstrated interest, which a score can&apos;t fully capture.
                   </p>
                   <p className="text-xs text-zinc-600 mt-2">A balanced list: 2-3 safeties/likelies, 3-5 targets, 2-3 reaches.</p>
                 </div>
@@ -94,6 +99,16 @@ export default function CollegesPage() {
               pinnedCount={pinned.length}
               isPinned={isPinned}
               onTogglePin={togglePin}
+              onShowGuide={() => {
+                setShowGuide(true);
+                // Defer to the next frame so the panel is in the DOM before
+                // we scroll — otherwise the browser can't find the target.
+                requestAnimationFrame(() => {
+                  document
+                    .getElementById("fit-score-guide")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                });
+              }}
             />
           </ScrollReveal>
         </div>
