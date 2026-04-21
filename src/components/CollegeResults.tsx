@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Bookmark, ArrowRight, HelpCircle } from "lucide-react";
@@ -21,6 +21,13 @@ interface CollegeResultsProps {
   // True when the user has picked a major or typed an interest. Gates the
   // visibility of the "Major Match" sort chip so it doesn't appear empty.
   readonly hasMajorPreference?: boolean;
+  // Keyboard nav: index in the FLAT (cross-group) sorted list to highlight.
+  // -1 means no highlight. Cards are tagged with a data attribute so the
+  // hook in the page can find/scroll them.
+  readonly focusedFlatIndex?: number;
+  // Called by the page so the keyboard hook can keep its sorted-flat-list
+  // length in sync. Receives the same flat sorted list that drives the UI.
+  readonly onSortedChange?: (sorted: readonly ClassifiedCollege[]) => void;
 }
 
 const SORT_OPTIONS: readonly { key: SortKey; label: string }[] = [
@@ -45,10 +52,18 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
   onTogglePin,
   onShowGuide,
   hasMajorPreference = false,
+  focusedFlatIndex = -1,
+  onSortedChange,
 }) => {
   const [sort, setSort] = useState<SortKey>("acceptanceRate");
 
   const sorted = sort === "acceptanceRate" ? results : sortedBy(sort);
+
+  // Push the flat sorted slice up so the page-level keyboard hook can map
+  // an index → ClassifiedCollege (needed for "P" → toggle pin by name).
+  useEffect(() => {
+    onSortedChange?.(sorted);
+  }, [sorted, onSortedChange]);
 
   if (results.length === 0) {
     return (
@@ -137,15 +152,25 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
               <div className="flex-1 h-px bg-[#0c0c1a]/90" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {group.items.map((item, i) => (
-                <CollegeCard
-                  key={item.college.name}
-                  item={item}
-                  index={i}
-                  isPinned={isPinned?.(item.college.name)}
-                  onTogglePin={onTogglePin}
-                />
-              ))}
+              {group.items.map((item, i) => {
+                // Find the card's index in the FLAT sorted list so the keyboard
+                // hook can target it via data attribute. Cheap O(n) per render
+                // because the list is at most ~100 entries.
+                const flatIndex = sorted.findIndex(
+                  (s) => s.college.name === item.college.name,
+                );
+                return (
+                  <CollegeCard
+                    key={item.college.name}
+                    item={item}
+                    index={i}
+                    isPinned={isPinned?.(item.college.name)}
+                    onTogglePin={onTogglePin}
+                    flatIndex={flatIndex}
+                    focused={focusedFlatIndex === flatIndex}
+                  />
+                );
+              })}
             </div>
           </div>
         );

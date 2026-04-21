@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -9,6 +9,7 @@ import { CollegeResults } from "@/components/CollegeResults";
 import { CollegeSearchInput } from "@/components/CollegeSearchInput";
 import { useCollegeFilter } from "@/hooks/useCollegeFilter";
 import { useCollegePins } from "@/hooks/useCollegePins";
+import { useCollegeListKeyboard } from "@/hooks/useCollegeListKeyboard";
 import type { ClassifiedCollege } from "@/lib/college-types";
 
 const COLLEGE_SEARCH_INPUT_ID = "colleges-search-input";
@@ -47,6 +48,30 @@ export default function CollegesPage() {
     const visible = new Set(searchedResults.map((r) => r.college.name));
     return sorted.filter((r) => visible.has(r.college.name));
   };
+
+  // Mirror of the flat sorted slice CollegeResults is currently rendering —
+  // the keyboard hook needs this so "P" can resolve flat-index → college name
+  // for togglePin, and so the count is right whether sort is by acceptance,
+  // fit, or major match.
+  const [keyboardSlice, setKeyboardSlice] = useState<readonly ClassifiedCollege[]>([]);
+  const handleSortedChange = useCallback(
+    (sorted: readonly ClassifiedCollege[]) => setKeyboardSlice(sorted),
+    [],
+  );
+
+  const handleKeyboardTogglePin = useCallback(
+    (index: number) => {
+      const item = keyboardSlice[index];
+      if (item) togglePin(item.college.name);
+    },
+    [keyboardSlice, togglePin],
+  );
+
+  const { focusedIndex } = useCollegeListKeyboard({
+    count: keyboardSlice.length,
+    onTogglePin: handleKeyboardTogglePin,
+    searchInputId: COLLEGE_SEARCH_INPUT_ID,
+  });
 
   return (
     <AuroraBackground>
@@ -135,6 +160,8 @@ export default function CollegesPage() {
               pinnedCount={pinned.length}
               isPinned={isPinned}
               onTogglePin={togglePin}
+              focusedFlatIndex={focusedIndex}
+              onSortedChange={handleSortedChange}
               hasMajorPreference={
                 (!!filters.major && filters.major !== "Any") ||
                 !!filters.intendedInterest.trim()

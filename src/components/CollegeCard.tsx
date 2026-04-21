@@ -40,6 +40,11 @@ interface CollegeCardProps {
   readonly index: number;
   readonly isPinned?: boolean;
   readonly onTogglePin?: (name: string) => void;
+  // Position in the FLAT (cross-group) sorted list. Used by the keyboard nav
+  // hook to find/scroll a specific card via its data attribute.
+  readonly flatIndex?: number;
+  // True when this card is the keyboard-focused one — gets a focus ring.
+  readonly focused?: boolean;
 }
 
 export const CollegeCard: React.FC<CollegeCardProps> = ({
@@ -47,6 +52,8 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   index,
   isPinned = false,
   onTogglePin,
+  flatIndex,
+  focused = false,
 }) => {
   const { college: c, classification, reason, fitScore, majorMatch, matchReason } = item;
   const colors = CLASS_COLORS[classification];
@@ -69,7 +76,10 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ delay: index * 0.04, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       whileHover={{ y: -2 }}
-      className={`group rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.14] hover:shadow-[0_8px_24px_rgba(10,16,29,0.6)] transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]`}
+      data-college-card-index={flatIndex ?? undefined}
+      className={`group rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.14] hover:shadow-[0_8px_24px_rgba(10,16,29,0.6)] transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+        focused ? "ring-2 ring-blue-500/30" : ""
+      }`}
     >
       {/* ── Header: Name + Fit Score dominant ──────────────────── */}
       <div className="flex items-start justify-between gap-4 mb-4">
