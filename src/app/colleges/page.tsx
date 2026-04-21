@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeFiltersPanel } from "@/components/CollegeFilters";
 import { CollegeResults } from "@/components/CollegeResults";
+import { CollegeSearchInput } from "@/components/CollegeSearchInput";
 import { useCollegeFilter } from "@/hooks/useCollegeFilter";
 import { useCollegePins } from "@/hooks/useCollegePins";
+import type { ClassifiedCollege } from "@/lib/college-types";
+
+const COLLEGE_SEARCH_INPUT_ID = "colleges-search-input";
 
 const TIERS = [
   { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", fit: "80-95", description: "Your stats are well above average and the school has a higher acceptance rate. You're very likely to be admitted. Schools under 30% acceptance can never be a safety." },
@@ -21,6 +25,28 @@ export default function CollegesPage() {
   const { filters, updateFilter, resetFilters, results, sortedBy } = useCollegeFilter();
   const { pinned, isPinned, togglePin } = useCollegePins();
   const [showGuide, setShowGuide] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Search is layered on top of useCollegeFilter — it doesn't touch filter
+  // state, just narrows the visible slice by name/alias substring.
+  const searchedResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return results;
+    return results.filter((r: ClassifiedCollege) => {
+      if (r.college.name.toLowerCase().includes(q)) return true;
+      const aliases = r.college.aliases ?? [];
+      return aliases.some((a) => a.toLowerCase().includes(q));
+    });
+  }, [results, searchQuery]);
+
+  // Wrap sortedBy so per-key sorts run AFTER the search narrowing — otherwise
+  // sorting would still reference the unfiltered list.
+  const searchedSortedBy: typeof sortedBy = (key) => {
+    const sorted = sortedBy(key);
+    if (!searchQuery.trim()) return sorted;
+    const visible = new Set(searchedResults.map((r) => r.college.name));
+    return sorted.filter((r) => visible.has(r.college.name));
+  };
 
   return (
     <AuroraBackground>
@@ -85,17 +111,27 @@ export default function CollegesPage() {
           )}
         </AnimatePresence>
 
+        {/* Search (layered on top of filter results — does not narrow the
+            underlying filter pool, just the visible slice). */}
+        <ScrollReveal delay={0.08}>
+          <CollegeSearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            inputId={COLLEGE_SEARCH_INPUT_ID}
+          />
+        </ScrollReveal>
+
         {/* Filters */}
         <ScrollReveal delay={0.1}>
-          <CollegeFiltersPanel filters={filters} onUpdate={updateFilter} onReset={resetFilters} resultCount={results.length} />
+          <CollegeFiltersPanel filters={filters} onUpdate={updateFilter} onReset={resetFilters} resultCount={searchedResults.length} />
         </ScrollReveal>
 
         {/* Results */}
         <div className="mt-8">
           <ScrollReveal delay={0.15}>
             <CollegeResults
-              results={results}
-              sortedBy={sortedBy}
+              results={searchedResults}
+              sortedBy={searchedSortedBy}
               pinnedCount={pinned.length}
               isPinned={isPinned}
               onTogglePin={togglePin}
