@@ -9,6 +9,7 @@ import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
 import type { APScoreProfile } from "@/lib/profile-types";
 import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
 import { AP_SUBJECTS } from "@/lib/ap-scores";
+import { MajorSelect } from "@/components/MajorSelect";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
@@ -199,6 +200,50 @@ export default function ProfilePage() {
                   onChange={(e) => updateBasicInfo({ graduationYear: e.target.value })}
                   className={inputClass}
                 />
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* Academic Interests — intended major + free-text interests.
+            Edits propagate to /colleges, /chances, and /strategy via
+            useProfile's setItemAndNotify writes. */}
+        <ScrollReveal delay={0.09}>
+          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">
+                  Academic Interests
+                </h2>
+                <p className="text-[10px] text-zinc-600 mt-0.5">
+                  Used to badge strong-fit schools, surface major-tailored picks, and tune chance estimates.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Intended major</label>
+                <MajorSelect
+                  value={profile.intendedMajor ?? ""}
+                  onChange={(v) =>
+                    updateField("intendedMajor", v === "Any" ? "" : v)
+                  }
+                />
+              </div>
+              <div>
+                <label className={labelClass}>
+                  Specific interest <span className="text-zinc-600">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. quant trading, climate policy"
+                  value={profile.intendedInterest ?? ""}
+                  onChange={(e) => updateField("intendedInterest", e.target.value)}
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[10px] text-zinc-500">
+                  A niche or theme inside your major. Helps the matcher find adjacent-fit schools.
+                </p>
               </div>
             </div>
           </div>
@@ -449,6 +494,8 @@ export default function ProfilePage() {
               <SummaryItem label="VSPICE" value={profile.essayVspice ? `${profile.essayVspice}/24` : "—"} />
               <SummaryItem label="ECs" value={profile.ecBand ? (EC_BAND_LABELS as Record<string, string>)[profile.ecBand] ?? profile.ecBand : "—"} />
               <SummaryItem label="Rigor" value={profile.rigor.charAt(0).toUpperCase() + profile.rigor.slice(1)} />
+              <SummaryItem label="Major" value={profile.intendedMajor || "—"} />
+              <SummaryItem label="Interest" value={profile.intendedInterest || "—"} />
             </div>
           </div>
         </ScrollReveal>

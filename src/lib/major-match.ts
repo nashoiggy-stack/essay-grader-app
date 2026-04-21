@@ -223,6 +223,34 @@ function anyBiSubstring(query: string, pool: readonly string[] | undefined): boo
   return pool.some((p) => biSubstringMatch(query, normalize(p)));
 }
 
+// Specificity-aware direct match.
+//
+// "full":    the pool contains an entry that equals the query OR is more
+//            specific (query is a substring of the entry). e.g. user asks
+//            for "Computer Science" and the college lists "Computer Science"
+//            or "Applied Computer Science".
+// "partial": the pool's best match is a PARENT category (entry is a strict
+//            substring of the query). e.g. user asks for "Biomedical
+//            Engineering" and the college only lists "Engineering". This
+//            fires the signal so the rationale builder still engages, but
+//            at half weight — a generic parent listing shouldn't rival a
+//            school that actually advertises the specific field.
+// "none":    no relationship.
+function bestContainSpecificity(
+  pool: readonly string[] | undefined,
+  query: string,
+): "full" | "partial" | "none" {
+  if (!pool || pool.length === 0 || !query) return "none";
+  let best: "full" | "partial" | "none" = "none";
+  for (const p of pool) {
+    const term = normalize(p);
+    if (!term) continue;
+    if (term === query || term.includes(query)) return "full";
+    if (query.includes(term)) best = "partial";
+  }
+  return best;
+}
+
 // Token overlap = any non-trivial shared word. Used only for the fuzzier
 // "decent" tier so we don't over-match on common words.
 const STOPWORDS = new Set([
@@ -246,6 +274,27 @@ function hasTokenOverlap(query: string, pool: readonly string[] | undefined): bo
     }
   }
   return false;
+}
+
+// Pipeline/industry match for a major query. For multi-word queries we
+// require the MODIFIER token (everything except the head noun) to appear
+// in the pool entry — otherwise the head alone would double-count with
+// the direct topMajors bucket. Example: query "Biomedical Engineering"
+// won't fire against a generic "engineering" industry; it needs
+// "biomedical" somewhere.
+function majorPipelineHit(major: string, pool: readonly string[] | undefined): boolean {
+  if (!pool || pool.length === 0) return false;
+  const mTokens = tokens(major);
+  if (mTokens.length === 0) return false;
+  if (mTokens.length === 1) {
+    const only = mTokens[0];
+    return pool.some((entry) => tokens(entry).includes(only));
+  }
+  const modifiers = mTokens.slice(0, -1);
+  return pool.some((entry) => {
+    const eTokens = tokens(entry);
+    return modifiers.some((m) => eTokens.includes(m));
+  });
 }
 
 // ── Graded fit score ────────────────────────────────────────────────────
@@ -341,15 +390,36 @@ export function computeMajorFit(
     rankPoints: number;
   };
 
-  // Direct hits — 40 pts, all-or-nothing. Any of these three paths fires it.
-  if (major && major !== "any" && anyBiSubstring(major, college.topMajors)) {
-    s.directTopMajor = true;
+  // Direct hits — now specificity-aware.
+  //   full (40 pts):    college term equals or is more specific than the query
+  //                     ("Biomedical Engineering" at a school listing
+  //                      "Biomedical Engineering" or "Applied Biomedical Engineering")
+  //   partial (20 pts): college term is a strict PARENT of the query
+  //                     ("Biomedical Engineering" at a school that only lists
+  //                      "Engineering") — still fires the signal so the
+  //                     rationale builder engages, but at half weight.
+  //
+  // Direct bucket takes the max of topMajors vs knownFor so a full hit on
+  // one field isn't inflated by a partial hit on the other.
+  let directPts = 0;
+  if (major && major !== "any") {
+    const specTop = bestContainSpecificity(college.topMajors, major);
+    if (specTop !== "none") {
+      s.directTopMajor = true;
+      directPts = Math.max(directPts, specTop === "full" ? 40 : 20);
+    }
+    const specKnown = bestContainSpecificity(college.knownFor, major);
+    if (specKnown !== "none") {
+      s.directKnownFor = true;
+      directPts = Math.max(directPts, specKnown === "full" ? 40 : 20);
+    }
   }
-  if (major && major !== "any" && anyBiSubstring(major, college.knownFor)) {
-    s.directKnownFor = true;
-  }
-  if (interest && anyBiSubstring(interest, college.knownFor)) {
-    s.directKnownFor = true;
+  if (interest) {
+    const specKnown = bestContainSpecificity(college.knownFor, interest);
+    if (specKnown !== "none") {
+      s.directKnownFor = true;
+      directPts = Math.max(directPts, specKnown === "full" ? 40 : 20);
+    }
   }
 
   // Related-major → topMajors (20 pts). Pre-Med → Biology at Hopkins.
@@ -372,12 +442,15 @@ export function computeMajorFit(
     }
   }
 
-  // Pipelines / industries (15 pts).
+  // Pipelines / industries (15 pts). Uses majorPipelineHit which requires
+  // a modifier-token match for multi-word queries — so a generic
+  // "engineering" industry entry won't double-count for a user searching
+  // "Biomedical Engineering".
   if (
     major &&
     major !== "any" &&
-    (anyBiSubstring(major, college.careerPipelines) ||
-      anyBiSubstring(major, college.topIndustries))
+    (majorPipelineHit(major, college.careerPipelines) ||
+      majorPipelineHit(major, college.topIndustries))
   ) {
     s.pipelineHit = true;
   }
@@ -412,10 +485,10 @@ export function computeMajorFit(
   }
 
   // Pre-rank subtotal — gates the US News bucket so unrelated top schools
-  // don't get free points just for being ranked.
-  const directFired = s.directTopMajor || s.directKnownFor;
+  // don't get free points just for being ranked. Direct bucket is now
+  // specificity-aware (0 / 20 / 40) instead of all-or-nothing.
   const preRank =
-    (directFired ? 40 : 0) +
+    directPts +
     (s.relatedTopMajor ? 20 : 0) +
     (s.pipelineHit ? 15 : 0) +
     (s.interestTokenHit ? 10 : 0);
