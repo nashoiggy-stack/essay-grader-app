@@ -51,6 +51,13 @@ export interface UserProfile {
 
   // Shared student identity (used by resume, future cover letters, etc.)
   basicInfo?: BasicStudentInfo;
+
+  // Intended area of study. Used by the college list (to badge strong-fit
+  // schools) and the strategy engine (to pick major-relevant recommendations).
+  // `intendedMajor` is one of the MAJORS constants; `intendedInterest` is a
+  // free-text box for niches (e.g. "sustainability", "quant trading").
+  intendedMajor?: string;
+  intendedInterest?: string;
 }
 
 export const EMPTY_BASIC_STUDENT_INFO: BasicStudentInfo = {
@@ -74,6 +81,8 @@ export const EMPTY_PROFILE: UserProfile = {
   ecStrength: "medium",
   rigor: "medium",
   basicInfo: EMPTY_BASIC_STUDENT_INFO,
+  intendedMajor: "",
+  intendedInterest: "",
 };
 
 export const PROFILE_STORAGE_KEY = "admitedge-profile";

@@ -224,6 +224,13 @@ export function readStrategyProfile(): StrategyProfile {
   const hasPinnedSchools = pinnedSchools.length > 0;
   const hasDreamSchool = dreamSchool != null && dreamSchool.length > 0;
 
+  // Normalize "Any" (the default dropdown value on the colleges page) down
+  // to empty string — downstream code only cares whether the user actually
+  // picked a major.
+  const rawMajor = (profile?.intendedMajor ?? "").trim();
+  const intendedMajor = rawMajor && rawMajor !== "Any" ? rawMajor : "";
+  const intendedInterest = (profile?.intendedInterest ?? "").trim();
+
   return {
     gpa,
     tests,
@@ -231,7 +238,8 @@ export function readStrategyProfile(): StrategyProfile {
     essay,
     pinnedSchools,
     dreamSchool,
-    intendedMajor: "", // reserved — profile doesn't track a persistent major yet
+    intendedMajor,
+    intendedInterest,
     basicInfo:
       profile?.basicInfo?.name || profile?.basicInfo?.graduationYear
         ? {

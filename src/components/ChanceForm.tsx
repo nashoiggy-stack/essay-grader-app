@@ -8,6 +8,7 @@ import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
 import { getApplicationOptions } from "@/lib/admissions";
 import { AP_SUBJECTS } from "@/lib/ap-scores";
 import { Plus, Trash2 } from "lucide-react";
+import { MajorSelect } from "./MajorSelect";
 
 interface ChanceFormProps {
   readonly inputs: ChanceInputs;
@@ -160,6 +161,17 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           <option value="medium">Some Honors/AP</option>
           <option value="high">Mostly AP/IB/DE</option>
         </select>
+      </div>
+      <div>
+        <label className={labelClass}>Intended Major</label>
+        <MajorSelect
+          value={inputs.major}
+          onChange={(v) => onUpdate("major", v)}
+          ariaLabel="Intended major for chance calculation"
+        />
+        <p className="mt-1 text-[10px] text-zinc-500">
+          Synced with your college list &amp; strategy.
+        </p>
       </div>
       <div>
         <label className={labelClass}>Extracurricular Band</label>

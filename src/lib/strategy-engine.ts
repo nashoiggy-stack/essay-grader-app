@@ -17,11 +17,14 @@ import type {
   SchoolListDistribution,
   EarlyRecommendation,
   CompetitivenessPositioning,
+  MajorAwareRecommendations,
 } from "./strategy-types";
 import type { ActivityEvaluation, ProfileSpike } from "./extracurricular-types";
 import { computeReadinessScore, bandFromScore } from "./extracurricular-types";
-import type { ApplicationPlan } from "./college-types";
-import { getApplicationOptions } from "./admissions";
+import type { ApplicationPlan, ClassifiedCollege, Classification } from "./college-types";
+import { getApplicationOptions, classifyCollege } from "./admissions";
+import { COLLEGES } from "@/data/colleges";
+import { computeMajorFit, buildMatchReason } from "./major-match";
 
 // ── Academic analysis ──────────────────────────────────────────────────────
 
@@ -582,6 +585,121 @@ export function positioningVsTopSchools(
   };
 }
 
+// ── Major-aware recommendations ─────────────────────────────────────────────
+
+function classifyAll(p: StrategyProfile): ClassifiedCollege[] {
+  const essayCA = p.essay?.summaryScore ?? null;
+  const essayV = p.essay?.vspice ?? null;
+  const query = { major: p.intendedMajor, interest: p.intendedInterest };
+
+  return COLLEGES.map((c) => {
+    const { classification, reason, fitScore } = classifyCollege(
+      c, p.gpa.uw, p.gpa.w, p.tests.sat, p.tests.act, essayCA, essayV,
+    );
+    const fit = computeMajorFit(c, query);
+    const matchReason = buildMatchReason(c, query, fit.signals);
+    return {
+      college: c,
+      classification,
+      reason,
+      fitScore,
+      majorMatch: fit.match,
+      majorFitScore: fit.score,
+      matchReason,
+    };
+  });
+}
+
+// Rank colleges by (major fit score DESC, academic fit DESC). Uses the
+// graded 0-100 score so Stanford-for-CS ranks above a lower-ranked state
+// school that also lists CS, even though both sit in the same "strong"
+// tier. Tier ranks are still honored as a first-order sort via the score.
+function rankByMajorThenFit(a: ClassifiedCollege, b: ClassifiedCollege): number {
+  const sa = a.majorFitScore ?? 0;
+  const sb = b.majorFitScore ?? 0;
+  if (sa !== sb) return sb - sa;
+  return b.fitScore - a.fitScore;
+}
+
+function bucketByTier(
+  cs: readonly ClassifiedCollege[],
+): Record<Classification, ClassifiedCollege[]> {
+  const out: Record<Classification, ClassifiedCollege[]> = {
+    safety: [], likely: [], target: [], reach: [], unlikely: [],
+  };
+  for (const c of cs) out[c.classification].push(c);
+  return out;
+}
+
+/**
+ * Build major-aware recommendations: 2 safeties + 2 targets + 2 reaches
+ * from the user's pinned list (ranked by major fit), plus up to 3 colleges
+ * the user hasn't pinned that are worth considering.
+ *
+ * Called from runStrategyAnalysis. Returns an empty-shell result when the
+ * user hasn't picked a major AND hasn't typed an interest — the UI shows
+ * an inline picker in that case.
+ */
+export function recommendCollegesByMajor(p: StrategyProfile): MajorAwareRecommendations {
+  const hasQuery = !!p.intendedMajor || !!p.intendedInterest;
+  const empty: MajorAwareRecommendations = {
+    intendedMajor: p.intendedMajor || null,
+    intendedInterest: p.intendedInterest || null,
+    fromPinned: { safeties: [], targets: [], reaches: [] },
+    toConsider: [],
+  };
+  if (!hasQuery) return empty;
+
+  const all = classifyAll(p);
+  const pinnedNames = new Set(p.pinnedSchools.map((s) => s.pin.name));
+
+  // Pinned side — bucket by classification, sort each bucket by major-then-fit,
+  // take top 2. Only pinned colleges are considered here.
+  const pinned = all.filter((c) => pinnedNames.has(c.college.name));
+  const pinnedBuckets = bucketByTier(pinned);
+  const safeties = [...pinnedBuckets.safety].sort(rankByMajorThenFit).slice(0, 2);
+  const targets  = [...pinnedBuckets.target ].sort(rankByMajorThenFit).slice(0, 2);
+  const reaches  = [...pinnedBuckets.reach  ].sort(rankByMajorThenFit).slice(0, 2);
+
+  // To-consider side — everything NOT pinned with at-least-decent major fit.
+  // Take top picks across tiers, preferring variety: try one safety + one
+  // target + one reach first, then fill remaining slots by overall rank.
+  const unpinned = all.filter(
+    (c) => !pinnedNames.has(c.college.name) && (c.majorMatch === "strong" || c.majorMatch === "decent"),
+  );
+  const unpinnedBuckets = bucketByTier(unpinned);
+  const pick = (cs: ClassifiedCollege[]): ClassifiedCollege | undefined =>
+    [...cs].sort(rankByMajorThenFit)[0];
+
+  const spread: ClassifiedCollege[] = [];
+  const firstSafety = pick(unpinnedBuckets.safety) ?? pick(unpinnedBuckets.likely);
+  const firstTarget = pick(unpinnedBuckets.target);
+  const firstReach = pick(unpinnedBuckets.reach);
+  for (const c of [firstSafety, firstTarget, firstReach]) {
+    if (c) spread.push(c);
+  }
+
+  // If the spread didn't yield 3 (e.g. no safety matches), fill by overall
+  // rank from whatever's left.
+  if (spread.length < 3) {
+    const seen = new Set(spread.map((c) => c.college.name));
+    const remainder = [...unpinned]
+      .filter((c) => !seen.has(c.college.name))
+      .sort(rankByMajorThenFit);
+    for (const c of remainder) {
+      if (spread.length >= 3) break;
+      spread.push(c);
+    }
+  }
+
+  return {
+    intendedMajor: p.intendedMajor || null,
+    intendedInterest: p.intendedInterest || null,
+    fromPinned: { safeties, targets, reaches },
+    toConsider: spread.slice(0, 3),
+  };
+}
+
 // ── Orchestrator ────────────────────────────────────────────────────────────
 
 export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
@@ -592,6 +710,7 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
   const schoolList = analyzeSchoolListDistribution(p);
   const earlyStrategy = analyzeEarlyStrategy(p);
   const positioning = positioningVsTopSchools(p, academic, ec);
+  const majorRecommendations = recommendCollegesByMajor(p);
 
   const missingData: string[] = [];
   if (!p.hasGpa) missingData.push("GPA (run the GPA Calculator)");
@@ -608,6 +727,7 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
     schoolList,
     earlyStrategy,
     positioning,
+    majorRecommendations,
     missingData,
   };
 }

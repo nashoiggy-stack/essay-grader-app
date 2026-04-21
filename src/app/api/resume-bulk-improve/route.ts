@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
       anthropic.messages.create({
         model: ANTHROPIC_MODEL,
         max_tokens: maxTokens,
-        temperature: 0.3,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: prompt }],
       })

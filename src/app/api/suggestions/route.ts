@@ -112,7 +112,6 @@ async function generateSuggestions(essayText: string, focus: SuggestionFocus): P
   const message = await anthropic.messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: 4096,
-    temperature: 0,
     system: `${SUGGESTIONS_SYSTEM_PROMPT}\n\n${focusPrompt}`,
     messages: [
       {
@@ -136,7 +135,6 @@ async function filterSuggestions(essayText: string, stage1: Suggestion[]): Promi
   const message = await anthropic.messages.create({
     model: ANTHROPIC_MODEL,
     max_tokens: 4096,
-    temperature: 0,
     system: FILTER_SYSTEM_PROMPT,
     messages: [
       {

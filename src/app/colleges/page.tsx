@@ -99,6 +99,10 @@ export default function CollegesPage() {
               pinnedCount={pinned.length}
               isPinned={isPinned}
               onTogglePin={togglePin}
+              hasMajorPreference={
+                (!!filters.major && filters.major !== "Any") ||
+                !!filters.intendedInterest.trim()
+              }
               onShowGuide={() => {
                 setShowGuide(true);
                 // Defer to the next frame so the panel is in the DOM before

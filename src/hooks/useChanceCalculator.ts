@@ -12,6 +12,7 @@ import {
 } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
@@ -103,6 +104,11 @@ export function useChanceCalculator() {
           : prev.act) || "",
         actScience: p.act?.science || prev.actScience || "",
         apScores: prev.apScores.length > 0 ? prev.apScores : (p.apScores ?? []),
+        // Major carries over from the shared profile so picking it on the
+        // college list or strategy page flows through here automatically.
+        // Only adopt the stored value if the user hasn't already typed
+        // something different into this form.
+        major: prev.major || p.intendedMajor || "",
       }));
     } catch (e) {
       console.warn("Could not read sources:", e);
@@ -124,6 +130,18 @@ export function useChanceCalculator() {
 
   const updateInput = <K extends keyof ChanceInputs>(key: K, value: ChanceInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
+    // Major is shared with the college list + strategy page. Writing it
+    // back to the profile keeps all three surfaces in sync.
+    if (key === "major") {
+      try {
+        const raw = localStorage.getItem("admitedge-profile");
+        const current = raw ? JSON.parse(raw) : {};
+        setItemAndNotify(
+          "admitedge-profile",
+          JSON.stringify({ ...current, intendedMajor: value }),
+        );
+      } catch { /* ignore write errors */ }
+    }
   };
 
   const resetInputs = () => setInputs(EMPTY_CHANCE_INPUTS);

@@ -19,6 +19,7 @@ import {
   School,
   XCircle,
   AlertTriangle,
+  GraduationCap,
 } from "lucide-react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -38,8 +39,12 @@ import type {
   AcademicTier,
   ECStrengthTier,
   EdVerdict,
+  MajorAwareRecommendations,
 } from "@/lib/strategy-types";
-import type { Classification } from "@/lib/college-types";
+import type { Classification, ClassifiedCollege } from "@/lib/college-types";
+import { MajorSelect } from "@/components/MajorSelect";
+import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 // ── Helpers: deterministic strength derivation ─────────────────────────────
 
@@ -112,6 +117,27 @@ const PERCENTILE_LABEL: Record<string, string> = {
   "top-50": "Top 50%",
   "bottom-50": "Bottom 50%",
 };
+
+function majorRecsStrength(r: MajorAwareRecommendations): StrategyStrength {
+  if (!r.intendedMajor && !r.intendedInterest) return "neutral";
+  const pinnedCount =
+    r.fromPinned.safeties.length + r.fromPinned.targets.length + r.fromPinned.reaches.length;
+  if (pinnedCount === 0 && r.toConsider.length === 0) return "warning";
+  if (pinnedCount >= 3) return "strong";
+  return "mixed";
+}
+
+function majorRecsHeadline(r: MajorAwareRecommendations): string {
+  if (!r.intendedMajor && !r.intendedInterest) return "Pick a major to see tailored picks";
+  const label = r.intendedMajor || r.intendedInterest || "";
+  const pinnedCount =
+    r.fromPinned.safeties.length + r.fromPinned.targets.length + r.fromPinned.reaches.length;
+  const parts: string[] = [];
+  if (pinnedCount > 0) parts.push(`${pinnedCount} from your pins`);
+  if (r.toConsider.length > 0) parts.push(`${r.toConsider.length} to consider`);
+  const summary = parts.length > 0 ? parts.join(" · ") : "no matches yet";
+  return `${label} · ${summary}`;
+}
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
@@ -265,7 +291,20 @@ export default function StrategyPage() {
                     <GapsBody result={result} analysis={analysis} />
                   </StrategyCard>
 
-                  {/* 6. SCHOOL LIST STRATEGY — collapsed, distribution bar */}
+                  {/* 6. RECOMMENDED FOR YOUR MAJOR — major-aware picks */}
+                  <StrategyCard
+                    icon={<GraduationCap className="w-4 h-4" />}
+                    title="Recommended for Your Major"
+                    strength={majorRecsStrength(analysis.majorRecommendations)}
+                    headline={majorRecsHeadline(analysis.majorRecommendations)}
+                  >
+                    <MajorRecommendationsBody
+                      recs={analysis.majorRecommendations}
+                      onMajorSaved={refresh}
+                    />
+                  </StrategyCard>
+
+                  {/* 7. SCHOOL LIST STRATEGY — collapsed, distribution bar */}
                   <StrategyCard
                     icon={<School className="w-4 h-4" />}
                     title="School List Strategy"
@@ -1006,6 +1045,236 @@ function PreGenerationHint({ hasDreamSchool }: { hasDreamSchool: boolean }) {
           ? " You'll get a dedicated decision block for your dream school."
           : " Pick a dream school above to unlock the dedicated ED/EA decision block."}
       </p>
+    </div>
+  );
+}
+
+// ── Major-aware recommendations body ────────────────────────────────────────
+// Renders the 2+2+2 tier picks from the user's pinned list plus up to 3
+// unpinned schools worth considering. If the user hasn't set a major /
+// interest yet, shows an inline picker that writes to the shared profile
+// and calls `onMajorSaved` so the strategy analysis re-runs with the new
+// query applied.
+
+function MajorRecommendationsBody({
+  recs,
+  onMajorSaved,
+}: {
+  recs: MajorAwareRecommendations;
+  onMajorSaved: () => void;
+}) {
+  if (!recs.intendedMajor && !recs.intendedInterest) {
+    return <MajorPicker onSaved={onMajorSaved} />;
+  }
+
+  const totalPinned =
+    recs.fromPinned.safeties.length + recs.fromPinned.targets.length + recs.fromPinned.reaches.length;
+
+  return (
+    <div className="space-y-5 pt-3">
+      <p className="text-[13px] text-zinc-400 leading-relaxed">
+        Picks tailored to{" "}
+        <span className="text-zinc-200">
+          {recs.intendedMajor || recs.intendedInterest}
+        </span>
+        {recs.intendedMajor && recs.intendedInterest && (
+          <>
+            {" "}(plus your interest in{" "}
+            <span className="text-zinc-200">{recs.intendedInterest}</span>)
+          </>
+        )}
+        .
+      </p>
+
+      {totalPinned === 0 && recs.toConsider.length === 0 && (
+        <div className="rounded-xl bg-[#0c0c1a]/60 border border-white/[0.06] p-4">
+          <p className="text-[13px] text-zinc-400 leading-relaxed">
+            None of your pinned schools stand out for{" "}
+            <span className="text-zinc-200">
+              {recs.intendedMajor || recs.intendedInterest}
+            </span>
+            , and we didn&apos;t find strong alternatives in the full list. Try a
+            more specific interest or a different major.
+          </p>
+        </div>
+      )}
+
+      {totalPinned > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-3">
+            From your pinned list
+          </h4>
+          <div className="space-y-4">
+            <RecTierRow label="Safety"  color="text-emerald-400" items={recs.fromPinned.safeties} />
+            <RecTierRow label="Target"  color="text-amber-400"   items={recs.fromPinned.targets} />
+            <RecTierRow label="Reach"   color="text-orange-400"  items={recs.fromPinned.reaches} />
+          </div>
+        </div>
+      )}
+
+      {recs.toConsider.length > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-3">
+            Consider adding
+          </h4>
+          <div className="space-y-2">
+            {recs.toConsider.map((c) => (
+              <RecCard key={c.college.name} item={c} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          // Let the user change their preference without leaving the page.
+          try {
+            const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+            const current = raw ? JSON.parse(raw) : {};
+            setItemAndNotify(
+              PROFILE_STORAGE_KEY,
+              JSON.stringify({ ...current, intendedMajor: "", intendedInterest: "" }),
+            );
+            onMajorSaved();
+          } catch { /* ignore */ }
+        }}
+        className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+      >
+        Change major / interest
+      </button>
+    </div>
+  );
+}
+
+function RecTierRow({
+  label,
+  color,
+  items,
+}: {
+  label: string;
+  color: string;
+  items: readonly ClassifiedCollege[];
+}) {
+  if (items.length === 0) {
+    return (
+      <div className="flex items-start gap-3">
+        <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${color} w-16 shrink-0 pt-1`}>
+          {label}
+        </span>
+        <p className="text-[12px] text-zinc-600 italic pt-1">
+          None pinned in this tier &mdash; add one.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-start gap-3">
+      <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${color} w-16 shrink-0 pt-2`}>
+        {label}
+      </span>
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {items.map((c) => (
+          <RecCard key={c.college.name} item={c} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RecCard({ item }: { item: ClassifiedCollege }) {
+  const c = item.college;
+  const match = item.majorMatch ?? "none";
+  const matchLabel = match === "strong"
+    ? { text: "Strong fit",    color: "text-emerald-400" }
+    : match === "decent"
+    ? { text: "Adjacent fit",  color: "text-zinc-500" }
+    : null;
+  return (
+    <div className="rounded-lg bg-[#0c0c1a]/60 border border-white/[0.04] px-3 py-2 hover:border-white/[0.12] transition-colors">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-[13px] font-semibold text-zinc-200 truncate">{c.name}</p>
+        <span className="text-[11px] font-mono tabular-nums text-zinc-500 shrink-0">
+          {c.acceptanceRate}%
+        </span>
+      </div>
+      {/* Deterministic rationale — prefer the specific reason over the
+          generic "Strong fit" label. Falls back to the label when no
+          rationale fragments could be assembled. */}
+      {item.matchReason ? (
+        <p className="text-[11px] mt-0.5 text-zinc-400 leading-snug">
+          {item.matchReason}
+        </p>
+      ) : (
+        matchLabel && (
+          <p className={`text-[11px] mt-0.5 ${matchLabel.color}`}>{matchLabel.text}</p>
+        )
+      )}
+    </div>
+  );
+}
+
+function MajorPicker({ onSaved }: { onSaved: () => void }) {
+  const [major, setMajor] = useState<string>("");
+  const [interest, setInterest] = useState<string>("");
+
+  const save = () => {
+    try {
+      const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+      const current = raw ? JSON.parse(raw) : {};
+      setItemAndNotify(
+        PROFILE_STORAGE_KEY,
+        JSON.stringify({
+          ...current,
+          intendedMajor: major === "Any" ? "" : major,
+          intendedInterest: interest.trim(),
+        }),
+      );
+      onSaved();
+    } catch { /* ignore */ }
+  };
+
+  const canSave = (major && major !== "Any") || interest.trim().length > 0;
+
+  return (
+    <div className="space-y-4 pt-3">
+      <p className="text-[13px] text-zinc-400 leading-relaxed">
+        Tell us what you want to study and we&apos;ll surface the schools in your
+        pinned list (and a few outside it) that are strong in that area. This
+        doesn&apos;t narrow your list elsewhere &mdash; it only adds this one
+        card.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
+            Major
+          </label>
+          <MajorSelect value={major} onChange={setMajor} />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
+            Specific interest (optional)
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. sustainability, quant trading"
+            value={interest}
+            onChange={(e) => setInterest(e.target.value)}
+            className="w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={save}
+        disabled={!canSave}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-white/[0.04] disabled:text-zinc-600 text-blue-200 px-4 py-2 text-xs font-semibold transition-colors"
+      >
+        Save and show picks
+        <ArrowRight className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }

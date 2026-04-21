@@ -141,7 +141,6 @@ export async function POST(req: NextRequest) {
       model: ANTHROPIC_MODEL,
       // 8K tokens to comfortably fit a 4-year merged transcript (~40+ courses)
       max_tokens: 8192,
-      temperature: 0,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content }],
     });

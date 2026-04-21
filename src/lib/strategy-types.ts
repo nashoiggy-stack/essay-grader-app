@@ -50,6 +50,7 @@ export interface StrategyProfile {
   readonly pinnedSchools: readonly StrategyPinnedSchool[];
   readonly dreamSchool: string | null;       // admitedge-dream-school localStorage
   readonly intendedMajor: string;            // from admitedge-profile if present, else ""
+  readonly intendedInterest: string;         // free-text niche, "" if unset
   readonly basicInfo: { name: string; graduationYear: string } | null;
   // Flags for the empty-state / missing-data UI
   readonly hasGpa: boolean;
@@ -148,7 +149,28 @@ export interface StrategyAnalysis {
   readonly schoolList: SchoolListDistribution;
   readonly earlyStrategy: readonly EarlyRecommendation[];
   readonly positioning: CompetitivenessPositioning;
+  readonly majorRecommendations: MajorAwareRecommendations;
   readonly missingData: readonly string[];  // human-readable missing sources
+}
+
+// Major-aware recommendation set. Populated by recommendCollegesByMajor.
+// When the user hasn't set a major/interest, `intendedMajor` and
+// `intendedInterest` are null and the lists are empty (the UI shows a
+// friendly prompt to set one).
+export interface MajorAwareRecommendations {
+  readonly intendedMajor: string | null;
+  readonly intendedInterest: string | null;
+  // Pulled from the user's pinned list, ranked by major fit. Each tier is
+  // capped at 2 so the section stays scannable.
+  readonly fromPinned: {
+    readonly safeties: readonly ClassifiedCollege[];
+    readonly targets: readonly ClassifiedCollege[];
+    readonly reaches: readonly ClassifiedCollege[];
+  };
+  // Colleges the user has NOT pinned that are worth considering — up to 3,
+  // spread across classification tiers when possible and filtered to
+  // at-least-decent major fit.
+  readonly toConsider: readonly ClassifiedCollege[];
 }
 
 // ── Final result (LLM narrative — 7 sections) ──────────────────────────────

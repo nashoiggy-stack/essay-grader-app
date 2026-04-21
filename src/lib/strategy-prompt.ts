@@ -82,6 +82,23 @@ Good: "You have 5 Tier-3 activities and no Tier-1. Focus on converting your
 strongest Tier-3 into measurable impact (numbers, growth, outcomes) — one
 strong Tier-2 move is more valuable than adding two more Tier-3 activities."
 
+MAJOR-AWARE RECOMMENDATIONS:
+
+The analysis includes a "majorRecommendations" block with pinned colleges
+ranked by major fit (2 safeties, 2 targets, 2 reaches) plus up to 3
+unpinned colleges the student should consider. If the student has set an
+intended major or interest:
+
+- In the School List Strategy section, briefly acknowledge whether their
+  pinned list is well-matched to their stated major. Name specific schools
+  that are strong fits and any that aren't.
+- In the Action Plan, if "toConsider" is non-empty, include one bullet
+  naming 1-2 of those schools as worth adding to their pinned list —
+  reference why (strong major fit, tier coverage).
+
+If the student has NOT set a major (both intendedMajor and
+intendedInterest are empty), skip the major-specific commentary.
+
 APPLICATION STRATEGY — reference the earlyStrategy array from the analysis:
 
 Do not re-decide plans. The deterministic layer already picked the suggested
@@ -239,6 +256,8 @@ export function buildStrategyPrompt(
       reason: s.classified.reason,
     })),
     dreamSchool: profile.dreamSchool,
+    intendedMajor: profile.intendedMajor || null,
+    intendedInterest: profile.intendedInterest || null,
     student: profile.basicInfo,
   };
 

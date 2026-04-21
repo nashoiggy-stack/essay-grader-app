@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { motion } from "motion/react";
-import { Bookmark } from "lucide-react";
+import { Bookmark, GraduationCap } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 
@@ -48,7 +48,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   isPinned = false,
   onTogglePin,
 }) => {
-  const { college: c, classification, reason, fitScore } = item;
+  const { college: c, classification, reason, fitScore, majorMatch, matchReason } = item;
   const colors = CLASS_COLORS[classification];
 
   const spikeMatch = useMemo(() => {
@@ -150,6 +150,27 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
           Your {spikeMatch} profile aligns with this school
+        </p>
+      )}
+
+      {majorMatch === "strong" && (
+        <p className="mt-2 text-[11px] text-emerald-400 flex items-center gap-1.5">
+          <GraduationCap className="w-3 h-3" strokeWidth={2} />
+          Strong fit for what you want to study
+        </p>
+      )}
+      {majorMatch === "decent" && (
+        <p className="mt-2 text-[11px] text-zinc-500 flex items-center gap-1.5">
+          <GraduationCap className="w-3 h-3" strokeWidth={1.75} />
+          Adjacent to what you want to study
+        </p>
+      )}
+      {/* Specific deterministic rationale — shown below the badge when we
+          have at least one fragment (rank in field, knownFor tag, pipeline,
+          earnings). Not shown when the badge itself is absent. */}
+      {majorMatch && majorMatch !== "none" && matchReason && (
+        <p className="mt-1 ml-[18px] text-[11px] text-zinc-500 leading-snug">
+          {matchReason}
         </p>
       )}
     </motion.div>

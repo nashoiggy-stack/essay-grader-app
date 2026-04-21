@@ -17,5 +17,10 @@ export const ANTHROPIC_MODEL =
 // either (a) delete this constant and flip the route imports back to
 // ANTHROPIC_MODEL, or (b) set ANTHROPIC_MODEL_PREMIUM=claude-sonnet-4-6 in
 // the Vercel environment variables (no code change needed).
+//
+// UPGRADED 2026-04-21: default bumped from Opus 4.6 → Opus 4.7 (latest
+// flagship in the Claude 4.x line). To roll back for cost or latency
+// reasons, set ANTHROPIC_MODEL_PREMIUM=claude-opus-4-6 in env — no code
+// change required.
 export const ANTHROPIC_MODEL_PREMIUM =
-  process.env.ANTHROPIC_MODEL_PREMIUM || "claude-opus-4-6";
+  process.env.ANTHROPIC_MODEL_PREMIUM || "claude-opus-4-7";

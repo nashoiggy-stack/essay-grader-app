@@ -81,7 +81,6 @@ export async function POST(req: NextRequest) {
     const message = await anthropic.messages.create({
       model: ANTHROPIC_MODEL,
       max_tokens: useStrictGrader ? 4096 : 3000,
-      temperature: 0,
       system: systemPrompt,
       messages: [
         {

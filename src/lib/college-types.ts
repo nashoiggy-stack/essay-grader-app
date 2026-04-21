@@ -264,11 +264,25 @@ export interface QualitativeClassifications {
 
 export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
 
+export type MajorMatchLevel = "strong" | "decent" | "none";
+
 export interface ClassifiedCollege {
   readonly college: College;
   readonly classification: Classification;
   readonly reason: string;
   readonly fitScore: number; // 0-100
+  // Set when the user has picked a major or interest. "strong" = this
+  // school is known for it; "decent" = adjacent signal (career pipeline,
+  // industry, or token overlap); "none" = no signal or no query.
+  readonly majorMatch?: MajorMatchLevel;
+  // Graded 0-100 version of majorMatch. Smoother signal than the tier
+  // bucket — lets us distinguish Stanford-for-CS from a lower-ranked
+  // school that also lists CS. Absent when no major/interest is set.
+  readonly majorFitScore?: number;
+  // Deterministic 1-line rationale for why the match fired ("Ranked #5 in
+  // CS; strong Google/Meta pipeline"). Empty string / undefined when no
+  // signals fired. Populated by buildMatchReason in major-match.ts.
+  readonly matchReason?: string;
 }
 
 export type ChanceBand = "very-low" | "low" | "possible" | "competitive" | "strong";
@@ -289,7 +303,13 @@ export interface CollegeFilters {
   sat: string;
   act: string;
   actScience: string; // optional, not in composite
+  // Preference, not a hard filter. Colleges that aren't known for this
+  // major still appear in the list — they just don't get the "Strong fit"
+  // badge. Used to rank results when sort = majorMatch.
   major: string;
+  // Free-text interest box (e.g. "sustainability", "quant trading").
+  // Matched fuzzily against knownFor / careerPipelines / topIndustries.
+  intendedInterest: string;
   region: string;
   size: string;
   setting: string;
@@ -329,6 +349,7 @@ export const EMPTY_FILTERS: CollegeFilters = {
   act: "",
   actScience: "",
   major: "",
+  intendedInterest: "",
   region: "any",
   size: "any",
   setting: "any",
@@ -361,12 +382,133 @@ export const REGIONS = [
   "any", "Northeast", "Southeast", "Midwest", "Southwest", "West",
 ] as const;
 
-export const MAJORS = [
-  "Any", "Business", "Computer Science", "Engineering", "Biology",
-  "Psychology", "Economics", "Political Science", "Communications",
-  "Nursing", "Education", "English", "Mathematics", "Chemistry",
-  "Physics", "History", "Art", "Music", "Pre-Med", "Pre-Law",
-] as const;
+// ── Majors ───────────────────────────────────────────────────────────────
+// Grouped for the <optgroup>-rendered dropdown. Flat MAJORS below is the
+// authoritative list used by filters, matchers, and validators.
+//
+// Adding a major here:
+//   1. Append it to the appropriate group below (keep groups alphabetical)
+//   2. If it's a common or popular major, add a RELATED_MAJORS entry in
+//      src/lib/major-match.ts so the soft-match still fires when the user
+//      picks a specialty but the school only lists the parent field
+//      (e.g. "Biochemistry" → schools listing "Chemistry" or "Biology")
+
+export interface MajorGroup {
+  readonly label: string;
+  readonly majors: readonly string[];
+}
+
+export const MAJOR_GROUPS: readonly MajorGroup[] = [
+  {
+    label: "General",
+    majors: ["Any", "Undecided"],
+  },
+  {
+    label: "Business & Economics",
+    majors: [
+      "Business", "Accounting", "Finance", "Marketing", "Management",
+      "Entrepreneurship", "International Business", "Supply Chain Management",
+      "Hospitality Management", "Real Estate", "Actuarial Science",
+      "Economics", "Econometrics",
+    ],
+  },
+  {
+    label: "Computing & Technology",
+    majors: [
+      "Computer Science", "Software Engineering", "Information Systems",
+      "Information Technology", "Data Science", "Artificial Intelligence",
+      "Cybersecurity", "Human-Computer Interaction", "Game Design",
+    ],
+  },
+  {
+    label: "Engineering",
+    majors: [
+      "Engineering", "Mechanical Engineering", "Electrical Engineering",
+      "Civil Engineering", "Chemical Engineering", "Biomedical Engineering",
+      "Aerospace Engineering", "Industrial Engineering",
+      "Environmental Engineering", "Materials Science", "Nuclear Engineering",
+      "Computer Engineering", "Robotics",
+    ],
+  },
+  {
+    label: "Life Sciences",
+    majors: [
+      "Biology", "Biochemistry", "Neuroscience", "Molecular Biology",
+      "Genetics", "Microbiology", "Biotechnology", "Ecology",
+      "Marine Biology", "Environmental Science", "Zoology", "Botany",
+    ],
+  },
+  {
+    label: "Physical Sciences & Math",
+    majors: [
+      "Chemistry", "Physics", "Astronomy", "Astrophysics", "Earth Science",
+      "Geology", "Oceanography", "Mathematics", "Applied Mathematics",
+      "Statistics",
+    ],
+  },
+  {
+    label: "Health & Pre-Professional",
+    majors: [
+      "Pre-Med", "Pre-Dental", "Pre-Vet", "Pre-Physician Assistant",
+      "Pre-Pharmacy", "Pre-Law", "Nursing", "Public Health", "Kinesiology",
+      "Nutrition", "Athletic Training", "Occupational Therapy",
+      "Physical Therapy", "Speech Pathology", "Health Sciences",
+    ],
+  },
+  {
+    label: "Social Sciences",
+    majors: [
+      "Psychology", "Cognitive Science", "Sociology", "Anthropology",
+      "Political Science", "International Relations", "Public Policy",
+      "Public Administration", "Criminology", "Criminal Justice",
+      "Geography", "Urban Planning", "Social Work",
+    ],
+  },
+  {
+    label: "Humanities",
+    majors: [
+      "English", "Creative Writing", "Comparative Literature", "Linguistics",
+      "History", "Classics", "Philosophy", "Religious Studies",
+      "Area Studies", "Gender Studies",
+    ],
+  },
+  {
+    label: "Arts & Design",
+    majors: [
+      "Art", "Fine Arts", "Art History", "Graphic Design",
+      "Industrial Design", "Interior Design", "Fashion Design",
+      "Photography", "Animation", "Music", "Music Performance",
+      "Music Composition", "Theater", "Dance", "Film Studies",
+      "Architecture",
+    ],
+  },
+  {
+    label: "Communications & Media",
+    majors: [
+      "Communications", "Journalism", "Media Studies",
+      "Public Relations", "Advertising", "Broadcast Journalism",
+    ],
+  },
+  {
+    label: "Education",
+    majors: [
+      "Education", "Early Childhood Education", "Elementary Education",
+      "Secondary Education", "Special Education", "Educational Psychology",
+    ],
+  },
+  {
+    label: "Agriculture & Environment",
+    majors: [
+      "Agriculture", "Forestry", "Wildlife Biology",
+      "Sustainability Studies", "Food Science",
+    ],
+  },
+];
+
+// Authoritative flat list — preserves the group order so filter defaults and
+// validators see a stable array. `as unknown as readonly string[]` because
+// the grouped definition is deeply readonly.
+export const MAJORS: readonly string[] = MAJOR_GROUPS.flatMap((g) => [...g.majors]);
 
 // ── Pinned Colleges ────────────────────────────────────────────────────────
 // Users pin schools they're actually considering. The Strategy Engine reads

@@ -7,16 +7,27 @@ import { Bookmark, ArrowRight, HelpCircle } from "lucide-react";
 import type { ClassifiedCollege, Classification } from "@/lib/college-types";
 import { CollegeCard } from "./CollegeCard";
 
+type SortKey = "acceptanceRate" | "fit" | "majorMatch";
+
 interface CollegeResultsProps {
   readonly results: ClassifiedCollege[];
-  readonly sortedBy: (key: "acceptanceRate" | "fit") => ClassifiedCollege[];
+  readonly sortedBy: (key: SortKey) => ClassifiedCollege[];
   readonly pinnedCount?: number;
   readonly isPinned?: (name: string) => boolean;
   readonly onTogglePin?: (name: string) => void;
   // When the user clicks the "?" next to the Fit Score sort, open the
   // single canonical tier/Fit Score legend that already lives on the page.
   readonly onShowGuide?: () => void;
+  // True when the user has picked a major or typed an interest. Gates the
+  // visibility of the "Major Match" sort chip so it doesn't appear empty.
+  readonly hasMajorPreference?: boolean;
 }
+
+const SORT_OPTIONS: readonly { key: SortKey; label: string }[] = [
+  { key: "acceptanceRate", label: "Acceptance Rate" },
+  { key: "fit",            label: "Fit Score" },
+  { key: "majorMatch",     label: "Major Match" },
+];
 
 const GROUPS: { key: Classification; label: string; color: string }[] = [
   { key: "safety", label: "Safety", color: "text-emerald-400" },
@@ -33,10 +44,11 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
   isPinned,
   onTogglePin,
   onShowGuide,
+  hasMajorPreference = false,
 }) => {
-  const [sort, setSort] = useState<"acceptanceRate" | "fit">("acceptanceRate");
+  const [sort, setSort] = useState<SortKey>("acceptanceRate");
 
-  const sorted = sort === "fit" ? sortedBy("fit") : results;
+  const sorted = sort === "acceptanceRate" ? results : sortedBy(sort);
 
   if (results.length === 0) {
     return (
@@ -82,19 +94,23 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
       {/* Sort controls */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs text-zinc-500">Sort by:</span>
-        {(["acceptanceRate", "fit"] as const).map((key) => (
-          <button
-            key={key}
-            onClick={() => setSort(key)}
-            className={`text-xs px-3 py-1 rounded-lg transition-[background-color,color,box-shadow] duration-200 ${
-              sort === key
-                ? "bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
-                : "bg-[#0c0c1a]/90 text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            {key === "acceptanceRate" ? "Acceptance Rate" : "Fit Score"}
-          </button>
-        ))}
+        {SORT_OPTIONS
+          // Hide Major Match until the user has picked a major/interest;
+          // otherwise the sort has no effect and the chip is misleading.
+          .filter((opt) => opt.key !== "majorMatch" || hasMajorPreference)
+          .map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setSort(key)}
+              className={`text-xs px-3 py-1 rounded-lg transition-[background-color,color,box-shadow] duration-200 ${
+                sort === key
+                  ? "bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
+                  : "bg-[#0c0c1a]/90 text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         {onShowGuide && (
           <button
             type="button"

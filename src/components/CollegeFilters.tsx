@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useState } from "react";
+import { Check, X } from "lucide-react";
 import type { CollegeFilters } from "@/lib/college-types";
-import { REGIONS, MAJORS } from "@/lib/college-types";
+import { REGIONS } from "@/lib/college-types";
+import { MajorSelect } from "./MajorSelect";
 
 interface CollegeFiltersProps {
   readonly filters: CollegeFilters;
@@ -19,7 +20,35 @@ const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
 
 export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
   filters, onUpdate, onReset, resultCount,
-}) => (
+}) => {
+  // Interest uses a commit-on-Done model rather than every-keystroke so the
+  // user gets explicit confirmation that their niche is applied. The typed
+  // value lives in local state; `filters.intendedInterest` is the committed
+  // one that downstream matchers consume.
+  const [pendingInterest, setPendingInterest] = useState(filters.intendedInterest);
+
+  // When the committed value changes externally (cross-page sync, reset),
+  // mirror it into the pending text field so the input doesn't go stale.
+  // This is the legitimate "sync from prop" pattern; the lint rule is a
+  // blunt instrument here.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPendingInterest(filters.intendedInterest);
+  }, [filters.intendedInterest]);
+
+  const committed = filters.intendedInterest.trim();
+  const pending = pendingInterest.trim();
+  const hasPendingChange = pending !== committed;
+
+  const commitInterest = () => {
+    onUpdate("intendedInterest", pendingInterest.trim());
+  };
+  const clearInterest = () => {
+    setPendingInterest("");
+    onUpdate("intendedInterest", "");
+  };
+
+  return (
   <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
     <div className="flex items-center justify-between mb-5">
       <h3 className="text-lg font-bold text-zinc-200">Filters</h3>
@@ -62,11 +91,58 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
         <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
       </div>
       <div>
-        <label className={labelClass}>Intended Major</label>
-        <select className={selectClass} value={filters.major}
-          onChange={(e) => onUpdate("major", e.target.value)}>
-          {MAJORS.map((m) => <option key={m} value={m}>{m}</option>)}
-        </select>
+        <label className={labelClass}>What do you want to study?</label>
+        <MajorSelect
+          value={filters.major}
+          onChange={(v) => onUpdate("major", v)}
+        />
+        <p className="text-[10px] text-zinc-600 mt-1">Flags strong matches &mdash; doesn&apos;t filter out others.</p>
+      </div>
+      <div>
+        <label className={labelClass}>Specific interest (optional)</label>
+        <div className="flex gap-1.5">
+          <input
+            type="text"
+            placeholder="e.g. sustainability, quant trading"
+            className={`${inputClass} flex-1`}
+            value={pendingInterest}
+            onChange={(e) => setPendingInterest(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && hasPendingChange) {
+                e.preventDefault();
+                commitInterest();
+              }
+            }}
+          />
+          {hasPendingChange && (
+            <button
+              type="button"
+              onClick={commitInterest}
+              aria-label="Apply interest"
+              className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 px-2.5 text-xs font-semibold transition-colors"
+            >
+              Done
+            </button>
+          )}
+        </div>
+        {committed ? (
+          <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/25 px-2 py-0.5 text-[11px] text-emerald-300">
+            <Check className="w-3 h-3" strokeWidth={3} />
+            <span className="truncate max-w-[180px]">Applied: {committed}</span>
+            <button
+              type="button"
+              onClick={clearInterest}
+              aria-label="Clear interest"
+              className="ml-0.5 text-emerald-400/70 hover:text-emerald-200 transition-colors"
+            >
+              <X className="w-3 h-3" strokeWidth={2.5} />
+            </button>
+          </div>
+        ) : (
+          <p className="text-[10px] text-zinc-600 mt-1">
+            Niche or theme. Press <span className="text-zinc-400">Done</span> to apply.
+          </p>
+        )}
       </div>
 
       {/* Preferences */}
@@ -152,4 +228,5 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
       </p>
     </div>
   </div>
-);
+  );
+};
