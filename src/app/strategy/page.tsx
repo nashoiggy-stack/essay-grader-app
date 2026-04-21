@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ArrowRight,
   CheckCircle2,
+  ChevronDown,
   TrendingUp,
   Bookmark,
   Target,
@@ -1152,6 +1153,11 @@ function MajorRecommendationsBody({
         </div>
       )}
 
+      <RankedPinnedDisclosure
+        items={recs.rankedPinned}
+        hasQuery={!!(recs.intendedMajor || recs.intendedInterest)}
+      />
+
       <button
         type="button"
         onClick={() => {
@@ -1170,6 +1176,88 @@ function MajorRecommendationsBody({
       >
         Change major / interest
       </button>
+    </div>
+  );
+}
+
+// Phase 11 — read-only ranked transparency view of every pinned school.
+// Sorts by majorFitScore desc when a query is set; falls back to fitScore
+// otherwise. Renders inline (not a modal) for cleaner integration with the
+// existing collapsible StrategyCard.
+function RankedPinnedDisclosure({
+  items,
+  hasQuery,
+}: {
+  items: readonly ClassifiedCollege[];
+  hasQuery: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  if (items.length === 0) return null;
+
+  const buttonLabel = hasQuery ? "See all pins ranked" : "Pinned schools by classification";
+
+  return (
+    <div className="border-t border-white/[0.04] pt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-300 hover:text-zinc-100 transition-colors"
+      >
+        {buttonLabel}
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "" : "-rotate-90"}`}
+        />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 rounded-xl border border-white/[0.04] divide-y divide-white/[0.04]">
+              {/* Header row */}
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold">
+                <span>School</span>
+                <span className="w-16 text-right">Tier</span>
+                <span className="w-12 text-right">Fit</span>
+                <span className="w-16 text-right">Major fit</span>
+              </div>
+              {items.map((c) => (
+                <RankedPinnedRow key={c.college.name} item={c} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function RankedPinnedRow({ item }: { item: ClassifiedCollege }) {
+  const reason = item.matchReason || item.reason;
+  return (
+    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 items-baseline">
+      <div className="min-w-0">
+        <p className="text-[13px] text-zinc-200 font-semibold truncate">{item.college.name}</p>
+        {reason && (
+          <p className="text-[11px] text-zinc-500 leading-snug truncate">{reason}</p>
+        )}
+      </div>
+      <span
+        className={`w-16 text-right text-[11px] font-semibold uppercase tracking-[0.1em] ${CLASSIFICATION_TEXT[item.classification]}`}
+      >
+        {item.classification}
+      </span>
+      <span className="w-12 text-right text-[12px] font-mono tabular-nums text-zinc-300">
+        {item.fitScore}
+      </span>
+      <span className="w-16 text-right text-[12px] font-mono tabular-nums text-zinc-300">
+        {item.majorFitScore != null ? item.majorFitScore : "—"}
+      </span>
     </div>
   );
 }

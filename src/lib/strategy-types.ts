@@ -185,6 +185,10 @@ export interface MajorAwareRecommendations {
   // spread across classification tiers when possible and filtered to
   // at-least-decent major fit.
   readonly toConsider: readonly ClassifiedCollege[];
+  // Phase 11: every pinned school, classified + scored, sorted by major fit
+  // when a query is set (else by overall fit). Powers the "See all pins
+  // ranked" transparency disclosure on the strategy page.
+  readonly rankedPinned: readonly ClassifiedCollege[];
 }
 
 // ── Final result (LLM narrative — 7 sections) ──────────────────────────────

@@ -643,16 +643,27 @@ function bucketByTier(
  */
 export function recommendCollegesByMajor(p: StrategyProfile): MajorAwareRecommendations {
   const hasQuery = !!p.intendedMajor || !!p.intendedInterest;
+
+  // Phase 11: even when no major/interest is set, surface the pinned-only
+  // ranked list (sorted by overall fit instead of major fit) so the
+  // transparency disclosure still has content.
+  const allForRanking = classifyAll(p);
+  const pinnedNamesForRanking = new Set(p.pinnedSchools.map((s) => s.pin.name));
+  const rankedPinned = [...allForRanking]
+    .filter((c) => pinnedNamesForRanking.has(c.college.name))
+    .sort(rankByMajorThenFit);
+
   const empty: MajorAwareRecommendations = {
     intendedMajor: p.intendedMajor || null,
     intendedInterest: p.intendedInterest || null,
     fromPinned: { safeties: [], targets: [], reaches: [] },
     toConsider: [],
+    rankedPinned,
   };
   if (!hasQuery) return empty;
 
-  const all = classifyAll(p);
-  const pinnedNames = new Set(p.pinnedSchools.map((s) => s.pin.name));
+  const all = allForRanking;
+  const pinnedNames = pinnedNamesForRanking;
 
   // Pinned side — bucket by classification, sort each bucket by major-then-fit,
   // take top 2. Only pinned colleges are considered here.
@@ -698,6 +709,7 @@ export function recommendCollegesByMajor(p: StrategyProfile): MajorAwareRecommen
     intendedInterest: p.intendedInterest || null,
     fromPinned: { safeties, targets, reaches },
     toConsider: spread.slice(0, 3),
+    rankedPinned,
   };
 }
 
