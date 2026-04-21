@@ -9,6 +9,7 @@ import {
   AlertCircle,
   RefreshCw,
   ArrowRight,
+  CalendarClock,
   CheckCircle2,
   ChevronDown,
   TrendingUp,
@@ -34,6 +35,9 @@ import { GapItem } from "@/components/GapItem";
 import { useStrategy } from "@/hooks/useStrategy";
 import { useDreamSchool } from "@/hooks/useDreamSchool";
 import { useActionChecklist } from "@/hooks/useActionChecklist";
+import { useCollegePins } from "@/hooks/useCollegePins";
+import { computeDeadlines, type DeadlineEntry } from "@/lib/deadlines";
+import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
 import type {
   StrategyAnalysis,
   StrategyResult,
@@ -146,6 +150,18 @@ function majorRecsHeadline(r: MajorAwareRecommendations): string {
 export default function StrategyPage() {
   const { profile, analysis, result, loading, error, generate, refresh } = useStrategy();
   const { dreamSchool, setDreamSchool } = useDreamSchool();
+  const { pinned } = useCollegePins();
+
+  // Phase 12 — deadlines from pinned schools' applicationPlan. Recomputed
+  // on every render but cheap (≤ pinned count). `today` snapshotted per
+  // render so daysAway stays accurate.
+  const deadlineEntries = useMemo(
+    () => computeDeadlines(pinned, new Date()),
+    [pinned],
+  );
+  const hasUrgentDeadline = deadlineEntries.some(
+    (e) => !e.isRolling && e.daysAway <= 7,
+  );
 
   // When the dream school changes, refresh the profile snapshot so the cache
   // key regenerates and the UI reflects the new selection.
@@ -283,6 +299,13 @@ export default function StrategyPage() {
                     <SpikeBody result={result} analysis={analysis} />
                   </StrategyCard>
 
+                  {/* Deadlines card — hoisted to top of this stack when any
+                      pinned school has a deadline within 7 days. Otherwise
+                      rendered in its natural slot below. */}
+                  {hasUrgentDeadline && (
+                    <DeadlinesCard entries={deadlineEntries} hoisted />
+                  )}
+
                   {/* 5. GAPS — collapsed, GapItem list */}
                   <StrategyCard
                     icon={<AlertTriangle className="w-4 h-4" />}
@@ -292,6 +315,11 @@ export default function StrategyPage() {
                   >
                     <GapsBody result={result} analysis={analysis} />
                   </StrategyCard>
+
+                  {/* Deadlines (natural slot — only if not already hoisted above) */}
+                  {!hasUrgentDeadline && (
+                    <DeadlinesCard entries={deadlineEntries} hoisted={false} />
+                  )}
 
                   {/* 6. RECOMMENDED FOR YOUR MAJOR — major-aware picks */}
                   <StrategyCard
@@ -1326,6 +1354,104 @@ function RecCard({ item }: { item: ClassifiedCollege }) {
         )
       )}
     </div>
+  );
+}
+
+// Phase 12 — Upcoming Deadlines card.
+function DeadlinesCard({
+  entries,
+  hoisted,
+}: {
+  entries: readonly DeadlineEntry[];
+  hoisted: boolean;
+}) {
+  const hasAny = entries.length > 0;
+
+  // Headline summarises the nearest non-rolling deadline; falls back to a
+  // rolling-only mention or empty-state message.
+  const headline = (() => {
+    if (!hasAny) return "No deadlines set";
+    const dated = entries.filter((e) => !e.isRolling);
+    if (dated.length === 0) return `${entries.length} rolling`;
+    const nearest = dated[0];
+    const days = nearest.daysAway;
+    const inText =
+      days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "today" : `in ${days}d`;
+    return `${dated.length} upcoming · nearest ${inText}`;
+  })();
+
+  const strength = hoisted ? "warning" : hasAny ? "neutral" : "neutral";
+
+  return (
+    <StrategyCard
+      icon={<CalendarClock className="w-4 h-4" />}
+      title="Upcoming Deadlines"
+      strength={strength}
+      headline={headline}
+      defaultExpanded={hoisted}
+      emphasize={hoisted}
+    >
+      <div className="pt-3">
+        {!hasAny ? (
+          <p className="text-[13px] text-zinc-400 leading-relaxed">
+            No deadlines in your pinned list. Set application plans on your pinned
+            schools to see them here.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {entries.map((e, i) => (
+              <DeadlineRow key={`${e.schoolName}-${e.plan}-${i}`} entry={e} />
+            ))}
+          </ul>
+        )}
+      </div>
+    </StrategyCard>
+  );
+}
+
+function DeadlineRow({ entry }: { entry: DeadlineEntry }) {
+  const colorClass =
+    entry.isRolling
+      ? "text-zinc-500"
+      : entry.daysAway <= 14
+      ? "text-red-400"
+      : entry.daysAway <= 30
+      ? "text-amber-400"
+      : "text-zinc-400";
+
+  return (
+    <li className="flex items-baseline justify-between gap-3 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] text-zinc-200 font-semibold truncate">
+          {entry.schoolName}
+        </p>
+        <p className="text-[11px] text-zinc-500">
+          {APPLICATION_PLAN_LABELS[entry.plan]}
+        </p>
+      </div>
+      {entry.isRolling ? (
+        <span className={`text-[11px] ${colorClass} text-right shrink-0`}>
+          Rolling — apply early for best odds
+        </span>
+      ) : (
+        <span className="text-right shrink-0">
+          <p className={`text-[12px] font-mono tabular-nums ${colorClass}`}>
+            {entry.date!.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </p>
+          <p className={`text-[10px] uppercase tracking-[0.1em] font-semibold ${colorClass}`}>
+            {entry.daysAway < 0
+              ? `${Math.abs(entry.daysAway)}d overdue`
+              : entry.daysAway === 0
+              ? "Today"
+              : `in ${entry.daysAway}d`}
+          </p>
+        </span>
+      )}
+    </li>
   );
 }
 
