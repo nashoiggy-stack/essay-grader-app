@@ -5,6 +5,7 @@ import { AuthProvider } from "./AuthProvider";
 import { AuthGate } from "./AuthGate";
 import { NavBarWrapper } from "./NavBarWrapper";
 import { ProfileSync } from "./ProfileSync";
+import { SaveIndicator } from "./SaveIndicator";
 
 interface AppShellProps {
   readonly children: React.ReactNode;
@@ -17,6 +18,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <ProfileSync />
         <NavBarWrapper />
         <div id="main-content">{children}</div>
+        <SaveIndicator />
       </AuthGate>
     </AuthProvider>
   );

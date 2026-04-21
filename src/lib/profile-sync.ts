@@ -34,6 +34,12 @@ export function scheduleSyncToCloud(userId: string) {
 }
 
 async function syncToCloud(userId: string) {
+  // Notify the SaveIndicator (and any future listeners) before/after the
+  // network round-trip so the UI can show saving → saved state.
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("cloud-sync-saving"));
+  }
+  let ok = true;
   try {
     // Build upsert payload from all tracked localStorage keys
     const row: Record<string, unknown> = { user_id: userId };
@@ -56,9 +62,17 @@ async function syncToCloud(userId: string) {
       .from("user_profiles")
       .upsert(row, { onConflict: "user_id" });
 
-    if (error) console.warn("Cloud sync failed:", error.message);
+    if (error) {
+      ok = false;
+      console.warn("Cloud sync failed:", error.message);
+    }
   } catch (e) {
+    ok = false;
     console.warn("Cloud sync error:", e);
+  } finally {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(ok ? "cloud-sync-saved" : "cloud-sync-error"));
+    }
   }
 }
 
