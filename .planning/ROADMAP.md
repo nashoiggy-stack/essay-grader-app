@@ -58,3 +58,52 @@ Phase 5 (Polish) → after Phase 3 (needs stable foundation)
 
 Plans:
 - [ ] TBD (run /gsd-plan-phase 6 to break down)
+
+### Phase 7: College list free-text search ✦ shipped 2026-04-21
+
+**Goal:** Substring search by name/aliases above /colleges filters.
+**Approach:** New CollegeSearchInput component, debounced 150ms, layered on top of useCollegeFilter results — no filter logic changes.
+**Status:** Complete (commit e5e4254)
+
+### Phase 8: Keyboard navigation on /colleges ✦ shipped 2026-04-21
+
+**Goal:** Arrow-key focus + P (pin) + / (focus search) + Esc on the college list.
+**Approach:** New useCollegeListKeyboard hook + flatIndex data attribute on cards. Skips when typing in input/textarea/select.
+**Status:** Complete (commit 27015b3)
+
+### Phase 9: Autosave indicator ✦ shipped 2026-04-21
+
+**Goal:** Bottom-right pill showing Saving… → Saved during cloud sync.
+**Approach:** profile-sync emits cloud-sync-saving / cloud-sync-saved / cloud-sync-error around each upsert; SaveIndicator listens via window events. Mounted globally in AppShell.
+**Status:** Complete (commit f85f4d4)
+
+### Phase 10: Ranked missing-data banner ✦ shipped 2026-04-21
+
+**Goal:** Replace plain string array with structured impact-ranked items + per-row CTA.
+**Approach:** Additive MissingDataItem type + missingDataRanked field on StrategyAnalysis. Banner now renders impact-dot rows with unlock description + Open link. Legacy missingData kept.
+**Status:** Complete (commit 81318c4)
+
+### Phase 11: See all pins ranked transparency view ✦ shipped 2026-04-21
+
+**Goal:** Inline disclosure on Recommended-for-Your-Major card showing every pinned school sorted by major fit.
+**Approach:** Additive rankedPinned field on MajorAwareRecommendations; collapsible table reusing existing classification colors.
+**Status:** Complete (commit ec4c255)
+
+### Phase 12: Upcoming deadlines card ✦ shipped 2026-04-21
+
+**Goal:** New StrategyCard computing deadlines from pinned schools' applicationOptions.
+**Approach:** New src/lib/deadlines.ts (DEADLINE_DATES + computeDeadlines). Card hoists above Recommended when any deadline ≤7 days; rolling rows sorted last.
+**Status:** Complete (commit bb9eaa5)
+
+### Phase 13: Shareable strategy report ✦ shipped 2026-04-21
+
+**Goal:** 30-day public share link for the strategy briefing.
+**Approach:** New strategy_shares Supabase table (RLS owner-only; anonymous reads via service-role API). 3 routes (POST/GET list + GET/DELETE by token). Public Server Component at /strategy/share/[token] renders StrategyShareView (reuses StrategyCard). Share popover + useStrategyShare hook on /strategy.
+**Requires:** SUPABASE_SERVICE_ROLE_KEY in .env.local + run supabase-migration-strategy-shares.sql.
+**Status:** Complete (commit 1246d5e)
+
+### Phase 14: Essay versioning (minimal) ✦ shipped 2026-04-21
+
+**Goal:** Make existing essay history's restore-this-version action explicit.
+**Approach:** useEssayHistory was already versioned; added explicit Restore button per row with Replace? confirm guard when current editor differs. No schema or storage changes.
+**Status:** Complete (commit d6a3c3d)
