@@ -38,6 +38,8 @@ import { useActionChecklist } from "@/hooks/useActionChecklist";
 import { useCollegePins } from "@/hooks/useCollegePins";
 import { computeDeadlines, type DeadlineEntry } from "@/lib/deadlines";
 import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
+import { StrategyShareButton } from "@/components/StrategyShareButton";
+import type { StrategyShareSnapshot } from "@/lib/strategy-share-types";
 import type {
   StrategyAnalysis,
   StrategyResult,
@@ -221,13 +223,32 @@ export default function StrategyPage() {
               </ScrollReveal>
             )}
 
-            {/* ── Generate / Re-run bar ──────────────────────────── */}
+            {/* ── Generate / Re-run bar (+ Share when a result exists) ─ */}
             <ScrollReveal delay={0.12}>
               <GenerateBar
                 loading={loading}
                 hasResult={result != null}
                 generatedAt={result?.generatedAt ?? null}
                 onGenerate={() => generate({ bypassCache: result != null })}
+                shareSlot={
+                  result && analysis ? (
+                    <StrategyShareButton
+                      getSnapshot={(): StrategyShareSnapshot | null => ({
+                        result,
+                        analysis,
+                        profileMeta: {
+                          graduationYear: profile?.basicInfo?.graduationYear ?? null,
+                          intendedMajor: profile?.intendedMajor || null,
+                          pinnedNames: pinned.map((p) => p.name),
+                          pinnedPlans: Object.fromEntries(
+                            pinned.map((p) => [p.name, p.applicationPlan]),
+                          ),
+                        },
+                        capturedAt: Date.now(),
+                      })}
+                    />
+                  ) : null
+                }
               />
             </ScrollReveal>
 
@@ -953,11 +974,13 @@ function GenerateBar({
   hasResult,
   generatedAt,
   onGenerate,
+  shareSlot,
 }: {
   loading: boolean;
   hasResult: boolean;
   generatedAt: number | null;
   onGenerate: () => void;
+  shareSlot?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
@@ -968,29 +991,32 @@ function GenerateBar({
           </p>
         )}
       </div>
-      <button
-        type="button"
-        onClick={onGenerate}
-        disabled={loading}
-        className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-[background-color,opacity] duration-200"
-      >
-        {loading ? (
-          <>
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            Generating...
-          </>
-        ) : hasResult ? (
-          <>
-            <RefreshCw className="w-4 h-4" />
-            Re-run
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-4 h-4" />
-            Generate Strategy
-          </>
-        )}
-      </button>
+      <div className="flex items-center gap-2">
+        {shareSlot}
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={loading}
+          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-[background-color,opacity] duration-200"
+        >
+          {loading ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              Generating...
+            </>
+          ) : hasResult ? (
+            <>
+              <RefreshCw className="w-4 h-4" />
+              Re-run
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              Generate Strategy
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

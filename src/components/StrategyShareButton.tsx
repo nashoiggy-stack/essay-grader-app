@@ -1,0 +1,141 @@
+"use client";
+
+import React, { useRef, useState, useEffect } from "react";
+import { Share2, Link as LinkIcon, Check, Loader2 } from "lucide-react";
+import { useStrategyShare } from "@/hooks/useStrategyShare";
+import type { StrategyShareSnapshot } from "@/lib/strategy-share-types";
+
+interface StrategyShareButtonProps {
+  readonly getSnapshot: () => StrategyShareSnapshot | null;
+  readonly disabled?: boolean;
+}
+
+export const StrategyShareButton: React.FC<StrategyShareButtonProps> = ({
+  getSnapshot,
+  disabled,
+}) => {
+  const { active, loading, error, generate, revoke } = useStrategyShare();
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click / Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const onGenerate = async () => {
+    const snap = getSnapshot();
+    if (!snap) return;
+    await generate(snap);
+  };
+
+  const onCopy = async () => {
+    if (!active) return;
+    try {
+      await navigator.clipboard.writeText(active.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard API can fail in some browsers/contexts — the input is
+      // selectable manually as fallback.
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        disabled={disabled}
+        aria-expanded={open}
+        className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 px-3.5 py-2 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Share2 className="w-3.5 h-3.5" />
+        Share
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 z-20 rounded-xl bg-[#0c0c1a] border border-white/[0.1] shadow-[0_16px_32px_rgba(0,0,0,0.4)] p-4">
+          <p className="text-[12px] font-semibold text-zinc-200 mb-2">
+            Share your briefing
+          </p>
+
+          {!active ? (
+            <>
+              <p className="text-[11px] text-zinc-500 leading-relaxed mb-3">
+                Generates a read-only link that parents or counselors can open
+                without signing in. Expires in 30 days.
+              </p>
+              <button
+                type="button"
+                onClick={onGenerate}
+                disabled={loading || disabled}
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-white/[0.04] disabled:text-zinc-600 text-blue-200 px-3 py-2 text-xs font-semibold transition-colors"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Creating link…
+                  </>
+                ) : (
+                  <>
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    Generate Link
+                  </>
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-1.5 mb-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={active.url}
+                  onFocus={(e) => e.target.select()}
+                  className="flex-1 min-w-0 rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-1.5 text-[11px] text-zinc-200 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500/30"
+                />
+                <button
+                  type="button"
+                  onClick={onCopy}
+                  aria-label="Copy share link"
+                  className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-500/15 hover:bg-blue-500/25 text-blue-200 transition-colors"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <LinkIcon className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-zinc-500 mb-3">
+                Expires {new Date(active.expiresAt).toLocaleDateString()}.
+              </p>
+              <button
+                type="button"
+                onClick={revoke}
+                disabled={loading}
+                className="text-[11px] text-zinc-500 hover:text-red-300 transition-colors disabled:opacity-40"
+              >
+                {loading ? "Revoking…" : "Revoke link"}
+              </button>
+            </>
+          )}
+
+          {error && (
+            <p className="mt-2 text-[11px] text-red-300">{error}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
