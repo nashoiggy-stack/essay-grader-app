@@ -116,6 +116,7 @@ export default function Home() {
         onLoad={handleLoadEssay}
         onDelete={history.remove}
         onRename={history.rename}
+        currentEssayText={essay.essayText}
       />
 
       <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
