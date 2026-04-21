@@ -355,15 +355,26 @@ function scoreToMatch(score: number): MajorMatch {
   return "none";
 }
 
-// Map a US News rank to 0-15 pts. Rank 1 = 15 pts, rank 100+ = 0. Linear.
+// Map a US News rank to 0-25 pts. Rank 1 = 25 pts, rank 100+ = 0. Linear.
 // Schools with null rank get 0 — we don't award mystery points.
+//
+// Cap raised from 15 to 25 in Pass 5: at a top-5 school, rank alone should
+// carry ~25 % of the max score so that elite schools with any relevant
+// signal visibly dominate mid-rank schools carrying the same signal.
 function rankContribution(rank: number | null): number {
   if (rank == null || !Number.isFinite(rank)) return 0;
-  if (rank <= 1) return 15;
+  if (rank <= 1) return 25;
   if (rank >= 100) return 0;
   // Linear interpolation across rank 1-100.
-  return Math.max(0, Math.round(15 * (1 - (rank - 1) / 99)));
+  return Math.max(0, Math.round(25 * (1 - (rank - 1) / 99)));
 }
+
+// At top-ranked schools (≤ this threshold), treat a parent-category direct
+// match as a full direct hit. Rationale: if a school is rank ≤25, its
+// "Engineering" listing is strong across ALL engineering sub-disciplines,
+// not just the named parent. Below this cut, we keep the partial credit
+// because "Engineering" at a rank-150 school usually means narrower depth.
+const PARENT_TO_FULL_RANK_CUTOFF = 25;
 
 /**
  * Full scored fit calculation. Returns score, derived tier, and which
@@ -390,35 +401,46 @@ export function computeMajorFit(
     rankPoints: number;
   };
 
-  // Direct hits — now specificity-aware.
-  //   full (40 pts):    college term equals or is more specific than the query
-  //                     ("Biomedical Engineering" at a school listing
-  //                      "Biomedical Engineering" or "Applied Biomedical Engineering")
+  // Direct hits — now specificity-aware with a top-rank override.
+  //   full (40 pts):    college term equals or is more specific than the
+  //                     query ("Biomedical Engineering" at a school listing
+  //                     "Biomedical Engineering" or "Applied Biomedical
+  //                     Engineering"). ALSO: partial matches at top-25
+  //                     schools get promoted here — at rank ≤ 25, the
+  //                     parent-category listing implies breadth across all
+  //                     sub-disciplines.
   //   partial (20 pts): college term is a strict PARENT of the query
-  //                     ("Biomedical Engineering" at a school that only lists
-  //                      "Engineering") — still fires the signal so the
-  //                     rationale builder engages, but at half weight.
+  //                     ("Biomedical Engineering" at a school that only
+  //                      lists "Engineering") — at rank > 25 schools only.
   //
   // Direct bucket takes the max of topMajors vs knownFor so a full hit on
   // one field isn't inflated by a partial hit on the other.
+  const isTopRanked =
+    college.usNewsRank != null && college.usNewsRank <= PARENT_TO_FULL_RANK_CUTOFF;
+  const pointsFor = (spec: "full" | "partial" | "none"): number => {
+    if (spec === "full") return 40;
+    if (spec === "partial") return isTopRanked ? 40 : 20;
+    return 0;
+  };
+
   let directPts = 0;
   if (major && major !== "any") {
     const specTop = bestContainSpecificity(college.topMajors, major);
     if (specTop !== "none") {
       s.directTopMajor = true;
-      directPts = Math.max(directPts, specTop === "full" ? 40 : 20);
+      directPts = Math.max(directPts, pointsFor(specTop));
     }
     const specKnown = bestContainSpecificity(college.knownFor, major);
     if (specKnown !== "none") {
       s.directKnownFor = true;
-      directPts = Math.max(directPts, specKnown === "full" ? 40 : 20);
+      directPts = Math.max(directPts, pointsFor(specKnown));
     }
   }
   if (interest) {
     const specKnown = bestContainSpecificity(college.knownFor, interest);
     if (specKnown !== "none") {
       s.directKnownFor = true;
-      directPts = Math.max(directPts, specKnown === "full" ? 40 : 20);
+      directPts = Math.max(directPts, pointsFor(specKnown));
     }
   }
 
