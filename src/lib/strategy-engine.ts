@@ -18,6 +18,7 @@ import type {
   EarlyRecommendation,
   CompetitivenessPositioning,
   MajorAwareRecommendations,
+  MissingDataItem,
 } from "./strategy-types";
 import type { ActivityEvaluation, ProfileSpike } from "./extracurricular-types";
 import { computeReadinessScore, bandFromScore } from "./extracurricular-types";
@@ -719,6 +720,60 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
   if (!p.hasEssay) missingData.push("Essay grade (run the Essay Grader on your current draft)");
   if (!p.hasPinnedSchools) missingData.push("Pinned colleges (pin schools you're considering in the College List Builder)");
 
+  // Phase 10: ranked, structured version. Impact mapping is fixed:
+  //   pinned + ec = high (block most of the analysis or biggest signal gap)
+  //   gpa + tests = medium (academic component degrades but analysis runs)
+  //   essay      = low  (small sub-signal)
+  const missingDataRanked: MissingDataItem[] = [];
+  if (!p.hasPinnedSchools) {
+    missingDataRanked.push({
+      key: "pinnedSchools",
+      label: "Pin colleges",
+      impact: "high",
+      unlockDescription: "Required for school-list balance, deadlines, and major-fit picks",
+      ctaHref: "/colleges",
+    });
+  }
+  if (!p.hasEc) {
+    missingDataRanked.push({
+      key: "ec",
+      label: "Run EC Evaluator",
+      impact: "high",
+      unlockDescription: "Unlocks spike detection, EC tier, and most weakness flags",
+      ctaHref: "/extracurriculars",
+    });
+  }
+  if (!p.hasGpa) {
+    missingDataRanked.push({
+      key: "gpa",
+      label: "Calculate GPA",
+      impact: "medium",
+      unlockDescription: "Sharpens academic tier and per-school fit scores",
+      ctaHref: "/gpa",
+    });
+  }
+  if (!p.hasTests) {
+    missingDataRanked.push({
+      key: "tests",
+      label: "Add SAT or ACT",
+      impact: "medium",
+      unlockDescription: "Improves academic positioning vs. each pinned school",
+      ctaHref: "/profile",
+    });
+  }
+  if (!p.hasEssay) {
+    missingDataRanked.push({
+      key: "essay",
+      label: "Grade your essay",
+      impact: "low",
+      unlockDescription: "Adds essay strength as a small fit-score adjustment",
+      ctaHref: "/essay",
+    });
+  }
+  // Stable sort by impact rank.
+  const impactRank: Record<MissingDataItem["impact"], number> = { high: 0, medium: 1, low: 2 };
+  missingDataRanked.sort((a, b) => impactRank[a.impact] - impactRank[b.impact]);
+
   return {
     academic,
     ec,
@@ -729,5 +784,6 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
     positioning,
     majorRecommendations,
     missingData,
+    missingDataRanked,
   };
 }

@@ -40,6 +40,7 @@ import type {
   ECStrengthTier,
   EdVerdict,
   MajorAwareRecommendations,
+  MissingDataItem,
 } from "@/lib/strategy-types";
 import type { Classification, ClassifiedCollege } from "@/lib/college-types";
 import { MajorSelect } from "@/components/MajorSelect";
@@ -197,9 +198,9 @@ export default function StrategyPage() {
             </ScrollReveal>
 
             {/* ── Missing-data banner (only before generation) ───── */}
-            {analysis && analysis.missingData.length > 0 && !result && (
+            {analysis && analysis.missingDataRanked.length > 0 && !result && (
               <ScrollReveal delay={0.1}>
-                <MissingDataBanner items={analysis.missingData} />
+                <MissingDataBanner items={analysis.missingDataRanked} />
               </ScrollReveal>
             )}
 
@@ -1017,18 +1018,44 @@ function EmptyState() {
   );
 }
 
-function MissingDataBanner({ items }: { items: readonly string[] }) {
+const MISSING_IMPACT_DOT: Record<MissingDataItem["impact"], string> = {
+  high: "bg-red-400",
+  medium: "bg-amber-400",
+  low: "bg-zinc-500",
+};
+
+function MissingDataBanner({ items }: { items: readonly MissingDataItem[] }) {
   return (
     <div className="rounded-xl bg-amber-500/[0.04] border border-amber-500/15 p-4 mb-4">
       <div className="flex items-start gap-3">
         <AlertCircle className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <p className="text-sm text-amber-200 font-semibold mb-1">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-amber-200 font-semibold mb-2">
             Missing data will weaken this analysis
           </p>
-          <p className="text-[13px] text-zinc-400 leading-relaxed">
-            For sharper output, add: {items.join(" · ")}
-          </p>
+          <ul className="space-y-2">
+            {items.map((item) => (
+              <li
+                key={item.key}
+                className="flex items-start gap-3 text-[13px] leading-relaxed"
+              >
+                <span
+                  className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${MISSING_IMPACT_DOT[item.impact]}`}
+                  aria-label={`${item.impact} impact`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-zinc-200 font-medium">{item.label}</p>
+                  <p className="text-zinc-500 text-xs">{item.unlockDescription}</p>
+                </div>
+                <Link
+                  href={item.ctaHref}
+                  className="text-xs text-blue-300 hover:text-blue-200 font-semibold whitespace-nowrap shrink-0 mt-0.5"
+                >
+                  Open →
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

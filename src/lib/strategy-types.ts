@@ -141,6 +141,17 @@ export interface CompetitivenessPositioning {
   readonly gaps: readonly string[];         // structured gap descriptions
 }
 
+// Phase 10: structured missing-data items so the banner can rank by impact
+// and link to the right surface. The legacy `missingData` string array is
+// kept for back-compat with any consumer that still reads it.
+export interface MissingDataItem {
+  readonly key: "gpa" | "tests" | "ec" | "essay" | "pinnedSchools";
+  readonly label: string;
+  readonly impact: "high" | "medium" | "low";
+  readonly unlockDescription: string;
+  readonly ctaHref: string;
+}
+
 export interface StrategyAnalysis {
   readonly academic: AcademicStrength;
   readonly ec: ECStrength;
@@ -151,6 +162,9 @@ export interface StrategyAnalysis {
   readonly positioning: CompetitivenessPositioning;
   readonly majorRecommendations: MajorAwareRecommendations;
   readonly missingData: readonly string[];  // human-readable missing sources
+  // Phase 10: ranked structured version of missingData. Same coverage; the
+  // banner UI consumes this. Sorted high → medium → low.
+  readonly missingDataRanked: readonly MissingDataItem[];
 }
 
 // Major-aware recommendation set. Populated by recommendCollegesByMajor.
