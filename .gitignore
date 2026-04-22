@@ -46,6 +46,9 @@ yarn-error.log*
 /src/data/college-majors.dryrun.json
 /src/data/college-majors.json.tmp
 /src/data/college-majors.dryrun.json.tmp
+# Dry-run validation report is throwaway too. The real VALIDATION_REPORT.md
+# is left tracked so the operator can commit it after spot-check.
+/VALIDATION_REPORT.dryrun.md
 
 # typescript
 *.tsbuildinfo

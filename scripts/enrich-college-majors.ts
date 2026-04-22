@@ -16,22 +16,29 @@
  * Cost (Sonnet 4.6, with prompt caching): ~$1.30 for ~430 colleges. The
  * 128-major allowlist + instructions are cached after the first call.
  *
- * Validation pipeline (zod schema, allowlist drops, breadth-rank check,
- * VALIDATION_REPORT) is layered in by the next commit.
+ * Validation: zod schema-validates every response; on failure, retries ONCE
+ * before logging + skipping. Per-row checks include allowlist filter on
+ * topMajors (drops logged), confidence gate (<0.7 → needsReview = true),
+ * curated cross-check, and breadth-rank advisory (rank>100 + topMajors>5).
+ * Writes VALIDATION_REPORT.md (or VALIDATION_REPORT.dryrun.md) at end.
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { ANTHROPIC_MODEL } from "../src/lib/anthropic-model";
 import { MAJORS } from "../src/lib/college-types";
 import { COLLEGES } from "../src/data/colleges";
+import type { College } from "../src/lib/college-types";
 
 // ── Paths ──────────────────────────────────────────────────────────────────
 
 const ROOT = process.cwd();
 const OUTPUT_PATH = path.join(ROOT, "src/data/college-majors.json");
 const DRYRUN_PATH = path.join(ROOT, "src/data/college-majors.dryrun.json");
+const REPORT_PATH = path.join(ROOT, "VALIDATION_REPORT.md");
+const REPORT_DRYRUN_PATH = path.join(ROOT, "VALIDATION_REPORT.dryrun.md");
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -45,8 +52,17 @@ const FIRST_N_VERBOSE = 5;
 // --dry-run cap. Independent file (DRYRUN_PATH) so it never pollutes the
 // real resumable cache.
 const DRY_RUN_MAX = 3;
-// Bumping this invalidates any prior cache file. Keep at 1 for now.
-const SCHEMA_VERSION = 1;
+// Bumping this invalidates any prior cache file. Bumped to 2 alongside
+// the validation pipeline (needsReview, droppedMajors, warnings now part
+// of every row).
+const SCHEMA_VERSION = 2;
+// Confidence below this triggers needsReview = true (excluded from runtime
+// merge until cleared).
+const CONFIDENCE_THRESHOLD = 0.7;
+// Breadth-rank advisory threshold: low-rank schools claiming wide breadth
+// is suspicious. Spec option (b): rank > 100 AND topMajors.length > 5.
+const BREADTH_RANK_LIMIT = 100;
+const BREADTH_MAJOR_COUNT = 5;
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 if (!ANTHROPIC_API_KEY) {
@@ -121,17 +137,34 @@ Pick majors the school is GENUINELY distinguished in — not every major it offe
 
 5. notes field: one sentence explaining what you based this on ("widely documented CS/engineering powerhouse", "regional public with published rankings in business and education", "limited public information about program-level strengths").`;
 
+// ── Zod schema for raw LLM response ────────────────────────────────────────
+// The LLM is instructed to return exactly these four fields. zod enforces
+// shape; the validation pipeline (allowlist filter, cross-checks, flags)
+// runs separately on parsed-and-typed data.
+
+const RawResponseSchema = z.object({
+  topMajors: z.array(z.string()).max(20),
+  knownFor: z.array(z.string()).max(12),
+  confidence: z.number().min(0).max(1),
+  notes: z.string(),
+});
+
+type RawResponse = z.infer<typeof RawResponseSchema>;
+
 // ── Output file shape ──────────────────────────────────────────────────────
-// Validation-layer fields (needsReview, droppedMajors, warnings) are added
-// by the next commit. The file is forward-compatible: this script writes
-// only the four base fields; future runs that introduce extras will be
-// merged additively, not stripped.
+// Validation flags live alongside the raw LLM fields. needsReview is the
+// only one that actually gates runtime use; droppedMajors and warnings are
+// advisory artifacts surfaced in VALIDATION_REPORT.md for spot-checking.
 
 interface SchoolEntry {
   readonly topMajors: string[];
   readonly knownFor: string[];
   readonly confidence: number;
   readonly notes: string;
+  // Validation outputs:
+  readonly needsReview: boolean;       // true → excluded from runtime merge
+  readonly droppedMajors: string[];     // LLM entries not in MAJORS allowlist
+  readonly warnings: string[];          // advisory: missing-curated, breadth-rank
 }
 
 interface OutputFile {
@@ -213,38 +246,297 @@ async function callForSchool(name: string): Promise<CallResult> {
   }
 }
 
-// ── Loose JSON parse (validation pipeline lands in next commit) ────────────
+// ── Parse + zod validate ────────────────────────────────────────────────────
 
-function tryParseJson(raw: string): SchoolEntry | null {
+function parseRawResponse(raw: string): RawResponse | null {
   let cleaned = raw.trim();
   if (cleaned.startsWith("```")) {
     cleaned = cleaned
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```\s*$/i, "");
   }
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(cleaned) as Partial<SchoolEntry>;
-    if (
-      Array.isArray(parsed.topMajors) &&
-      Array.isArray(parsed.knownFor) &&
-      typeof parsed.confidence === "number" &&
-      typeof parsed.notes === "string"
-    ) {
-      return {
-        topMajors: parsed.topMajors.filter(
-          (s): s is string => typeof s === "string",
-        ),
-        knownFor: parsed.knownFor.filter(
-          (s): s is string => typeof s === "string",
-        ),
-        confidence: parsed.confidence,
-        notes: parsed.notes,
-      };
-    }
+    parsed = JSON.parse(cleaned);
   } catch {
     return null;
   }
-  return null;
+  const result = RawResponseSchema.safeParse(parsed);
+  return result.success ? result.data : null;
+}
+
+// ── Validation pipeline ────────────────────────────────────────────────────
+// Runs on a successfully-parsed RawResponse. Applies:
+//   1. Allowlist filter on topMajors (drops + log).
+//   2. Confidence gate → needsReview.
+//   3. Curated cross-check (advisory warning per missing curated entry).
+//   4. Breadth-rank advisory (rank > 100 + topMajors.length > 5).
+
+const ALLOWED_MAJORS_SET = new Set<string>(ALLOWED_MAJORS);
+
+// Case-insensitive coverage check: does any LLM topMajors entry "cover" the
+// curated term? Either equality or substring either direction (matches the
+// runtime matcher's bestContainSpecificity semantics: covers exact, parent,
+// and college-specific cases).
+function coveredByLlm(curated: string, llmList: readonly string[]): boolean {
+  const c = curated.toLowerCase();
+  return llmList.some((l) => {
+    const lo = l.toLowerCase();
+    return lo === c || lo.includes(c) || c.includes(lo);
+  });
+}
+
+interface ValidationOutcome {
+  readonly entry: SchoolEntry;
+  // Aggregate counters used by the report. Pass these straight into the
+  // run-level totals.
+  readonly droppedCount: number;
+  readonly missingCuratedCount: number;
+  readonly hadBreadthRank: boolean;
+  readonly hadLowConfidence: boolean;
+}
+
+function validateAndEnrich(
+  raw: RawResponse,
+  college: College,
+): ValidationOutcome {
+  // 1. Allowlist filter on topMajors. We do NOT filter knownFor — those
+  // are free-text descriptors by design.
+  const accepted: string[] = [];
+  const dropped: string[] = [];
+  for (const m of raw.topMajors) {
+    if (ALLOWED_MAJORS_SET.has(m)) {
+      accepted.push(m);
+    } else {
+      dropped.push(m);
+    }
+  }
+
+  // 2. Confidence gate.
+  const lowConfidence = raw.confidence < CONFIDENCE_THRESHOLD;
+  const needsReview = lowConfidence;
+
+  // 3. Curated cross-check. If the school's hand-curated topMajors entries
+  // are absent from the LLM output, log a per-term warning. Empty curated
+  // list (rare) skips this check.
+  const warnings: string[] = [];
+  let missingCuratedCount = 0;
+  const curated = college.topMajors ?? [];
+  for (const cur of curated) {
+    if (!coveredByLlm(cur, accepted)) {
+      warnings.push(`missing-curated:${cur}`);
+      missingCuratedCount++;
+    }
+  }
+
+  // 4. Breadth-rank advisory (option b per spec). Does NOT set needsReview.
+  const rank = college.usNewsRank;
+  const hadBreadthRank =
+    rank != null &&
+    rank > BREADTH_RANK_LIMIT &&
+    accepted.length > BREADTH_MAJOR_COUNT;
+  if (hadBreadthRank) {
+    warnings.push(
+      `breadth-rank-mismatch:rank=${rank},topMajors=${accepted.length}`,
+    );
+  }
+
+  return {
+    entry: {
+      topMajors: accepted,
+      knownFor: raw.knownFor,
+      confidence: raw.confidence,
+      notes: raw.notes,
+      needsReview,
+      droppedMajors: dropped,
+      warnings,
+    },
+    droppedCount: dropped.length,
+    missingCuratedCount,
+    hadBreadthRank,
+    hadLowConfidence: lowConfidence,
+  };
+}
+
+// ── Aggregated run stats (consumed by the validation report) ────────────────
+
+interface RunStats {
+  totalProcessed: number;
+  totalCached: number;
+  totalSucceeded: number;
+  parseFailed: string[];
+  timedOut: string[];
+  errored: { name: string; error: string }[];
+  allowlistDrops: { name: string; dropped: string[] }[];
+  missingCurated: { name: string; missing: string[] }[];
+  breadthRank: { name: string; rank: number; count: number }[];
+  lowConfidence: { name: string; confidence: number }[];
+  startedAt: string;
+}
+
+function blankStats(): RunStats {
+  return {
+    totalProcessed: 0,
+    totalCached: 0,
+    totalSucceeded: 0,
+    parseFailed: [],
+    timedOut: [],
+    errored: [],
+    allowlistDrops: [],
+    missingCurated: [],
+    breadthRank: [],
+    lowConfidence: [],
+    startedAt: new Date().toISOString(),
+  };
+}
+
+// ── Markdown report ─────────────────────────────────────────────────────────
+
+function renderReport(
+  stats: RunStats,
+  output: OutputFile,
+  isDryRun: boolean,
+): string {
+  const totalSchools = Object.keys(output.schools).length;
+  const lines: string[] = [];
+  lines.push(`# College Majors Enrichment — Validation Report`);
+  lines.push("");
+  if (isDryRun) lines.push(`> **Dry-run output.** Not authoritative.`);
+  lines.push(`- Generated: ${new Date().toISOString()}`);
+  lines.push(`- Run started: ${stats.startedAt}`);
+  lines.push(`- Model: ${output.model}`);
+  lines.push(`- Schools in cache (this run + prior): ${totalSchools}`);
+  lines.push(`- Schools processed THIS run: ${stats.totalProcessed}`);
+  lines.push(`- Successfully written THIS run: ${stats.totalSucceeded}`);
+  lines.push("");
+  lines.push(`## Summary`);
+  lines.push("");
+  lines.push(`| Flag | Count |`);
+  lines.push(`| --- | ---: |`);
+  lines.push(
+    `| Allowlist drops (topMajors entries not in MAJORS) | ${stats.allowlistDrops.reduce((sum, e) => sum + e.dropped.length, 0)} entries across ${stats.allowlistDrops.length} schools |`,
+  );
+  lines.push(
+    `| Missing-curated warnings | ${stats.missingCurated.length} schools |`,
+  );
+  lines.push(
+    `| Breadth-rank mismatches (advisory) | ${stats.breadthRank.length} schools |`,
+  );
+  lines.push(
+    `| Low-confidence rows (\`needsReview: true\`, excluded from runtime merge) | ${stats.lowConfidence.length} schools |`,
+  );
+  lines.push(`| Parse failures | ${stats.parseFailed.length} |`);
+  lines.push(`| Timeouts | ${stats.timedOut.length} |`);
+  lines.push(`| Other errors | ${stats.errored.length} |`);
+  lines.push("");
+
+  // ── Allowlist drops ─────────────────────────────────────────────────────
+  lines.push(`## Allowlist drops`);
+  lines.push("");
+  if (stats.allowlistDrops.length === 0) {
+    lines.push(`_None._`);
+  } else {
+    lines.push(
+      `LLM returned topMajors entries not present in the MAJORS allowlist. These were silently filtered out before writing to the cache.`,
+    );
+    lines.push("");
+    for (const item of stats.allowlistDrops) {
+      lines.push(`- **${item.name}** — dropped: ${item.dropped.map((d) => `"${d}"`).join(", ")}`);
+    }
+  }
+  lines.push("");
+
+  // ── Missing-curated ─────────────────────────────────────────────────────
+  lines.push(`## Missing-curated warnings`);
+  lines.push("");
+  if (stats.missingCurated.length === 0) {
+    lines.push(`_None — every curated topMajor entry is covered by the LLM output for every school._`);
+  } else {
+    lines.push(
+      `These schools have hand-curated topMajors entries that the LLM did NOT return. May indicate either (a) the LLM has a different (possibly better) view of the school's strengths, or (b) it invented a new profile entirely. Spot-check before trusting.`,
+    );
+    lines.push("");
+    for (const item of stats.missingCurated) {
+      lines.push(`- **${item.name}** — curated entries absent from LLM: ${item.missing.map((m) => `"${m}"`).join(", ")}`);
+    }
+  }
+  lines.push("");
+
+  // ── Breadth-rank ────────────────────────────────────────────────────────
+  lines.push(`## Breadth-rank mismatches (advisory)`);
+  lines.push("");
+  if (stats.breadthRank.length === 0) {
+    lines.push(`_None._`);
+  } else {
+    lines.push(
+      `Schools with US News rank > ${BREADTH_RANK_LIMIT} that returned > ${BREADTH_MAJOR_COUNT} topMajors. Advisory only — does NOT set needsReview. Could indicate over-claimed breadth.`,
+    );
+    lines.push("");
+    for (const item of stats.breadthRank) {
+      lines.push(`- **${item.name}** (rank ${item.rank}) — returned ${item.count} topMajors`);
+    }
+  }
+  lines.push("");
+
+  // ── Low-confidence ─────────────────────────────────────────────────────
+  lines.push(`## Low-confidence rows (\`needsReview: true\`)`);
+  lines.push("");
+  if (stats.lowConfidence.length === 0) {
+    lines.push(`_None._`);
+  } else {
+    lines.push(
+      `Confidence below ${CONFIDENCE_THRESHOLD}. These rows are EXCLUDED from runtime majorFitScore contributions until the \`needsReview\` flag is manually cleared in the JSON file.`,
+    );
+    lines.push("");
+    for (const item of stats.lowConfidence) {
+      lines.push(`- **${item.name}** — confidence ${item.confidence.toFixed(2)}`);
+    }
+  }
+  lines.push("");
+
+  // ── Parse failures / timeouts / errors ─────────────────────────────────
+  lines.push(`## Parse failures`);
+  lines.push("");
+  if (stats.parseFailed.length === 0) {
+    lines.push(`_None._`);
+  } else {
+    lines.push(`Failed both initial call and one retry. Re-run the script to retry these (they aren't cached).`);
+    lines.push("");
+    for (const name of stats.parseFailed) lines.push(`- ${name}`);
+  }
+  lines.push("");
+
+  lines.push(`## Timeouts`);
+  lines.push("");
+  if (stats.timedOut.length === 0) {
+    lines.push(`_None._`);
+  } else {
+    lines.push(`Aborted after ${REQUEST_TIMEOUT_MS}ms. Per spec: no in-script retry. Re-run to pick these up.`);
+    lines.push("");
+    for (const name of stats.timedOut) lines.push(`- ${name}`);
+  }
+  lines.push("");
+
+  lines.push(`## Other errors`);
+  lines.push("");
+  if (stats.errored.length === 0) {
+    lines.push(`_None._`);
+  } else {
+    for (const e of stats.errored) lines.push(`- **${e.name}** — ${e.error}`);
+  }
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+async function writeReport(
+  reportPath: string,
+  stats: RunStats,
+  output: OutputFile,
+  isDryRun: boolean,
+): Promise<void> {
+  const md = renderReport(stats, output, isDryRun);
+  await fs.writeFile(reportPath, md, "utf-8");
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────
@@ -291,36 +583,94 @@ async function main(): Promise<void> {
     return;
   }
 
-  let processed = 0;
-  const timedOut: string[] = [];
-  const parseFailed: string[] = [];
-  const errored: { name: string; error: string }[] = [];
+  const stats = blankStats();
+  stats.totalCached = cachedCount;
 
   for (const college of todo) {
     const startedAt = Date.now();
     try {
-      const result = await callForSchool(college.name);
+      // Initial call.
+      let result = await callForSchool(college.name);
 
       // First-N raw responses to stdout for early sanity check.
-      if (processed < FIRST_N_VERBOSE) {
+      if (stats.totalProcessed < FIRST_N_VERBOSE) {
         console.log(
-          `\n--- Raw response for "${college.name}" (sample ${processed + 1}/${FIRST_N_VERBOSE}) ---`,
+          `\n--- Raw response for "${college.name}" (sample ${stats.totalProcessed + 1}/${FIRST_N_VERBOSE}) ---`,
         );
         console.log(result.rawText);
         console.log(`--- end ---\n`);
       }
 
-      const entry = tryParseJson(result.rawText);
-      if (!entry) {
-        parseFailed.push(college.name);
-        console.warn(`  ⚠ ${college.name}: failed to parse JSON, skipping.`);
+      let raw = parseRawResponse(result.rawText);
+
+      // Retry-once on parse failure (per spec).
+      if (!raw) {
+        console.warn(
+          `  ↻ ${college.name}: first response failed schema, retrying once…`,
+        );
+        result = await callForSchool(college.name);
+        if (stats.totalProcessed < FIRST_N_VERBOSE) {
+          console.log(
+            `\n--- Retry raw response for "${college.name}" ---`,
+          );
+          console.log(result.rawText);
+          console.log(`--- end ---\n`);
+        }
+        raw = parseRawResponse(result.rawText);
+      }
+
+      if (!raw) {
+        stats.parseFailed.push(college.name);
+        console.warn(
+          `  ⚠ ${college.name}: failed schema validation after retry, skipping (re-run to retry — not cached).`,
+        );
       } else {
-        output.schools[college.name] = entry;
-        // Write after EVERY successful row — never batch.
+        const outcome = validateAndEnrich(raw, college);
+        output.schools[college.name] = outcome.entry;
+        // Write after EVERY successful row.
         await writeAtomic(targetPath, output);
-        const conf = entry.confidence.toFixed(2);
+        stats.totalSucceeded++;
+
+        // Roll up validation hits into run-level totals for the report.
+        if (outcome.droppedCount > 0) {
+          stats.allowlistDrops.push({
+            name: college.name,
+            dropped: outcome.entry.droppedMajors,
+          });
+        }
+        if (outcome.missingCuratedCount > 0) {
+          stats.missingCurated.push({
+            name: college.name,
+            missing: outcome.entry.warnings
+              .filter((w) => w.startsWith("missing-curated:"))
+              .map((w) => w.slice("missing-curated:".length)),
+          });
+        }
+        if (outcome.hadBreadthRank && college.usNewsRank != null) {
+          stats.breadthRank.push({
+            name: college.name,
+            rank: college.usNewsRank,
+            count: outcome.entry.topMajors.length,
+          });
+        }
+        if (outcome.hadLowConfidence) {
+          stats.lowConfidence.push({
+            name: college.name,
+            confidence: outcome.entry.confidence,
+          });
+        }
+
+        const conf = outcome.entry.confidence.toFixed(2);
+        const flagBits: string[] = [];
+        if (outcome.entry.needsReview) flagBits.push("needsReview");
+        if (outcome.droppedCount > 0)
+          flagBits.push(`dropped=${outcome.droppedCount}`);
+        if (outcome.missingCuratedCount > 0)
+          flagBits.push(`missingCurated=${outcome.missingCuratedCount}`);
+        if (outcome.hadBreadthRank) flagBits.push("breadthRank");
+        const flagStr = flagBits.length > 0 ? ` [${flagBits.join(", ")}]` : "";
         console.log(
-          `  ✓ ${college.name} — ${entry.topMajors.length} majors, ${entry.knownFor.length} knownFor, conf ${conf}`,
+          `  ✓ ${college.name} — ${outcome.entry.topMajors.length} majors, ${outcome.entry.knownFor.length} knownFor, conf ${conf}${flagStr}`,
         );
       }
     } catch (err: unknown) {
@@ -328,41 +678,68 @@ async function main(): Promise<void> {
         err instanceof Error &&
         (err.name === "AbortError" || /aborted|abort/i.test(err.message));
       if (isAbort) {
-        timedOut.push(college.name);
+        stats.timedOut.push(college.name);
         console.warn(
           `  ⏱ ${college.name}: timed out after ${REQUEST_TIMEOUT_MS}ms, skipping (no retry per spec).`,
         );
       } else {
         const msg = err instanceof Error ? err.message : String(err);
-        errored.push({ name: college.name, error: msg });
+        stats.errored.push({ name: college.name, error: msg });
         console.error(`  ✗ ${college.name}: ${msg}`);
       }
     }
 
-    processed++;
+    stats.totalProcessed++;
 
     // Rate limit: 1 req/sec, accounting for time already spent on the call.
     const elapsed = Date.now() - startedAt;
     const remaining = RATE_LIMIT_DELAY_MS - elapsed;
-    if (remaining > 0 && processed < todo.length) {
+    if (remaining > 0 && stats.totalProcessed < todo.length) {
       await new Promise((resolve) => setTimeout(resolve, remaining));
     }
   }
 
-  console.log(`\nDone. Processed ${processed} school(s).`);
-  if (timedOut.length > 0) {
-    console.log(`  ⏱ Timed out: ${timedOut.length} (re-run to pick these up — they aren't cached)`);
-    for (const name of timedOut) console.log(`     - ${name}`);
+  // Always write the report — even on a partial run, the operator wants
+  // the spot-check artifact for whatever we did get through.
+  const reportPath = cli.dryRun ? REPORT_DRYRUN_PATH : REPORT_PATH;
+  await writeReport(reportPath, stats, output, cli.dryRun);
+
+  console.log(`\nDone. Processed ${stats.totalProcessed} school(s).`);
+  console.log(`  ✓ Succeeded: ${stats.totalSucceeded}`);
+  if (stats.allowlistDrops.length > 0) {
+    console.log(
+      `  ⚐ Allowlist drops: ${stats.allowlistDrops.reduce((s, e) => s + e.dropped.length, 0)} entries across ${stats.allowlistDrops.length} schools`,
+    );
   }
-  if (parseFailed.length > 0) {
-    console.log(`  ⚠ Parse failed: ${parseFailed.length} (re-run to retry)`);
-    for (const name of parseFailed) console.log(`     - ${name}`);
+  if (stats.missingCurated.length > 0) {
+    console.log(
+      `  ⚐ Missing-curated warnings: ${stats.missingCurated.length} schools`,
+    );
   }
-  if (errored.length > 0) {
-    console.log(`  ✗ Errored: ${errored.length}`);
-    for (const e of errored) console.log(`     - ${e.name}: ${e.error}`);
+  if (stats.breadthRank.length > 0) {
+    console.log(
+      `  ⚐ Breadth-rank advisories: ${stats.breadthRank.length} schools`,
+    );
   }
-  console.log(`\nOutput saved to: ${path.relative(ROOT, targetPath)}`);
+  if (stats.lowConfidence.length > 0) {
+    console.log(
+      `  ⚐ Low-confidence (needsReview): ${stats.lowConfidence.length} schools`,
+    );
+  }
+  if (stats.timedOut.length > 0) {
+    console.log(`  ⏱ Timed out: ${stats.timedOut.length} (re-run to retry)`);
+    for (const name of stats.timedOut) console.log(`     - ${name}`);
+  }
+  if (stats.parseFailed.length > 0) {
+    console.log(`  ⚠ Parse failed (after retry): ${stats.parseFailed.length}`);
+    for (const name of stats.parseFailed) console.log(`     - ${name}`);
+  }
+  if (stats.errored.length > 0) {
+    console.log(`  ✗ Errored: ${stats.errored.length}`);
+    for (const e of stats.errored) console.log(`     - ${e.name}: ${e.error}`);
+  }
+  console.log(`\nOutput:  ${path.relative(ROOT, targetPath)}`);
+  console.log(`Report:  ${path.relative(ROOT, reportPath)}`);
 }
 
 main().catch((err: unknown) => {
