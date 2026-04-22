@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync:cds": "tsx scripts/cds-sync.ts"
+    "sync:cds": "tsx scripts/cds-sync.ts",
+    "enrich:colleges": "tsx scripts/enrich-college-majors.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",

@@ -41,6 +41,12 @@ yarn-error.log*
 # cds-sync one-off run logs
 /last-run.log
 
+# enrich-college-majors dry-run output (throwaway). The real output file
+# src/data/college-majors.json IS committed, but the dry-run sample is not.
+/src/data/college-majors.dryrun.json
+/src/data/college-majors.json.tmp
+/src/data/college-majors.dryrun.json.tmp
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
