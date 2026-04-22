@@ -15,6 +15,7 @@
 //             — it just doesn't get the "fit for X" badge.
 
 import type { College } from "./college-types";
+import { getEnrichedMajors, enrichedOnlyEntries } from "./college-majors-enriched";
 
 // ── Related-major map ────────────────────────────────────────────────────
 // Semantic neighborhood for each entry in the MAJORS constant. When a user
@@ -329,7 +330,13 @@ export interface MajorFitSignals {
   readonly relatedTopMajor: boolean;
   readonly pipelineHit: boolean;        // careerPipelines / topIndustries
   readonly interestTokenHit: boolean;
-  readonly rankPoints: number;          // 0-15, already gated
+  readonly rankPoints: number;          // 0-25, already gated
+  // Source of the direct topMajors / knownFor hit when one fired:
+  //   "curated"  — hit came from the hand-curated College record (default)
+  //   "enriched" — hit came ONLY from LLM-enriched data (curated had no
+  //                matching entry); the rationale builder may flag this.
+  //   "none"     — no direct hit fired.
+  readonly directSource: "curated" | "enriched" | "none";
 }
 
 export interface MajorFitResult {
@@ -346,6 +353,7 @@ function emptySignals(): MajorFitSignals {
     pipelineHit: false,
     interestTokenHit: false,
     rankPoints: 0,
+    directSource: "none",
   };
 }
 
@@ -399,7 +407,26 @@ export function computeMajorFit(
     pipelineHit: boolean;
     interestTokenHit: boolean;
     rankPoints: number;
+    directSource: "curated" | "enriched" | "none";
   };
+
+  // ── Merge curated + LLM-enriched topMajors / knownFor ────────────────────
+  // Spec: hand-curated wins on direct conflict; enriched APPENDS where
+  // curated is sparse. Implementation: run bestContainSpecificity against
+  // the curated pool first; if it doesn't fire (or fires only "partial")
+  // try the enriched-only pool (entries the LLM added that aren't already
+  // covered by curated). When the enriched-only pool is what produces the
+  // best hit, source = "enriched"; otherwise source = "curated".
+  //
+  // getEnrichedMajors returns null for needsReview rows AND for schools
+  // not yet enriched, which leaves us in pure curated-only behavior.
+  const enriched = getEnrichedMajors(college.name);
+  const enrichedTopMajorsOnly = enriched
+    ? enrichedOnlyEntries(enriched.topMajors, college.topMajors)
+    : [];
+  const enrichedKnownForOnly = enriched
+    ? enrichedOnlyEntries(enriched.knownFor, college.knownFor)
+    : [];
 
   // Direct hits — now specificity-aware with a top-rank override.
   //   full (40 pts):    college term equals or is more specific than the
@@ -423,35 +450,78 @@ export function computeMajorFit(
     return 0;
   };
 
+  // Tracks whether the highest-points contributor came from curated or
+  // enriched data. Curated takes precedence when tied.
   let directPts = 0;
+  let directFiredFrom: "curated" | "enriched" | "none" = "none";
+
+  const considerHit = (
+    spec: "full" | "partial" | "none",
+    source: "curated" | "enriched",
+    setFlag: () => void,
+  ): void => {
+    if (spec === "none") return;
+    setFlag();
+    const pts = pointsFor(spec);
+    if (pts > directPts) {
+      directPts = pts;
+      directFiredFrom = source;
+    } else if (pts === directPts && directFiredFrom === "none") {
+      directFiredFrom = source;
+    }
+    // Tie with existing curated hit: keep "curated" (curated wins ties).
+  };
+
   if (major && major !== "any") {
-    const specTop = bestContainSpecificity(college.topMajors, major);
-    if (specTop !== "none") {
-      s.directTopMajor = true;
-      directPts = Math.max(directPts, pointsFor(specTop));
-    }
-    const specKnown = bestContainSpecificity(college.knownFor, major);
-    if (specKnown !== "none") {
-      s.directKnownFor = true;
-      directPts = Math.max(directPts, pointsFor(specKnown));
-    }
+    considerHit(
+      bestContainSpecificity(college.topMajors, major),
+      "curated",
+      () => { s.directTopMajor = true; },
+    );
+    considerHit(
+      bestContainSpecificity(enrichedTopMajorsOnly, major),
+      "enriched",
+      () => { s.directTopMajor = true; },
+    );
+    considerHit(
+      bestContainSpecificity(college.knownFor, major),
+      "curated",
+      () => { s.directKnownFor = true; },
+    );
+    considerHit(
+      bestContainSpecificity(enrichedKnownForOnly, major),
+      "enriched",
+      () => { s.directKnownFor = true; },
+    );
   }
   if (interest) {
-    const specKnown = bestContainSpecificity(college.knownFor, interest);
-    if (specKnown !== "none") {
-      s.directKnownFor = true;
-      directPts = Math.max(directPts, pointsFor(specKnown));
-    }
+    considerHit(
+      bestContainSpecificity(college.knownFor, interest),
+      "curated",
+      () => { s.directKnownFor = true; },
+    );
+    considerHit(
+      bestContainSpecificity(enrichedKnownForOnly, interest),
+      "enriched",
+      () => { s.directKnownFor = true; },
+    );
   }
+  s.directSource = directFiredFrom;
 
   // Related-major → topMajors (20 pts). Pre-Med → Biology at Hopkins.
   // Pools together the static RELATED_MAJORS map and any LLM-expanded
   // relatedMajors the caller forwarded in (Pass 4 interest mapping).
+  // Searched against curated topMajors PLUS enriched-only topMajors so
+  // related-term hits work even when the curated record is shallow.
+  const relatedSearchPool: readonly string[] = [
+    ...(college.topMajors ?? []),
+    ...enrichedTopMajorsOnly,
+  ];
   if (major && major !== "any") {
     const staticRelated = RELATED_MAJORS_LOOKUP.get(major) ?? [];
     const dynamicRelated = (input.relatedMajors ?? []).filter((r) => r && r.trim().length > 0);
     const related = [...staticRelated, ...dynamicRelated];
-    if (related.length > 0 && related.some((r) => anyBiSubstring(normalize(r), college.topMajors))) {
+    if (related.length > 0 && related.some((r) => anyBiSubstring(normalize(r), relatedSearchPool))) {
       s.relatedTopMajor = true;
     }
   } else if ((input.relatedMajors ?? []).length > 0) {
@@ -459,7 +529,7 @@ export function computeMajorFit(
     // (the LLM inferred likely majors from a free-text interest). Still
     // allow those to fire the related bucket.
     const dynamicRelated = (input.relatedMajors ?? []).filter((r) => r && r.trim().length > 0);
-    if (dynamicRelated.some((r) => anyBiSubstring(normalize(r), college.topMajors))) {
+    if (dynamicRelated.some((r) => anyBiSubstring(normalize(r), relatedSearchPool))) {
       s.relatedTopMajor = true;
     }
   }
@@ -480,12 +550,18 @@ export function computeMajorFit(
   // Interest token overlap (10 pts) against any qualitative field.
   // The query pool is the user's raw interest text PLUS any LLM-expanded
   // keywords the caller forwarded in (Pass 4). An empty expansion just
-  // means we fall back to the raw interest.
+  // means we fall back to the raw interest. The knownFor pool is the
+  // curated entries plus the enriched-only entries so additional LLM
+  // descriptors broaden the surface that interests can match against.
   const expandedKeywords = (input.expandedKeywords ?? []).filter((k) => k && k.trim().length > 0);
   const interestPool = [interest, ...expandedKeywords].filter((q) => q.length > 0);
   if (interestPool.length > 0) {
+    const mergedKnownFor: readonly string[] = [
+      ...(college.knownFor ?? []),
+      ...enrichedKnownForOnly,
+    ];
     const fields: (readonly string[] | undefined)[] = [
-      college.knownFor,
+      mergedKnownFor,
       college.careerPipelines,
       college.topIndustries,
     ];
@@ -499,7 +575,7 @@ export function computeMajorFit(
       !hit &&
       expandedKeywords.some(
         (k) =>
-          anyBiSubstring(normalize(k), college.knownFor) ||
+          anyBiSubstring(normalize(k), mergedKnownFor) ||
           anyBiSubstring(normalize(k), college.careerPipelines) ||
           anyBiSubstring(normalize(k), college.topIndustries),
       );
@@ -638,14 +714,23 @@ export function buildMatchReason(
 
   // knownFor tag — prefer one related to the query. Uses the related
   // terms so "Pre-Med" finds a tag like "biology research" if that's
-  // what the school advertises.
+  // what the school advertises. Merges curated + enriched-only knownFor
+  // so an enriched-data rationale still surfaces when curated is sparse.
   const queries = [
     ...(major ? [major] : []),
     ...(major ? (RELATED_MAJORS_LOOKUP.get(major.toLowerCase()) ?? []) : []),
     ...(interest ? [interest] : []),
   ];
   if (signals.directKnownFor || signals.interestTokenHit) {
-    const tag = firstRelevantEntry(college.knownFor, queries);
+    const enriched = getEnrichedMajors(college.name);
+    const enrichedKnownForOnly = enriched
+      ? enrichedOnlyEntries(enriched.knownFor, college.knownFor)
+      : [];
+    const mergedKnownFor: string[] = [
+      ...(college.knownFor ?? []),
+      ...enrichedKnownForOnly,
+    ];
+    const tag = firstRelevantEntry(mergedKnownFor, queries);
     if (tag) parts.push(`known for ${tag}`);
   }
 
