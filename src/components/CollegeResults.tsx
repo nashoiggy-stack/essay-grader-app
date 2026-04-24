@@ -59,11 +59,32 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
 
   const sorted = sort === "acceptanceRate" ? results : sortedBy(sort);
 
-  // Push the flat sorted slice up so the page-level keyboard hook can map
-  // an index → ClassifiedCollege (needed for "P" → toggle pin by name).
+  // Build grouped + visual-order flat list unconditionally so the hook call
+  // below stays above any early return (rules-of-hooks). An empty results
+  // array produces empty grouped / visualOrder, which is harmless.
+  const grouped = GROUPS.map((g) => ({
+    ...g,
+    items: sorted.filter((r) => r.classification === g.key),
+  }));
+
+  // Keyboard nav traversal order MUST match the visual (grouped) display
+  // order so ArrowDown walks across tier boundaries the way the user sees
+  // them — Safety first, then Likely, Target, Reach, Unlikely. The raw
+  // `sorted` array is ordered by acceptance rate, which clusters
+  // similar-selectivity schools into the same tier and makes the focus
+  // ring appear trapped within whichever tier the user's current index
+  // happens to fall into. Flattening `grouped` fixes this.
+  const visualOrder: readonly ClassifiedCollege[] = grouped.flatMap((g) => g.items);
+  const flatIndexByName = new Map<string, number>(
+    visualOrder.map((c, i) => [c.college.name, i]),
+  );
+
+  // Push the visual-ordered slice up so the page-level keyboard hook can
+  // map an index → ClassifiedCollege (needed for "P" → toggle pin by name)
+  // AND can count the right number of focusable cards.
   useEffect(() => {
-    onSortedChange?.(sorted);
-  }, [sorted, onSortedChange]);
+    onSortedChange?.(visualOrder);
+  }, [visualOrder, onSortedChange]);
 
   if (results.length === 0) {
     return (
@@ -73,11 +94,6 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
       </div>
     );
   }
-
-  const grouped = GROUPS.map((g) => ({
-    ...g,
-    items: sorted.filter((r) => r.classification === g.key),
-  }));
 
   return (
     <div className="space-y-8">
@@ -153,12 +169,12 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {group.items.map((item, i) => {
-                // Find the card's index in the FLAT sorted list so the keyboard
-                // hook can target it via data attribute. Cheap O(n) per render
-                // because the list is at most ~100 entries.
-                const flatIndex = sorted.findIndex(
-                  (s) => s.college.name === item.college.name,
-                );
+                // Flat index is the card's position in the visual-order
+                // traversal (grouped, then in-group sort). This is the
+                // sequence ArrowDown / ArrowUp walks through — so the
+                // focus ring and the keyboard listener agree on what
+                // "next card" means across tier boundaries.
+                const flatIndex = flatIndexByName.get(item.college.name) ?? -1;
                 return (
                   <CollegeCard
                     key={item.college.name}
