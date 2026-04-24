@@ -11,6 +11,37 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import type { StrategyShareSnapshot } from "@/lib/strategy-share-types";
+import type { StrategyAnalysis } from "@/lib/strategy-types";
+
+// ── PII whitelist ───────────────────────────────────────────────────────────
+// The public share snapshot must not leak raw numeric GPAs or test scores.
+// The strategy engine embeds those values into prose strings on several
+// signal / detail fields (for example: academic.signals includes
+// "UW GPA 3.78 is strong", weaknesses[].detail includes "UW GPA 3.78 sits
+// below..."). Strip those fields before insert so the stored payload the
+// public viewer fetches never contains them.
+//
+// Displayed fields we preserve: tier labels, scores, categorical flags,
+// counts, warnings (which are template strings without raw values), and
+// the LLM narrative bodies. See FIX_NOTES.md for the deeper pass we've
+// flagged on the LLM narrative bodies — those may still embed numbers
+// and need a separate prompt-level fix.
+function sanitizeAnalysisForPublic(analysis: StrategyAnalysis): StrategyAnalysis {
+  return {
+    ...analysis,
+    academic: { ...analysis.academic, signals: [] },
+    ec: { ...analysis.ec, signals: [] },
+    spike: { ...analysis.spike, signals: [] },
+    weaknesses: analysis.weaknesses.map((w) => ({ ...w, detail: "" })),
+  };
+}
+
+function sanitizeSnapshot(snapshot: StrategyShareSnapshot): StrategyShareSnapshot {
+  return {
+    ...snapshot,
+    analysis: sanitizeAnalysisForPublic(snapshot.analysis),
+  };
+}
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -98,7 +129,9 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: auth.userId,
       token,
-      snapshot,
+      // Strip raw-value signal fields before storing. The public viewer
+      // receives whatever we insert here — sanitize once, serve forever.
+      snapshot: sanitizeSnapshot(snapshot),
       expires_at: expiresAt,
     })
     .select("token, created_at, expires_at")

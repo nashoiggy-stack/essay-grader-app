@@ -11,13 +11,25 @@ import type { Variants } from "framer-motion";
 import confetti from "canvas-confetti";
 import type { Options as ConfettiOptions, GlobalOptions as ConfettiGlobalOptions, CreateTypes as ConfettiInstance } from "canvas-confetti";
 
+// Exact-match public paths.
 const PUBLIC_ROUTES = ["/gpa"];
+// Prefix-match public paths — needed for dynamic segments where the full
+// pathname isn't known ahead of time (e.g. share tokens). An anonymous
+// visitor navigating to /strategy/share/<token> must render without being
+// redirected to the login screen: the whole point of the share feature
+// is that a parent or counselor without an account can open the URL.
+const PUBLIC_PREFIXES = ["/strategy/share/"];
+
+function isPublicPath(pathname: string): boolean {
+  if (PUBLIC_ROUTES.includes(pathname)) return true;
+  return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+}
 
 export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading, guest } = useAuthContext();
   const pathname = usePathname();
 
-  if (PUBLIC_ROUTES.includes(pathname)) return <>{children}</>;
+  if (isPublicPath(pathname)) return <>{children}</>;
 
   if (loading) {
     return (
