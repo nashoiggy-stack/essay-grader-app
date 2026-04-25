@@ -54,9 +54,17 @@ function FeatureCard({
   index: number;
   smoothProgress: ReturnType<typeof useSpring>;
 }) {
-  const start = 0.4 + index * 0.025;
+  // Tighter stagger (0.025 → 0.008) so all 8 cards finish fading in by
+  // ~0.55 of progress instead of 0.675 — gives a wider stable-visibility
+  // band before fade-out, so the snap landing at progress 0.6 hits
+  // every card already fully visible.
+  const start = 0.4 + index * 0.008;
   const end = start + 0.1;
-  const featureOpacity = useTransform(smoothProgress, [start, end, 0.7, 0.78], [0, 1, 1, 0]);
+  // Fade-out pushed from [0.7, 0.78] → [0.85, 0.92] so users have a
+  // ~150vh-of-scroll dwell room around the snap point where the cards
+  // (and their click targets) are at full opacity, instead of fading
+  // out the moment the user moves.
+  const featureOpacity = useTransform(smoothProgress, [start, end, 0.85, 0.92], [0, 1, 1, 0]);
   const featureY = useTransform(smoothProgress, [start, end], [30, 0]);
   const featureScale = useTransform(smoothProgress, [start, end], [0.95, 1]);
   const featureTransform = useTransform(
@@ -137,19 +145,25 @@ export default function LandingPage() {
   const heroBlurFilter = useTransform(heroBlur, (v) => `blur(${v}px)`);
   const gridOpacity = useTransform(smoothProgress, [0, 0.12], [0.4, 0]);
 
-  // Phase 2+6: Card rises and exits
-  const cardY = useTransform(smoothProgress, [0, 0.05, 0.3, 0.85, 1], ["110%", "110%", "0%", "0%", "-110%"]);
-  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.75, 0.85], [0.92, 0.92, 1, 1, 0.92]);
-  const cardRadius = useTransform(smoothProgress, [0.25, 0.4, 0.75, 0.85], [40, 0, 0, 40]);
+  // Phase 2+6: Card rises and exits. Exit window pushed from 0.85→1 to
+  // 0.92→1 so the card holds steady while users are still reading the
+  // feature buttons (now fading out at 0.85→0.92).
+  const cardY = useTransform(smoothProgress, [0, 0.05, 0.3, 0.92, 1], ["110%", "110%", "0%", "0%", "-110%"]);
+  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.85, 0.92], [0.92, 0.92, 1, 1, 0.92]);
+  const cardRadius = useTransform(smoothProgress, [0.25, 0.4, 0.85, 0.92], [40, 0, 0, 40]);
 
   // Phase 5: Card content
-  const contentOpacity = useTransform(smoothProgress, [0.38, 0.5, 0.7, 0.78], [0, 1, 1, 0]);
+  // Fade-out pushed from 0.7→0.78 to 0.85→0.92 to match the new feature-card
+  // dwell window — keeps the header text in sync with the buttons below it.
+  const contentOpacity = useTransform(smoothProgress, [0.38, 0.5, 0.85, 0.92], [0, 1, 1, 0]);
   const contentY = useTransform(smoothProgress, [0.38, 0.5], [40, 0]);
 
   // Phase 6: CTA
-  const ctaOpacity = useTransform(smoothProgress, [0.78, 0.88], [0, 1]);
-  const ctaScale = useTransform(smoothProgress, [0.78, 0.88], [0.95, 1]);
-  const ctaBlur = useTransform(smoothProgress, [0.78, 0.88], [12, 0]);
+  // Pushed from 0.78→0.88 to 0.92→1.0 so it fades in AFTER the features
+  // finish fading out, instead of overlapping with them.
+  const ctaOpacity = useTransform(smoothProgress, [0.92, 1.0], [0, 1]);
+  const ctaScale = useTransform(smoothProgress, [0.92, 1.0], [0.95, 1]);
+  const ctaBlur = useTransform(smoothProgress, [0.92, 1.0], [12, 0]);
   const ctaBlurFilter = useTransform(ctaBlur, (v) => `blur(${v}px)`);
   const ctaPointerEvents = useTransform(ctaOpacity, (v) => (v > 0.5 ? "auto" : "none"));
 
