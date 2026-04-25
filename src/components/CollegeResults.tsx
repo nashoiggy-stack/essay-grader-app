@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Bookmark, ArrowRight, HelpCircle } from "lucide-react";
@@ -57,15 +57,26 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
 }) => {
   const [sort, setSort] = useState<SortKey>("acceptanceRate");
 
-  const sorted = sort === "acceptanceRate" ? results : sortedBy(sort);
+  // Memoize derived arrays — without this, every render produces a new
+  // `visualOrder` reference, which invalidates the useEffect deps below
+  // and triggers setKeyboardSlice → parent re-render → child re-render →
+  // infinite loop ("Maximum update depth exceeded").
+  const sorted = useMemo(
+    () => (sort === "acceptanceRate" ? results : sortedBy(sort)),
+    [sort, results, sortedBy],
+  );
 
   // Build grouped + visual-order flat list unconditionally so the hook call
   // below stays above any early return (rules-of-hooks). An empty results
   // array produces empty grouped / visualOrder, which is harmless.
-  const grouped = GROUPS.map((g) => ({
-    ...g,
-    items: sorted.filter((r) => r.classification === g.key),
-  }));
+  const grouped = useMemo(
+    () =>
+      GROUPS.map((g) => ({
+        ...g,
+        items: sorted.filter((r) => r.classification === g.key),
+      })),
+    [sorted],
+  );
 
   // Keyboard nav traversal order MUST match the visual (grouped) display
   // order so ArrowDown walks across tier boundaries the way the user sees
@@ -74,15 +85,37 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
   // similar-selectivity schools into the same tier and makes the focus
   // ring appear trapped within whichever tier the user's current index
   // happens to fall into. Flattening `grouped` fixes this.
-  const visualOrder: readonly ClassifiedCollege[] = grouped.flatMap((g) => g.items);
-  const flatIndexByName = new Map<string, number>(
-    visualOrder.map((c, i) => [c.college.name, i]),
+  const visualOrder = useMemo<readonly ClassifiedCollege[]>(
+    () => grouped.flatMap((g) => g.items),
+    [grouped],
+  );
+  const flatIndexByName = useMemo(
+    () =>
+      new Map<string, number>(
+        visualOrder.map((c, i) => [c.college.name, i]),
+      ),
+    [visualOrder],
   );
 
   // Push the visual-ordered slice up so the page-level keyboard hook can
   // map an index → ClassifiedCollege (needed for "P" → toggle pin by name)
-  // AND can count the right number of focusable cards.
+  // AND can count the right number of focusable cards. Content-compare
+  // before notifying: the parent's `searchedSortedBy` callback is recreated
+  // on every parent render and ultimately wraps a non-stable `sortedBy`
+  // from useCollegeFilter. When sort != "acceptanceRate", that invalidates
+  // our memo on every render → new visualOrder ref → effect fires →
+  // setKeyboardSlice → parent re-render → loop. Bailing on equal content
+  // breaks that cycle without depending on upstream stability.
+  const lastSentRef = useRef<readonly ClassifiedCollege[]>([]);
   useEffect(() => {
+    const prev = lastSentRef.current;
+    if (
+      prev.length === visualOrder.length &&
+      visualOrder.every((c, i) => c.college.name === prev[i]?.college.name)
+    ) {
+      return;
+    }
+    lastSentRef.current = visualOrder;
     onSortedChange?.(visualOrder);
   }, [visualOrder, onSortedChange]);
 
