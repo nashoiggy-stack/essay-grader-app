@@ -152,11 +152,12 @@ recommendedAction, actionLabel, urgencyTone, verdictReasonCodes, and
 leversToImprove. Use these as ground truth — do not override or
 reinterpret. Your job is to write the reasoning prose (3-5 sentences
 explaining why the recommendation is what it is), referencing the
-verdictReasonCodes and the student's actual data. Use the actionLabel
-verbatim as the section's actionLabel. Copy recommendedAction and
-urgencyTone verbatim. Convert leversToImprove into the
-whatWouldChangeThis array verbatim — preserve descriptions, do not
-rewrite.
+verdictReasonCodes and the student's actual data. Copy recommendedAction,
+actionLabel, and urgencyTone verbatim into the output.
+
+You do NOT emit a whatWouldChangeThis field. The UI reads the levers
+list directly from analysis.dreamSchool.leversToImprove (single source
+of truth) — your job ends with the reasoning prose.
 
 recommendedAction values describe the recommended early-application
 path:
@@ -189,11 +190,7 @@ Output shape (additional to the 7 required sections above):
     "recommendedAction": "<copy verbatim from analysis.dreamSchool.recommendedAction>",
     "actionLabel": "<copy verbatim from analysis.dreamSchool.actionLabel>",
     "urgencyTone": "<copy verbatim from analysis.dreamSchool.urgencyTone>",
-    "reasoning": "<3-5 sentences. Name the school. Reference the student's academic and EC fit. Explain the recommendation using the reason codes' meaning. Acknowledge tradeoffs (binding commitment, restricts other options) where relevant.>",
-    "whatWouldChangeThis": [
-      "<copy verbatim from analysis.dreamSchool.leversToImprove[i].description>",
-      "..."
-    ]
+    "reasoning": "<3-5 sentences. Name the school. Reference the student's academic and EC fit. Explain the recommendation using the reason codes' meaning. Acknowledge tradeoffs (binding commitment, restricts other options) where relevant.>"
   }
 
 If analysis.dreamSchool is null, DO NOT include the dreamSchool field

@@ -304,7 +304,7 @@ export default function StrategyPage() {
                     defaultExpanded
                     emphasize
                   >
-                    <DreamSchoolBody result={result} dreamSchool={dreamSchool} />
+                    <DreamSchoolBody result={result} analysis={analysis} dreamSchool={dreamSchool} />
                   </StrategyCard>
 
                   {/* 3. ACTION PLAN — default expanded, emphasized, checkboxes */}
@@ -464,12 +464,26 @@ function SnapshotBody({
 
 function DreamSchoolBody({
   result,
+  analysis,
   dreamSchool,
 }: {
   result: StrategyResult;
+  analysis: StrategyAnalysis;
   dreamSchool: string | null;
 }) {
   const ds = result.dreamSchool;
+  // Levers are a deterministic engine output — single source of truth lives on
+  // analysis.dreamSchool. Legacy v2 cached results stored an LLM-written
+  // string array under result.dreamSchool.whatWouldChangeThis; fall back to
+  // that so a stale entry that survived the cache-version bump still
+  // renders something useful instead of crashing.
+  const engineLevers = analysis.dreamSchool?.leversToImprove ?? [];
+  const legacyLevers =
+    (ds as unknown as { whatWouldChangeThis?: readonly string[] })?.whatWouldChangeThis ?? [];
+  const leverLines: readonly string[] =
+    engineLevers.length > 0
+      ? engineLevers.map((l) => l.description)
+      : legacyLevers;
   const [leversOpen, setLeversOpen] = useState(false);
 
   if (!ds && !dreamSchool) {
@@ -520,8 +534,9 @@ function DreamSchoolBody({
         </p>
       </div>
 
-      {/* What would change this? */}
-      {ds.whatWouldChangeThis.length > 0 && (
+      {/* What would change this? Levers come from the engine — one source
+          of truth — with a legacy-string fallback for stale cached results. */}
+      {leverLines.length > 0 && (
         <div>
           <button
             type="button"
@@ -542,7 +557,7 @@ function DreamSchoolBody({
                 className="overflow-hidden"
               >
                 <ul className="mt-3 space-y-2">
-                  {ds.whatWouldChangeThis.map((lever, i) => (
+                  {leverLines.map((lever, i) => (
                     <li
                       key={i}
                       className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed"

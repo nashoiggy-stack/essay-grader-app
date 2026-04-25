@@ -251,9 +251,11 @@ export interface StrategyResult {
 }
 
 // LLM-output shape for the dream-school section. The structured fields
-// (recommendedAction, actionLabel, urgencyTone, whatWouldChangeThis) are
-// copied verbatim from the engine's DreamSchoolVerdict. Only `reasoning`
-// is LLM-written prose.
+// (recommendedAction, actionLabel, urgencyTone) are copied verbatim from
+// the engine's DreamSchoolVerdict so the LLM cannot drift the verdict.
+// Only `reasoning` is LLM-written prose. The levers list is NOT on this
+// shape — it lives on analysis.dreamSchool.leversToImprove (engine
+// output) as the single source of truth, and the UI reads it from there.
 export interface DreamSchoolSection {
   readonly title: string;
   readonly schoolName: string;
@@ -261,12 +263,11 @@ export interface DreamSchoolSection {
   readonly actionLabel: string;                       // copied verbatim from verdict
   readonly urgencyTone: UrgencyTone;                  // copied verbatim from verdict
   readonly reasoning: string;                          // LLM-written, 3-5 sentences
-  readonly whatWouldChangeThis: readonly string[];    // lever descriptions copied verbatim from verdict
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
-// Bump to v3 because DreamSchoolSection's shape changed: edVerdict +
-// verdictHeadline removed, recommendedAction + actionLabel + urgencyTone
-// added. Old v2 cached results would crash ActionVerdictBlock by reading
-// `tone` off undefined. The version bump invalidates them.
-export const STRATEGY_CACHE_VERSION = "v3";
+// v4: DreamSchoolSection no longer carries whatWouldChangeThis — the
+// levers list is read from analysis.dreamSchool.leversToImprove. Old v3
+// cached results lacked the action/tone fields entirely. Both shapes are
+// invalidated by this bump.
+export const STRATEGY_CACHE_VERSION = "v4";

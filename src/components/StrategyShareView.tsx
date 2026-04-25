@@ -160,9 +160,9 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                 action={result.dreamSchool.recommendedAction ?? "apply-early-conditional"}
                 label={
                   result.dreamSchool.actionLabel ??
-                  // Legacy v2 snapshot fallback: verdictHeadline + edVerdict
-                  // were the old fields. Cast through unknown so TS lets us
-                  // touch them without altering the modern type.
+                  // Legacy snapshot fallback: verdictHeadline was the old
+                  // field name. Cast through unknown so TS lets us touch
+                  // it without altering the modern type.
                   (result.dreamSchool as unknown as { verdictHeadline?: string }).verdictHeadline ??
                   "Recommendation pending re-run"
                 }
@@ -171,16 +171,30 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
               <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
                 {result.dreamSchool.reasoning}
               </p>
-              {result.dreamSchool.whatWouldChangeThis.length > 0 && (
-                <ul className="space-y-2">
-                  {result.dreamSchool.whatWouldChangeThis.map((lever, i) => (
-                    <li key={i} className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed">
-                      <span className="text-blue-300 mt-0.5 shrink-0">→</span>
-                      <span>{lever}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {(() => {
+                // Levers from the engine (single source of truth) when
+                // present in the snapshot. Legacy snapshots may carry an
+                // LLM-written string array on result.dreamSchool.
+                const engineLevers = analysis.dreamSchool?.leversToImprove ?? [];
+                const legacyLevers =
+                  (result.dreamSchool as unknown as { whatWouldChangeThis?: readonly string[] })
+                    .whatWouldChangeThis ?? [];
+                const lines =
+                  engineLevers.length > 0
+                    ? engineLevers.map((l) => l.description)
+                    : legacyLevers;
+                if (lines.length === 0) return null;
+                return (
+                  <ul className="space-y-2">
+                    {lines.map((lever, i) => (
+                      <li key={i} className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed">
+                        <span className="text-blue-300 mt-0.5 shrink-0">→</span>
+                        <span>{lever}</span>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
             </div>
           </StrategyCard>
         )}
