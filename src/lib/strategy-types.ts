@@ -265,7 +265,8 @@ export interface DreamSchoolSection {
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
-// Bump to v2 because the result shape now includes an optional dreamSchool
-// section. Old cached results without it would render fine, but the version
-// bump forces a fresh call so the LLM actually generates that section.
-export const STRATEGY_CACHE_VERSION = "v2";
+// Bump to v3 because DreamSchoolSection's shape changed: edVerdict +
+// verdictHeadline removed, recommendedAction + actionLabel + urgencyTone
+// added. Old v2 cached results would crash ActionVerdictBlock by reading
+// `tone` off undefined. The version bump invalidates them.
+export const STRATEGY_CACHE_VERSION = "v3";

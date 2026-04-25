@@ -497,8 +497,18 @@ function DreamSchoolBody({
   return (
     <div className="space-y-4 pt-3">
       {/* Action verdict block — describes the recommended early-app path,
-          not just an ED yes/no. Tone drives the badge color. */}
-      <ActionVerdictBlock action={ds.recommendedAction} label={ds.actionLabel} tone={ds.urgencyTone} />
+          not just an ED yes/no. Tone drives the badge color. Each prop
+          falls back so a v2 cached result that survived the version bump
+          renders rather than crashes. */}
+      <ActionVerdictBlock
+        action={ds.recommendedAction ?? "apply-early-conditional"}
+        label={
+          ds.actionLabel ??
+          (ds as unknown as { verdictHeadline?: string }).verdictHeadline ??
+          "Recommendation pending re-run"
+        }
+        tone={ds.urgencyTone ?? "caution"}
+      />
 
       {/* Reasoning */}
       <div>
@@ -587,7 +597,10 @@ function ActionVerdictBlock({
   label: string;
   tone: UrgencyTone;
 }) {
-  const s = TONE_STYLES[tone];
+  // Defensive default: legacy share snapshots / v2 cached results predate
+  // urgencyTone. Treat missing tone as "caution" so the page renders
+  // instead of crashing on undefined.style lookup.
+  const s = TONE_STYLES[tone] ?? TONE_STYLES.caution;
   const Icon = s.icon;
   // action is part of the type contract but the visible label already
   // names the action; it stays in props for analytics/aria-label use.

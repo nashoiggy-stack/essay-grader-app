@@ -157,9 +157,16 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
           >
             <div className="space-y-4 pt-3">
               <ActionVerdictBlock
-                action={result.dreamSchool.recommendedAction}
-                label={result.dreamSchool.actionLabel}
-                tone={result.dreamSchool.urgencyTone}
+                action={result.dreamSchool.recommendedAction ?? "apply-early-conditional"}
+                label={
+                  result.dreamSchool.actionLabel ??
+                  // Legacy v2 snapshot fallback: verdictHeadline + edVerdict
+                  // were the old fields. Cast through unknown so TS lets us
+                  // touch them without altering the modern type.
+                  (result.dreamSchool as unknown as { verdictHeadline?: string }).verdictHeadline ??
+                  "Recommendation pending re-run"
+                }
+                tone={result.dreamSchool.urgencyTone ?? "caution"}
               />
               <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
                 {result.dreamSchool.reasoning}
@@ -418,7 +425,9 @@ function ActionVerdictBlock({
   label: string;
   tone: UrgencyTone;
 }) {
-  const s = TONE_STYLES[tone];
+  // Legacy v2 snapshots (pre-action rename) lack urgencyTone — fall back to
+  // caution so old shared briefings still render rather than crash.
+  const s = TONE_STYLES[tone] ?? TONE_STYLES.caution;
   const Icon = s.icon;
   void action;
   return (
