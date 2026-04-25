@@ -152,11 +152,25 @@ export interface MissingDataItem {
   readonly ctaHref: string;
 }
 
-// Deterministic dream-school ED verdict. Computed by the engine, not the
+// Deterministic dream-school verdict. Computed by the engine, not the
 // LLM — the verdict drives a binding application decision, so it must be
 // auditable and stable across regenerations on identical inputs. The LLM
-// downstream only narrates these fields; it cannot override the verdict
+// downstream only narrates these fields; it cannot override the action
 // or invent levers.
+//
+// Why action+tone instead of "ED: yes/no/conditional":
+//   "ED: NO" was misread as "do not apply early" when the actual
+//   recommendation was often REA or EA. The action describes the
+//   recommended path; the tone drives the badge color.
+export type DreamSchoolAction =
+  | "apply-ed"                  // binding ED is the move
+  | "apply-rea"                 // restrictive early action (Stanford, Harvard, Yale, Princeton, Notre Dame, Georgetown)
+  | "apply-ea"                  // non-restrictive early action — no downside
+  | "apply-early-conditional"   // close fit but fixable gaps; lever needed
+  | "apply-rd";                 // regular decision is the right call
+
+export type UrgencyTone = "go" | "caution" | "stop";
+
 export interface DreamSchoolLever {
   readonly description: string;          // user-facing prose
   readonly impact: "high" | "medium";
@@ -164,8 +178,10 @@ export interface DreamSchoolLever {
 
 export interface DreamSchoolVerdict {
   readonly schoolName: string;
-  readonly edVerdict: EdVerdict;
-  readonly verdictReasonCodes: readonly string[];   // stable codes — for the prompt, not for users
+  readonly recommendedAction: DreamSchoolAction;
+  readonly actionLabel: string;                       // short prose label for the UI (deterministic)
+  readonly urgencyTone: UrgencyTone;                  // drives badge color: go=green, caution=amber, stop=red
+  readonly verdictReasonCodes: readonly string[];      // stable codes — for the prompt, not for users
   readonly leversToImprove: readonly DreamSchoolLever[];
 }
 
@@ -228,20 +244,24 @@ export interface StrategyResult {
   readonly actionPlan: StrategyResultSection;     // bullets are required here
   readonly competitiveness: StrategyResultSection;
   // Optional: present only if a dream school is set in localStorage.
-  // Contains the ED/EA decision and dream-school-specific reasoning.
+  // Carries the engine's recommended action + LLM-written reasoning for
+  // that school.
   readonly dreamSchool?: DreamSchoolSection;
   readonly generatedAt: number;
 }
 
-export type EdVerdict = "yes" | "conditional" | "no";
-
+// LLM-output shape for the dream-school section. The structured fields
+// (recommendedAction, actionLabel, urgencyTone, whatWouldChangeThis) are
+// copied verbatim from the engine's DreamSchoolVerdict. Only `reasoning`
+// is LLM-written prose.
 export interface DreamSchoolSection {
   readonly title: string;
   readonly schoolName: string;
-  readonly edVerdict: EdVerdict;
-  readonly verdictHeadline: string;           // short — e.g. "ED is the right move"
-  readonly reasoning: string;                 // 3-5 sentences, consultant voice
-  readonly whatWouldChangeThis: readonly string[]; // 2-3 specific levers
+  readonly recommendedAction: DreamSchoolAction;
+  readonly actionLabel: string;                       // copied verbatim from verdict
+  readonly urgencyTone: UrgencyTone;                  // copied verbatim from verdict
+  readonly reasoning: string;                          // LLM-written, 3-5 sentences
+  readonly whatWouldChangeThis: readonly string[];    // lever descriptions copied verbatim from verdict
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";

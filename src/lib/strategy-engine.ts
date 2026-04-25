@@ -21,7 +21,8 @@ import type {
   MissingDataItem,
   DreamSchoolVerdict,
   DreamSchoolLever,
-  EdVerdict,
+  DreamSchoolAction,
+  UrgencyTone,
 } from "./strategy-types";
 import type { ActivityEvaluation, ProfileSpike } from "./extracurricular-types";
 import { computeReadinessScore, bandFromScore } from "./extracurricular-types";
@@ -716,21 +717,25 @@ export function recommendCollegesByMajor(p: StrategyProfile): MajorAwareRecommen
   };
 }
 
-// ── Dream-school ED verdict (deterministic) ────────────────────────────────
+// ── Dream-school verdict (deterministic) ───────────────────────────────────
 //
-// The ED yes/conditional/no decision drives a binding application choice.
-// It must be auditable and stable across regenerations on identical inputs,
-// not a vibe call by the LLM. This function applies an explicit rule
-// hierarchy and pulls lever copy from the weakness analysis where relevant
-// — never invents gap numbers, only references ones already computed
-// upstream.
+// Emits a recommendedAction (one of 5 explicit early-application paths) plus
+// an actionLabel and urgencyTone driving the UI badge. The previous "ED:
+// yes/conditional/no" framing was misread as "do not apply early" when the
+// real recommendation was REA or EA — the action makes the recommended
+// path explicit.
+//
+// Drives a binding application choice, so it must be auditable and stable
+// across regenerations on identical inputs. Pulls lever copy from the
+// weakness analysis — never invents gap numbers, only references ones
+// already computed upstream.
 //
 // Consistency contract with analyzeEarlyStrategy:
 //   - If the engine picked the dream school as edCandidate, the verdict
-//     here MUST be "yes" (rule 3 fires).
+//     here MUST be "apply-ed" (rule 3 fires).
 //   - If the engine picked a different pinned school as edCandidate AND
-//     the dream school also offers ED, the verdict MUST be "no" with
-//     reason "better-ed-elsewhere" (rule 4 fires).
+//     the dream school also offers ED, the verdict MUST be "apply-rd"
+//     with reason "better-ed-elsewhere" (rule 4 fires).
 //   - These are the only two paths where the engine has an opinion the
 //     verdict could contradict; rules 5–7 cover cases the engine doesn't
 //     speak to (no pinned ED candidate, fixable gaps, etc.).
@@ -804,6 +809,32 @@ function hasFixableGap(
   return false;
 }
 
+// Short, label-safe descriptor for the top weakness — used to make the
+// "Apply Early — pending X" actionLabel specific without dumping the full
+// lever sentence into a button.
+function shortGapLabel(weaknesses: readonly WeaknessFlag[]): string {
+  const order: Record<WeaknessFlag["severity"], number> = {
+    critical: 0, high: 1, medium: 2, low: 3,
+  };
+  const top = [...weaknesses].sort((a, b) => order[a.severity] - order[b.severity])[0];
+  if (!top) return "key gap fix";
+  switch (top.code) {
+    case "low-gpa":          return "GPA improvement";
+    case "low-test":         return "test score improvement";
+    case "missing-test":     return "test scores";
+    case "missing-ec-data":  return "EC evaluation";
+    case "no-tier-1-or-2":
+    case "no-tier-1":        return "Tier-1 distinction";
+    case "low-impact":       return "impact metrics";
+    case "low-leadership":   return "leadership signals";
+    case "weak-essay":
+    case "missing-essay":    return "essay strengthening";
+    case "scattered-spike":
+    case "weak-spike":       return "spike clarity";
+    default:                 return "key gap fix";
+  }
+}
+
 export function computeDreamSchoolVerdict(
   p: StrategyProfile,
   weaknesses: readonly WeaknessFlag[],
@@ -851,6 +882,7 @@ export function computeDreamSchoolVerdict(
   const options = getApplicationOptions(school);
   const hasED = options.some((o) => o.type === "ED" || o.type === "ED2");
   const hasREA = options.some((o) => o.type === "REA" || o.type === "SCEA");
+  const hasEA = options.some((o) => o.type === "EA");
 
   // Engine's existing ED pick (from pinned schools, fit-ranked). May be null
   // if no pinned reach/target with ED exists.
@@ -861,32 +893,75 @@ export function computeDreamSchoolVerdict(
     edCandidate?.collegeName.toLowerCase() === school.name.toLowerCase();
 
   const verdictBase = (
-    edVerdict: EdVerdict,
+    recommendedAction: DreamSchoolAction,
+    actionLabel: string,
+    urgencyTone: UrgencyTone,
     reasonCodes: readonly string[],
     levers: readonly DreamSchoolLever[],
   ): DreamSchoolVerdict => ({
     schoolName: school!.name,
-    edVerdict,
+    recommendedAction,
+    actionLabel,
+    urgencyTone,
     verdictReasonCodes: reasonCodes,
     leversToImprove: levers,
   });
 
   // ── Rule 1: ED not offered at all ────────────────────────────────────────
+  // Split by what early option IS available so the action describes the
+  // actual recommended path rather than just saying "no ED."
   if (!hasED) {
-    const altText = hasREA
-      ? "Restrictive Early Action is the strongest available early lever here."
-      : "Early Action (where offered) and a polished Regular Decision app are the only available levers.";
-    return verdictBase("no", ["ed-not-offered"], [
-      {
-        description: `This school does not offer Early Decision. ${altText}`,
-        impact: "high",
-      },
-    ]);
+    if (hasREA) {
+      return verdictBase(
+        "apply-rea",
+        `Apply REA — ${school.name}'s strongest early option`,
+        "go",
+        ["rea-only-no-ed"],
+        [
+          {
+            description: `${school.name} does not offer Early Decision. Restrictive Early Action is the strongest available early lever — it gives a small boost without binding you.`,
+            impact: "high",
+          },
+        ],
+      );
+    }
+    if (hasEA) {
+      return verdictBase(
+        "apply-ea",
+        "Apply EA — no commitment, full upside",
+        "go",
+        ["ea-only-no-ed"],
+        [
+          {
+            description: `${school.name} does not offer Early Decision. Non-restrictive Early Action gives a small timing advantage with no binding commitment — stack it with other EAs.`,
+            impact: "high",
+          },
+        ],
+      );
+    }
+    return verdictBase(
+      "apply-rd",
+      "Apply Regular Decision — no early option offered",
+      "caution",
+      ["no-early-option"],
+      [
+        {
+          description: `${school.name} does not offer any early-application path. Apply RD in the first window of the cycle and lean on essays + recommendations.`,
+          impact: "high",
+        },
+      ],
+    );
   }
 
   // ── Rule 2: classification "unlikely" ────────────────────────────────────
   if (classification === "unlikely") {
-    return verdictBase("no", ["below-floor"], [gapLeverForBelowFloor(p, school)]);
+    return verdictBase(
+      "apply-rd",
+      "Apply Regular Decision — current profile below admit floor",
+      "stop",
+      ["below-floor"],
+      [gapLeverForBelowFloor(p, school)],
+    );
   }
 
   // ── Rule 3: dream school IS the engine's ED pick ─────────────────────────
@@ -895,7 +970,9 @@ export function computeDreamSchoolVerdict(
   // dreamIsEdCandidate=true means the engine and the verdict agree.
   if (dreamIsEdCandidate) {
     return verdictBase(
-      "yes",
+      "apply-ed",
+      "Apply Early Decision — your strongest lever",
+      "go",
       ["target-tier-fit", "ed-available", "highest-leverage-pick"],
       [
         {
@@ -917,40 +994,72 @@ export function computeDreamSchoolVerdict(
     classification === "safety";
 
   if (edCandidate && !dreamIsEdCandidate && isTargetOrBetter) {
-    return verdictBase("no", ["better-ed-elsewhere"], [
-      {
-        description: `The engine's strongest ED pick is ${edCandidate.collegeName}. Apply RD at ${school.name} and reserve the binding ED slot for the higher-leverage school.`,
-        impact: "medium",
-      },
-    ]);
+    return verdictBase(
+      "apply-rd",
+      "Apply Regular Decision — better ED option exists elsewhere",
+      "caution",
+      ["better-ed-elsewhere"],
+      [
+        {
+          description: `The engine's strongest ED pick is ${edCandidate.collegeName}. Apply RD at ${school.name} and reserve the binding ED slot for the higher-leverage school.`,
+          impact: "medium",
+        },
+      ],
+    );
   }
 
   // ── Rule 5: target tier with fixable gaps ────────────────────────────────
   if (classification === "target" && hasFixableGap(p, ec, weaknesses)) {
     const lever = leverFromWeaknesses(weaknesses) ?? {
-      description: `Tighten the highest-leverage gap in your profile before binding ED at ${school.name}.`,
+      description: `Tighten the highest-leverage gap in your profile before applying early to ${school.name}.`,
       impact: "high" as const,
     };
-    return verdictBase("conditional", ["fixable-gaps"], [lever]);
+    const gap = shortGapLabel(weaknesses);
+    // Label reflects the strongest available early type so the action
+    // matches what they'd actually file.
+    const label = hasED
+      ? `Apply ED — pending ${gap}`
+      : hasREA
+        ? `Apply REA — pending ${gap}`
+        : `Apply Early — pending ${gap}`;
+    return verdictBase(
+      "apply-early-conditional",
+      label,
+      "caution",
+      ["fixable-gaps"],
+      [lever],
+    );
   }
 
   // ── Rule 6: competitive (likely / safety) at school AND ED available ────
   if (classification === "likely" || classification === "safety") {
-    return verdictBase("yes", ["strong-fit"], [
-      {
-        description:
-          "Confirm financial fit before binding — ED is a contractual commitment and cannot be reversed if aid falls short.",
-        impact: "medium",
-      },
-    ]);
+    return verdictBase(
+      "apply-ed",
+      "Apply Early Decision — strong fit",
+      "go",
+      ["strong-fit"],
+      [
+        {
+          description:
+            "Confirm financial fit before binding — ED is a contractual commitment and cannot be reversed if aid falls short.",
+          impact: "medium",
+        },
+      ],
+    );
   }
 
   // ── Rule 7: fallback ─────────────────────────────────────────────────────
   const lever = leverFromWeaknesses(weaknesses) ?? {
-    description: `Strengthen the closest-threshold gap in your profile before deciding ED at ${school.name}.`,
+    description: `Strengthen the closest-threshold gap in your profile before deciding on an early plan at ${school.name}.`,
     impact: "high" as const,
   };
-  return verdictBase("conditional", ["borderline-case"], [lever]);
+  return verdictBase(
+    "apply-early-conditional",
+    "Apply Early — borderline case, lever needed",
+    "caution",
+    ["borderline-case"],
+    [lever],
+  );
 }
 
 // ── Orchestrator ────────────────────────────────────────────────────────────

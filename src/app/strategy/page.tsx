@@ -45,7 +45,8 @@ import type {
   StrategyResult,
   AcademicTier,
   ECStrengthTier,
-  EdVerdict,
+  DreamSchoolAction,
+  UrgencyTone,
   MajorAwareRecommendations,
   MissingDataItem,
 } from "@/lib/strategy-types";
@@ -95,10 +96,13 @@ function schoolListStrength(a: StrategyAnalysis): StrategyStrength {
   }
 }
 
-function edVerdictStrength(v: EdVerdict | null): StrategyStrength {
-  if (v === "yes") return "strong";
-  if (v === "conditional") return "mixed";
-  if (v === "no") return "weak";
+function urgencyToneStrength(t: UrgencyTone | null): StrategyStrength {
+  // Maps the engine's urgencyTone to the StrategyCard strength scale that
+  // already powers every other card's badge color. Keeps badge tone in
+  // sync with the verdict — go=green, caution=amber, stop=red.
+  if (t === "go") return "strong";
+  if (t === "caution") return "mixed";
+  if (t === "stop") return "weak";
   return "neutral";
 }
 
@@ -292,7 +296,7 @@ export default function StrategyPage() {
                   <StrategyCard
                     icon={<Star className="w-4 h-4" />}
                     title="Dream School"
-                    strength={edVerdictStrength(result.dreamSchool?.edVerdict ?? null)}
+                    strength={urgencyToneStrength(result.dreamSchool?.urgencyTone ?? null)}
                     headline={
                       result.dreamSchool?.schoolName ??
                       (dreamSchool ? `${dreamSchool} · pending re-run` : "No dream school selected")
@@ -472,7 +476,7 @@ function DreamSchoolBody({
     return (
       <div className="pt-3">
         <p className="text-[13px] text-zinc-400 leading-relaxed">
-          Pick a dream school using the selector above to get a dedicated ED/EA decision with specific reasoning for that school.
+          Pick a dream school using the selector above to get a dedicated early-application recommendation with specific reasoning for that school.
         </p>
       </div>
     );
@@ -482,7 +486,7 @@ function DreamSchoolBody({
     return (
       <div className="pt-3">
         <p className="text-[13px] text-zinc-400 leading-relaxed mb-2">
-          You selected <span className="text-zinc-200 font-semibold">{dreamSchool}</span>, but this strategy was generated before that. Click <span className="text-zinc-200 font-semibold">Re-run</span> above to get the dedicated decision block.
+          You selected <span className="text-zinc-200 font-semibold">{dreamSchool}</span>, but this strategy was generated before that. Click <span className="text-zinc-200 font-semibold">Re-run</span> above to get the dedicated recommendation block.
         </p>
       </div>
     );
@@ -492,8 +496,9 @@ function DreamSchoolBody({
 
   return (
     <div className="space-y-4 pt-3">
-      {/* ED verdict block */}
-      <EdVerdictBlock verdict={ds.edVerdict} headline={ds.verdictHeadline} />
+      {/* Action verdict block — describes the recommended early-app path,
+          not just an ED yes/no. Tone drives the badge color. */}
+      <ActionVerdictBlock action={ds.recommendedAction} label={ds.actionLabel} tone={ds.urgencyTone} />
 
       {/* Reasoning */}
       <div>
@@ -515,7 +520,7 @@ function DreamSchoolBody({
             className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-blue-300 hover:text-blue-200 transition-colors"
           >
             <Zap className="w-3.5 h-3.5" />
-            What would change this verdict?
+            What would change this recommendation?
           </button>
           <AnimatePresence initial={false}>
             {leversOpen && (
@@ -546,42 +551,47 @@ function DreamSchoolBody({
   );
 }
 
-const EDV_STYLES: Record<
-  EdVerdict,
-  { bg: string; ring: string; text: string; icon: React.ElementType; label: string }
+const TONE_STYLES: Record<
+  UrgencyTone,
+  { bg: string; ring: string; text: string; icon: React.ElementType; eyebrow: string }
 > = {
-  yes: {
+  go: {
     bg: "bg-emerald-500/[0.08]",
     ring: "ring-emerald-400/40",
     text: "text-emerald-200",
     icon: CheckCircle2,
-    label: "ED: YES",
+    eyebrow: "Recommended",
   },
-  conditional: {
+  caution: {
     bg: "bg-amber-500/[0.08]",
     ring: "ring-amber-400/40",
     text: "text-amber-200",
     icon: AlertTriangle,
-    label: "ED: CONDITIONAL",
+    eyebrow: "Proceed with care",
   },
-  no: {
+  stop: {
     bg: "bg-red-500/[0.08]",
     ring: "ring-red-400/40",
     text: "text-red-200",
     icon: XCircle,
-    label: "ED: NO",
+    eyebrow: "Hold",
   },
 };
 
-function EdVerdictBlock({
-  verdict,
-  headline,
+function ActionVerdictBlock({
+  action,
+  label,
+  tone,
 }: {
-  verdict: EdVerdict;
-  headline: string;
+  action: DreamSchoolAction;
+  label: string;
+  tone: UrgencyTone;
 }) {
-  const s = EDV_STYLES[verdict];
+  const s = TONE_STYLES[tone];
   const Icon = s.icon;
+  // action is part of the type contract but the visible label already
+  // names the action; it stays in props for analytics/aria-label use.
+  void action;
   return (
     <div
       className={`rounded-xl ${s.bg} ring-1 ${s.ring} p-4 flex items-center gap-3`}
@@ -595,10 +605,10 @@ function EdVerdictBlock({
         <p
           className={`text-[10px] uppercase tracking-[0.18em] font-bold ${s.text} mb-0.5`}
         >
-          {s.label}
+          {s.eyebrow}
         </p>
         <p className="text-[14px] text-zinc-100 font-semibold leading-snug">
-          {headline}
+          {label}
         </p>
       </div>
     </div>
@@ -1124,8 +1134,8 @@ function PreGenerationHint({ hasDreamSchool }: { hasDreamSchool: boolean }) {
         Click <span className="text-zinc-200 font-semibold">Generate Strategy</span> to run the
         analyzers and produce your consultant briefing.
         {hasDreamSchool
-          ? " You'll get a dedicated decision block for your dream school."
-          : " Pick a dream school above to unlock the dedicated ED/EA decision block."}
+          ? " You'll get a dedicated recommendation block for your dream school."
+          : " Pick a dream school above to unlock the dedicated early-application recommendation block."}
       </p>
     </div>
   );

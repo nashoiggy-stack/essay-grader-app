@@ -147,19 +147,33 @@ DREAM SCHOOL SECTION — include ONLY if the analysis has a non-null
 student's #1 target and the verdict drives a binding application choice,
 so it is precomputed by the engine — you do NOT decide it.
 
-The analysis includes a dreamSchool block with a precomputed edVerdict
-and verdictReasonCodes. Use these as ground truth — do not override.
-Your job is to write the verdictHeadline (6-10 word punchy summary that
-matches the verdict) and the reasoning prose (3-5 sentences explaining
-why), referencing the specific reason codes and the student's actual
-data. Convert the leversToImprove array into the whatWouldChangeThis
-array verbatim — preserve the lever descriptions, do not rewrite them.
+The analysis includes a dreamSchool block with a precomputed
+recommendedAction, actionLabel, urgencyTone, verdictReasonCodes, and
+leversToImprove. Use these as ground truth — do not override or
+reinterpret. Your job is to write the reasoning prose (3-5 sentences
+explaining why the recommendation is what it is), referencing the
+verdictReasonCodes and the student's actual data. Use the actionLabel
+verbatim as the section's actionLabel. Copy recommendedAction and
+urgencyTone verbatim. Convert leversToImprove into the
+whatWouldChangeThis array verbatim — preserve descriptions, do not
+rewrite.
+
+recommendedAction values describe the recommended early-application
+path:
+  - apply-ed: binding Early Decision is the move
+  - apply-rea: Restrictive Early Action (Stanford, Harvard, Yale,
+    Princeton, Notre Dame, Georgetown)
+  - apply-ea: non-restrictive Early Action — no downside
+  - apply-early-conditional: close fit but a fixable gap remains
+  - apply-rd: Regular Decision is the right call
 
 Reason code glossary (for your interpretation only — do NOT surface the
 codes themselves to the user):
-  - ed-not-offered: school does not offer ED/ED2 at all
-  - below-floor: classification is "unlikely"; ED cannot rescue an
-    application below the floor
+  - rea-only-no-ed: school does not offer ED, but offers REA/SCEA
+  - ea-only-no-ed: school offers EA only (no ED, no REA)
+  - no-early-option: school offers no early plan at all
+  - below-floor: classification is "unlikely"; early app cannot rescue
+    an application below the floor
   - target-tier-fit + ed-available + highest-leverage-pick: dream school
     is the engine's best ED candidate
   - better-ed-elsewhere: another pinned school is a stronger ED pick
@@ -172,9 +186,10 @@ Output shape (additional to the 7 required sections above):
   "dreamSchool": {
     "title": "Dream School: <exact school name>",
     "schoolName": "<exact school name from the analysis verdict>",
-    "edVerdict": "<copy verbatim from analysis.dreamSchool.edVerdict>",
-    "verdictHeadline": "<6-10 words consistent with the verdict>",
-    "reasoning": "<3-5 sentences. Name the school. Reference the student's academic and EC fit. Explain the verdict using the reason codes' meaning. Acknowledge tradeoffs (binding commitment, restricts other options).>",
+    "recommendedAction": "<copy verbatim from analysis.dreamSchool.recommendedAction>",
+    "actionLabel": "<copy verbatim from analysis.dreamSchool.actionLabel>",
+    "urgencyTone": "<copy verbatim from analysis.dreamSchool.urgencyTone>",
+    "reasoning": "<3-5 sentences. Name the school. Reference the student's academic and EC fit. Explain the recommendation using the reason codes' meaning. Acknowledge tradeoffs (binding commitment, restricts other options) where relevant.>",
     "whatWouldChangeThis": [
       "<copy verbatim from analysis.dreamSchool.leversToImprove[i].description>",
       "..."

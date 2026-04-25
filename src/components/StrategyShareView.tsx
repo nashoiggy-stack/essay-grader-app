@@ -24,7 +24,8 @@ import type { StrategyShareSnapshot } from "@/lib/strategy-share-types";
 import type {
   AcademicTier,
   ECStrengthTier,
-  EdVerdict,
+  DreamSchoolAction,
+  UrgencyTone,
 } from "@/lib/strategy-types";
 import type { Classification } from "@/lib/college-types";
 import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
@@ -155,9 +156,10 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
             defaultExpanded
           >
             <div className="space-y-4 pt-3">
-              <EdVerdictBlock
-                verdict={result.dreamSchool.edVerdict}
-                headline={result.dreamSchool.verdictHeadline}
+              <ActionVerdictBlock
+                action={result.dreamSchool.recommendedAction}
+                label={result.dreamSchool.actionLabel}
+                tone={result.dreamSchool.urgencyTone}
               />
               <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
                 {result.dreamSchool.reasoning}
@@ -396,20 +398,29 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
   );
 };
 
-// Reused from strategy/page.tsx's EdVerdictBlock — duplicated here so the
+// Mirror of strategy/page.tsx's ActionVerdictBlock — duplicated here so the
 // share view has no dependency on that local symbol. Kept minimal.
-const EDV_STYLES: Record<
-  EdVerdict,
-  { bg: string; ring: string; text: string; icon: React.ElementType; label: string }
+const TONE_STYLES: Record<
+  UrgencyTone,
+  { bg: string; ring: string; text: string; icon: React.ElementType; eyebrow: string }
 > = {
-  yes: { bg: "bg-emerald-500/[0.08]", ring: "ring-emerald-400/40", text: "text-emerald-200", icon: CheckCircle2, label: "ED: YES" },
-  conditional: { bg: "bg-amber-500/[0.08]", ring: "ring-amber-400/40", text: "text-amber-200", icon: AlertTriangle, label: "ED: CONDITIONAL" },
-  no: { bg: "bg-red-500/[0.08]", ring: "ring-red-400/40", text: "text-red-200", icon: XCircle, label: "ED: NO" },
+  go: { bg: "bg-emerald-500/[0.08]", ring: "ring-emerald-400/40", text: "text-emerald-200", icon: CheckCircle2, eyebrow: "Recommended" },
+  caution: { bg: "bg-amber-500/[0.08]", ring: "ring-amber-400/40", text: "text-amber-200", icon: AlertTriangle, eyebrow: "Proceed with care" },
+  stop: { bg: "bg-red-500/[0.08]", ring: "ring-red-400/40", text: "text-red-200", icon: XCircle, eyebrow: "Hold" },
 };
 
-function EdVerdictBlock({ verdict, headline }: { verdict: EdVerdict; headline: string }) {
-  const s = EDV_STYLES[verdict];
+function ActionVerdictBlock({
+  action,
+  label,
+  tone,
+}: {
+  action: DreamSchoolAction;
+  label: string;
+  tone: UrgencyTone;
+}) {
+  const s = TONE_STYLES[tone];
   const Icon = s.icon;
+  void action;
   return (
     <div className={`rounded-xl ${s.bg} ring-1 ${s.ring} p-4 flex items-center gap-3`}>
       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-white/[0.04]">
@@ -417,9 +428,9 @@ function EdVerdictBlock({ verdict, headline }: { verdict: EdVerdict; headline: s
       </div>
       <div className="min-w-0">
         <p className={`text-[10px] uppercase tracking-[0.18em] font-bold ${s.text} mb-0.5`}>
-          {s.label}
+          {s.eyebrow}
         </p>
-        <p className="text-[14px] text-zinc-100 font-semibold leading-snug">{headline}</p>
+        <p className="text-[14px] text-zinc-100 font-semibold leading-snug">{label}</p>
       </div>
     </div>
   );
