@@ -104,6 +104,22 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Scoped scroll-snap: only while the landing page is mounted. Other routes
+  // (colleges, strategy, essay, profile) keep normal free scrolling. Using
+  // proximity instead of mandatory so users can free-scroll between phases
+  // and the page only locks when scrolling settles near a snap target.
+  useEffect(() => {
+    const html = document.documentElement;
+    const prevSnap = html.style.scrollSnapType;
+    const prevBehavior = html.style.scrollBehavior;
+    html.style.scrollSnapType = "y proximity";
+    html.style.scrollBehavior = "smooth";
+    return () => {
+      html.style.scrollSnapType = prevSnap;
+      html.style.scrollBehavior = prevBehavior;
+    };
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
@@ -174,6 +190,9 @@ export default function LandingPage() {
       style={
         {
           height: "700vh",
+          // position relative so the absolute scroll-snap targets below
+          // resolve their `top` against this 700vh container.
+          position: "relative",
           // Lock dark theme tokens for the landing page regardless of picker.
           ["--bg-base" as string]: "#0a0a14",
           ["--bg-surface" as string]: "#0f0f1a",
@@ -361,6 +380,52 @@ export default function LandingPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Scroll-snap targets — invisible 1px markers that lock the page at
+          the three logical phases of the existing scrolly-told animation.
+          Positions map onto useScroll's progress range:
+            top:   0vh → progress 0    → hero peak
+            top: 360vh → progress 0.6  → features card mid-dwell
+            top: 600vh → progress 1.0  → CTA fully presented
+          (sectionRef is 700vh tall; viewport 100vh, so scrollY range is
+          0–600vh.) Combined with proximity snap-type, the page free-scrolls
+          between targets and only locks when scrolling settles near one. */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: 1,
+          height: 1,
+          scrollSnapAlign: "start",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "360vh",
+          left: 0,
+          width: 1,
+          height: 1,
+          scrollSnapAlign: "start",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "600vh",
+          left: 0,
+          width: 1,
+          height: 1,
+          scrollSnapAlign: "start",
+          pointerEvents: "none",
+        }}
+      />
     </div>
   );
 }
