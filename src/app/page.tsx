@@ -55,16 +55,15 @@ function FeatureCard({
   smoothProgress: ReturnType<typeof useSpring>;
 }) {
   // Tighter stagger (0.025 → 0.008) so all 8 cards finish fading in by
-  // ~0.55 of progress instead of 0.675 — gives a wider stable-visibility
-  // band before fade-out, so the snap landing at progress 0.6 hits
-  // every card already fully visible.
+  // ~0.55 of progress instead of 0.675 — gives a stable-visibility band
+  // where every card is already fully fade-in before fade-out begins.
   const start = 0.4 + index * 0.008;
   const end = start + 0.1;
-  // Fade-out pushed from [0.7, 0.78] → [0.85, 0.92] so users have a
-  // ~150vh-of-scroll dwell room around the snap point where the cards
-  // (and their click targets) are at full opacity, instead of fading
-  // out the moment the user moves.
-  const featureOpacity = useTransform(smoothProgress, [start, end, 0.85, 0.92], [0, 1, 1, 0]);
+  // Fade-out shifted from [0.7, 0.78] to [0.78, 0.86] — extends the
+  // dwell window enough that the buttons stay clickable as the user
+  // scrolls past, without holding them on screen so long that the
+  // transition into the CTA feels sluggish.
+  const featureOpacity = useTransform(smoothProgress, [start, end, 0.78, 0.86], [0, 1, 1, 0]);
   const featureY = useTransform(smoothProgress, [start, end], [30, 0]);
   const featureScale = useTransform(smoothProgress, [start, end], [0.95, 1]);
   const featureTransform = useTransform(
@@ -112,22 +111,6 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Scoped scroll-snap: only while the landing page is mounted. Other routes
-  // (colleges, strategy, essay, profile) keep normal free scrolling.
-  // Using mandatory so the page always locks to the nearest of the three
-  // snap targets after scroll settles — proximity was too gentle here
-  // because the targets are sparse (3 across 600vh) and most scroll
-  // distance falls outside the proximity zone, so users felt no snap.
-  // No scroll-behavior:smooth — it can interfere with snap animations.
-  useEffect(() => {
-    const html = document.documentElement;
-    const prevSnap = html.style.scrollSnapType;
-    html.style.scrollSnapType = "y mandatory";
-    return () => {
-      html.style.scrollSnapType = prevSnap;
-    };
-  }, []);
-
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
@@ -145,25 +128,24 @@ export default function LandingPage() {
   const heroBlurFilter = useTransform(heroBlur, (v) => `blur(${v}px)`);
   const gridOpacity = useTransform(smoothProgress, [0, 0.12], [0.4, 0]);
 
-  // Phase 2+6: Card rises and exits. Exit window pushed from 0.85→1 to
-  // 0.92→1 so the card holds steady while users are still reading the
-  // feature buttons (now fading out at 0.85→0.92).
-  const cardY = useTransform(smoothProgress, [0, 0.05, 0.3, 0.92, 1], ["110%", "110%", "0%", "0%", "-110%"]);
-  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.85, 0.92], [0.92, 0.92, 1, 1, 0.92]);
-  const cardRadius = useTransform(smoothProgress, [0.25, 0.4, 0.85, 0.92], [40, 0, 0, 40]);
+  // Phase 2+6: Card rises and exits. Exit window shifted from 0.85→1 to
+  // 0.86→1 so the card holds steady while users are reading the feature
+  // buttons (now fading out at 0.78→0.86).
+  const cardY = useTransform(smoothProgress, [0, 0.05, 0.3, 0.86, 1], ["110%", "110%", "0%", "0%", "-110%"]);
+  const cardScale = useTransform(smoothProgress, [0.05, 0.25, 0.4, 0.78, 0.86], [0.92, 0.92, 1, 1, 0.92]);
+  const cardRadius = useTransform(smoothProgress, [0.25, 0.4, 0.78, 0.86], [40, 0, 0, 40]);
 
   // Phase 5: Card content
-  // Fade-out pushed from 0.7→0.78 to 0.85→0.92 to match the new feature-card
+  // Fade-out shifted from 0.7→0.78 to 0.78→0.86 to match the new feature
   // dwell window — keeps the header text in sync with the buttons below it.
-  const contentOpacity = useTransform(smoothProgress, [0.38, 0.5, 0.85, 0.92], [0, 1, 1, 0]);
+  const contentOpacity = useTransform(smoothProgress, [0.38, 0.5, 0.78, 0.86], [0, 1, 1, 0]);
   const contentY = useTransform(smoothProgress, [0.38, 0.5], [40, 0]);
 
-  // Phase 6: CTA
-  // Pushed from 0.78→0.88 to 0.92→1.0 so it fades in AFTER the features
-  // finish fading out, instead of overlapping with them.
-  const ctaOpacity = useTransform(smoothProgress, [0.92, 1.0], [0, 1]);
-  const ctaScale = useTransform(smoothProgress, [0.92, 1.0], [0.95, 1]);
-  const ctaBlur = useTransform(smoothProgress, [0.92, 1.0], [12, 0]);
+  // Phase 6: CTA — fade-in shifted to start where features finish fading
+  // out, no overlap.
+  const ctaOpacity = useTransform(smoothProgress, [0.86, 0.96], [0, 1]);
+  const ctaScale = useTransform(smoothProgress, [0.86, 0.96], [0.95, 1]);
+  const ctaBlur = useTransform(smoothProgress, [0.86, 0.96], [12, 0]);
   const ctaBlurFilter = useTransform(ctaBlur, (v) => `blur(${v}px)`);
   const ctaPointerEvents = useTransform(ctaOpacity, (v) => (v > 0.5 ? "auto" : "none"));
 
@@ -204,9 +186,6 @@ export default function LandingPage() {
       style={
         {
           height: "700vh",
-          // position relative so the absolute scroll-snap targets below
-          // resolve their `top` against this 700vh container.
-          position: "relative",
           // Lock dark theme tokens for the landing page regardless of picker.
           ["--bg-base" as string]: "#0a0a14",
           ["--bg-surface" as string]: "#0f0f1a",
@@ -394,52 +373,6 @@ export default function LandingPage() {
           </div>
         </motion.div>
       </div>
-
-      {/* Scroll-snap targets — invisible 1px markers that lock the page at
-          the three logical phases of the existing scrolly-told animation.
-          Positions map onto useScroll's progress range:
-            top:   0vh → progress 0    → hero peak
-            top: 360vh → progress 0.6  → features card mid-dwell
-            top: 600vh → progress 1.0  → CTA fully presented
-          (sectionRef is 700vh tall; viewport 100vh, so scrollY range is
-          0–600vh.) Combined with proximity snap-type, the page free-scrolls
-          between targets and only locks when scrolling settles near one. */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: 1,
-          height: 1,
-          scrollSnapAlign: "start",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "360vh",
-          left: 0,
-          width: 1,
-          height: 1,
-          scrollSnapAlign: "start",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "600vh",
-          left: 0,
-          width: 1,
-          height: 1,
-          scrollSnapAlign: "start",
-          pointerEvents: "none",
-        }}
-      />
     </div>
   );
 }
