@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Young_Serif } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
@@ -42,6 +42,17 @@ export const metadata: Metadata = {
       "Grade essays, calculate GPA, evaluate extracurriculars, and estimate admission chances.",
   },
   metadataBase: new URL("https://admitedge.vercel.app"),
+};
+
+// Mobile viewport: viewportFit:"cover" lets the page paint into the safe-area
+// region (notch / home-indicator). Fixed UI uses env(safe-area-inset-*) below
+// in globals.css to avoid being cut off. themeColor sets the iOS Safari /
+// Android status-bar color so the app blends rather than shows a white bar.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({

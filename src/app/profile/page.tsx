@@ -32,7 +32,7 @@ export default function ProfilePage() {
   if (!loaded) {
     return (
       <AuroraBackground>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-dvh flex items-center justify-center">
           <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
         </div>
       </AuroraBackground>

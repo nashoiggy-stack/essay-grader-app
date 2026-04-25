@@ -13,7 +13,7 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({ children }) 
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden"
+      className="relative min-h-dvh overflow-hidden"
       style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}
     >
       {background === "shader" && (

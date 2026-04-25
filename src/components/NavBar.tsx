@@ -29,7 +29,13 @@ export const NavBar: React.FC = () => {
   return (
     <>
       {/* ── Floating pill nav ─────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 pointer-events-none">
+      {/* Top padding pushes the nav below the iOS notch / status bar via
+          safe-area-inset-top; max() keeps the existing 1rem when there's
+          no inset (desktop, older devices). */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+        style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
+      >
         <div className="pointer-events-auto w-full max-w-4xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
           <div className="px-4 lg:px-5 flex items-center justify-between h-12">
             {/* Home button */}
@@ -109,10 +115,12 @@ export const NavBar: React.FC = () => {
                 </>
               ) : null}
 
-              {/* Hamburger */}
+              {/* Hamburger — 44x44 minimum tap target on mobile (was 32x32,
+                  below WCAG/iOS HIG floor). Visual icon stays w-4.5 via the
+                  inner motion spans; the button just expands its hit area. */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+                className="md:hidden flex flex-col justify-center items-center min-w-[44px] min-h-[44px] gap-1.5 -mr-2"
                 aria-label="Toggle menu"
               >
                 <motion.span

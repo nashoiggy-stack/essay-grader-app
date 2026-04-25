@@ -5,6 +5,16 @@
    monochrome is a dark-base palette. */
 @custom-variant dark (&:where(.dark, .dark *, .monochrome, .monochrome *));
 
+:root {
+  /* ── Safe-area insets (notch / home indicator on iOS, gesture nav on
+     Android). Exposed as vars so any fixed-position element can opt in
+     with e.g. `padding-bottom: max(1rem, var(--safe-bottom))`. ──── */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
+}
+
 :root,
 :root.dark {
   /* ── DARK theme — cosmic depth ────────────────────────────── */
@@ -175,6 +185,29 @@
 html {
   background: var(--bg-base);
   transition: background-color 350ms var(--ease-out, ease);
+  /* Crisper text on macOS / iOS (was applied via the `antialiased` Tailwind
+     utility on the <html> tag — making it explicit + adding text-rendering
+     so it's consistent regardless of utility class evolution). */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Mobile interaction baseline ────────────────────────────── */
+/* Removes the gray flash iOS Safari paints over tappable elements on touch. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Strips the 300ms double-tap-zoom delay on tappable elements without
+   disabling pinch-zoom (which `touch-action: none` would). */
+button, a, [role="button"], [role="tab"] {
+  touch-action: manipulation;
+}
+/* iOS Safari zooms the viewport on focus when an input's font-size is below
+   16px. Force 16px on iOS specifically (the @supports rule matches Safari
+   on iOS / iPadOS only) so design can keep smaller font-sizes elsewhere. */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select { font-size: 16px; }
 }
 
 body {
@@ -197,7 +230,10 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background: var(--bg-atmosphere), var(--bg-base);
-  background-attachment: fixed;
+  /* `background-attachment: fixed` removed — broken on iOS Safari (paints
+     once, never repositions on scroll) and janky on Android Chrome. The
+     element is already `position: fixed` so the backdrop tracks the
+     viewport correctly without it. */
   transition: opacity 350ms var(--ease-out, ease);
 }
 

@@ -47,11 +47,14 @@ export const SaveIndicator: React.FC = () => {
   }, []);
 
   // BackgroundPicker (phase 06) sits at bottom-4 right-4. Stack this above it.
+  // bottom uses max() with env(safe-area-inset-bottom) so the indicator
+  // clears the iOS home-indicator bar (otherwise it sits behind it).
   return (
     <div
       role="status"
       aria-live="polite"
-      className="fixed right-4 bottom-20 sm:bottom-20 z-40 pointer-events-none"
+      className="fixed right-4 z-40 pointer-events-none"
+      style={{ bottom: "max(5rem, calc(5rem + env(safe-area-inset-bottom)))" }}
     >
       <AnimatePresence>
         {state !== "idle" && (
