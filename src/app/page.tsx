@@ -105,18 +105,18 @@ export default function LandingPage() {
   }, []);
 
   // Scoped scroll-snap: only while the landing page is mounted. Other routes
-  // (colleges, strategy, essay, profile) keep normal free scrolling. Using
-  // proximity instead of mandatory so users can free-scroll between phases
-  // and the page only locks when scrolling settles near a snap target.
+  // (colleges, strategy, essay, profile) keep normal free scrolling.
+  // Using mandatory so the page always locks to the nearest of the three
+  // snap targets after scroll settles — proximity was too gentle here
+  // because the targets are sparse (3 across 600vh) and most scroll
+  // distance falls outside the proximity zone, so users felt no snap.
+  // No scroll-behavior:smooth — it can interfere with snap animations.
   useEffect(() => {
     const html = document.documentElement;
     const prevSnap = html.style.scrollSnapType;
-    const prevBehavior = html.style.scrollBehavior;
-    html.style.scrollSnapType = "y proximity";
-    html.style.scrollBehavior = "smooth";
+    html.style.scrollSnapType = "y mandatory";
     return () => {
       html.style.scrollSnapType = prevSnap;
-      html.style.scrollBehavior = prevBehavior;
     };
   }, []);
 
