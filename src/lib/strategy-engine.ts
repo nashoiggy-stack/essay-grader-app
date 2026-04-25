@@ -19,6 +19,9 @@ import type {
   CompetitivenessPositioning,
   MajorAwareRecommendations,
   MissingDataItem,
+  DreamSchoolVerdict,
+  DreamSchoolLever,
+  EdVerdict,
 } from "./strategy-types";
 import type { ActivityEvaluation, ProfileSpike } from "./extracurricular-types";
 import { computeReadinessScore, bandFromScore } from "./extracurricular-types";
@@ -713,6 +716,243 @@ export function recommendCollegesByMajor(p: StrategyProfile): MajorAwareRecommen
   };
 }
 
+// ── Dream-school ED verdict (deterministic) ────────────────────────────────
+//
+// The ED yes/conditional/no decision drives a binding application choice.
+// It must be auditable and stable across regenerations on identical inputs,
+// not a vibe call by the LLM. This function applies an explicit rule
+// hierarchy and pulls lever copy from the weakness analysis where relevant
+// — never invents gap numbers, only references ones already computed
+// upstream.
+//
+// Consistency contract with analyzeEarlyStrategy:
+//   - If the engine picked the dream school as edCandidate, the verdict
+//     here MUST be "yes" (rule 3 fires).
+//   - If the engine picked a different pinned school as edCandidate AND
+//     the dream school also offers ED, the verdict MUST be "no" with
+//     reason "better-ed-elsewhere" (rule 4 fires).
+//   - These are the only two paths where the engine has an opinion the
+//     verdict could contradict; rules 5–7 cover cases the engine doesn't
+//     speak to (no pinned ED candidate, fixable gaps, etc.).
+
+function gapLeverForBelowFloor(p: StrategyProfile, school: import("./college-types").College): DreamSchoolLever {
+  // Pick whichever academic gap is largest in absolute terms relative to
+  // the school's own averages. We never invent target numbers — they come
+  // straight from the College record.
+  const uw = p.gpa.uw;
+  const sat = p.tests.sat;
+  const act = p.tests.act;
+
+  if (uw != null && uw < school.avgGPAUW) {
+    return {
+      description: `Raise UW GPA from ${uw.toFixed(2)} toward ${school.avgGPAUW.toFixed(2)} (${school.name}'s admitted average) — the gap is the dominant signal here.`,
+      impact: "high",
+    };
+  }
+  if (sat != null && sat < school.sat75) {
+    return {
+      description: `Improve SAT from ${sat} toward ${school.sat75} (${school.name}'s 75th percentile) — that's the bar admits consistently clear.`,
+      impact: "high",
+    };
+  }
+  if (act != null && act < school.act75) {
+    return {
+      description: `Improve ACT from ${act} toward ${school.act75} (${school.name}'s 75th percentile).`,
+      impact: "high",
+    };
+  }
+  return {
+    description: `Close the academic gap to ${school.name}'s admitted profile (UW GPA ${school.avgGPAUW.toFixed(2)}, SAT ${school.sat75}, ACT ${school.act75}). Without that, ED won't rescue the application.`,
+    impact: "high",
+  };
+}
+
+function leverFromWeaknesses(
+  weaknesses: readonly WeaknessFlag[],
+): DreamSchoolLever | null {
+  // Pick the highest-severity weakness with a user-facing detail. The detail
+  // strings already reference concrete user data (GPA values, scores, EC
+  // counts) — no need to reformat them.
+  const order: Record<WeaknessFlag["severity"], number> = {
+    critical: 0, high: 1, medium: 2, low: 3,
+  };
+  const sorted = [...weaknesses].sort((a, b) => order[a.severity] - order[b.severity]);
+  const top = sorted[0];
+  if (!top) return null;
+  return {
+    description: top.detail || top.label,
+    impact: top.severity === "critical" || top.severity === "high" ? "high" : "medium",
+  };
+}
+
+function hasFixableGap(
+  p: StrategyProfile,
+  ec: ECStrength,
+  weaknesses: readonly WeaknessFlag[],
+): boolean {
+  // Rule 5 trigger: target tier overall, but specific addressable gaps that
+  // would shift fit at this school. Mirrors the spec's three checks.
+  if (p.essay?.summaryScore != null && p.essay.summaryScore < 75) return true;
+  if (ec.tier1Count === 0 && ec.tier2Count === 0) return true;
+  for (const w of weaknesses) {
+    // "missing-*" flags on critical fields imply the verdict could shift
+    // once the data is in.
+    if (w.code.startsWith("missing-") && (w.severity === "critical" || w.severity === "high")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function computeDreamSchoolVerdict(
+  p: StrategyProfile,
+  weaknesses: readonly WeaknessFlag[],
+  ec: ECStrength,
+  earlyStrategy: readonly EarlyRecommendation[],
+): DreamSchoolVerdict | null {
+  const dreamName = p.dreamSchool?.trim();
+  if (!dreamName) return null;
+
+  // Resolve the dream school + its classification. Prefer the pinned entry
+  // (already classified by the engine), else look it up in COLLEGES and
+  // classify on the fly using the same logic.
+  const pinned = p.pinnedSchools.find(
+    (s) => s.classified.college.name.toLowerCase() === dreamName.toLowerCase(),
+  );
+
+  let school: import("./college-types").College | null = null;
+  let classification: Classification | null = null;
+
+  if (pinned) {
+    school = pinned.classified.college;
+    classification = pinned.classified.classification;
+  } else {
+    const found = COLLEGES.find(
+      (c) => c.name.toLowerCase() === dreamName.toLowerCase(),
+    );
+    if (found) {
+      school = found;
+      const essayCA = p.essay?.summaryScore ?? null;
+      const essayV = p.essay?.vspice ?? null;
+      const { classification: cls } = classifyCollege(
+        found, p.gpa.uw, p.gpa.w, p.tests.sat, p.tests.act, essayCA, essayV,
+      );
+      classification = cls;
+    }
+  }
+
+  if (!school || !classification) {
+    // Dream school name doesn't match any known college — can't compute a
+    // verdict. Returning null lets the prompt skip the section instead of
+    // narrating a fabricated decision.
+    return null;
+  }
+
+  const options = getApplicationOptions(school);
+  const hasED = options.some((o) => o.type === "ED" || o.type === "ED2");
+  const hasREA = options.some((o) => o.type === "REA" || o.type === "SCEA");
+
+  // Engine's existing ED pick (from pinned schools, fit-ranked). May be null
+  // if no pinned reach/target with ED exists.
+  const edCandidate = earlyStrategy.find(
+    (r) => r.suggestedPlan === "ED" || r.suggestedPlan === "ED2",
+  );
+  const dreamIsEdCandidate =
+    edCandidate?.collegeName.toLowerCase() === school.name.toLowerCase();
+
+  const verdictBase = (
+    edVerdict: EdVerdict,
+    reasonCodes: readonly string[],
+    levers: readonly DreamSchoolLever[],
+  ): DreamSchoolVerdict => ({
+    schoolName: school!.name,
+    edVerdict,
+    verdictReasonCodes: reasonCodes,
+    leversToImprove: levers,
+  });
+
+  // ── Rule 1: ED not offered at all ────────────────────────────────────────
+  if (!hasED) {
+    const altText = hasREA
+      ? "Restrictive Early Action is the strongest available early lever here."
+      : "Early Action (where offered) and a polished Regular Decision app are the only available levers.";
+    return verdictBase("no", ["ed-not-offered"], [
+      {
+        description: `This school does not offer Early Decision. ${altText}`,
+        impact: "high",
+      },
+    ]);
+  }
+
+  // ── Rule 2: classification "unlikely" ────────────────────────────────────
+  if (classification === "unlikely") {
+    return verdictBase("no", ["below-floor"], [gapLeverForBelowFloor(p, school)]);
+  }
+
+  // ── Rule 3: dream school IS the engine's ED pick ─────────────────────────
+  // The engine only picks reach/target with ED and excludes "unlikely".
+  // Rule 2 already handled unlikely above, so reaching here with
+  // dreamIsEdCandidate=true means the engine and the verdict agree.
+  if (dreamIsEdCandidate) {
+    return verdictBase(
+      "yes",
+      ["target-tier-fit", "ed-available", "highest-leverage-pick"],
+      [
+        {
+          description:
+            "Confirm financial fit before binding — ED is a contractual commitment and cannot be reversed if aid falls short.",
+          impact: "medium",
+        },
+      ],
+    );
+  }
+
+  // ── Rule 4: ED elsewhere is engine's better pick ─────────────────────────
+  // Fires when the engine picked a different pinned school as edCandidate
+  // AND classification at the dream school is at least target tier (ED at
+  // a clearly weaker fit isn't a meaningful comparison to flag).
+  const isTargetOrBetter =
+    classification === "target" ||
+    classification === "likely" ||
+    classification === "safety";
+
+  if (edCandidate && !dreamIsEdCandidate && isTargetOrBetter) {
+    return verdictBase("no", ["better-ed-elsewhere"], [
+      {
+        description: `The engine's strongest ED pick is ${edCandidate.collegeName}. Apply RD at ${school.name} and reserve the binding ED slot for the higher-leverage school.`,
+        impact: "medium",
+      },
+    ]);
+  }
+
+  // ── Rule 5: target tier with fixable gaps ────────────────────────────────
+  if (classification === "target" && hasFixableGap(p, ec, weaknesses)) {
+    const lever = leverFromWeaknesses(weaknesses) ?? {
+      description: `Tighten the highest-leverage gap in your profile before binding ED at ${school.name}.`,
+      impact: "high" as const,
+    };
+    return verdictBase("conditional", ["fixable-gaps"], [lever]);
+  }
+
+  // ── Rule 6: competitive (likely / safety) at school AND ED available ────
+  if (classification === "likely" || classification === "safety") {
+    return verdictBase("yes", ["strong-fit"], [
+      {
+        description:
+          "Confirm financial fit before binding — ED is a contractual commitment and cannot be reversed if aid falls short.",
+        impact: "medium",
+      },
+    ]);
+  }
+
+  // ── Rule 7: fallback ─────────────────────────────────────────────────────
+  const lever = leverFromWeaknesses(weaknesses) ?? {
+    description: `Strengthen the closest-threshold gap in your profile before deciding ED at ${school.name}.`,
+    impact: "high" as const,
+  };
+  return verdictBase("conditional", ["borderline-case"], [lever]);
+}
+
 // ── Orchestrator ────────────────────────────────────────────────────────────
 
 export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
@@ -724,6 +964,7 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
   const earlyStrategy = analyzeEarlyStrategy(p);
   const positioning = positioningVsTopSchools(p, academic, ec);
   const majorRecommendations = recommendCollegesByMajor(p);
+  const dreamSchool = computeDreamSchoolVerdict(p, weaknesses, ec, earlyStrategy);
 
   const missingData: string[] = [];
   if (!p.hasGpa) missingData.push("GPA (run the GPA Calculator)");
@@ -797,5 +1038,6 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
     majorRecommendations,
     missingData,
     missingDataRanked,
+    dreamSchool,
   };
 }

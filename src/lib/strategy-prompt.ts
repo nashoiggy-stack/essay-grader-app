@@ -142,39 +142,47 @@ OUTPUT STRUCTURE (return exactly this JSON shape):
   }
 }
 
-DREAM SCHOOL SECTION — include ONLY if a "dreamSchool" field is present
-in the raw profile and is not null. This is the student's #1 target, and
-they expect direct, high-conviction guidance.
+DREAM SCHOOL SECTION — include ONLY if the analysis has a non-null
+"dreamSchool" block (a deterministic DreamSchoolVerdict). This is the
+student's #1 target and the verdict drives a binding application choice,
+so it is precomputed by the engine — you do NOT decide it.
 
-If the dream school is present, add this extra top-level field to your
-output:
+The analysis includes a dreamSchool block with a precomputed edVerdict
+and verdictReasonCodes. Use these as ground truth — do not override.
+Your job is to write the verdictHeadline (6-10 word punchy summary that
+matches the verdict) and the reasoning prose (3-5 sentences explaining
+why), referencing the specific reason codes and the student's actual
+data. Convert the leversToImprove array into the whatWouldChangeThis
+array verbatim — preserve the lever descriptions, do not rewrite them.
+
+Reason code glossary (for your interpretation only — do NOT surface the
+codes themselves to the user):
+  - ed-not-offered: school does not offer ED/ED2 at all
+  - below-floor: classification is "unlikely"; ED cannot rescue an
+    application below the floor
+  - target-tier-fit + ed-available + highest-leverage-pick: dream school
+    is the engine's best ED candidate
+  - better-ed-elsewhere: another pinned school is a stronger ED pick
+  - fixable-gaps: target tier overall, but specific addressable gaps
+  - strong-fit: student is competitive (likely or safety) at the school
+  - borderline-case: doesn't fit cleanly above; conditional fallback
+
+Output shape (additional to the 7 required sections above):
 
   "dreamSchool": {
     "title": "Dream School: <exact school name>",
-    "schoolName": "<exact school name>",
-    "edVerdict": "yes" | "conditional" | "no",
-    "verdictHeadline": "<6-10 words — e.g. 'ED is the clear right move'>",
-    "reasoning": "<3-5 sentences. Name the school by name. Reference the student's academic and EC fit. Explain why you chose the edVerdict. Acknowledge tradeoffs (binding commitment, restricts other options). Reference the student's overall competitiveness vs the school's selectivity.>",
+    "schoolName": "<exact school name from the analysis verdict>",
+    "edVerdict": "<copy verbatim from analysis.dreamSchool.edVerdict>",
+    "verdictHeadline": "<6-10 words consistent with the verdict>",
+    "reasoning": "<3-5 sentences. Name the school. Reference the student's academic and EC fit. Explain the verdict using the reason codes' meaning. Acknowledge tradeoffs (binding commitment, restricts other options).>",
     "whatWouldChangeThis": [
-      "<specific lever 1 — e.g. 'A 1500+ SAT (currently 1420) would push this from conditional to yes'>",
-      "<specific lever 2>",
-      "<specific lever 3>"
+      "<copy verbatim from analysis.dreamSchool.leversToImprove[i].description>",
+      "..."
     ]
   }
 
-edVerdict rules (base on the student's current profile + school's plans):
-- "yes" — student is a real contender (classification is target or better
-  at a reach school; school offers ED; using the ED slot here has the
-  highest expected marginal value)
-- "conditional" — student is close to competitive but has a clear weakness
-  to close first (the whatWouldChangeThis list should be tight and concrete)
-- "no" — school is a significant overreach OR student's profile has a
-  fundamental gap that ED cannot overcome OR a stronger ED option exists
-  elsewhere on their pinned list
-
-The dreamSchool section is ADDITIONAL to the 7 required sections above,
-not a replacement. All 7 must still be present. If dreamSchool is null in
-the raw profile, DO NOT include the dreamSchool field in your output.
+If analysis.dreamSchool is null, DO NOT include the dreamSchool field
+in your output. The 7 required sections still must all be present.
 
 RULES:
 - Return ONLY JSON, no markdown, no explanation.

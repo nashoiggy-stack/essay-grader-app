@@ -152,6 +152,23 @@ export interface MissingDataItem {
   readonly ctaHref: string;
 }
 
+// Deterministic dream-school ED verdict. Computed by the engine, not the
+// LLM — the verdict drives a binding application decision, so it must be
+// auditable and stable across regenerations on identical inputs. The LLM
+// downstream only narrates these fields; it cannot override the verdict
+// or invent levers.
+export interface DreamSchoolLever {
+  readonly description: string;          // user-facing prose
+  readonly impact: "high" | "medium";
+}
+
+export interface DreamSchoolVerdict {
+  readonly schoolName: string;
+  readonly edVerdict: EdVerdict;
+  readonly verdictReasonCodes: readonly string[];   // stable codes — for the prompt, not for users
+  readonly leversToImprove: readonly DreamSchoolLever[];
+}
+
 export interface StrategyAnalysis {
   readonly academic: AcademicStrength;
   readonly ec: ECStrength;
@@ -165,6 +182,9 @@ export interface StrategyAnalysis {
   // Phase 10: ranked structured version of missingData. Same coverage; the
   // banner UI consumes this. Sorted high → medium → low.
   readonly missingDataRanked: readonly MissingDataItem[];
+  // Null when profile.dreamSchool is null/empty. When present, this is the
+  // ground truth the LLM must narrate without overriding.
+  readonly dreamSchool: DreamSchoolVerdict | null;
 }
 
 // Major-aware recommendation set. Populated by recommendCollegesByMajor.
