@@ -658,11 +658,15 @@ function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
         </div>
       )}
 
-      {/* Side-by-side donut charts */}
+      {/* Side-by-side donut charts. auto-fit + minmax(min(100%, 260px), 1fr)
+          collapses to 1 column on iPhone (where 260px > viewport — `min(100%,
+          260px)` resolves to 100%), 2 columns at iPad portrait, and up to 4
+          on desktop. The previous inline `repeat(N, 1fr)` forced N columns
+          at every width, squishing the charts on narrow screens. */}
       <div
         className="grid gap-3"
         style={{
-          gridTemplateColumns: `repeat(${Math.min(colleges.length, 4)}, minmax(0, 1fr))`,
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
         }}
       >
         {colleges.map((c) => (
