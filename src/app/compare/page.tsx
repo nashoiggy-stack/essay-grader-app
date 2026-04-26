@@ -472,7 +472,12 @@ function ComparisonRow({
         <div
           className="grid gap-2"
           style={{
-            gridTemplateColumns: `repeat(${collegeCount}, minmax(0, 1fr))`,
+            // auto-fit + minmax(min(100%, 140px), 1fr) — wraps to as many
+            // columns as fit at 140px+ each, falls to single-column on
+            // phones too narrow to fit one card. Was `repeat(N, 1fr)`
+            // which forced N equal columns at every viewport, squishing
+            // the cell text on mobile.
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))",
           }}
         >
           {row.values.map((v) => (
@@ -717,7 +722,7 @@ function AdmissionsTab({ colleges }: { colleges: readonly College[] }) {
       </CompareSection>
 
       <CompareSection title="Test Policy" defaultExpanded={false}>
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+        <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))" }}>
           {colleges.map((c) => (
             <MetricCard
               key={c.name}
@@ -751,7 +756,7 @@ function AcademicsTab({ colleges }: { colleges: readonly College[] }) {
         </CompareRow>
         {colleges.some((c) => c.avgGPARange) && (
           <CompareRow label="Estimated GPA Range">
-            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+            <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))" }}>
               {colleges.map((c) => (
                 <MetricCard
                   key={c.name}
@@ -783,7 +788,7 @@ function AcademicsTab({ colleges }: { colleges: readonly College[] }) {
       </CompareSection>
 
       <CompareSection title="Academic Character" defaultExpanded={false}>
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+        <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))" }}>
           {colleges.map((c) => (
             <MetricCard
               key={c.name}
@@ -863,7 +868,7 @@ function CostTab({ colleges }: { colleges: readonly College[] }) {
       )}
 
       <CompareSection title="Financial Aid">
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}>
+        <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))" }}>
           {colleges.map((c) => (
             <div key={c.name} className="space-y-2">
               <MetricCard
