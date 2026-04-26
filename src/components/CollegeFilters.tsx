@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Check, X } from "lucide-react";
+import React, { useState } from "react";
+import { X } from "lucide-react";
 import type { CollegeFilters } from "@/lib/college-types";
 import { REGIONS } from "@/lib/college-types";
+import { MAX_MAJORS, MAX_INTERESTS } from "@/hooks/useCollegeFilter";
 import { MajorSelect } from "./MajorSelect";
 
 interface CollegeFiltersProps {
@@ -21,31 +22,56 @@ const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
 export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
   filters, onUpdate, onReset, resultCount,
 }) => {
-  // Interest uses a commit-on-Done model rather than every-keystroke so the
-  // user gets explicit confirmation that their niche is applied. The typed
-  // value lives in local state; `filters.intendedInterest` is the committed
-  // one that downstream matchers consume.
-  const [pendingInterest, setPendingInterest] = useState(filters.intendedInterest);
+  // Pending text for the interest input — commit on Enter or Add button.
+  // The committed list lives on filters.intendedInterests; this is just the
+  // current keystroke buffer.
+  const [pendingInterest, setPendingInterest] = useState("");
 
-  // When the committed value changes externally (cross-page sync, reset),
-  // mirror it into the pending text field so the input doesn't go stale.
-  // This is the legitimate "sync from prop" pattern; the lint rule is a
-  // blunt instrument here.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPendingInterest(filters.intendedInterest);
-  }, [filters.intendedInterest]);
-
-  const committed = filters.intendedInterest.trim();
-  const pending = pendingInterest.trim();
-  const hasPendingChange = pending !== committed;
-
-  const commitInterest = () => {
-    onUpdate("intendedInterest", pendingInterest.trim());
+  // ── Major chip handlers ─────────────────────────────────────────────────
+  const addMajor = (m: string) => {
+    if (!m || m === "Any") return;
+    if (filters.intendedMajors.includes(m)) return;
+    if (filters.intendedMajors.length >= MAX_MAJORS) return;
+    const nextSaved = [...filters.intendedMajors, m];
+    const nextActive = [...filters.activeMajors, m]; // newly added is active by default
+    onUpdate("intendedMajors", nextSaved);
+    onUpdate("activeMajors", nextActive);
   };
-  const clearInterest = () => {
+  const toggleMajor = (m: string) => {
+    const isActive = filters.activeMajors.includes(m);
+    const nextActive = isActive
+      ? filters.activeMajors.filter((x) => x !== m)
+      : [...filters.activeMajors, m];
+    onUpdate("activeMajors", nextActive);
+  };
+  const removeMajor = (m: string) => {
+    onUpdate("intendedMajors", filters.intendedMajors.filter((x) => x !== m));
+    onUpdate("activeMajors", filters.activeMajors.filter((x) => x !== m));
+  };
+
+  // ── Interest chip handlers ──────────────────────────────────────────────
+  const addInterest = () => {
+    const trimmed = pendingInterest.trim();
+    if (!trimmed) return;
+    if (filters.intendedInterests.includes(trimmed)) {
+      setPendingInterest("");
+      return;
+    }
+    if (filters.intendedInterests.length >= MAX_INTERESTS) return;
+    onUpdate("intendedInterests", [...filters.intendedInterests, trimmed]);
+    onUpdate("activeInterests", [...filters.activeInterests, trimmed]);
     setPendingInterest("");
-    onUpdate("intendedInterest", "");
+  };
+  const toggleInterest = (i: string) => {
+    const isActive = filters.activeInterests.includes(i);
+    const nextActive = isActive
+      ? filters.activeInterests.filter((x) => x !== i)
+      : [...filters.activeInterests, i];
+    onUpdate("activeInterests", nextActive);
+  };
+  const removeInterest = (i: string) => {
+    onUpdate("intendedInterests", filters.intendedInterests.filter((x) => x !== i));
+    onUpdate("activeInterests", filters.activeInterests.filter((x) => x !== i));
   };
 
   return (
@@ -90,16 +116,75 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
           onChange={(e) => onUpdate("actScience", e.target.value)} />
         <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
       </div>
-      <div>
-        <label className={labelClass}>What do you want to study?</label>
+      {/* Majors — multi-select chip pattern. Selected majors render as chips
+          below the dropdown. Click a chip to toggle active/inactive (saved
+          but not filtering). The "×" removes from the list entirely. */}
+      <div className="col-span-2 sm:col-span-3 lg:col-span-4">
+        <label className={labelClass}>
+          What do you want to study? Add up to {MAX_MAJORS}.
+        </label>
         <MajorSelect
-          value={filters.major}
-          onChange={(v) => onUpdate("major", v)}
+          value=""
+          onChange={(v) => addMajor(v)}
+          disabled={filters.intendedMajors.length >= MAX_MAJORS}
+          placeholder={
+            filters.intendedMajors.length >= MAX_MAJORS
+              ? "Cap reached — remove a chip first"
+              : "Pick a major to add…"
+          }
         />
-        <p className="text-[10px] text-zinc-600 mt-1">Flags strong matches &mdash; doesn&apos;t filter out others.</p>
+        {filters.intendedMajors.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {filters.intendedMajors.map((m) => {
+              const active = filters.activeMajors.includes(m);
+              return (
+                <span
+                  key={m}
+                  className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5 ring-1 transition-[background-color,color] duration-200 ${
+                    active
+                      ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
+                      : "bg-transparent ring-white/[0.12] text-zinc-400"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleMajor(m)}
+                    aria-label={`${active ? "Deactivate" : "Activate"} ${m}`}
+                    aria-pressed={active}
+                    className="font-semibold"
+                  >
+                    {m}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeMajor(m)}
+                    aria-label={`Remove ${m}`}
+                    className="text-current opacity-60 hover:opacity-100 transition-opacity p-0.5"
+                  >
+                    <X className="w-3 h-3" strokeWidth={2.5} />
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+        )}
+        <p className="text-[10px] text-zinc-600 mt-1.5">
+          {filters.activeMajors.length > 0
+            ? `Filtering on: ${filters.activeMajors.join(", ")} · click a chip to toggle, × to remove`
+            : filters.intendedMajors.length > 0
+              ? "All majors inactive — click a chip to filter on it"
+              : "Add majors to flag strong-fit schools — doesn't filter others out"}
+          {filters.intendedMajors.length === MAX_MAJORS && (
+            <span className="text-amber-400/80 ml-1">· {MAX_MAJORS}/{MAX_MAJORS} used</span>
+          )}
+        </p>
       </div>
-      <div>
-        <label className={labelClass}>Specific interest (optional)</label>
+      {/* Interests — same chip pattern, free-text input. Press Enter or
+          click Add to commit a chip. */}
+      <div className="col-span-2 sm:col-span-3 lg:col-span-4">
+        <label className={labelClass}>
+          Specific interests (optional). Add up to {MAX_INTERESTS}.
+        </label>
         <div className="flex gap-1.5">
           <input
             type="text"
@@ -107,42 +192,69 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
             className={`${inputClass} flex-1`}
             value={pendingInterest}
             onChange={(e) => setPendingInterest(e.target.value)}
+            disabled={filters.intendedInterests.length >= MAX_INTERESTS}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && hasPendingChange) {
+              if (e.key === "Enter" && pendingInterest.trim()) {
                 e.preventDefault();
-                commitInterest();
+                addInterest();
               }
             }}
           />
-          {hasPendingChange && (
-            <button
-              type="button"
-              onClick={commitInterest}
-              aria-label="Apply interest"
-              className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 px-2.5 text-xs font-semibold transition-colors"
-            >
-              Done
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={addInterest}
+            disabled={!pendingInterest.trim() || filters.intendedInterests.length >= MAX_INTERESTS}
+            aria-label="Add interest"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-white/[0.04] disabled:text-zinc-600 text-blue-200 px-3 text-xs font-semibold transition-colors"
+          >
+            Add
+          </button>
         </div>
-        {committed ? (
-          <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/25 px-2 py-0.5 text-[11px] text-emerald-300">
-            <Check className="w-3 h-3" strokeWidth={3} />
-            <span className="truncate max-w-[180px]">Applied: {committed}</span>
-            <button
-              type="button"
-              onClick={clearInterest}
-              aria-label="Clear interest"
-              className="ml-0.5 text-emerald-400/70 hover:text-emerald-200 transition-colors"
-            >
-              <X className="w-3 h-3" strokeWidth={2.5} />
-            </button>
+        {filters.intendedInterests.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {filters.intendedInterests.map((i) => {
+              const active = filters.activeInterests.includes(i);
+              return (
+                <span
+                  key={i}
+                  className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5 ring-1 transition-[background-color,color] duration-200 ${
+                    active
+                      ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
+                      : "bg-transparent ring-white/[0.12] text-zinc-400"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleInterest(i)}
+                    aria-label={`${active ? "Deactivate" : "Activate"} ${i}`}
+                    aria-pressed={active}
+                    className="font-semibold truncate max-w-[160px]"
+                  >
+                    {i}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeInterest(i)}
+                    aria-label={`Remove ${i}`}
+                    className="text-current opacity-60 hover:opacity-100 transition-opacity p-0.5"
+                  >
+                    <X className="w-3 h-3" strokeWidth={2.5} />
+                  </button>
+                </span>
+              );
+            })}
           </div>
-        ) : (
-          <p className="text-[10px] text-zinc-600 mt-1">
-            Niche or theme. Press <span className="text-zinc-400">Done</span> to apply.
-          </p>
         )}
+        <p className="text-[10px] text-zinc-600 mt-1.5">
+          {filters.activeInterests.length > 0
+            ? `Filtering on: ${filters.activeInterests.join(", ")}`
+            : filters.intendedInterests.length > 0
+              ? "All interests inactive — click a chip to filter on it"
+              : "Niches and themes; matched fuzzily against college tags"}
+          {filters.intendedInterests.length === MAX_INTERESTS && (
+            <span className="text-amber-400/80 ml-1">· {MAX_INTERESTS}/{MAX_INTERESTS} used</span>
+          )}
+        </p>
       </div>
 
       {/* Preferences */}

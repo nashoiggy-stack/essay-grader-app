@@ -15,6 +15,12 @@ interface MajorSelectProps {
   readonly id?: string;
   readonly className?: string;
   readonly ariaLabel?: string;
+  readonly disabled?: boolean;
+  // Optional placeholder rendered as a disabled empty-value option at the
+  // top. Used by the chip add-pattern where the parent always re-sets
+  // value to "" after each pick — the placeholder gives the select a
+  // sensible empty state to show.
+  readonly placeholder?: string;
 }
 
 const DEFAULT_SELECT_CLASS =
@@ -26,6 +32,8 @@ export const MajorSelect: React.FC<MajorSelectProps> = ({
   id,
   className,
   ariaLabel,
+  disabled,
+  placeholder,
 }) => {
   return (
     <select
@@ -33,8 +41,14 @@ export const MajorSelect: React.FC<MajorSelectProps> = ({
       value={value}
       aria-label={ariaLabel ?? "Intended major"}
       onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
       className={className ?? DEFAULT_SELECT_CLASS}
     >
+      {placeholder !== undefined && (
+        <option value="" disabled hidden={false}>
+          {placeholder}
+        </option>
+      )}
       {MAJOR_GROUPS.map((group) => (
         <optgroup key={group.label} label={group.label}>
           {group.majors.map((m) => (

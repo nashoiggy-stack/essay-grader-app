@@ -163,8 +163,8 @@ export default function CollegesPage() {
               focusedFlatIndex={focusedIndex}
               onSortedChange={handleSortedChange}
               hasMajorPreference={
-                (!!filters.major && filters.major !== "Any") ||
-                !!filters.intendedInterest.trim()
+                filters.activeMajors.length > 0 ||
+                filters.activeInterests.some((i) => i.trim().length > 0)
               }
               onShowGuide={() => {
                 setShowGuide(true);

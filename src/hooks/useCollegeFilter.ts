@@ -5,9 +5,45 @@ import { COLLEGES } from "@/data/colleges";
 import type { CollegeFilters, ClassifiedCollege } from "@/lib/college-types";
 import { EMPTY_FILTERS as DEFAULT_FILTERS } from "@/lib/college-types";
 import { classifyCollege } from "@/lib/admissions";
-import { computeMajorFit, buildMatchReason, MAJOR_MATCH_RANK } from "@/lib/major-match";
+import { computeMajorFit, computeMajorFitMulti, MAJOR_MATCH_RANK } from "@/lib/major-match";
 import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
 import { setItemAndNotify } from "@/lib/sync-event";
+
+// Caps from the spec — keeps the chip UI scannable and the per-card
+// breakdown popover from running off the screen.
+export const MAX_MAJORS = 5;
+export const MAX_INTERESTS = 5;
+
+// Helper: read profile and derive the saved + active arrays. Migrates
+// legacy single-string `intendedMajor` / `intendedInterest` into the
+// array shape on first read so existing profiles keep working without
+// data loss. Returns the four arrays the filter uses.
+function readMajorPrefs(p: Record<string, unknown>): {
+  intendedMajors: string[];
+  activeMajors: string[];
+  intendedInterests: string[];
+  activeInterests: string[];
+} {
+  const arr = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.length > 0) : [];
+
+  const legacyMajor = typeof p.intendedMajor === "string" && p.intendedMajor ? p.intendedMajor : null;
+  const legacyInterest = typeof p.intendedInterest === "string" && p.intendedInterest ? p.intendedInterest : null;
+
+  let intendedMajors = arr(p.intendedMajors);
+  let activeMajors = arr(p.activeMajors);
+  let intendedInterests = arr(p.intendedInterests);
+  let activeInterests = arr(p.activeInterests);
+
+  // Migration: if arrays are empty but a legacy single value exists, seed
+  // arrays from it. New writes will persist the arrays so this is a one-shot.
+  if (intendedMajors.length === 0 && legacyMajor) intendedMajors = [legacyMajor];
+  if (activeMajors.length === 0 && legacyMajor) activeMajors = [legacyMajor];
+  if (intendedInterests.length === 0 && legacyInterest) intendedInterests = [legacyInterest];
+  if (activeInterests.length === 0 && legacyInterest) activeInterests = [legacyInterest];
+
+  return { intendedMajors, activeMajors, intendedInterests, activeInterests };
+}
 
 // Pass 4 — cached LLM interest-mapping result. Matches the shape of what
 // /api/interest-map returns; stored on the profile as `interest_map` once
@@ -78,6 +114,8 @@ export function useCollegeFilter() {
         }
       } catch { /* ignore */ }
 
+      const prefs = readMajorPrefs(p as Record<string, unknown>);
+
       setFilters((prev) => ({
         ...prev,
         gpaUW: gpaUW || prev.gpaUW || "",
@@ -90,11 +128,13 @@ export function useCollegeFilter() {
           : prev.act) || "",
         essayCommonApp: essayCA || prev.essayCommonApp || "",
         essayVspice: essayV || prev.essayVspice || "",
-        // Major/interest persist from the shared profile, but only adopt
-        // the stored value if the user hasn't already typed something
-        // different into this page's filter panel.
-        major: prev.major || p.intendedMajor || "",
-        intendedInterest: prev.intendedInterest || p.intendedInterest || "",
+        // Major/interest preferences persist from the shared profile, but
+        // only adopt the stored value if the user hasn't already chosen
+        // something different in this filter panel.
+        intendedMajors: prev.intendedMajors.length > 0 ? prev.intendedMajors : prefs.intendedMajors,
+        activeMajors: prev.activeMajors.length > 0 ? prev.activeMajors : prefs.activeMajors,
+        intendedInterests: prev.intendedInterests.length > 0 ? prev.intendedInterests : prefs.intendedInterests,
+        activeInterests: prev.activeInterests.length > 0 ? prev.activeInterests : prefs.activeInterests,
       }));
     } catch (e) {
       console.warn("Could not read sources:", e);
@@ -128,7 +168,11 @@ export function useCollegeFilter() {
       setInterestMap(null);
       return;
     }
-    const interest = filters.intendedInterest.trim();
+    // Multi-interest: still only fetch one map at a time — pick the first
+    // active interest. The matcher applies the resulting relatedMajors /
+    // expandedKeywords across every active entry's score, which is the
+    // intended widening effect.
+    const interest = (filters.activeInterests[0] ?? "").trim();
     if (!interest) {
       setInterestMap(null);
       return;
@@ -189,23 +233,27 @@ export function useCollegeFilter() {
     // NB: interestMap isn't a dependency. The effect only writes it, and
     // re-running on its own writes would loop when the cached-match branch
     // sets a fresh object for the same interest.
-  }, [filters.intendedInterest]);
+  }, [filters.activeInterests]);
 
   const updateFilter = <K extends keyof CollegeFilters>(key: K, value: CollegeFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
 
-    // Persist major + interest to the shared profile so the strategy page
-    // (and any other surface that reads PROFILE_STORAGE_KEY) stays in sync.
-    // Other filter fields are page-local.
-    if (key === "major" || key === "intendedInterest") {
+    // Persist multi-major / multi-interest preferences to the shared profile
+    // so the strategy page and other surfaces stay in sync. Other filter
+    // fields are page-local. We always write all four chip arrays so the
+    // legacy single fields (intendedMajor / intendedInterest) can be derived
+    // separately by the primary-major effect below.
+    if (
+      key === "intendedMajors" ||
+      key === "activeMajors" ||
+      key === "intendedInterests" ||
+      key === "activeInterests"
+    ) {
       try {
         const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
         const current = raw ? JSON.parse(raw) : {};
-        const field = key === "major" ? "intendedMajor" : "intendedInterest";
-        setItemAndNotify(
-          PROFILE_STORAGE_KEY,
-          JSON.stringify({ ...current, [field]: value }),
-        );
+        const next = { ...current, [key]: value };
+        setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(next));
       } catch { /* ignore write errors */ }
     }
   };
@@ -237,26 +285,98 @@ export function useCollegeFilter() {
       })
       .map((c) => {
         const { classification, reason, fitScore } = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV);
-        const query = {
-          major: filters.major,
-          interest: filters.intendedInterest,
+        // Multi-input matcher: scores per active major + active interest,
+        // returns max score, max level (OR), the per-entry breakdown for
+        // the card UI, and a major-prefixed reason string.
+        const multi = computeMajorFitMulti(c, {
+          activeMajors: filters.activeMajors,
+          activeInterests: filters.activeInterests,
           relatedMajors: interestMap?.relatedMajors,
           expandedKeywords: interestMap?.keywords,
-        };
-        const fit = computeMajorFit(c, query);
-        const matchReason = buildMatchReason(c, query, fit.signals);
+        });
         return {
           college: c,
           classification,
           reason,
           fitScore,
-          majorMatch: fit.match,
-          majorFitScore: fit.score,
-          matchReason,
+          majorMatch: multi.match,
+          majorFitScore: multi.score,
+          matchReason: multi.bestReason,
+          majorFitBreakdown: multi.perEntry.map((e) => ({
+            name: e.name,
+            kind: e.kind,
+            score: e.score,
+            level: e.level,
+          })),
+          bestMatchMajor: multi.bestMatchName,
         };
       })
       .sort((a, b) => a.college.acceptanceRate - b.college.acceptanceRate);
   }, [filters, interestMap]);
+
+  // Derive a single primary major and write it to profile.intendedMajor
+  // (legacy single-string field) so strategy / chances / share view stay
+  // on a sensible single value. The primary is whichever ACTIVE major has
+  // the highest aggregate fitScore across the user's pinned schools (proxy
+  // for "the major most aligned with where they're applying"). Zero active
+  // majors → leave profile.intendedMajor untouched. Same idea for the
+  // single intendedInterest field (uses the first active interest).
+  useEffect(() => {
+    if (filters.activeMajors.length === 0 && filters.activeInterests.length === 0) return;
+
+    let primaryMajor: string | undefined;
+    if (filters.activeMajors.length === 1) {
+      primaryMajor = filters.activeMajors[0];
+    } else if (filters.activeMajors.length > 1) {
+      // Score each active major by aggregate fit across pinned schools.
+      // We read pinned colleges from the same source useCollegePins reads.
+      let pinnedNames: string[] = [];
+      try {
+        const rawPins = localStorage.getItem("admitedge-pinned-colleges");
+        const arr = rawPins ? JSON.parse(rawPins) : [];
+        if (Array.isArray(arr)) {
+          pinnedNames = arr
+            .map((p: { name?: string }) => p?.name)
+            .filter((n): n is string => typeof n === "string" && n.length > 0);
+        }
+      } catch { /* ignore */ }
+
+      let bestMajor = filters.activeMajors[0];
+      let bestSum = -Infinity;
+      for (const m of filters.activeMajors) {
+        let sum = 0;
+        const pool = pinnedNames.length > 0
+          ? COLLEGES.filter((c) => pinnedNames.includes(c.name))
+          : COLLEGES;
+        for (const c of pool) {
+          sum += computeMajorFit(c, { major: m, interest: null }).score;
+        }
+        if (sum > bestSum) {
+          bestSum = sum;
+          bestMajor = m;
+        }
+      }
+      primaryMajor = bestMajor;
+    }
+
+    const primaryInterest = filters.activeInterests[0] ?? undefined;
+
+    try {
+      const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+      const current = raw ? JSON.parse(raw) : {};
+      const next: Record<string, unknown> = { ...current };
+      if (primaryMajor !== undefined) next.intendedMajor = primaryMajor;
+      if (primaryInterest !== undefined) next.intendedInterest = primaryInterest;
+      // Skip write if nothing actually changed (keeps useEffect from
+      // dispatching a sync event for no reason).
+      if (
+        next.intendedMajor !== current.intendedMajor ||
+        next.intendedInterest !== current.intendedInterest
+      ) {
+        setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(next));
+      }
+    } catch { /* ignore */ }
+  }, [filters.activeMajors, filters.activeInterests]);
 
   const sortedBy = (
     key: "acceptanceRate" | "fit" | "majorMatch" | "majorFitScore",

@@ -762,3 +762,120 @@ export const MAJOR_MATCH_RANK: Record<MajorMatch, number> = {
 export function compareByMajorMatch(a: MajorMatch, b: MajorMatch): number {
   return MAJOR_MATCH_RANK[b] - MAJOR_MATCH_RANK[a];
 }
+
+// ── Multi-input fit ─────────────────────────────────────────────────────
+//
+// When the user has multiple active majors/interests selected on /colleges,
+// we run computeMajorFit per active entry, then summarize:
+//   - score: max across active entries (drives sort + headline number)
+//   - match: max level (OR logic — strong if ANY entry is strong)
+//   - perEntry: full breakdown for the per-card UI
+//   - bestMatchName: which entry produced the max (drives the per-card flag)
+//   - bestReason: 1-liner from the highest-scoring entry, prefixed with
+//     "Strong in <Major>:" so the user knows which selection earned it
+//
+// OR logic: a school is "strong" if ANY active selection is strong; "decent"
+// if any is decent (and none strong); else "none".
+
+export interface MajorFitBreakdownEntry {
+  readonly name: string;                          // major name or interest text
+  readonly kind: "major" | "interest";
+  readonly score: number;                          // 0-100
+  readonly level: MajorMatch;
+  readonly signals: MajorFitSignals;
+}
+
+export interface MajorFitMultiResult {
+  readonly score: number;                          // max across entries
+  readonly match: MajorMatch;                      // max level (OR logic)
+  readonly perEntry: readonly MajorFitBreakdownEntry[];
+  readonly bestMatchName: string | null;           // entry that produced max
+  readonly bestReason: string;                     // major-prefixed 1-liner
+}
+
+export interface MajorMatchMultiInput {
+  readonly activeMajors?: readonly string[] | null;
+  readonly activeInterests?: readonly string[] | null;
+  readonly relatedMajors?: readonly string[] | null;
+  readonly expandedKeywords?: readonly string[] | null;
+}
+
+export function computeMajorFitMulti(
+  college: College,
+  input: MajorMatchMultiInput,
+): MajorFitMultiResult {
+  const majors = (input.activeMajors ?? []).filter((m) => m && m.trim().length > 0 && m !== "Any");
+  const interests = (input.activeInterests ?? []).filter((i) => i && i.trim().length > 0);
+
+  if (majors.length === 0 && interests.length === 0) {
+    return { score: 0, match: "none", perEntry: [], bestMatchName: null, bestReason: "" };
+  }
+
+  const perEntry: MajorFitBreakdownEntry[] = [];
+
+  // Each major scored independently. relatedMajors / expandedKeywords pass
+  // through to the underlying single-input matcher so LLM expansion still
+  // applies on a per-entry basis (they widen the related-bucket pool).
+  for (const m of majors) {
+    const fit = computeMajorFit(college, {
+      major: m,
+      interest: null,
+      relatedMajors: input.relatedMajors,
+      expandedKeywords: input.expandedKeywords,
+    });
+    perEntry.push({ name: m, kind: "major", score: fit.score, level: fit.match, signals: fit.signals });
+  }
+
+  for (const i of interests) {
+    const fit = computeMajorFit(college, {
+      major: null,
+      interest: i,
+      relatedMajors: input.relatedMajors,
+      expandedKeywords: input.expandedKeywords,
+    });
+    perEntry.push({ name: i, kind: "interest", score: fit.score, level: fit.match, signals: fit.signals });
+  }
+
+  // Pick the highest-scoring entry as the "best match" — that's what drives
+  // the per-card flag label and the prefixed reason. Ties resolve to the
+  // first occurrence (majors are appended before interests, so a major wins
+  // a tie against an interest, which matches the visual hierarchy).
+  let best: MajorFitBreakdownEntry | null = null;
+  for (const e of perEntry) {
+    if (!best || e.score > best.score) best = e;
+  }
+
+  const maxScore = best?.score ?? 0;
+  // OR logic for the match level: strong if ANY entry is strong, etc.
+  let maxLevel: MajorMatch = "none";
+  for (const e of perEntry) {
+    if (e.level === "strong") { maxLevel = "strong"; break; }
+    if (e.level === "decent") maxLevel = "decent";
+  }
+
+  // Reason: build from the best entry's signals, prefixed with the major /
+  // interest name so the user sees WHICH selection earned the badge.
+  let bestReason = "";
+  if (best && maxLevel !== "none") {
+    const baseReason = buildMatchReason(
+      college,
+      best.kind === "major"
+        ? { major: best.name, interest: null }
+        : { major: null, interest: best.name },
+      best.signals,
+    );
+    if (baseReason) {
+      const verb = maxLevel === "strong" ? "Strong" : "Adjacent";
+      const preposition = best.kind === "major" ? "in" : "to";
+      bestReason = `${verb} ${preposition} ${best.name}: ${baseReason}`;
+    }
+  }
+
+  return {
+    score: maxScore,
+    match: maxLevel,
+    perEntry,
+    bestMatchName: best && maxLevel !== "none" ? best.name : null,
+    bestReason,
+  };
+}

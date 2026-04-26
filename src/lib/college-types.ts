@@ -283,6 +283,19 @@ export interface ClassifiedCollege {
   // CS; strong Google/Meta pipeline"). Empty string / undefined when no
   // signals fired. Populated by buildMatchReason in major-match.ts.
   readonly matchReason?: string;
+  // Per-active-selection fit scores. Used by the card to render a per-major
+  // flag and the dual-score line (best · avg). Only includes entries from
+  // the active majors/interests, not the full saved list. Empty when no
+  // major or interest is active.
+  readonly majorFitBreakdown?: readonly {
+    readonly name: string;                          // major name or interest text
+    readonly kind: "major" | "interest";
+    readonly score: number;                          // 0-100
+    readonly level: MajorMatchLevel;
+  }[];
+  // Which active selection produced the highest score (drives the per-card
+  // flag label). Null when no breakdown entry rose above "none".
+  readonly bestMatchMajor?: string | null;
 }
 
 export type ChanceBand = "very-low" | "low" | "possible" | "competitive" | "strong";
@@ -303,13 +316,16 @@ export interface CollegeFilters {
   sat: string;
   act: string;
   actScience: string; // optional, not in composite
-  // Preference, not a hard filter. Colleges that aren't known for this
-  // major still appear in the list — they just don't get the "Strong fit"
-  // badge. Used to rank results when sort = majorMatch.
-  major: string;
-  // Free-text interest box (e.g. "sustainability", "quant trading").
-  // Matched fuzzily against knownFor / careerPipelines / topIndustries.
-  intendedInterest: string;
+  // Multi-select majors. `intendedMajors` is the saved list (chips visible
+  // in the UI); `activeMajors` is the subset currently filtering. The user
+  // can save 3 majors but filter on 1 without losing the others.
+  // Cap: 5 entries. Empty array = no major preference (no badges).
+  intendedMajors: readonly string[];
+  activeMajors: readonly string[];
+  // Free-text interests, same saved/active split. Each entry matches
+  // fuzzily against knownFor / careerPipelines / topIndustries.
+  intendedInterests: readonly string[];
+  activeInterests: readonly string[];
   region: string;
   size: string;
   setting: string;
@@ -348,8 +364,10 @@ export const EMPTY_FILTERS: CollegeFilters = {
   sat: "",
   act: "",
   actScience: "",
-  major: "",
-  intendedInterest: "",
+  intendedMajors: [],
+  activeMajors: [],
+  intendedInterests: [],
+  activeInterests: [],
   region: "any",
   size: "any",
   setting: "any",

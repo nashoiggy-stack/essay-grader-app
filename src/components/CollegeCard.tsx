@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { motion } from "motion/react";
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Bookmark, GraduationCap } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
@@ -163,18 +163,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         </p>
       )}
 
-      {majorMatch === "strong" && (
-        <p className="mt-2 text-[11px] text-emerald-400 flex items-center gap-1.5">
-          <GraduationCap className="w-3 h-3" strokeWidth={2} />
-          Strong fit for what you want to study
-        </p>
-      )}
-      {majorMatch === "decent" && (
-        <p className="mt-2 text-[11px] text-zinc-500 flex items-center gap-1.5">
-          <GraduationCap className="w-3 h-3" strokeWidth={1.75} />
-          Adjacent to what you want to study
-        </p>
-      )}
+      <MajorFitFlag item={item} />
       {/* Specific deterministic rationale — shown below the badge when we
           have at least one fragment (rank in field, knownFor tag, pipeline,
           earnings). Not shown when the badge itself is absent. */}
@@ -186,6 +175,111 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
     </motion.div>
   );
 };
+
+// ── Major-fit flag + dual score + breakdown popover ───────────────────────
+// Replaces the generic "Strong fit" pill with a per-major label that names
+// WHICH active selection(s) matched, plus a small "Best · Avg" line. Click
+// or hover the score line to expand the full per-major breakdown.
+
+function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
+  const breakdown = item.majorFitBreakdown ?? [];
+  const matched = breakdown.filter((b) => b.level !== "none");
+  const [open, setOpen] = useState(false);
+
+  // No active selections, or no entry rose above "none" → render nothing.
+  if (breakdown.length === 0) return null;
+  if (matched.length === 0) return null;
+
+  const strongMatches = matched.filter((b) => b.level === "strong");
+  const decentMatches = matched.filter((b) => b.level === "decent");
+
+  // Label the badge by which selections matched. Strong takes precedence;
+  // if none are strong, fall back to listing decent matches.
+  const showStrong = strongMatches.length > 0;
+  const list = showStrong ? strongMatches : decentMatches;
+  const verb = showStrong ? "Strong in" : "Adjacent to";
+  const colorClass = showStrong ? "text-emerald-400" : "text-zinc-500";
+
+  // Cap displayed names at 3 to keep the badge scannable; the rest go into
+  // a "+N more" suffix and remain visible in the breakdown popover.
+  const visibleNames = list.slice(0, 3).map((b) => b.name);
+  const overflow = list.length - visibleNames.length;
+  const namesText =
+    visibleNames.join(", ") + (overflow > 0 ? `, +${overflow} more` : "");
+
+  // Dual score line: max across active selections + average across active
+  // selections. Hide the average when only one entry is active (it would
+  // equal the max — pure noise).
+  const bestScore = Math.round(
+    breakdown.reduce((max, b) => (b.score > max ? b.score : max), 0),
+  );
+  const avgScore = breakdown.length > 0
+    ? Math.round(breakdown.reduce((s, b) => s + b.score, 0) / breakdown.length)
+    : 0;
+  const showAvg = breakdown.length > 1;
+
+  return (
+    <div className="mt-2">
+      <p className={`text-[11px] flex items-center gap-1.5 ${colorClass}`}>
+        <GraduationCap className="w-3 h-3" strokeWidth={showStrong ? 2 : 1.75} />
+        <span>
+          {verb} {namesText}
+        </span>
+      </p>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label="Show per-major fit breakdown"
+        className="mt-1 ml-[18px] text-[11px] text-zinc-500 leading-snug hover:text-zinc-300 transition-colors"
+      >
+        Best fit: {bestScore}
+        {showAvg && ` · Avg across selected: ${avgScore}`}
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -4, height: 0 }}
+            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+            className="overflow-hidden"
+          >
+            <ul className="mt-1.5 ml-[18px] space-y-0.5">
+              {breakdown.map((b) => (
+                <li
+                  key={`${b.kind}:${b.name}`}
+                  className="flex items-baseline justify-between gap-3 text-[11px] leading-snug"
+                >
+                  <span className="text-zinc-400 truncate">
+                    {b.name}
+                    {b.kind === "interest" && (
+                      <span className="ml-1 text-zinc-600">(interest)</span>
+                    )}
+                  </span>
+                  <span className="font-mono tabular-nums text-zinc-500 shrink-0">
+                    {Math.round(b.score)}
+                    <span
+                      className={`ml-1.5 ${
+                        b.level === "strong"
+                          ? "text-emerald-400"
+                          : b.level === "decent"
+                            ? "text-amber-400"
+                            : "text-zinc-600"
+                      }`}
+                    >
+                      {b.level}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function MetaStat({ label, value, secondary }: { label: string; value: string; secondary?: string }) {
   return (
