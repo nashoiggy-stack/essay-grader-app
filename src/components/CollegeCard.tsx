@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Bookmark, GraduationCap } from "lucide-react";
+import { Bookmark, GraduationCap, ChevronDown } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 
@@ -176,103 +176,121 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   );
 };
 
-// ── Major-fit flag + dual score + breakdown popover ───────────────────────
-// Replaces the generic "Strong fit" pill with a per-major label that names
-// WHICH active selection(s) matched, plus a small "Best · Avg" line. Click
-// or hover the score line to expand the full per-major breakdown.
+// ── Major-fit pill + expandable breakdown ──────────────────────────────────
+// Single compact pill summarizes the best-level match (with "+N" suffix when
+// other majors also match at that level). Click to reveal a per-major
+// breakdown with score bars sorted highest first. The previous design's
+// dual "Best fit · Avg across selected" line was confusing — replaced by
+// the inline expansion below.
+
+const PILL_TONE = {
+  strong: { bg: "bg-emerald-500/10", text: "text-emerald-400", ring: "ring-emerald-500/25", bar: "bg-emerald-400" },
+  decent: { bg: "bg-amber-500/10", text: "text-amber-400", ring: "ring-amber-500/25", bar: "bg-amber-400" },
+  none:   { bg: "bg-white/[0.03]", text: "text-zinc-500", ring: "ring-white/[0.06]", bar: "bg-zinc-600" },
+} as const;
 
 function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
   const breakdown = item.majorFitBreakdown ?? [];
-  const matched = breakdown.filter((b) => b.level !== "none");
   const [open, setOpen] = useState(false);
 
-  // No active selections, or no entry rose above "none" → render nothing.
+  // No active selections at all → render nothing (filter UI shows nothing
+  // selected, the card stays clean).
   if (breakdown.length === 0) return null;
-  if (matched.length === 0) return null;
 
-  const strongMatches = matched.filter((b) => b.level === "strong");
-  const decentMatches = matched.filter((b) => b.level === "decent");
+  // Pick the best level present and the single highest-scoring entry at
+  // that level. The pill names that one major; "+N" indicates how many
+  // OTHER majors also match at the same level.
+  const strong = breakdown.filter((b) => b.level === "strong");
+  const decent = breakdown.filter((b) => b.level === "decent");
 
-  // Label the badge by which selections matched. Strong takes precedence;
-  // if none are strong, fall back to listing decent matches.
-  const showStrong = strongMatches.length > 0;
-  const list = showStrong ? strongMatches : decentMatches;
-  const verb = showStrong ? "Strong in" : "Adjacent to";
-  const colorClass = showStrong ? "text-emerald-400" : "text-zinc-500";
+  const level: "strong" | "decent" | "none" =
+    strong.length > 0 ? "strong" : decent.length > 0 ? "decent" : "none";
 
-  // Cap displayed names at 3 to keep the badge scannable; the rest go into
-  // a "+N more" suffix and remain visible in the breakdown popover.
-  const visibleNames = list.slice(0, 3).map((b) => b.name);
-  const overflow = list.length - visibleNames.length;
-  const namesText =
-    visibleNames.join(", ") + (overflow > 0 ? `, +${overflow} more` : "");
+  const list = level === "strong" ? strong : level === "decent" ? decent : [];
+  const top = [...list].sort((a, b) => b.score - a.score)[0];
+  const others = list.length - 1;
 
-  // Dual score line: max across active selections + average across active
-  // selections. Hide the average when only one entry is active (it would
-  // equal the max — pure noise).
-  const bestScore = Math.round(
-    breakdown.reduce((max, b) => (b.score > max ? b.score : max), 0),
-  );
-  const avgScore = breakdown.length > 0
-    ? Math.round(breakdown.reduce((s, b) => s + b.score, 0) / breakdown.length)
-    : 0;
-  const showAvg = breakdown.length > 1;
+  const tone = PILL_TONE[level];
+  const verb = level === "strong" ? "Strong in" : level === "decent" ? "Adjacent in" : "";
+
+  let pillLabel: string;
+  if (level === "none") {
+    pillLabel = "No fit in selected";
+  } else if (top) {
+    pillLabel = `${verb} ${top.name}${others > 0 ? ` +${others}` : ""}`;
+  } else {
+    pillLabel = "No fit in selected";
+  }
+
+  // Sorted by score desc for the expanded breakdown. Bars colored by the
+  // entry's own level (mixing strong-green and decent-amber rows is fine —
+  // it makes the level distinction visible at a glance).
+  const sorted = [...breakdown].sort((a, b) => b.score - a.score);
 
   return (
     <div className="mt-2">
-      <p className={`text-[11px] flex items-center gap-1.5 ${colorClass}`}>
-        <GraduationCap className="w-3 h-3" strokeWidth={showStrong ? 2 : 1.75} />
-        <span>
-          {verb} {namesText}
-        </span>
-      </p>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        aria-label="Show per-major fit breakdown"
-        className="mt-1 ml-[18px] text-[11px] text-zinc-500 leading-snug hover:text-zinc-300 transition-colors"
+        aria-label={`${pillLabel}. ${open ? "Hide" : "Show"} per-major breakdown.`}
+        className={`group/pill inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-0 -my-2 sm:my-0 px-2 sm:py-0.5 rounded-full ${tone.bg} ${tone.text} ring-1 ${tone.ring} hover:brightness-110 transition-[filter] duration-200`}
       >
-        Best fit: {bestScore}
-        {showAvg && ` · Avg across selected: ${avgScore}`}
+        <GraduationCap
+          className="w-3 h-3 shrink-0"
+          strokeWidth={level === "strong" ? 2 : 1.75}
+        />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.15em] truncate max-w-[200px] sm:max-w-none">
+          {pillLabel}
+        </span>
+        <ChevronDown
+          className={`w-3 h-3 shrink-0 opacity-60 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          strokeWidth={2}
+        />
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -4, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            exit={{ opacity: 0, y: -4, height: 0 }}
-            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
-            <ul className="mt-1.5 ml-[18px] space-y-0.5">
-              {breakdown.map((b) => (
-                <li
-                  key={`${b.kind}:${b.name}`}
-                  className="flex items-baseline justify-between gap-3 text-[11px] leading-snug"
-                >
-                  <span className="text-zinc-400 truncate">
-                    {b.name}
-                    {b.kind === "interest" && (
-                      <span className="ml-1 text-zinc-600">(interest)</span>
-                    )}
-                  </span>
-                  <span className="font-mono tabular-nums text-zinc-500 shrink-0">
-                    {Math.round(b.score)}
-                    <span
-                      className={`ml-1.5 ${
-                        b.level === "strong"
-                          ? "text-emerald-400"
-                          : b.level === "decent"
-                            ? "text-amber-400"
-                            : "text-zinc-600"
-                      }`}
-                    >
-                      {b.level}
+            <ul className="mt-2 space-y-1.5">
+              {sorted.map((b) => {
+                const rowTone = PILL_TONE[b.level];
+                const score = Math.round(b.score);
+                return (
+                  <li
+                    key={`${b.kind}:${b.name}`}
+                    className="flex items-center gap-2.5 text-[11px] leading-snug"
+                  >
+                    <span className="text-zinc-400 truncate min-w-0 basis-[40%] sm:basis-[35%]">
+                      {b.name}
+                      {b.kind === "interest" && (
+                        <span className="ml-1 text-zinc-600">(interest)</span>
+                      )}
                     </span>
-                  </span>
-                </li>
-              ))}
+                    <span
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={score}
+                      aria-label={`${b.name} fit score`}
+                      className="flex-1 h-1.5 rounded-full bg-white/[0.04] overflow-hidden min-w-[40px]"
+                    >
+                      <span
+                        className={`block h-full rounded-full ${rowTone.bar} transition-[width] duration-300`}
+                        style={{ width: `${score}%` }}
+                      />
+                    </span>
+                    <span className="font-mono tabular-nums text-zinc-300 shrink-0 w-7 text-right">
+                      {score}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </motion.div>
         )}
