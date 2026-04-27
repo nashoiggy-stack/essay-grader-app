@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Bookmark, GraduationCap, ChevronDown } from "lucide-react";
+import React, { useMemo } from "react";
+import { motion } from "motion/react";
+import { Bookmark, GraduationCap } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 
@@ -191,7 +191,6 @@ const PILL_TONE = {
 
 function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
   const breakdown = item.majorFitBreakdown ?? [];
-  const [open, setOpen] = useState(false);
 
   // No active selections at all → render nothing (filter UI shows nothing
   // selected, the card stays clean).
@@ -229,72 +228,55 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
 
   return (
     <div className="mt-2">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label={`${pillLabel}. ${open ? "Hide" : "Show"} per-major breakdown.`}
-        className={`group/pill inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-0 -my-2 sm:my-0 px-2 sm:py-0.5 rounded-full ${tone.bg} ${tone.text} ring-1 ${tone.ring} hover:brightness-110 transition-[filter] duration-200`}
+      <span
+        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${tone.bg} ${tone.text} ring-1 ${tone.ring}`}
       >
         <GraduationCap
           className="w-3 h-3 shrink-0"
           strokeWidth={level === "strong" ? 2 : 1.75}
         />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.15em] truncate max-w-[200px] sm:max-w-none">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">
           {pillLabel}
         </span>
-        <ChevronDown
-          className={`w-3 h-3 shrink-0 opacity-60 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          strokeWidth={2}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-            className="overflow-hidden"
-          >
-            <ul className="mt-2 space-y-1.5">
-              {sorted.map((b) => {
-                const rowTone = PILL_TONE[b.level];
-                const score = Math.round(b.score);
-                return (
-                  <li
-                    key={`${b.kind}:${b.name}`}
-                    className="flex items-center gap-2.5 text-[11px] leading-snug"
-                  >
-                    <span className="text-zinc-400 truncate min-w-0 basis-[40%] sm:basis-[35%]">
-                      {b.name}
-                      {b.kind === "interest" && (
-                        <span className="ml-1 text-zinc-600">(interest)</span>
-                      )}
-                    </span>
-                    <span
-                      role="progressbar"
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={score}
-                      aria-label={`${b.name} fit score`}
-                      className="flex-1 h-1.5 rounded-full bg-white/[0.04] overflow-hidden min-w-[40px]"
-                    >
-                      <span
-                        className={`block h-full rounded-full ${rowTone.bar} transition-[width] duration-300`}
-                        style={{ width: `${score}%` }}
-                      />
-                    </span>
-                    <span className="font-mono tabular-nums text-zinc-300 shrink-0 w-7 text-right">
-                      {score}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </span>
+      {/* Per-major breakdown — always visible, no toggle. Sorted by score
+          desc; bars colored by each entry's own level so strong rows
+          (green) stand out from adjacent rows (amber) at a glance. */}
+      <ul className="mt-2 space-y-1.5">
+        {sorted.map((b) => {
+          const rowTone = PILL_TONE[b.level];
+          const score = Math.round(b.score);
+          return (
+            <li
+              key={`${b.kind}:${b.name}`}
+              className="flex items-center gap-2.5 text-[11px] leading-snug"
+            >
+              <span className="text-zinc-400 truncate min-w-0 basis-[40%] sm:basis-[35%]">
+                {b.name}
+                {b.kind === "interest" && (
+                  <span className="ml-1 text-zinc-600">(interest)</span>
+                )}
+              </span>
+              <span
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={score}
+                aria-label={`${b.name} fit score`}
+                className="flex-1 h-1.5 rounded-full bg-white/[0.04] overflow-hidden min-w-[40px]"
+              >
+                <span
+                  className={`block h-full rounded-full ${rowTone.bar} transition-[width] duration-300`}
+                  style={{ width: `${score}%` }}
+                />
+              </span>
+              <span className="font-mono tabular-nums text-zinc-300 shrink-0 w-7 text-right">
+                {score}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
