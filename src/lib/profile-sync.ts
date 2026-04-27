@@ -58,17 +58,39 @@ async function syncToCloud(userId: string) {
       }
     }
 
-    const { error } = await supabase
-      .from("user_profiles")
-      .upsert(row, { onConflict: "user_id" });
+    // Try the full payload first. If a column doesn't exist in this Supabase
+    // project (e.g. bg_preference before its migration is applied), PostgREST
+    // returns 400 with PGRST204 ("Could not find the 'X' column"). Strip the
+    // offending column and retry once so the rest of the data still saves.
+    const attempt = async (payload: Record<string, unknown>) =>
+      supabase.from("user_profiles").upsert(payload, { onConflict: "user_id" });
+
+    let { error } = await attempt(row);
+
+    if (error && error.code === "PGRST204") {
+      const missingCol = /'([^']+)' column/.exec(error.message)?.[1];
+      if (missingCol && missingCol in row) {
+        delete row[missingCol];
+        console.warn(`[cloud-sync] column '${missingCol}' missing in DB — skipping it. Apply the matching migration in Supabase to enable cross-device sync for this field.`);
+        ({ error } = await attempt(row));
+      }
+    }
 
     if (error) {
       ok = false;
-      console.warn("Cloud sync failed:", error.message);
+      console.error("[cloud-sync] upsert failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        userId,
+      });
+    } else {
+      console.info("[cloud-sync] saved", { userId, columns: Object.keys(row).filter((k) => k !== "user_id").length });
     }
   } catch (e) {
     ok = false;
-    console.warn("Cloud sync error:", e);
+    console.error("[cloud-sync] unexpected error", e);
   } finally {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event(ok ? "cloud-sync-saved" : "cloud-sync-error"));
@@ -82,13 +104,36 @@ async function syncToCloud(userId: string) {
 
 export async function loadFromCloud(userId: string): Promise<boolean> {
   try {
+    // select("*") instead of an explicit column list so a missing optional
+    // column (e.g. bg_preference before the migration is applied) doesn't
+    // 400 the entire load.
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("profile_data, gpa_data, essay_data, ec_activities, ec_result, resume_data, essay_history, pinned_colleges, dream_school, strategy_result, action_checklist, bg_preference, updated_at")
+      .select("*")
       .eq("user_id", userId)
       .single();
 
-    if (error || !data) return false;
+    if (error) {
+      console.error("[cloud-sync] load failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        userId,
+      });
+      return false;
+    }
+    if (!data) {
+      console.info("[cloud-sync] no row in cloud yet for this user", { userId });
+      return false;
+    }
+    console.info("[cloud-sync] loaded from cloud", {
+      userId,
+      hasProfile: !!data.profile_data,
+      hasEssay: !!data.essay_data,
+      essayHistoryEntries: Array.isArray(data.essay_history) ? data.essay_history.length : 0,
+      pinnedColleges: Array.isArray(data.pinned_colleges) ? data.pinned_colleges.length : 0,
+    });
 
     // Write each cloud column back to its localStorage key
     const row = data as Record<string, unknown>;
