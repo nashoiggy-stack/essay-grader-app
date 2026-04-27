@@ -169,7 +169,7 @@ function Header({ data, firstName, isEmpty }: HeaderProps) {
             </>
           )}
         </p>
-        {!studentGradYear && !studentSchool && !studentMajor && !isEmpty && (
+        {!isEmpty && (
           <div style={{ marginTop: 16 }}>
             <Link href="/profile" className="ae-btn ae-btn-primary">
               <IconUser size={14} /> Edit your profile
