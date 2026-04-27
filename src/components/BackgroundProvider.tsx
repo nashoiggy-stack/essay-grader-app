@@ -7,7 +7,7 @@ import { setItemAndNotify } from "@/lib/sync-event";
 export type BackgroundChoice = "shader" | "dark" | "light" | "monochrome";
 
 const STORAGE_KEY = "admitedge-bg-preference";
-const DEFAULT_CHOICE: BackgroundChoice = "shader";
+const DEFAULT_CHOICE: BackgroundChoice = "monochrome";
 
 interface BackgroundContextValue {
   background: BackgroundChoice;

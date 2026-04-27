@@ -66,7 +66,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <a href="#main-content" className="skip-link">Skip to content</a>
         <Providers>
           <AppShell>{children}</AppShell>

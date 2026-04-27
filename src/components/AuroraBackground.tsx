@@ -1,28 +1,20 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { WebGLShader } from "@/components/ui/web-gl-shader";
-import { useBackground } from "@/components/BackgroundProvider";
 
 interface AuroraBackgroundProps {
   readonly children: ReactNode;
 }
 
+// The WebGL shader is now mounted once at AppShell level (PersistentBackground)
+// so it survives route transitions instead of re-initializing on every nav,
+// which was causing the flash + lag when switching between tools.
 export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({ children }) => {
-  const { background } = useBackground();
-
   return (
     <div
       className="relative min-h-dvh overflow-hidden"
-      style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}
+      style={{ color: "var(--text-primary)" }}
     >
-      {background === "shader" && (
-        <div className="fixed inset-0 pointer-events-none">
-          <WebGLShader />
-        </div>
-      )}
-
-      {/* Content */}
       <div className="relative z-10">{children}</div>
     </div>
   );

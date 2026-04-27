@@ -36,7 +36,7 @@ export const NavBar: React.FC = () => {
         className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
         style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
       >
-        <div className="pointer-events-auto w-full max-w-4xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
+        <div className="pointer-events-auto w-full max-w-5xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
           <div className="px-4 lg:px-5 flex items-center justify-between h-12">
             {/* Home button */}
             <Link href="/" className="flex items-center gap-2 shrink-0 group">
@@ -83,6 +83,19 @@ export const NavBar: React.FC = () => {
             {/* Right side */}
             <div className="flex items-center gap-2">
               <Link
+                href="/dashboard"
+                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-[color,background-color] duration-200 ${
+                  pathname === "/dashboard"
+                    ? "text-blue-400 bg-blue-500/10"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.06]"
+                }`}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+                </svg>
+                Dashboard
+              </Link>
+              <Link
                 href="/profile"
                 className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-[color,background-color] duration-200 ${
                   pathname === "/profile"
@@ -98,23 +111,26 @@ export const NavBar: React.FC = () => {
 
               {user ? (
                 <>
-                  <span className="text-[11px] text-zinc-600 hidden lg:block truncate max-w-[120px]">
-                    {user.email}
+                  <span
+                    className="text-[11px] text-zinc-600 hidden lg:block truncate max-w-[80px] whitespace-nowrap"
+                    title={user.email ?? undefined}
+                  >
+                    {user.email ? user.email.split("@")[0] : ""}
                   </span>
                   <button
                     onClick={signOut}
-                    className="text-[11px] text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block"
+                    className="text-[11px] text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block whitespace-nowrap"
                   >
                     Sign out
                   </button>
                 </>
               ) : guest ? (
                 <>
-                  <span className="text-[11px] text-zinc-600 hidden lg:block">Guest</span>
+                  <span className="text-[11px] text-zinc-600 hidden lg:block whitespace-nowrap">Guest</span>
                   <Link
                     href="/"
                     onClick={signOut}
-                    className="text-[11px] text-blue-400 hover:text-blue-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block"
+                    className="text-[11px] text-blue-400 hover:text-blue-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block whitespace-nowrap"
                   >
                     Sign in
                   </Link>
@@ -203,6 +219,26 @@ export const NavBar: React.FC = () => {
                 animate={{ opacity: 1, transform: "translateY(0px)" }}
                 exit={{ opacity: 0, transform: "translateY(10px)" }}
                 transition={{ delay: 0.04 + NAV_ITEMS.length * 0.04, duration: 0.32, ease: EASE_EXPO }}
+                className="w-full"
+              >
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className={`block w-full text-center px-6 py-3.5 rounded-2xl text-base font-medium transition-[color,background-color] duration-200 ${
+                    pathname === "/dashboard"
+                      ? "bg-white/[0.08] text-white"
+                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, transform: "translateY(20px)" }}
+                animate={{ opacity: 1, transform: "translateY(0px)" }}
+                exit={{ opacity: 0, transform: "translateY(10px)" }}
+                transition={{ delay: 0.04 + (NAV_ITEMS.length + 1) * 0.04, duration: 0.32, ease: EASE_EXPO }}
                 className="w-full"
               >
                 <Link
