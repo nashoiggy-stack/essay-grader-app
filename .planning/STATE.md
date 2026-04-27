@@ -3,7 +3,7 @@
 ## Current Position
 - **Milestone:** v1.1 — Fix, Polish, Resume Builder
 - **Active Phase:** Phases 7–14 shipped on feature/qol-batch-07-14 (localhost only, not pushed)
-- **Next Action:** Run supabase-migration-strategy-shares.sql + add SUPABASE_SERVICE_ROLE_KEY to .env.local before testing the share flow. Manual UAT each phase in browser.
+- **Next Action:** Run supabase-migration-strategy-shares.sql + add SUPABASE_SECRET_KEY to .env.local before testing the share flow. Manual UAT each phase in browser.
 
 ## Session Log
 - 2026-04-08: Project initialized with GSD. Codebase mapped (7 docs). Research completed (4 agents: UX patterns, resume builder, testing+security, scroll animations). Requirements and roadmap created.

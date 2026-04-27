@@ -99,7 +99,7 @@ Plans:
 
 **Goal:** 30-day public share link for the strategy briefing.
 **Approach:** New strategy_shares Supabase table (RLS owner-only; anonymous reads via service-role API). 3 routes (POST/GET list + GET/DELETE by token). Public Server Component at /strategy/share/[token] renders StrategyShareView (reuses StrategyCard). Share popover + useStrategyShare hook on /strategy.
-**Requires:** SUPABASE_SERVICE_ROLE_KEY in .env.local + run supabase-migration-strategy-shares.sql.
+**Requires:** SUPABASE_SECRET_KEY in .env.local + run supabase-migration-strategy-shares.sql.
 **Status:** Complete (commit 1246d5e)
 
 ### Phase 14: Essay versioning (minimal) ✦ shipped 2026-04-21
