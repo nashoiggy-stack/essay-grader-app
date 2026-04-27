@@ -400,17 +400,21 @@ function OrbitalLayout({ tools, focused, setFocusTool, studentInitials, gradYear
             const yPct = 50 + Math.sin(angle) * baseR;
             const Ic = TOOL_ICON[tool.id];
             const isActive = focused?.id === tool.id;
+            // Each node is a real Link so the click takes the user straight
+            // into the tool. Hover/focus also updates the detail panel
+            // beside the stage so the user gets an immediate preview.
             return (
-              <button
+              <Link
                 key={tool.id}
-                type="button"
+                href={tool.href}
                 className={`ae-orbit-node ae-orbit-${tool.state} ${isActive ? "is-active" : ""}`}
                 style={{ left: `${xPct}%`, top: `${yPct}%` }}
-                onClick={() => setFocusTool(tool.id)}
+                onMouseEnter={() => setFocusTool(tool.id)}
+                onFocus={() => setFocusTool(tool.id)}
               >
                 <div className="ae-orbit-node-icon"><Ic size={13} /></div>
                 <div className="ae-orbit-node-label">{tool.label}</div>
-              </button>
+              </Link>
             );
           })}
         </div>
