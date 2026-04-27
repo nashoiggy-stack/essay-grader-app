@@ -1,6 +1,2523 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "generatedAt": "2026-04-27T02:01:08.426Z",
   "model": "claude-sonnet-4-6",
-  "schools": {}
+  "schools": {
+    "Harvard University": {
+      "topMajors": [
+        "Economics",
+        "Political Science",
+        "Computer Science",
+        "Biology",
+        "History",
+        "Philosophy",
+        "Mathematics",
+        "Psychology"
+      ],
+      "knownFor": [
+        "government and public policy",
+        "undergraduate research access",
+        "law and pre-law pipeline",
+        "economics theory and research",
+        "life sciences faculty depth",
+        "interdisciplinary general education"
+      ],
+      "confidence": 1,
+      "notes": "Harvard is a household-name institution with exhaustively documented academic strengths across rankings, faculty Nobel laureates, and decades of published program-level reputation data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Yale University": {
+      "topMajors": [
+        "Political Science",
+        "History",
+        "Economics",
+        "Computer Science",
+        "Philosophy",
+        "Psychology",
+        "Biology",
+        "English"
+      ],
+      "knownFor": [
+        "residential college system",
+        "law and legal theory",
+        "political theory and philosophy",
+        "interdisciplinary humanities programs",
+        "biomedical research excellence",
+        "economics and social sciences"
+      ],
+      "confidence": 0.97,
+      "notes": "Yale is a household-name Ivy League institution with extensively documented academic strengths across humanities, social sciences, and natural sciences, anchored by its world-renowned Law School and long-standing excellence in political science, history, and economics.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Princeton University": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Mathematics",
+        "Public Policy",
+        "Physics",
+        "Electrical Engineering",
+        "Philosophy",
+        "International Relations"
+      ],
+      "knownFor": [
+        "independent junior paper and senior thesis",
+        "theoretical computer science",
+        "public and international affairs",
+        "mathematical physics research",
+        "undergraduate-only focus at core",
+        "political philosophy and ethics"
+      ],
+      "confidence": 0.97,
+      "notes": "Princeton is a household-name Ivy League university with extensively documented strengths across STEM, economics, public affairs, and humanities, anchored by its distinctive thesis requirement and the School of Public and International Affairs.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Columbia University": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Political Science",
+        "Engineering",
+        "Electrical Engineering",
+        "Biomedical Engineering",
+        "Finance",
+        "English"
+      ],
+      "knownFor": [
+        "Core Curriculum liberal arts",
+        "financial engineering programs",
+        "Ivy League research intensity",
+        "earth and environmental sciences",
+        "international affairs and policy",
+        "journalism graduate programs"
+      ],
+      "confidence": 0.95,
+      "notes": "Columbia is a household-name Ivy League institution with widely documented strengths across engineering, economics, CS, and its renowned Core Curriculum, supported by consistent top-tier rankings and published program reputations.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Pennsylvania": {
+      "topMajors": [
+        "Finance",
+        "Economics",
+        "Business",
+        "Nursing",
+        "Computer Science",
+        "Political Science",
+        "Philosophy",
+        "Biomedical Engineering"
+      ],
+      "knownFor": [
+        "Wharton School finance programs",
+        "integrated dual-degree programs",
+        "Penn Medicine clinical research",
+        "Law-Business joint degrees",
+        "undergraduate business education"
+      ],
+      "confidence": 0.97,
+      "notes": "UPenn is a household-name Ivy League university with broadly and consistently documented strengths across Wharton (finance, business), Penn Nursing, Penn Engineering, and strong humanities and social sciences programs.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Brown University": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Biology",
+        "Neuroscience",
+        "Mathematics",
+        "History",
+        "Philosophy",
+        "Political Science"
+      ],
+      "knownFor": [
+        "open curriculum",
+        "undergraduate research access",
+        "cognitive science program",
+        "interdisciplinary concentrations",
+        "computational biology research"
+      ],
+      "confidence": 0.95,
+      "notes": "Brown is a household-name Ivy League university with widely documented strengths in its distinctive open curriculum, strong STEM programs, and highly regarded humanities and social sciences.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Dartmouth College": {
+      "topMajors": [
+        "Economics",
+        "Computer Science",
+        "Engineering",
+        "Biology",
+        "Psychology",
+        "Mathematics",
+        "History"
+      ],
+      "knownFor": [
+        "modified distributive requirement",
+        "undergraduate teaching focus",
+        "Tuck School business proximity",
+        "quantitative social sciences",
+        "engineering sciences program",
+        "classical liberal arts tradition"
+      ],
+      "confidence": 0.92,
+      "notes": "Dartmouth is a well-documented Ivy League institution with widely published rankings and reputation data, particularly strong in economics, government, and undergraduate-focused liberal arts education.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Government"
+      ],
+      "warnings": []
+    },
+    "Cornell University": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Economics",
+        "Biology",
+        "Architecture",
+        "Applied Mathematics"
+      ],
+      "knownFor": [
+        "hospitality management program",
+        "industrial labor relations school",
+        "Ivy League engineering breadth",
+        "applied mathematics research",
+        "undergraduate research access",
+        "systems biology programs"
+      ],
+      "confidence": 0.95,
+      "notes": "Cornell is a household-name Ivy with extensively documented strengths across engineering, CS, hospitality (SHA), ILR, and biological sciences, supported by national rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Hotel and Hospitality Management",
+        "Industrial Labor Relations"
+      ],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "MIT": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Mechanical Engineering",
+        "Physics",
+        "Mathematics",
+        "Aerospace Engineering",
+        "Chemical Engineering",
+        "Economics"
+      ],
+      "knownFor": [
+        "STEM research excellence",
+        "undergraduate research access",
+        "applied mathematics programs",
+        "AI and machine learning research",
+        "interdisciplinary engineering labs",
+        "entrepreneurship and innovation ecosystem"
+      ],
+      "confidence": 1,
+      "notes": "MIT is one of the most documented STEM-focused institutions in the world, with consistently top-ranked programs across engineering, computer science, physics, and economics confirmed by every major ranking system.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Stanford University": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Engineering",
+        "Data Science",
+        "Economics",
+        "Biology",
+        "Physics",
+        "Mathematics"
+      ],
+      "knownFor": [
+        "Silicon Valley entrepreneurship ecosystem",
+        "human-centered AI research",
+        "interdisciplinary design thinking",
+        "bioengineering and life sciences",
+        "undergraduate research access"
+      ],
+      "confidence": 0.98,
+      "notes": "Stanford is a household-name institution with extensively documented strengths across engineering, computer science, and the natural sciences, consistently ranked among the top globally in these fields.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Duke University": {
+      "topMajors": [
+        "Public Policy",
+        "Economics",
+        "Computer Science",
+        "Biology",
+        "Political Science",
+        "Pre-Med",
+        "Statistics",
+        "Psychology"
+      ],
+      "knownFor": [
+        "Sanford School of Public Policy",
+        "interdisciplinary Bass Connections research",
+        "global health initiatives",
+        "biomedical engineering research",
+        "undergraduate research access"
+      ],
+      "confidence": 0.95,
+      "notes": "Duke is a household-name research university with widely documented programmatic strengths in public policy, economics, biomedical sciences, and interdisciplinary research, confirmed across major rankings and institutional reputation sources.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Northwestern University": {
+      "topMajors": [
+        "Journalism",
+        "Economics",
+        "Computer Science",
+        "Political Science",
+        "Psychology",
+        "Neuroscience",
+        "Theater",
+        "Communications"
+      ],
+      "knownFor": [
+        "Medill journalism program",
+        "integrated sciences curriculum",
+        "interdisciplinary undergraduate research",
+        "law and social science scholarship",
+        "theatre and performance training"
+      ],
+      "confidence": 0.95,
+      "notes": "Northwestern is a household-name research university with widely documented and nationally ranked strengths across journalism, economics, theater, and the sciences, with abundant published rankings and institutional profiles confirming these distinctions.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Engineering"
+      ]
+    },
+    "Johns Hopkins University": {
+      "topMajors": [
+        "Biomedical Engineering",
+        "Neuroscience",
+        "Public Health",
+        "Pre-Med",
+        "Computer Science",
+        "International Relations",
+        "Biology",
+        "Electrical Engineering"
+      ],
+      "knownFor": [
+        "biomedical engineering research",
+        "Bloomberg School of Public Health",
+        "applied physics laboratory",
+        "international studies programs",
+        "undergraduate research access"
+      ],
+      "confidence": 0.97,
+      "notes": "Johns Hopkins is a household-name research university with extensively documented strengths in biomedical engineering, medicine, public health, and international studies, supported by decades of consistent top rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Caltech": {
+      "topMajors": [
+        "Physics",
+        "Computer Science",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Chemistry",
+        "Mathematics",
+        "Aerospace Engineering",
+        "Biology"
+      ],
+      "knownFor": [
+        "theoretical and experimental physics",
+        "STEM-only research institution",
+        "undergraduate research immersion",
+        "applied mathematics and computation",
+        "Nobel laureate faculty density",
+        "planetary science and astronomy"
+      ],
+      "confidence": 0.97,
+      "notes": "Caltech is a globally recognized elite STEM institution with exhaustively documented research strengths across physics, engineering, chemistry, and mathematics, consistently ranked among the top universities worldwide in these fields.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Rice University": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Electrical Engineering",
+        "Biomedical Engineering",
+        "Physics",
+        "Economics",
+        "Architecture",
+        "Music"
+      ],
+      "knownFor": [
+        "interdisciplinary undergraduate research",
+        "nanotechnology and materials science",
+        "residential college system academics",
+        "space science and engineering",
+        "bioengineering and nanomedicine"
+      ],
+      "confidence": 0.92,
+      "notes": "Rice is a well-documented elite research university with widely published rankings and reputation in engineering, natural sciences, architecture, and music, supported by consistent national rankings and notable research centers like the Smalley-Curl Institute.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Vanderbilt University": {
+      "topMajors": [
+        "Economics",
+        "Computer Science",
+        "Political Science",
+        "Psychology",
+        "Neuroscience",
+        "Education",
+        "Engineering"
+      ],
+      "knownFor": [
+        "Peabody College education programs",
+        "undergraduate research opportunities",
+        "Blair School of Music",
+        "Owen Graduate School of Management",
+        "neuroscience research center"
+      ],
+      "confidence": 0.92,
+      "notes": "Vanderbilt is a well-documented top-15 national university with widely recognized strengths in education (Peabody), medicine, economics, and neuroscience supported by multiple published rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Medicine"
+      ],
+      "warnings": []
+    },
+    "Washington University in St. Louis": {
+      "topMajors": [
+        "Pre-Med",
+        "Biology",
+        "Computer Science",
+        "Economics",
+        "Psychology",
+        "Engineering",
+        "Biomedical Engineering",
+        "Chemistry"
+      ],
+      "knownFor": [
+        "medical school pipeline strength",
+        "interdisciplinary undergraduate research",
+        "biomedical engineering excellence",
+        "social sciences integration",
+        "strong pre-professional advising"
+      ],
+      "confidence": 0.88,
+      "notes": "WashU is a well-documented top-15 national university with consistently high rankings in biomedical engineering, pre-med preparation, psychology, and economics, supported by its affiliation with a leading medical school and strong research infrastructure.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "Emory University": {
+      "topMajors": [
+        "Business",
+        "Pre-Med",
+        "Public Health",
+        "Economics",
+        "Biology",
+        "Psychology",
+        "Political Science",
+        "Neuroscience"
+      ],
+      "knownFor": [
+        "Goizueta Business School",
+        "public health research",
+        "biomedical and primate research",
+        "CDC proximity and partnerships",
+        "pre-med pipeline strength"
+      ],
+      "confidence": 0.88,
+      "notes": "Emory is a well-documented top-25 national university with broadly recognized strengths in business (Goizueta), public health, pre-med/biomedical sciences, and social sciences, supported by published rankings and institutional partnerships with the CDC and NIH.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Georgetown University": {
+      "topMajors": [
+        "International Relations",
+        "Political Science",
+        "Economics",
+        "Pre-Law",
+        "Public Policy",
+        "Finance",
+        "Philosophy",
+        "History"
+      ],
+      "knownFor": [
+        "School of Foreign Service",
+        "diplomatic and policy studies",
+        "Jesuit liberal arts tradition",
+        "public policy research centers",
+        "international law programs"
+      ],
+      "confidence": 0.95,
+      "notes": "Georgetown is a household-name university with extensively documented strengths in international affairs, law, and political science, anchored by the widely ranked Walsh School of Foreign Service.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "Carnegie Mellon University": {
+      "topMajors": [
+        "Computer Science",
+        "Software Engineering",
+        "Artificial Intelligence",
+        "Robotics",
+        "Electrical Engineering",
+        "Computer Engineering",
+        "Data Science",
+        "Music"
+      ],
+      "knownFor": [
+        "AI and machine learning research",
+        "human-computer interaction",
+        "software engineering methodology",
+        "robotics institute",
+        "interdisciplinary arts integration",
+        "computational finance"
+      ],
+      "confidence": 0.97,
+      "notes": "CMU is a globally recognized institution with extensively documented, top-ranked programs in computer science, AI, robotics, and engineering, supported by decades of rankings, research output, and industry reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "University of Notre Dame": {
+      "topMajors": [
+        "Finance",
+        "Accounting",
+        "Economics",
+        "Political Science",
+        "Philosophy",
+        "Computer Science",
+        "Pre-Law"
+      ],
+      "knownFor": [
+        "Mendoza College of Business",
+        "philosophy and theology integration",
+        "undergraduate business education",
+        "law school preparation",
+        "Notre Dame Institute for Global Investing"
+      ],
+      "confidence": 0.92,
+      "notes": "Notre Dame is a household-name research university with broadly documented strengths in business (Mendoza), philosophy, theology, and pre-professional programs, supported by consistent top-25 national rankings and extensive published data.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Theology"
+      ],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "University of Southern California": {
+      "topMajors": [
+        "Computer Science",
+        "Business",
+        "Film Studies",
+        "Engineering",
+        "Communications",
+        "Architecture",
+        "Aerospace Engineering",
+        "Public Policy"
+      ],
+      "knownFor": [
+        "top-ranked film school",
+        "game design programs",
+        "interdisciplinary engineering research",
+        "Marshall business school finance",
+        "Annenberg media and communications",
+        "undergraduate entrepreneurship ecosystem"
+      ],
+      "confidence": 0.93,
+      "notes": "USC is a household-name research university with widely documented strengths in cinema (USC School of Cinematic Arts), engineering, CS, business, and communications consistently reflected in national rankings and peer reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Tufts University": {
+      "topMajors": [
+        "International Relations",
+        "Political Science",
+        "Biology",
+        "Economics",
+        "Computer Science",
+        "Pre-Med",
+        "Psychology",
+        "Engineering"
+      ],
+      "knownFor": [
+        "Fletcher School diplomacy",
+        "international affairs programs",
+        "biomedical and health sciences",
+        "interdisciplinary liberal arts engineering",
+        "active citizenship pedagogy"
+      ],
+      "confidence": 0.88,
+      "notes": "Tufts is a well-documented top-30 research university with a nationally recognized reputation in international relations via the Fletcher School, strong pre-health and engineering programs, and published rankings corroborating these strengths.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "NYU": {
+      "topMajors": [
+        "Film Studies",
+        "Business",
+        "Finance",
+        "Computer Science",
+        "Psychology",
+        "Economics",
+        "Theater",
+        "Music"
+      ],
+      "knownFor": [
+        "Tisch School of the Arts",
+        "Stern School of Business",
+        "film and performing arts",
+        "global campus network",
+        "media and communications programs"
+      ],
+      "confidence": 0.95,
+      "notes": "NYU is a household-name research university with widely documented strengths across Tisch (performing arts, film), Stern (business, finance), and expanding STEM programs, supported by national rankings and extensive public reputation data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Communications"
+      ]
+    },
+    "Boston College": {
+      "topMajors": [
+        "Finance",
+        "Economics",
+        "Accounting",
+        "Philosophy",
+        "Political Science",
+        "Psychology",
+        "Biology",
+        "Nursing"
+      ],
+      "knownFor": [
+        "Jesuit liberal arts tradition",
+        "Carroll School finance programs",
+        "philosophy and theology integration",
+        "Connell School of Nursing",
+        "economics research faculty"
+      ],
+      "confidence": 0.88,
+      "notes": "Boston College is a well-documented top-40 national university with strong published rankings in finance, philosophy, and nursing, and a distinctive Jesuit pedagogical identity reflected across programs.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "Wake Forest University": {
+      "topMajors": [
+        "Business",
+        "Economics",
+        "Psychology",
+        "Political Science",
+        "Biology",
+        "Finance",
+        "Pre-Med",
+        "Communications"
+      ],
+      "knownFor": [
+        "undergraduate business education",
+        "pre-professional advising",
+        "teacher-scholar model",
+        "Wake Forest School of Medicine affiliation",
+        "small seminar-style learning"
+      ],
+      "confidence": 0.85,
+      "notes": "Wake Forest is a well-documented top-30 national university with widely recognized strengths in business (Calloway School), pre-med pathways, and its distinctive teacher-scholar pedagogical commitment.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Boston University": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Communications",
+        "Pre-Med",
+        "Computer Science",
+        "International Relations",
+        "Biomedical Engineering",
+        "Psychology"
+      ],
+      "knownFor": [
+        "biomedical engineering research",
+        "College of Communication programs",
+        "Questrom School of Business",
+        "international relations and global affairs",
+        "strong pre-med pipeline"
+      ],
+      "confidence": 0.88,
+      "notes": "Boston University is a well-documented major research university with widely published rankings and clear programmatic strengths in engineering, business, communications, and health sciences.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Northeastern University": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Business",
+        "Data Science",
+        "Cybersecurity",
+        "Electrical Engineering",
+        "Mechanical Engineering",
+        "Information Systems"
+      ],
+      "knownFor": [
+        "cooperative education program",
+        "experiential learning model",
+        "cybersecurity research",
+        "industry-integrated curriculum",
+        "applied data science"
+      ],
+      "confidence": 0.92,
+      "notes": "Northeastern is a widely documented top-50 research university with nationally recognized strengths in CS, engineering, and business, and a flagship co-op program that is among the most cited experiential learning models in US higher education.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Tulane University": {
+      "topMajors": [
+        "Public Health",
+        "Business",
+        "Finance",
+        "International Relations",
+        "Political Science",
+        "Pre-Med",
+        "Environmental Science",
+        "Architecture"
+      ],
+      "knownFor": [
+        "tropical medicine research",
+        "global public health programs",
+        "interdisciplinary social innovation",
+        "strong pre-professional advising",
+        "Gulf Coast environmental research"
+      ],
+      "confidence": 0.85,
+      "notes": "Tulane is a well-documented research university with nationally recognized strengths in public health (Tulane School of Public Health and Tropical Medicine), business (Freeman School), and international/environmental studies, supported by published rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology",
+        "missing-curated:Psychology"
+      ]
+    },
+    "Villanova University": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Accounting",
+        "Nursing",
+        "Engineering",
+        "Computer Science",
+        "Economics",
+        "Political Science"
+      ],
+      "knownFor": [
+        "Augustinian liberal arts tradition",
+        "undergraduate business programs",
+        "nursing clinical training",
+        "financial services placement",
+        "engineering undergraduate focus"
+      ],
+      "confidence": 0.85,
+      "notes": "Villanova is a well-documented Catholic research university with consistently ranked business (Villanova School of Business), nursing, and engineering programs, supported by published US News subject rankings and strong professional placement data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Case Western Reserve University": {
+      "topMajors": [
+        "Biomedical Engineering",
+        "Computer Science",
+        "Mechanical Engineering",
+        "Pre-Med",
+        "Electrical Engineering",
+        "Nursing",
+        "Chemistry",
+        "Economics"
+      ],
+      "knownFor": [
+        "biomedical engineering research",
+        "SAGES interdisciplinary core curriculum",
+        "medical school partnerships",
+        "undergraduate research access",
+        "engineering-medicine collaboration"
+      ],
+      "confidence": 0.88,
+      "notes": "Case Western is a well-documented research university with consistently high national rankings in biomedical engineering, strong STEM and pre-health programs, and notable proximity and partnership with Cleveland Clinic and University Hospitals.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "UCLA": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Psychology",
+        "Biology",
+        "Political Science",
+        "Mathematics",
+        "Electrical Engineering",
+        "Film Studies"
+      ],
+      "knownFor": [
+        "ARPANET internet origins research",
+        "top-ranked film school",
+        "biomedical research enterprise",
+        "theoretical computer science",
+        "health sciences complex"
+      ],
+      "confidence": 0.97,
+      "notes": "UCLA is a household-name public research university with extensively documented program-level strengths across national and global rankings, particularly in CS, life sciences, engineering, economics, and its world-renowned film and television program.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "UC Berkeley": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Economics",
+        "Mechanical Engineering",
+        "Chemistry",
+        "Physics",
+        "Mathematics",
+        "Political Science"
+      ],
+      "knownFor": [
+        "EECS program prestige",
+        "theoretical computer science",
+        "Nobel laureate faculty density",
+        "public policy research",
+        "undergraduate research access",
+        "chemistry and materials science"
+      ],
+      "confidence": 0.98,
+      "notes": "UC Berkeley is a household-name flagship research university with extensively documented, top-ranked programs across engineering, sciences, and social sciences in virtually every major ranking system.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Michigan": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Mechanical Engineering",
+        "Business",
+        "Economics",
+        "Psychology",
+        "Political Science",
+        "Neuroscience"
+      ],
+      "knownFor": [
+        "Ross School of Business",
+        "interdisciplinary engineering programs",
+        "undergraduate research access",
+        "public policy institute research",
+        "automotive and robotics engineering"
+      ],
+      "confidence": 0.97,
+      "notes": "University of Michigan is a flagship public research university with broadly documented and consistently top-ranked programs in engineering, business, and the social sciences across major national and international rankings.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Virginia": {
+      "topMajors": [
+        "Economics",
+        "Computer Science",
+        "Political Science",
+        "Psychology",
+        "Biology",
+        "Public Policy",
+        "History"
+      ],
+      "knownFor": [
+        "McIntire School of Commerce",
+        "Batten School of public policy",
+        "undergraduate research access",
+        "Jefferson scholars program",
+        "law and pre-law pipeline"
+      ],
+      "confidence": 0.88,
+      "notes": "UVA is a well-documented flagship public university with widely recognized strengths in commerce, economics, political science, and public policy, supported by published rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Commerce"
+      ],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "UNC Chapel Hill": {
+      "topMajors": [
+        "Business",
+        "Public Health",
+        "Journalism",
+        "Biology",
+        "Psychology",
+        "Political Science",
+        "Economics",
+        "Pre-Med"
+      ],
+      "knownFor": [
+        "Gillings School of Global Public Health",
+        "Hussman School of Journalism",
+        "undergraduate research opportunities",
+        "top public health graduate programs",
+        "kenan-flagler business school"
+      ],
+      "confidence": 0.92,
+      "notes": "UNC Chapel Hill is a flagship public research university with broadly and consistently documented strengths across public health, journalism, business, and the life sciences in national rankings and published program profiles.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Communications"
+      ]
+    },
+    "Georgia Tech": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Mechanical Engineering",
+        "Industrial Engineering",
+        "Aerospace Engineering",
+        "Computer Engineering",
+        "Civil Engineering",
+        "Data Science"
+      ],
+      "knownFor": [
+        "industrial and systems engineering",
+        "online CS master's program",
+        "robotics and automation research",
+        "computational data analytics",
+        "semiconductor and hardware research"
+      ],
+      "confidence": 0.97,
+      "notes": "Georgia Tech is a household-name STEM powerhouse with widely documented top-5 engineering and computer science programs, extensive research output, and multiple named institutes like GTRI and the Institute for Robotics and Intelligent Machines.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "University of Florida": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Computer Science",
+        "Biology",
+        "Psychology",
+        "Journalism",
+        "Agriculture",
+        "Pre-Med"
+      ],
+      "knownFor": [
+        "land-grant agricultural research",
+        "top-ranked online MBA",
+        "interdisciplinary STEM programs",
+        "journalism and communications tradition",
+        "undergraduate research opportunities"
+      ],
+      "confidence": 0.92,
+      "notes": "University of Florida is a flagship public research university with widely documented strengths across business, engineering, agriculture, and journalism, consistently appearing in top national and subject-area rankings.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "UT Austin": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Business",
+        "Finance",
+        "Aerospace Engineering",
+        "Communications",
+        "Public Policy"
+      ],
+      "knownFor": [
+        "petroleum and energy engineering",
+        "McCombs School of Business",
+        "computational science research",
+        "LBJ School of Public Affairs",
+        "Cockrell School of Engineering"
+      ],
+      "confidence": 0.95,
+      "notes": "UT Austin is a flagship research university with nationally recognized programs widely documented in rankings, employer surveys, and peer assessments across engineering, business, CS, and public policy.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Petroleum Engineering"
+      ],
+      "warnings": []
+    },
+    "University of Wisconsin-Madison": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Economics",
+        "Business",
+        "Biology",
+        "Political Science",
+        "Psychology",
+        "Data Science"
+      ],
+      "knownFor": [
+        "land-grant research excellence",
+        "Wisconsin Idea public engagement",
+        "biomedical and life sciences research",
+        "top-ranked engineering programs",
+        "economics and social science research"
+      ],
+      "confidence": 0.95,
+      "notes": "UW-Madison is a flagship AAU research university with broadly documented strengths across engineering, CS, biological sciences, and social sciences supported by national rankings and decades of research reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Illinois Urbana-Champaign": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Mechanical Engineering",
+        "Civil Engineering",
+        "Chemical Engineering",
+        "Accounting",
+        "Finance",
+        "Physics"
+      ],
+      "knownFor": [
+        "top-ranked CS engineering program",
+        "Grainger College of Engineering",
+        "pioneering computer science research",
+        "Illinois Beckman Institute research",
+        "Gies College of Business online programs"
+      ],
+      "confidence": 0.97,
+      "notes": "UIUC is a household-name public research university with extensively documented, consistently top-ranked programs in computer science, engineering, and business across US News, NRC, and industry employer surveys.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "Ohio State University": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Computer Science",
+        "Psychology",
+        "Public Health",
+        "Finance",
+        "Marketing",
+        "Nursing"
+      ],
+      "knownFor": [
+        "Fisher College of Business",
+        "Wexner Medical Center research",
+        "engineering research programs",
+        "public health and epidemiology",
+        "undergraduate research opportunities"
+      ],
+      "confidence": 0.92,
+      "notes": "Ohio State is a flagship Big Ten research university with widely documented program-level strengths in business, engineering, health sciences, and psychology confirmed across multiple published rankings and institutional reputation sources.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Penn State University": {
+      "topMajors": [
+        "Engineering",
+        "Business",
+        "Computer Science",
+        "Kinesiology",
+        "Communications",
+        "Supply Chain Management",
+        "Education"
+      ],
+      "knownFor": [
+        "meteorology and atmospheric science",
+        "supply chain management program",
+        "large-scale engineering research",
+        "Smeal College of Business",
+        "undergraduate research opportunities",
+        "education teacher preparation"
+      ],
+      "confidence": 0.88,
+      "notes": "Penn State is a flagship public research university with widely documented and rankings-supported strengths in engineering, business, supply chain, and a uniquely prominent meteorology program.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Meteorology"
+      ],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Washington": {
+      "topMajors": [
+        "Computer Science",
+        "Software Engineering",
+        "Data Science",
+        "Biomedical Engineering",
+        "Information Systems",
+        "Psychology",
+        "Public Health",
+        "Linguistics",
+        "Nursing"
+      ],
+      "knownFor": [
+        "Paul G. Allen School of Computer Science",
+        "human-computer interaction research",
+        "biomedical and genomics research",
+        "information school iSchool programs",
+        "medical and health sciences training"
+      ],
+      "confidence": 0.93,
+      "notes": "UW is a flagship research university with globally recognized programs in CS, medicine, and biosciences, extensively documented in national and international rankings.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Medicine"
+      ],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Purdue University": {
+      "topMajors": [
+        "Computer Science",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Aerospace Engineering",
+        "Chemical Engineering",
+        "Civil Engineering",
+        "Data Science",
+        "Agriculture"
+      ],
+      "knownFor": [
+        "top-ranked engineering programs",
+        "aerospace and aeronautical research",
+        "agricultural sciences excellence",
+        "STEM-focused undergraduate education",
+        "Purdue Polytechnic Institute programs"
+      ],
+      "confidence": 0.95,
+      "notes": "Purdue is a household-name Big Ten research university with extensively documented engineering, CS, and agriculture program rankings across US News, QS, and professional reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "University of Maryland": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Business",
+        "Economics",
+        "Public Policy",
+        "Aerospace Engineering",
+        "Electrical Engineering",
+        "Criminology"
+      ],
+      "knownFor": [
+        "cybersecurity research excellence",
+        "A. James Clark School engineering",
+        "Robert H. Smith School of Business",
+        "aerospace and space systems research",
+        "computational linguistics programs",
+        "public policy and governance"
+      ],
+      "confidence": 0.92,
+      "notes": "University of Maryland is a flagship R1 institution with widely documented top-10 cybersecurity and computer science programs, a highly ranked engineering school, and strong business and public policy programs consistently reflected in national rankings.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Virginia Tech": {
+      "topMajors": [
+        "Engineering",
+        "Computer Science",
+        "Architecture",
+        "Business",
+        "Aerospace Engineering",
+        "Mechanical Engineering",
+        "Civil Engineering",
+        "Agriculture"
+      ],
+      "knownFor": [
+        "College of Engineering reputation",
+        "architecture studio culture",
+        "aerospace and defense research",
+        "agricultural and life sciences",
+        "undergraduate engineering enrollment"
+      ],
+      "confidence": 0.92,
+      "notes": "Virginia Tech is a well-documented engineering and technical powerhouse with consistently top-ranked programs in engineering, architecture, and agriculture, supported by extensive published rankings and institutional reputation data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Indiana University Bloomington": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Accounting",
+        "Marketing",
+        "Management",
+        "Information Systems",
+        "Music",
+        "Public Policy",
+        "Economics",
+        "Journalism"
+      ],
+      "knownFor": [
+        "Kelley School of Business",
+        "Jacobs School of Music",
+        "media school journalism programs",
+        "undergraduate business direct admission",
+        "public affairs and policy research"
+      ],
+      "confidence": 0.88,
+      "notes": "IU Bloomington is a well-documented flagship with nationally ranked programs in business (Kelley), music (Jacobs), journalism (Media School), and information systems, supported by published rankings and broad institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology",
+        "missing-curated:Communications"
+      ]
+    },
+    "UC San Diego": {
+      "topMajors": [
+        "Computer Science",
+        "Data Science",
+        "Biology",
+        "Cognitive Science",
+        "Economics",
+        "Biomedical Engineering",
+        "Physics",
+        "Mathematics"
+      ],
+      "knownFor": [
+        "cognitive science pioneer program",
+        "biomedical research enterprise",
+        "Scripps Institution of Oceanography",
+        "computational biology integration",
+        "undergraduate research access",
+        "systems neuroscience strength"
+      ],
+      "confidence": 0.95,
+      "notes": "UCSD is a household-name research university with extensively documented strengths in CS, cognitive science, biology, and engineering, backed by national rankings, Nobel laureate faculty, and flagship research institutions like Scripps.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "UC Davis": {
+      "topMajors": [
+        "Biology",
+        "Neuroscience",
+        "Environmental Science",
+        "Agriculture",
+        "Biochemistry",
+        "Economics",
+        "Computer Science"
+      ],
+      "knownFor": [
+        "veterinary medicine program",
+        "agricultural research excellence",
+        "food science innovation",
+        "environmental policy research",
+        "viticulture and enology"
+      ],
+      "confidence": 0.92,
+      "notes": "UC Davis is a flagship UC campus with widely documented and top-ranked programs in agriculture, veterinary science, environmental science, and biological sciences, consistently appearing in national and global subject rankings.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Veterinary Science"
+      ],
+      "warnings": [
+        "missing-curated:Engineering",
+        "missing-curated:Psychology"
+      ]
+    },
+    "UC Santa Barbara": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Physics",
+        "Chemistry",
+        "Biology",
+        "Environmental Science",
+        "Electrical Engineering",
+        "Mathematics"
+      ],
+      "knownFor": [
+        "Nobel Prize-winning physics faculty",
+        "materials science research",
+        "theoretical computer science",
+        "marine biology programs",
+        "climate and environmental research"
+      ],
+      "confidence": 0.88,
+      "notes": "UCSB is a well-documented research university with Nobel laureates in physics and chemistry, top-ranked programs in materials science and CS, and strong published rankings across sciences and engineering.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Communications"
+      ]
+    },
+    "UC Irvine": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Psychology",
+        "Criminology",
+        "Data Science",
+        "Neuroscience",
+        "Biomedical Engineering"
+      ],
+      "knownFor": [
+        "criminology and social ecology",
+        "machine learning research",
+        "computational biology programs",
+        "gaming and esports academia",
+        "health sciences research"
+      ],
+      "confidence": 0.88,
+      "notes": "UC Irvine is a well-documented UC campus with strong published rankings in computer science, social ecology/criminology, biological sciences, and a nationally recognized esports and game design program.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Biological Sciences"
+      ],
+      "warnings": [
+        "missing-curated:Biology",
+        "missing-curated:Business"
+      ]
+    },
+    "University of Georgia": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Marketing",
+        "Management",
+        "Journalism",
+        "Public Relations",
+        "Biology",
+        "Pre-Law"
+      ],
+      "knownFor": [
+        "Terry College of Business",
+        "Grady College journalism program",
+        "public health research",
+        "undergraduate honors program",
+        "agricultural and environmental sciences"
+      ],
+      "confidence": 0.85,
+      "notes": "UGA is a flagship SEC research university with well-documented strengths in business (Terry College), journalism (Grady College), life sciences, and law, supported by national rankings and broad institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Psychology"
+      ]
+    },
+    "Clemson University": {
+      "topMajors": [
+        "Engineering",
+        "Business",
+        "Computer Science",
+        "Architecture",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Civil Engineering",
+        "Agriculture"
+      ],
+      "knownFor": [
+        "automotive engineering partnerships",
+        "architecture graduate programs",
+        "undergraduate engineering outcomes",
+        "supply chain management research",
+        "public service leadership program"
+      ],
+      "confidence": 0.82,
+      "notes": "Clemson is a well-documented public research university with published subject rankings confirming strength in engineering, business, and architecture, plus nationally recognized programs like the International Center for Automotive Research.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Pittsburgh": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Computer Science",
+        "Pre-Med",
+        "Public Health",
+        "Nursing",
+        "Psychology",
+        "Philosophy"
+      ],
+      "knownFor": [
+        "world-class medical center affiliation",
+        "philosophy of science program",
+        "public health research",
+        "biomedical engineering research",
+        "undergraduate nursing program"
+      ],
+      "confidence": 0.88,
+      "notes": "Pitt is a well-documented research university with widely recognized strengths in health sciences, engineering, and philosophy, consistently reflected in national rankings and published program profiles.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Michigan State University": {
+      "topMajors": [
+        "Business",
+        "Accounting",
+        "Supply Chain Management",
+        "Economics",
+        "Computer Science",
+        "Engineering",
+        "Journalism",
+        "Agriculture"
+      ],
+      "knownFor": [
+        "supply chain management program",
+        "agricultural and food sciences",
+        "Eli Broad College of Business",
+        "journalism and communications",
+        "nuclear physics research"
+      ],
+      "confidence": 0.92,
+      "notes": "Michigan State is a well-documented Big Ten research university with widely cited top-ranked programs in supply chain management, agriculture, and journalism, supported by published U.S. News and industry rankings.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Minnesota": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Business",
+        "Psychology",
+        "Biology",
+        "Economics",
+        "Journalism",
+        "Public Health"
+      ],
+      "knownFor": [
+        "Big Ten research university",
+        "medical and health sciences research",
+        "agricultural and food science programs",
+        "Carlson School of Management",
+        "software engineering and computing",
+        "interdisciplinary STEM research"
+      ],
+      "confidence": 0.88,
+      "notes": "Large flagship R1 university with widely documented strengths across engineering, business, health sciences, and computing, supported by published rankings and national research reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Texas A&M University": {
+      "topMajors": [
+        "Engineering",
+        "Mechanical Engineering",
+        "Aerospace Engineering",
+        "Electrical Engineering",
+        "Civil Engineering",
+        "Agriculture",
+        "Business"
+      ],
+      "knownFor": [
+        "land-grant agricultural research",
+        "nuclear engineering program",
+        "petroleum engineering strength",
+        "ROTC and military tradition",
+        "large-scale engineering research"
+      ],
+      "confidence": 0.92,
+      "notes": "Texas A&M is a household-name land-grant research university with widely documented top-tier programs in engineering, agriculture, and veterinary medicine, supported by national rankings and extensive public record.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Veterinary Science"
+      ],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Colorado Boulder": {
+      "topMajors": [
+        "Aerospace Engineering",
+        "Environmental Science",
+        "Computer Science",
+        "Electrical Engineering",
+        "Physics",
+        "Astrophysics",
+        "Business",
+        "Neuroscience"
+      ],
+      "knownFor": [
+        "aerospace and space science research",
+        "atmospheric and environmental science",
+        "LASP space physics institute",
+        "quantum information science",
+        "undergraduate engineering programs"
+      ],
+      "confidence": 0.88,
+      "notes": "CU Boulder is a widely documented research university with particular strength in aerospace, space sciences, and environmental disciplines, supported by published rankings, Nobel laureates in physics, and prominent research institutes like LASP and CIRES.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Psychology"
+      ]
+    },
+    "Arizona State University": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Computer Science",
+        "Sustainability Studies",
+        "Journalism",
+        "Public Policy",
+        "Data Science",
+        "Biomedical Engineering"
+      ],
+      "knownFor": [
+        "sustainability and global futures research",
+        "W. P. Carey business programs",
+        "Walter Cronkite School of Journalism",
+        "large-scale online degree programs",
+        "transdisciplinary innovation initiatives",
+        "biodesign and life sciences research"
+      ],
+      "confidence": 0.88,
+      "notes": "ASU is a well-documented public research university with nationally ranked programs in sustainability, journalism, business, and engineering, supported by published US News rankings and broad institutional reputation data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "breadth-rank-mismatch:rank=105,topMajors=8"
+      ]
+    },
+    "University of Arizona": {
+      "topMajors": [
+        "Astronomy",
+        "Astrophysics",
+        "Business",
+        "Engineering",
+        "Computer Science",
+        "Public Health",
+        "Ecology"
+      ],
+      "knownFor": [
+        "optical sciences leadership",
+        "space science research",
+        "undergraduate research access",
+        "arid lands research",
+        "genomics and precision medicine"
+      ],
+      "confidence": 0.85,
+      "notes": "University of Arizona is widely documented as a top-tier institution in optical sciences, astronomy, and space sciences, with strong published rankings in business, engineering, and health sciences as a flagship R1 research university.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Optical Sciences"
+      ],
+      "warnings": [
+        "missing-curated:Biology",
+        "missing-curated:Psychology",
+        "breadth-rank-mismatch:rank=105,topMajors=7"
+      ]
+    },
+    "Rutgers University": {
+      "topMajors": [
+        "Business",
+        "Computer Science",
+        "Psychology",
+        "Biology",
+        "Political Science",
+        "Economics",
+        "Engineering"
+      ],
+      "knownFor": [
+        "pharmaceutical sciences research",
+        "flagship public research university",
+        "social sciences depth",
+        "biomedical and life sciences"
+      ],
+      "confidence": 0.88,
+      "notes": "Rutgers is a well-documented flagship public research university with widely published rankings and clear programmatic strengths in pharmacy, business, computer science, and life sciences.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Pharmacy"
+      ],
+      "warnings": []
+    },
+    "University of Connecticut": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Nursing",
+        "Psychology",
+        "Political Science",
+        "Computer Science",
+        "Finance"
+      ],
+      "knownFor": [
+        "pharmacy and pharmaceutical sciences",
+        "actuarial science program",
+        "NCAA-affiliated kinesiology research",
+        "business school honors program",
+        "undergraduate research opportunities"
+      ],
+      "confidence": 0.82,
+      "notes": "UConn is a well-documented flagship public university with strong published rankings in business (Storrs School of Business), nursing, pharmacy, and engineering, supported by US News and program-level reputation data.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Pharmacy"
+      ],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Chicago": {
+      "topMajors": [
+        "Economics",
+        "Mathematics",
+        "Statistics",
+        "Philosophy",
+        "Political Science",
+        "Computer Science",
+        "Sociology",
+        "Public Policy"
+      ],
+      "knownFor": [
+        "Chicago School of Economics",
+        "Core Curriculum great books",
+        "interdisciplinary social sciences",
+        "Nobel laureate faculty density",
+        "rigorous theoretical foundations",
+        "public policy research"
+      ],
+      "confidence": 0.97,
+      "notes": "Household-name research university with extensively documented strengths, most famously in economics and social sciences, with the Core Curriculum and Chicago School of Economics being globally recognized academic identifiers.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Rochester": {
+      "topMajors": [
+        "Computer Science",
+        "Economics",
+        "Neuroscience",
+        "Psychology",
+        "Political Science",
+        "Biology",
+        "Music"
+      ],
+      "knownFor": [
+        "open curriculum flexibility",
+        "optics and photonics research",
+        "cognitive science and brain sciences",
+        "Take Five Scholar Program",
+        "cluster system interdisciplinary study"
+      ],
+      "confidence": 0.85,
+      "notes": "University of Rochester is a well-documented research university with nationally recognized strengths in optics (world-leading), cognitive science/neuroscience, economics, and its distinctive open curriculum, supported by published rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Optics"
+      ],
+      "warnings": [
+        "missing-curated:Engineering"
+      ]
+    },
+    "College of William & Mary": {
+      "topMajors": [
+        "Economics",
+        "Political Science",
+        "Psychology",
+        "Business",
+        "History",
+        "Computer Science",
+        "Public Policy",
+        "Biology"
+      ],
+      "knownFor": [
+        "pre-law pipeline",
+        "undergraduate research access",
+        "colonial American history studies",
+        "William & Mary Law feeder",
+        "public policy Institute for the Theory and Practice of International Relations"
+      ],
+      "confidence": 0.82,
+      "notes": "William & Mary is a well-documented selective public liberal arts-focused university with strong published reputations in economics, government, law preparation, and history, supported by national rankings and institutional data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Brandeis University": {
+      "topMajors": [
+        "Economics",
+        "Psychology",
+        "Neuroscience",
+        "Biology",
+        "Computer Science",
+        "International Relations",
+        "Biochemistry",
+        "Mathematics"
+      ],
+      "knownFor": [
+        "social justice liberal arts tradition",
+        "undergraduate research opportunities",
+        "international and global studies",
+        "health sciences pre-med pipeline",
+        "economics and quantitative social science"
+      ],
+      "confidence": 0.82,
+      "notes": "Brandeis is a well-documented research university with published strengths in economics, neuroscience, and the life sciences, supported by national rankings and its reputation as a research-intensive liberal arts institution.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Lehigh University": {
+      "topMajors": [
+        "Engineering",
+        "Business",
+        "Finance",
+        "Computer Science",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Industrial Engineering",
+        "Economics"
+      ],
+      "knownFor": [
+        "integrated business and engineering programs",
+        "undergraduate research opportunities",
+        "finance and investment programs",
+        "materials science research",
+        "STEM and business integration"
+      ],
+      "confidence": 0.82,
+      "notes": "Lehigh is a well-documented mid-tier national research university with consistently strong published rankings in engineering and business, particularly known for its integrated engineering-business curriculum.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Rensselaer Polytechnic Institute": {
+      "topMajors": [
+        "Computer Science",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Biomedical Engineering",
+        "Civil Engineering",
+        "Chemical Engineering",
+        "Aerospace Engineering",
+        "Data Science"
+      ],
+      "knownFor": [
+        "undergraduate research programs",
+        "computational science and engineering",
+        "interdisciplinary STEM education",
+        "game design and simulation",
+        "cognitive science research"
+      ],
+      "confidence": 0.88,
+      "notes": "RPI is a well-documented STEM-focused research university with consistently high published rankings in engineering and computer science, and notable programs in game design and cognitive science.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Information Technology"
+      ]
+    },
+    "Stony Brook University": {
+      "topMajors": [
+        "Computer Science",
+        "Biology",
+        "Chemistry",
+        "Physics",
+        "Mathematics",
+        "Biomedical Engineering",
+        "Psychology",
+        "Economics"
+      ],
+      "knownFor": [
+        "STEM research university",
+        "Simons Center for Geometry and Physics",
+        "NSF-funded research programs",
+        "computational biology research",
+        "Renaissance School of Medicine"
+      ],
+      "confidence": 0.85,
+      "notes": "Stony Brook is a flagship SUNY research university with widely documented strength in STEM fields, a nationally ranked medical school, and strong published subject rankings in physics, mathematics, and computer science.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "George Washington University": {
+      "topMajors": [
+        "Political Science",
+        "International Relations",
+        "Public Policy",
+        "Public Administration",
+        "International Business",
+        "Journalism",
+        "Pre-Law",
+        "Business"
+      ],
+      "knownFor": [
+        "DC policy network access",
+        "international affairs programs",
+        "Elliott School of International Affairs",
+        "political communication research",
+        "public interest law pipeline"
+      ],
+      "confidence": 0.85,
+      "notes": "GWU is widely documented as a top destination for political science, international affairs, and policy studies due to its Washington DC location and the well-ranked Elliott School of International Affairs.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Santa Clara University": {
+      "topMajors": [
+        "Computer Science",
+        "Electrical Engineering",
+        "Computer Engineering",
+        "Business",
+        "Finance",
+        "Mechanical Engineering",
+        "Economics",
+        "Psychology"
+      ],
+      "knownFor": [
+        "Silicon Valley industry connections",
+        "Jesuit liberal arts integration",
+        "undergraduate engineering emphasis",
+        "ethics-focused business curriculum",
+        "startup and venture ecosystem access"
+      ],
+      "confidence": 0.78,
+      "notes": "Santa Clara's strengths are well-documented through U.S. News subject rankings, its Leavey School of Business reputation, and consistent placement in Silicon Valley tech roles across engineering and CS programs.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Pepperdine University": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Communications",
+        "Psychology",
+        "Political Science",
+        "International Relations",
+        "Public Policy"
+      ],
+      "knownFor": [
+        "Graziadio Business School reputation",
+        "international program network",
+        "pre-law pipeline",
+        "dispute resolution programs",
+        "small seminar-based learning"
+      ],
+      "confidence": 0.78,
+      "notes": "Pepperdine is well-documented for its Graziadio Business School, strong international programs, and notably its School of Law with a top-ranked dispute resolution program, supported by published rankings and institutional reputation data.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Law"
+      ],
+      "warnings": []
+    },
+    "Syracuse University": {
+      "topMajors": [
+        "Communications",
+        "Journalism",
+        "Public Relations",
+        "Advertising",
+        "Architecture",
+        "Computer Science",
+        "Business"
+      ],
+      "knownFor": [
+        "Newhouse School of Communications",
+        "S.I. Newhouse media programs",
+        "sport management programs",
+        "Maxwell School public affairs",
+        "iSchool information studies"
+      ],
+      "confidence": 0.88,
+      "notes": "Syracuse is a household name in communications and journalism via the Newhouse School, with additional well-documented strengths in public policy (Maxwell School), architecture, and information studies, supported by consistent national rankings.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Information Management"
+      ],
+      "warnings": [
+        "missing-curated:Engineering"
+      ]
+    },
+    "Fordham University": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Marketing",
+        "Economics",
+        "Political Science",
+        "Psychology",
+        "Communications",
+        "International Relations"
+      ],
+      "knownFor": [
+        "Wall Street proximity finance programs",
+        "Jesuit liberal arts tradition",
+        "international political economy",
+        "urban communication studies",
+        "pre-law advising"
+      ],
+      "confidence": 0.82,
+      "notes": "Fordham is a well-documented Jesuit university with strong national rankings in business (Gabelli School), law preparation, and social sciences, supported by its New York City location and published program reputations.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Iowa": {
+      "topMajors": [
+        "Creative Writing",
+        "Journalism",
+        "Psychology",
+        "Business",
+        "Pre-Med",
+        "Political Science",
+        "Education",
+        "Nursing"
+      ],
+      "knownFor": [
+        "Iowa Writers' Workshop",
+        "health sciences research",
+        "undergraduate journalism programs",
+        "literary arts tradition",
+        "Big Ten research institution"
+      ],
+      "confidence": 0.85,
+      "notes": "University of Iowa is widely documented as home to the world-renowned Iowa Writers' Workshop, a top-ranked journalism school, and a major academic medical center, with strong published program-level reputations across health sciences and liberal arts.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Engineering"
+      ]
+    },
+    "Southern Methodist University": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Accounting",
+        "Economics",
+        "Engineering",
+        "Computer Science",
+        "Communications",
+        "Political Science"
+      ],
+      "knownFor": [
+        "Cox School of Business reputation",
+        "Dedman College liberal arts",
+        "applied economics research",
+        "Lyle School of Engineering",
+        "arts and humanities integration"
+      ],
+      "confidence": 0.82,
+      "notes": "SMU is a well-documented private research university with consistent rankings in its Cox School of Business, Lyle School of Engineering, and strong liberal arts programs, supported by national rankings and published program profiles.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of Delaware": {
+      "topMajors": [
+        "Chemical Engineering",
+        "Business",
+        "Nursing",
+        "Finance",
+        "Education",
+        "Computer Science",
+        "Environmental Science",
+        "Physical Therapy"
+      ],
+      "knownFor": [
+        "chemical engineering excellence",
+        "study abroad programs",
+        "materials science research",
+        "undergraduate honors program",
+        "physical therapy doctoral program"
+      ],
+      "confidence": 0.78,
+      "notes": "University of Delaware has well-documented strengths in chemical engineering (consistently top-ranked), business, nursing, and education, supported by published rankings and its long-standing reputation as a mid-Atlantic flagship public university.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Baylor University": {
+      "topMajors": [
+        "Nursing",
+        "Pre-Med",
+        "Business",
+        "Finance",
+        "Accounting",
+        "Psychology",
+        "Biology",
+        "Pre-Law"
+      ],
+      "knownFor": [
+        "Baylor College of Medicine pipeline",
+        "strong nursing program",
+        "faith-integrated liberal arts",
+        "undergraduate research opportunities",
+        "honors college curriculum"
+      ],
+      "confidence": 0.78,
+      "notes": "Baylor is a well-documented private research university with published rankings and clear programmatic strengths in health sciences, business, and pre-professional tracks consistent with its Baptist identity and R1 status.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of South Carolina": {
+      "topMajors": [
+        "Business",
+        "International Business",
+        "Public Health",
+        "Journalism",
+        "Criminal Justice",
+        "Education",
+        "Nursing"
+      ],
+      "knownFor": [
+        "international business program",
+        "Arnold School of Public Health",
+        "first-year experience programs",
+        "honors college distinction"
+      ],
+      "confidence": 0.78,
+      "notes": "University of South Carolina has well-documented strengths in international business (Moore School consistently ranked nationally), public health, journalism, and is known for pioneering first-year student success programs, supported by published rankings and institutional reputation data.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Exercise Science"
+      ],
+      "warnings": [
+        "missing-curated:Biology",
+        "missing-curated:Engineering"
+      ]
+    },
+    "Marquette University": {
+      "topMajors": [
+        "Nursing",
+        "Engineering",
+        "Business",
+        "Pre-Law",
+        "Communications",
+        "Psychology",
+        "Political Science",
+        "Finance"
+      ],
+      "knownFor": [
+        "Jesuit liberal arts tradition",
+        "nursing clinical training",
+        "law school pipeline",
+        "undergraduate engineering programs",
+        "business ethics emphasis"
+      ],
+      "confidence": 0.78,
+      "notes": "Marquette is a well-documented Jesuit university with consistently recognized strengths in nursing, engineering, business, and pre-law, supported by published program rankings and national reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "University of South Florida": {
+      "topMajors": [
+        "Public Health",
+        "Biomedical Engineering",
+        "Business",
+        "Psychology",
+        "Computer Science",
+        "Engineering",
+        "Nursing",
+        "Marine Biology"
+      ],
+      "knownFor": [
+        "public health research programs",
+        "biomedical engineering focus",
+        "research university designation",
+        "cybersecurity programs",
+        "health sciences emphasis"
+      ],
+      "confidence": 0.75,
+      "notes": "USF is a well-documented R1 research university with recognized strengths in public health, biomedical engineering, and health sciences, supported by published rankings and its affiliation with major medical and research facilities in Tampa.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Stevens Institute of Technology": {
+      "topMajors": [
+        "Computer Science",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Biomedical Engineering",
+        "Software Engineering",
+        "Data Science",
+        "Cybersecurity"
+      ],
+      "knownFor": [
+        "quantitative financial engineering",
+        "systems engineering research",
+        "cybersecurity graduate programs",
+        "maritime and naval engineering",
+        "technology management integration"
+      ],
+      "confidence": 0.82,
+      "notes": "Stevens is a well-documented STEM-focused institution with published strengths in engineering, computer science, and quantitative finance, consistently ranked in those areas by US News and industry sources.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Financial Engineering"
+      ],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "University of Oregon": {
+      "topMajors": [
+        "Business",
+        "Psychology",
+        "Journalism",
+        "Architecture",
+        "Economics",
+        "Environmental Science",
+        "Political Science"
+      ],
+      "knownFor": [
+        "sports business and marketing",
+        "environmental studies programs",
+        "SOJC journalism school",
+        "architecture and landscape design",
+        "cognitive neuroscience research"
+      ],
+      "confidence": 0.82,
+      "notes": "Well-documented public flagship with nationally recognized journalism school (SOJC), strong Lundquist College of Business, and notable architecture and environmental programs backed by published rankings and program reputation.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Sports Marketing"
+      ],
+      "warnings": []
+    },
+    "Brigham Young University": {
+      "topMajors": [
+        "Accounting",
+        "Computer Science",
+        "Business",
+        "Finance",
+        "Management",
+        "Mechanical Engineering",
+        "Linguistics"
+      ],
+      "knownFor": [
+        "accountancy program rankings",
+        "law school bar passage rates",
+        "computational linguistics research",
+        "management consulting pipeline",
+        "undergraduate business education"
+      ],
+      "confidence": 0.85,
+      "notes": "BYU is a well-documented institution with consistently high national rankings in accounting, a strong Marriott School of Business, and notable strengths in law and linguistics, supported by published program rankings and alumni outcomes data.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Law"
+      ],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Tennessee Knoxville": {
+      "topMajors": [
+        "Business",
+        "Engineering",
+        "Supply Chain Management",
+        "Accounting",
+        "Nursing",
+        "Computer Science",
+        "Psychology",
+        "Agriculture"
+      ],
+      "knownFor": [
+        "supply chain management program",
+        "forensic anthropology research",
+        "nuclear engineering program",
+        "undergraduate business education",
+        "agricultural sciences tradition"
+      ],
+      "confidence": 0.82,
+      "notes": "UTK is a well-documented flagship public university with published rankings and broad recognition for its Haslam College of Business, engineering programs, and its world-famous Body Farm contributing to forensic science research.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "North Carolina State University": {
+      "topMajors": [
+        "Computer Science",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Civil Engineering",
+        "Chemical Engineering",
+        "Aerospace Engineering",
+        "Industrial Engineering"
+      ],
+      "knownFor": [
+        "engineering research excellence",
+        "textile and fiber science",
+        "agricultural and life sciences",
+        "collaborative industry partnerships",
+        "data science programs"
+      ],
+      "confidence": 0.92,
+      "notes": "NC State is a flagship land-grant research university with widely documented STEM and engineering strengths, multiple top-ranked engineering programs, and a nationally recognized College of Engineering.",
+      "needsReview": false,
+      "droppedMajors": [
+        "Textile Engineering"
+      ],
+      "warnings": [
+        "missing-curated:Business"
+      ]
+    },
+    "University of Massachusetts Amherst": {
+      "topMajors": [
+        "Computer Science",
+        "Engineering",
+        "Business",
+        "Psychology",
+        "Political Science",
+        "Biology",
+        "Economics",
+        "Electrical Engineering"
+      ],
+      "knownFor": [
+        "NLP and AI research",
+        "Manning College of Information and Computer Sciences",
+        "Isenberg School of Management",
+        "computational social science",
+        "polymer science and engineering"
+      ],
+      "confidence": 0.87,
+      "notes": "UMass Amherst is a flagship R1 public research university with widely documented and published strengths, particularly in computer science (top-20 CS program), business via Isenberg, and polymer/materials engineering.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Howard University": {
+      "topMajors": [
+        "Biology",
+        "Business",
+        "Communications",
+        "Political Science",
+        "Pre-Med",
+        "Psychology",
+        "Nursing",
+        "Computer Science"
+      ],
+      "knownFor": [
+        "HBCU research institution",
+        "pre-med pipeline programs",
+        "Howard School of Communications",
+        "public policy and law",
+        "STEM diversity initiatives"
+      ],
+      "confidence": 0.82,
+      "notes": "Howard is a well-documented flagship HBCU with widely published rankings and reputation in health sciences, communications, law, and business, supported by national reporting and program-level data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Colorado School of Mines": {
+      "topMajors": [
+        "Engineering",
+        "Mechanical Engineering",
+        "Electrical Engineering",
+        "Chemical Engineering",
+        "Civil Engineering",
+        "Computer Science",
+        "Environmental Engineering",
+        "Materials Science"
+      ],
+      "knownFor": [
+        "mining and mineral engineering",
+        "petroleum engineering excellence",
+        "applied earth sciences",
+        "undergraduate engineering research",
+        "energy systems research"
+      ],
+      "confidence": 0.92,
+      "notes": "Colorado School of Mines is a widely documented STEM-focused institution with nationally recognized programs in engineering, earth sciences, and energy, consistently ranked among top engineering schools by US News and other outlets.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Physics"
+      ]
+    },
+    "Gonzaga University": {
+      "topMajors": [
+        "Business",
+        "Finance",
+        "Accounting",
+        "Psychology",
+        "Political Science",
+        "Nursing",
+        "Philosophy",
+        "Pre-Law"
+      ],
+      "knownFor": [
+        "Jesuit liberal arts core",
+        "undergraduate business programs",
+        "law school pipeline",
+        "ethics-focused curriculum",
+        "nursing clinical training"
+      ],
+      "confidence": 0.78,
+      "notes": "Gonzaga is a well-documented Jesuit university with widely recognized strengths in business, nursing, and philosophy, supported by published rankings and consistent reputation data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Engineering",
+        "missing-curated:Biology"
+      ]
+    },
+    "University of Alabama": {
+      "topMajors": [
+        "Business",
+        "Accounting",
+        "Finance",
+        "Marketing",
+        "Engineering",
+        "Nursing",
+        "Communications",
+        "Public Relations"
+      ],
+      "knownFor": [
+        "Culverhouse College of Business",
+        "advertising and public relations programs",
+        "aerospace engineering research",
+        "Manderson Graduate School"
+      ],
+      "confidence": 0.82,
+      "notes": "University of Alabama is a well-documented flagship public university with nationally recognized business and communications programs, supported by published rankings and program-level reputation data.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Binghamton University": {
+      "topMajors": [
+        "Business",
+        "Accounting",
+        "Finance",
+        "Computer Science",
+        "Engineering",
+        "Psychology",
+        "Economics",
+        "Political Science"
+      ],
+      "knownFor": [
+        "School of Management reputation",
+        "Watson School of Engineering",
+        "public honors college access",
+        "pre-professional advising programs",
+        "systems science interdisciplinary research"
+      ],
+      "confidence": 0.82,
+      "notes": "Binghamton is a well-documented SUNY flagship with consistently high rankings in business (School of Management), engineering, and computer science, supported by published US News and Niche subject rankings.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Auburn University": {
+      "topMajors": [
+        "Engineering",
+        "Mechanical Engineering",
+        "Aerospace Engineering",
+        "Chemical Engineering",
+        "Civil Engineering",
+        "Business",
+        "Architecture",
+        "Agriculture"
+      ],
+      "knownFor": [
+        "ABET-accredited engineering programs",
+        "Samuel Ginn College of Engineering",
+        "College of Agriculture research",
+        "architecture design studio tradition",
+        "veterinary medicine program",
+        "aerospace and defense research"
+      ],
+      "confidence": 0.85,
+      "notes": "Auburn is a well-documented land-grant university with broadly recognized strengths in engineering, agriculture, architecture, and business, supported by published rankings and historical program identity.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": [
+        "missing-curated:Biology"
+      ]
+    },
+    "Williams College": {
+      "topMajors": [
+        "Economics",
+        "Mathematics",
+        "Political Science",
+        "History",
+        "Philosophy",
+        "Biology",
+        "English",
+        "Psychology"
+      ],
+      "knownFor": [
+        "tutorial-style pedagogy",
+        "undergraduate-only liberal arts focus",
+        "small seminar instruction",
+        "political economy integration",
+        "rigorous quantitative social science"
+      ],
+      "confidence": 0.92,
+      "notes": "Williams College is a household-name liberal arts college consistently ranked #1 or #2 nationally, with well-documented strengths in economics, mathematics, and humanities rooted in its distinctive tutorial teaching model.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Amherst College": {
+      "topMajors": [
+        "Economics",
+        "Mathematics",
+        "Political Science",
+        "English",
+        "Philosophy",
+        "Psychology",
+        "History",
+        "Computer Science"
+      ],
+      "knownFor": [
+        "open curriculum flexibility",
+        "undergraduate research access",
+        "small seminar pedagogy",
+        "Five College Consortium",
+        "law and jurisprudence studies"
+      ],
+      "confidence": 0.88,
+      "notes": "Amherst is a well-documented top-5 liberal arts college with published enrollment data, subject-area reputation, and extensive coverage of its open curriculum and Five College Consortium strengths.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Pomona College": {
+      "topMajors": [
+        "Economics",
+        "Mathematics",
+        "Computer Science",
+        "Physics",
+        "Philosophy",
+        "Neuroscience",
+        "Psychology",
+        "Political Science"
+      ],
+      "knownFor": [
+        "open curriculum flexibility",
+        "undergraduate research access",
+        "Claremont Consortium cross-enrollment",
+        "small seminar pedagogy",
+        "quantitative economics training"
+      ],
+      "confidence": 0.85,
+      "notes": "Pomona is a top-5 nationally ranked liberal arts college with well-documented programmatic strengths in economics, mathematics, and sciences, supported by Claremont Consortium resources and published subject rankings.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Middlebury College": {
+      "topMajors": [
+        "Economics",
+        "International Relations",
+        "Environmental Science",
+        "Political Science",
+        "English",
+        "History",
+        "Psychology"
+      ],
+      "knownFor": [
+        "language immersion programs",
+        "Bread Loaf School of English",
+        "environmental studies curriculum",
+        "international and global studies",
+        "undergraduate writing programs"
+      ],
+      "confidence": 0.88,
+      "notes": "Middlebury is a well-documented top-tier liberal arts college with widely recognized strengths in language instruction, environmental studies, and international programs supported by published rankings and institutional reputation.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    },
+    "Bowdoin College": {
+      "topMajors": [
+        "Economics",
+        "Political Science",
+        "Biology",
+        "Mathematics",
+        "History",
+        "Computer Science",
+        "English",
+        "Neuroscience"
+      ],
+      "knownFor": [
+        "open curriculum flexibility",
+        "undergraduate research emphasis",
+        "marine biology coastal access",
+        "environmental studies integration",
+        "close faculty mentorship"
+      ],
+      "confidence": 0.82,
+      "notes": "Bowdoin is a well-documented top-5 liberal arts college with broadly published enrollment, rankings, and programmatic strengths in natural sciences, social sciences, and humanities.",
+      "needsReview": false,
+      "droppedMajors": [],
+      "warnings": []
+    }
+  }
 }
