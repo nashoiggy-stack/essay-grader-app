@@ -36,7 +36,7 @@ export const NavBar: React.FC = () => {
         className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
         style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
       >
-        <div className="pointer-events-auto w-full max-w-5xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
+        <div className="pointer-events-auto w-full max-w-7xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
           <div className="px-4 lg:px-5 flex items-center justify-between h-12">
             {/* Home button */}
             <Link href="/" className="flex items-center gap-2 shrink-0 group">

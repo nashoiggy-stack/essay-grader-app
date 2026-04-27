@@ -8,6 +8,7 @@ import {
   IconArrow,
   IconRefresh,
   IconSpark,
+  IconUser,
 } from "./icons";
 import type { ActionItem, ShortlistEntry, ToolStatus } from "./types";
 import "../dashboard-atlas.css";
@@ -163,11 +164,19 @@ function Header({ data, firstName, isEmpty }: HeaderProps) {
                 </>
               )}
               {!studentGradYear && !studentSchool && !studentMajor && (
-                <>Add your basic info and intended major in <Link href="/profile" style={{ textDecoration: "underline" }}>Edit profile</Link> to personalize this view.</>
+                <>Add your basic info and intended major to personalize this view.</>
               )}
             </>
           )}
         </p>
+        {!studentGradYear && !studentSchool && !studentMajor && !isEmpty && (
+          <div style={{ marginTop: 16 }}>
+            <Link href="/profile" className="ae-btn ae-btn-primary">
+              <IconUser size={14} /> Edit your profile
+              <IconArrow size={14} />
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="ae-header-grid">
