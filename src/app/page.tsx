@@ -246,6 +246,9 @@ export default function LandingPage() {
           >
             college admissions.
           </h1>
+          <p className="text-xs text-zinc-500 text-center mt-2">
+            Early access — actively in development
+          </p>
         </motion.div>
 
         {/* CTA background: WebGL shader */}

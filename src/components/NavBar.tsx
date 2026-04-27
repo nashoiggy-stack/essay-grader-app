@@ -47,6 +47,12 @@ export const NavBar: React.FC = () => {
               <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-[color] duration-200 [transition-timing-function:var(--ease-out)]">
                 AdmitEdge
               </span>
+              <span
+                aria-label="Beta"
+                className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-zinc-800/80 text-zinc-300 border border-zinc-700/50 leading-none"
+              >
+                Beta
+              </span>
             </Link>
 
             {/* Desktop tabs */}
