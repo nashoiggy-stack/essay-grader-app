@@ -94,6 +94,11 @@ export interface College {
   readonly regularDecisionAdmitRate?: number;     // 0-100, RD-only admit rate (CDS C1/C21 derived)
   readonly top10HSPercent?: number;               // 0-100, CDS-reported top 10% of HS class (CDS C11)
   readonly avgGPACDS?: number;                    // CDS-reported average HS GPA of enrolled freshmen (CDS C12)
+  // Trailing year of the source CDS academic year (e.g. "2024-2025" → 2025).
+  // Populated for CDS-sourced schools by the merge in src/data/colleges.ts.
+  // Used by the chance model to surface "data may be stale" when undefined
+  // or older than 2 academic cycles.
+  readonly dataYear?: number;
 
   // Career / Outcomes — quantitative
   readonly topIndustries?: readonly string[];
