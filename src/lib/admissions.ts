@@ -512,6 +512,24 @@ export interface ChanceInputsModel {
   applicationPlan?: ApplicationPlan;
 }
 
+// Multiplier-stack trace returned alongside the chance result so the UI can
+// render an expandable "See the breakdown" panel showing how each layer
+// shifted the running chance.
+export interface BreakdownStep {
+  readonly label: string;          // e.g. "Stats (above-p75)"
+  readonly multiplier: number;     // 3.0
+  readonly runningChance: number;  // chance after this multiplier (clamped 0.5-95)
+  readonly note?: string;          // optional clarifying note (e.g. "Yield-protected: capped at 1.0×")
+}
+
+export interface ChanceBreakdown {
+  readonly baseRate: number;
+  readonly baseLabel: string;            // "Penn ED admit rate (school-published)"
+  readonly steps: readonly BreakdownStep[];
+  readonly cap: { value: number; applied: boolean; bracket: string };
+  readonly finalChance: number;
+}
+
 export interface ChanceResultModel {
   readonly classification: Classification;
   readonly reason: string;
@@ -521,6 +539,9 @@ export interface ChanceResultModel {
   readonly usedFallback?: "ed" | "ea" | null;
   readonly stale?: boolean;
   readonly recruitedAthletePathway?: boolean;
+  readonly breakdown?: ChanceBreakdown;
+  readonly statBand?: StatBand;          // exposed for what-if scenarios
+  readonly effectiveEcBand?: string;     // exposed for what-if scenarios
 }
 
 export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultModel {
@@ -627,6 +648,26 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   if (baseResult.planNote) reasonParts.push(baseResult.planNote);
   const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${college.acceptanceRate}% overall acceptance rate.`;
 
+  // Build the multiplier-stack trace. Steps show running chance after each
+  // layer so the UI can render an accumulating display.
+  const breakdown = buildBreakdown({
+    baseRate: baseResult.rate,
+    baseLabel: baseResult.planNote ?? `Overall acceptance rate (${college.acceptanceRate}%)`,
+    statBand: combinedBand,
+    statMultiplier: multiplier,
+    yieldProtected: yp.note,
+    rawStatMultiplier: getStatBandMultiplier(combinedBand),
+    ecBand: effectiveEcBand,
+    ecMultiplier: ecMult,
+    rawCombined,
+    dampened,
+    apMultiplier: apMult,
+    capValue,
+    capApplied: baseResult.rate * dampened * apMult > capValue,
+    capBracket: capBracketLabel(college.acceptanceRate, isEdLikePlan),
+    finalChance: chance.mid,
+  });
+
   const result: ChanceResultModel = {
     classification,
     reason,
@@ -635,8 +676,219 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     yieldProtectedNote: yp.note ? true : undefined,
     usedFallback: baseResult.usedFallback,
     stale: isStale(college.dataYear) ? true : undefined,
+    breakdown,
+    statBand: combinedBand,
+    effectiveEcBand,
   };
   return result;
+}
+
+interface BuildBreakdownArgs {
+  baseRate: number;
+  baseLabel: string;
+  statBand: StatBand;
+  statMultiplier: number;       // post-yield-protection
+  rawStatMultiplier: number;    // pre-yield-protection (for display when capped)
+  yieldProtected: boolean;
+  ecBand: string | undefined;
+  ecMultiplier: number;
+  rawCombined: number;
+  dampened: number;
+  apMultiplier: number;
+  capValue: number;
+  capApplied: boolean;
+  capBracket: string;
+  finalChance: number;
+}
+
+function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
+  const steps: BreakdownStep[] = [];
+  let running = a.baseRate;
+
+  // Stats step
+  const yieldNote = a.yieldProtected && a.rawStatMultiplier !== a.statMultiplier
+    ? `Yield-protected: capped from ${a.rawStatMultiplier.toFixed(2)}× to ${a.statMultiplier.toFixed(2)}×`
+    : undefined;
+  running = clamp(running * a.statMultiplier, 0.5, 95);
+  steps.push({
+    label: `Stats (${prettyBand(a.statBand)})`,
+    multiplier: a.statMultiplier,
+    runningChance: round1(running),
+    note: yieldNote,
+  });
+
+  // EC step
+  running = clamp(running * a.ecMultiplier, 0.5, 95);
+  steps.push({
+    label: `ECs (${a.ecBand ? prettyEc(a.ecBand) : "default"})`,
+    multiplier: a.ecMultiplier,
+    runningChance: round1(running),
+  });
+
+  // Combined dampener (only show when it fired)
+  if (a.dampened !== a.rawCombined) {
+    const dampenerRatio = a.dampened / a.rawCombined;
+    // Re-derive the running chance after dampening: undo the EC step and
+    // replay using the dampened combined multiplier.
+    const baseAfterStat = clamp(a.baseRate * a.statMultiplier, 0.5, 95);
+    running = clamp(baseAfterStat * (a.dampened / a.statMultiplier), 0.5, 95);
+    steps.push({
+      label: "Combined dampener",
+      multiplier: dampenerRatio,
+      runningChance: round1(running),
+      note: `Stats × ECs = ${a.rawCombined.toFixed(2)}× exceeded 4.0× cap; dampened to ${a.dampened.toFixed(2)}×.`,
+    });
+  }
+
+  // AP step (only when it actually moves the number)
+  if (a.apMultiplier !== 1.0) {
+    running = clamp(running * a.apMultiplier, 0.5, 95);
+    steps.push({
+      label: "AP support",
+      multiplier: a.apMultiplier,
+      runningChance: round1(running),
+    });
+  }
+
+  // Cap step (only when it fired)
+  if (a.capApplied) {
+    steps.push({
+      label: `Selectivity cap (${a.capBracket})`,
+      multiplier: a.capValue / running,
+      runningChance: a.capValue,
+      note: `Capped at ${a.capValue}% — sub-15% schools cannot exceed target tier regardless of profile.`,
+    });
+  }
+
+  return {
+    baseRate: a.baseRate,
+    baseLabel: a.baseLabel,
+    steps,
+    cap: { value: a.capValue, applied: a.capApplied, bracket: a.capBracket },
+    finalChance: a.finalChance,
+  };
+}
+
+function prettyBand(band: StatBand): string {
+  return {
+    "above-p75": "above 75th percentile",
+    "above-median": "above median",
+    "mid-range": "around median",
+    "below-median": "below median",
+    "below-p25": "below 25th percentile",
+  }[band];
+}
+
+function prettyEc(ecBand: string): string {
+  const norm = ecBand.toLowerCase();
+  return {
+    limited: "limited",
+    developing: "developing",
+    solid: "solid",
+    strong: "strong",
+    exceptional: "exceptional",
+  }[norm] ?? norm;
+}
+
+function capBracketLabel(ar: number, edLike: boolean): string {
+  const round = edLike ? "ED" : "RD";
+  if (ar < 5)  return `${round}, <5% bracket`;
+  if (ar < 15) return `${round}, 5-15% bracket`;
+  if (ar < 25) return `${round}, 15-25% bracket`;
+  if (ar < 50) return `${round}, 25-50% bracket`;
+  return `${round}, ≥50% bracket`;
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+// What-if scenarios — recompute chance with one input shifted. Returns at
+// most three scenarios (EC-down, stats-down, plan-flip). UI renders below
+// the breakdown stack.
+export interface WhatIfScenario {
+  readonly label: string;
+  readonly chance: number;
+  readonly classification: Classification;
+}
+
+const EC_LADDER: readonly string[] = ["limited", "developing", "solid", "strong", "exceptional"];
+const STAT_LADDER: readonly StatBand[] = ["below-p25", "below-median", "mid-range", "above-median", "above-p75"];
+
+export function computeWhatIfs(args: ChanceInputsModel, current: ChanceResultModel): readonly WhatIfScenario[] {
+  if (current.classification === "insufficient" || current.recruitedAthletePathway) return [];
+  const scenarios: WhatIfScenario[] = [];
+
+  // EC one tier down
+  const currentEc = current.effectiveEcBand ?? args.ecBand?.toLowerCase();
+  if (currentEc) {
+    const idx = EC_LADDER.indexOf(currentEc);
+    if (idx > 0) {
+      const downEc = EC_LADDER[idx - 1];
+      const r = computeAdmissionChance({
+        ...args,
+        ecBand: downEc,
+        distinguishedEC: false, // override the auto-boost so we genuinely model the lower tier
+      });
+      scenarios.push({
+        label: `If your ECs were '${downEc}' instead of '${currentEc}'`,
+        chance: r.chance.mid,
+        classification: r.classification,
+      });
+    }
+  }
+
+  // Stats one tier down — reduce GPA / test slightly to drop one band. Easier:
+  // re-classify by simulating a band override via input adjustment.
+  const currentStatBand = current.statBand;
+  if (currentStatBand) {
+    const idx = STAT_LADDER.indexOf(currentStatBand);
+    if (idx > 0) {
+      const downBand = STAT_LADDER[idx - 1];
+      // Build a synthetic input that lands in the lower band: nudge GPA down
+      // by 0.15 and test by ~10% of the school's range.
+      const college = args.college;
+      const adjustedGpa = args.gpaUW != null ? Math.max(2.0, args.gpaUW - 0.20) : null;
+      const testRange = college.sat75 - college.sat25;
+      const adjustedSat = args.sat != null ? Math.max(800, args.sat - Math.max(60, testRange)) : null;
+      const adjustedAct = args.act != null ? Math.max(15, args.act - 3) : null;
+      const r = computeAdmissionChance({
+        ...args,
+        gpaUW: adjustedGpa,
+        sat: adjustedSat,
+        act: adjustedAct,
+      });
+      scenarios.push({
+        label: `If your stats were '${prettyBand(downBand)}' instead`,
+        chance: r.chance.mid,
+        classification: r.classification,
+      });
+    }
+  }
+
+  // Plan flip — only when school offers both rounds.
+  const plan = args.applicationPlan ?? "RD";
+  const opts = getApplicationOptions(args.college).map((o) => o.type);
+  const isEd = plan === "ED" || plan === "ED2";
+  const isRd = plan === "RD";
+  if (isRd && opts.some((p) => p === "ED" || p === "ED2")) {
+    const targetPlan: ApplicationPlan = opts.includes("ED") ? "ED" : "ED2";
+    const r = computeAdmissionChance({ ...args, applicationPlan: targetPlan });
+    scenarios.push({
+      label: `If you applied ${targetPlan}`,
+      chance: r.chance.mid,
+      classification: r.classification,
+    });
+  } else if (isEd && opts.includes("RD")) {
+    const r = computeAdmissionChance({ ...args, applicationPlan: "RD" });
+    scenarios.push({
+      label: "If you applied RD",
+      chance: r.chance.mid,
+      classification: r.classification,
+    });
+  }
+
+  return scenarios;
 }
 
 function pickTestBand(sat: number | null, act: number | null, college: College): StatBand | null {
@@ -731,16 +983,7 @@ export function classifyCollege(
     recruitedAthlete?: boolean;
     applicationPlan?: ApplicationPlan;
   },
-): {
-  classification: Classification;
-  reason: string;
-  chance: ChanceRange;
-  confidence: ConfidenceTier;
-  yieldProtectedNote?: boolean;
-  usedFallback?: "ed" | "ea" | null;
-  stale?: boolean;
-  recruitedAthletePathway?: boolean;
-} {
+): ChanceResultModel {
   return computeAdmissionChance({
     college,
     gpaUW,

@@ -11,7 +11,7 @@ import type { ApplicationPlan, Classification, College } from "@/lib/college-typ
 import type { ActionItem, ShortlistEntry, ToolStatus } from "./types";
 
 const DESIGN_TIER: Record<Classification, ShortlistEntry["tier"] | null> = {
-  unlikely: "reach",
+  unlikely: "unlikely",
   reach: "reach",
   target: "target",
   likely: "likely",

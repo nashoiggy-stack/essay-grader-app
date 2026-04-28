@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { COLLEGES } from "@/data/colleges";
 import type { ChanceInputs, ChanceResult, Classification } from "@/lib/college-types";
 import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
-import { computeAdmissionChance } from "@/lib/admissions";
+import { computeAdmissionChance, computeWhatIfs } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
@@ -195,7 +195,7 @@ export function useChanceCalculator() {
       }
     } catch { /* ignore */ }
 
-    const r = computeAdmissionChance({
+    const chanceArgs = {
       college,
       gpaUW,
       gpaW,
@@ -208,7 +208,9 @@ export function useChanceCalculator() {
       rigor: inputs.rigor,
       apScores: inputs.apScores,
       applicationPlan: inputs.applicationPlan,
-    });
+    };
+    const r = computeAdmissionChance(chanceArgs);
+    const whatIfs = computeWhatIfs(chanceArgs, r);
 
     const strengths: string[] = [];
     const weaknesses: string[] = [];
@@ -314,6 +316,8 @@ export function useChanceCalculator() {
       strengths,
       weaknesses,
       confidence: r.confidence,
+      breakdown: r.breakdown,
+      whatIfs,
     };
   }, [inputs, college]);
 

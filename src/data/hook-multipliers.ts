@@ -106,10 +106,36 @@ export const YIELD_PROTECTED_SCHOOLS: readonly string[] = [
   "Auburn University",
 ];
 
+// ── Schools with documented program-specific admit-rate variance ────────────
+//
+// Per-program admit rates (Penn M&T, CMU SCS, UMich Ross, UVA McIntire,
+// Berkeley CS/EECS, Cornell college splits, Northwestern McCormick, JHU
+// BME) differ dramatically from school-overall. Until per-program data is
+// sourced (separate workstream — strict primary-source-only), we surface
+// a structural note in CollegeCard so users for whom the variance matters
+// know to look closer.
+//
+// computeAdmissionChance does NOT use program data — it falls back to
+// school-overall always for Feature 1. The flag below is purely advisory.
+//
+// Source: aggregate of school admissions websites and CDS reporting on
+// program-specific or college-specific admit rates where reported. The
+// list is intentionally short — only schools where program variance is
+// known to be > ~10 percentage points off the school overall qualify.
+export const PROGRAM_VARIANCE_SCHOOLS: readonly string[] = [
+  "University of Pennsylvania",  // M&T, Wharton-undergrad, Nursing differ
+  "Cornell University",           // CALS / Engineering / Hotel / Architecture splits
+  "UC Berkeley",                  // CS/EECS vs L&S
+  "University of Michigan",       // Ross BBA, College of Engineering
+  "Johns Hopkins University",     // BME, Peabody
+  "Northwestern University",      // McCormick, Medill, Bienen
+];
+
 // ── Lookups ──────────────────────────────────────────────────────────────────
 
 const LEGACY_BLIND_SET = new Set<string>(LEGACY_BLIND_SCHOOLS);
 const YIELD_PROTECTED_SET = new Set<string>(YIELD_PROTECTED_SCHOOLS);
+const PROGRAM_VARIANCE_SET = new Set<string>(PROGRAM_VARIANCE_SCHOOLS);
 
 export function isLegacyBlind(collegeName: string): boolean {
   return LEGACY_BLIND_SET.has(collegeName);
@@ -117,4 +143,8 @@ export function isLegacyBlind(collegeName: string): boolean {
 
 export function isYieldProtected(collegeName: string): boolean {
   return YIELD_PROTECTED_SET.has(collegeName);
+}
+
+export function hasProgramVariance(collegeName: string): boolean {
+  return PROGRAM_VARIANCE_SET.has(collegeName);
 }

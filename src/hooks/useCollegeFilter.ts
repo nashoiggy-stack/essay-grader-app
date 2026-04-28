@@ -334,6 +334,7 @@ export function useCollegeFilter() {
           usedFallback: result.usedFallback,
           stale: result.stale,
           recruitedAthletePathway: result.recruitedAthletePathway,
+          breakdown: result.breakdown,
           majorMatch: multi.match,
           majorFitScore: multi.score,
           matchReason: multi.bestReason,

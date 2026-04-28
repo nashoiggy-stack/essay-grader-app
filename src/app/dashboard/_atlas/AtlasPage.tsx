@@ -18,10 +18,11 @@ type Layout = "atlas" | "orbital" | "list";
 const LAYOUT_STORAGE_KEY = "admitedge-profile-layout";
 
 const TIER_META: Record<ShortlistEntry["tier"], { label: string; note: string }> = {
-  reach:  { label: "Reach",  note: "<25% chance" },
-  target: { label: "Target", note: "25–50%" },
-  likely: { label: "Likely", note: "50–75%" },
-  safety: { label: "Safety", note: "75%+" },
+  unlikely: { label: "Unlikely", note: "<5% chance" },
+  reach:    { label: "Reach",    note: "5–19%" },
+  target:   { label: "Target",   note: "20–39%" },
+  likely:   { label: "Likely",   note: "40–69%" },
+  safety:   { label: "Safety",   note: "70%+" },
 };
 
 function studentInitials(name: string): string {
@@ -525,24 +526,27 @@ function ActionQueue({ actions }: { actions: readonly ActionItem[] }) {
 // ── Shortlist ────────────────────────────────────────────────────────
 function Shortlist({ shortlist }: { shortlist: readonly ShortlistEntry[] }) {
   const groups: Record<ShortlistEntry["tier"], ShortlistEntry[]> = {
+    unlikely: [],
     reach: [],
     target: [],
     likely: [],
     safety: [],
   };
   for (const s of shortlist) groups[s.tier].push(s);
+  // Render in lowest-chance-first order so Unlikely / Reach surface attention.
+  const renderOrder: ShortlistEntry["tier"][] = ["unlikely", "reach", "target", "likely", "safety"];
 
   return (
     <section className="ae-shortlist">
       <div className="ae-atlas-head">
         <div>
           <div className="ae-section-eyebrow">College shortlist</div>
-          <h2 className="ae-section-title">{shortlist.length} pinned · 4 tiers</h2>
+          <h2 className="ae-section-title">{shortlist.length} pinned · 5 tiers</h2>
         </div>
         <div className="ae-section-aside">Sourced from College List · ranked by chance</div>
       </div>
       <div className="ae-shortlist-grid">
-        {(Object.keys(groups) as Array<ShortlistEntry["tier"]>).map((tier) => {
+        {renderOrder.map((tier) => {
           const schools = groups[tier];
           return (
             <div key={tier} className={`ae-tier ae-tier-${tier}`}>

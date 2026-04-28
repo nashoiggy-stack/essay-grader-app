@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import type { ChanceResult, Classification } from "@/lib/college-types";
+import { BreakdownPanel } from "./BreakdownPanel";
 
 // Color coding mirrors /colleges CollegeCard so the same school produces the
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
@@ -155,18 +156,21 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
         </div>
       </div>
 
-      {/* Technical explanation (secondary) */}
-      <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
-        <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
-          <span className="text-xs text-zinc-500 font-medium">See the breakdown</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </summary>
-        <div className="px-4 pb-4">
-          <p className="text-[13px] text-zinc-400 leading-relaxed">{result.explanation}</p>
-        </div>
-      </details>
+      {/* Multiplier breakdown + what-ifs (collapsible) */}
+      {result.breakdown && (
+        <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
+            <span className="text-xs text-zinc-500 font-medium">See the breakdown</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </summary>
+          <div className="px-4 pb-4 pt-1 space-y-4">
+            <p className="text-[12px] text-zinc-500 leading-relaxed">{result.explanation}</p>
+            <BreakdownPanel breakdown={result.breakdown} whatIfs={result.whatIfs} />
+          </div>
+        </details>
+      )}
 
       {/* Strengths & Weaknesses */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

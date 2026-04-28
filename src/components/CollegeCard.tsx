@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import { Bookmark, GraduationCap } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
+import { hasProgramVariance } from "@/data/hook-multipliers";
+import { BreakdownPanel } from "./BreakdownPanel";
 
 const CLASS_COLORS = {
   unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
@@ -72,6 +74,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
     usedFallback,
     stale,
     recruitedAthletePathway,
+    breakdown,
     majorMatch,
     matchReason,
   } = item;
@@ -188,6 +191,18 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         </p>
       )}
 
+      {/* ── Program-specific variance note ─────────────────────────────
+          Schools where program admit rates differ meaningfully from school-
+          overall (Penn M&T, Cornell college splits, Berkeley CS/EECS, etc.)
+          The chance model uses school-overall always; this note flags that
+          a competitive program could shift things. Per-program data sourcing
+          is a separate workstream. */}
+      {classification !== "insufficient" && hasProgramVariance(c.name) && (
+        <p className="mt-2 text-[11px] text-zinc-500 leading-snug">
+          Some programs at this school may have admit rates that differ from the school overall.
+        </p>
+      )}
+
       {/* ── Confidence + caveat badges ──────────────────────────── */}
       {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -248,6 +263,27 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         <p className="mt-1 ml-[18px] text-[11px] text-zinc-500 leading-snug">
           {matchReason}
         </p>
+      )}
+
+      {/* ── Multiplier-stack breakdown (collapsible) ──────────────────────
+          Renders the same accumulating-chance trace shown on /chances. The
+          card-level expander is intentionally subtle — power users can
+          inspect the math without taking visual real estate from scanning
+          the list. What-if scenarios are intentionally scoped to /chances
+          (where the user has a single school selected) since rendering them
+          per-card would balloon visual footprint. */}
+      {breakdown && classification !== "insufficient" && (
+        <details className="group mt-4 pt-4 border-t border-white/[0.05]">
+          <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-open:rotate-180">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            See the breakdown
+          </summary>
+          <div className="mt-3">
+            <BreakdownPanel breakdown={breakdown} />
+          </div>
+        </details>
       )}
     </motion.div>
   );

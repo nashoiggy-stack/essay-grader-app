@@ -339,6 +339,9 @@ export interface ClassifiedCollege {
   // the published 70-85% band, and the note overrides normal stat-band
   // reasoning.
   readonly recruitedAthletePathway?: boolean;
+  // Multiplier-stack trace for the "See the breakdown" panel on CollegeCard.
+  // Populated by computeAdmissionChance — see src/lib/admissions.ts.
+  readonly breakdown?: import("./admissions").ChanceBreakdown;
   // Set when the user has picked a major or interest. "strong" = this
   // school is known for it; "decent" = adjacent signal (career pipeline,
   // industry, or token overlap); "none" = no signal or no query.
@@ -371,6 +374,13 @@ export interface ClassifiedCollege {
 // ("very-low" / "low" / "possible" / "competitive" / "strong") is removed
 // because absolute labels were misleading at high-selectivity schools
 // (12% chance at Yale read as "very low" even though it's 2-3x baseline).
+//
+// `breakdown` is the multiplier-stack trace and `whatIfs` are the recomputed
+// alt-scenarios. Both are emitted by computeAdmissionChance + computeWhatIfs
+// in src/lib/admissions.ts and rendered by src/components/BreakdownPanel.tsx.
+//
+// Imported as `unknown`-typed objects here to avoid a circular import; the
+// component imports the concrete types from admissions.ts directly.
 export interface ChanceResult {
   readonly classification: Classification;
   readonly tierLabel: string;
@@ -381,6 +391,8 @@ export interface ChanceResult {
   readonly strengths: string[];
   readonly weaknesses: string[];
   readonly confidence: ConfidenceTier;
+  readonly breakdown?: import("./admissions").ChanceBreakdown;
+  readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];
 }
 
 export interface CollegeFilters {
