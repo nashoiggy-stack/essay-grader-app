@@ -270,6 +270,22 @@ export function useCollegeFilter() {
     const arMin = filters.acceptanceRateMin ? parseFloat(filters.acceptanceRateMin) : 0;
     const arMax = filters.acceptanceRateMax ? parseFloat(filters.acceptanceRateMax) : 100;
 
+    // Read EC band and rigor from profile so the chance model can apply
+    // their multipliers. Without this the model treats every applicant as
+    // EC-band "solid" and rigor-neutral, which suppresses chances for
+    // strong-profile applicants (the "20 unlikelies for a 4.0/exceptional"
+    // bug).
+    let ecBand: string | undefined;
+    let rigor: "low" | "medium" | "high" | undefined;
+    try {
+      const rawProfile = localStorage.getItem("admitedge-profile");
+      if (rawProfile) {
+        const p = JSON.parse(rawProfile);
+        if (typeof p?.ecBand === "string" && p.ecBand) ecBand = p.ecBand;
+        if (p?.rigor === "low" || p?.rigor === "medium" || p?.rigor === "high") rigor = p.rigor;
+      }
+    } catch { /* ignore */ }
+
     // Major is now a *preference*, not a hard filter. Non-matching schools
     // stay in the list so users can discover unexpected fits — we just
     // attach a majorMatch level so the UI can badge strong ones.
@@ -284,7 +300,7 @@ export function useCollegeFilter() {
         return true;
       })
       .map((c) => {
-        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV);
+        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV, { ecBand, rigor });
         // Multi-input matcher: scores per active major + active interest,
         // returns max score, max level (OR), the per-entry breakdown for
         // the card UI, and a major-prefixed reason string.

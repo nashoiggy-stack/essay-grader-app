@@ -600,7 +600,14 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   let classification = chanceMidpointToClassification(chance.mid);
 
   // 13. Hard cliff at 10% admit (SPEC: sub-10% schools cap at "reach").
-  if (college.acceptanceRate < 10 && classification !== "unlikely" && classification !== "reach") {
+  // Sub-10% schools dominate by variance — even strong applicants can't
+  // predict outcomes, AND below-the-line applicants aren't "less likely"
+  // than anyone else in any meaningful way. Everyone who isn't "insufficient"
+  // lands at "reach" so the chance range itself communicates the spread
+  // (e.g. "5–13%, reach" vs "8–22%, reach"), and "unlikely" is reserved
+  // for cases where the school is genuinely a poor stat fit at a non-elite
+  // school.
+  if (college.acceptanceRate < 10 && classification !== "insufficient") {
     classification = "reach";
   }
 
