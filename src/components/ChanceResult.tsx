@@ -2,14 +2,17 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import type { ChanceResult, ChanceBand } from "@/lib/college-types";
+import type { ChanceResult, Classification } from "@/lib/college-types";
 
-const BAND_STYLES: Record<ChanceBand, { bg: string; text: string; bar: string; glow: string }> = {
-  "very-low": { bg: "bg-red-500/10", text: "text-red-400", bar: "bg-red-500", glow: "shadow-red-500/20" },
-  low: { bg: "bg-orange-500/10", text: "text-orange-400", bar: "bg-orange-500", glow: "shadow-orange-500/20" },
-  possible: { bg: "bg-amber-500/10", text: "text-amber-400", bar: "bg-amber-500", glow: "shadow-amber-500/20" },
-  competitive: { bg: "bg-blue-500/10", text: "text-blue-400", bar: "bg-blue-500", glow: "shadow-blue-500/20" },
-  strong: { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+// Color coding mirrors /colleges CollegeCard so the same school produces the
+// same visual signal across surfaces. "Insufficient" is intentionally muted.
+const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string; glow: string }> = {
+  safety:       { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+  likely:       { bg: "bg-blue-500/10",    text: "text-blue-400",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
+  target:       { bg: "bg-amber-500/10",   text: "text-amber-400",   bar: "bg-amber-500",   glow: "shadow-amber-500/20" },
+  reach:        { bg: "bg-orange-500/10",  text: "text-orange-400",  bar: "bg-orange-500",  glow: "shadow-orange-500/20" },
+  unlikely:     { bg: "bg-red-500/10",     text: "text-red-500",     bar: "bg-red-500",     glow: "shadow-red-500/20" },
+  insufficient: { bg: "bg-zinc-500/5",     text: "text-zinc-400",    bar: "bg-zinc-500",    glow: "shadow-zinc-500/15" },
 };
 
 interface ChanceResultProps {
@@ -18,36 +21,42 @@ interface ChanceResultProps {
 }
 
 function buildHeadline(result: ChanceResult, collegeName: string): string {
-  const { band, score, strengths, weaknesses } = result;
+  const { classification, chance, multiple, strengths, weaknesses } = result;
   const strongPart = strengths.length > 0 ? strengths[0].split(" is ")[0] || strengths[0].split(" ")[0] : "your profile";
   const weakPart = weaknesses.length > 0 ? weaknesses[0].split(" is ")[0] || weaknesses[0].split(" ")[0] : null;
+  const multipleClause = multiple >= 1.5 ? ` — that's ${multiple.toFixed(1)}× the typical admit rate` : "";
 
-  switch (band) {
-    case "strong":
-      return `Strong fit for ${collegeName} — your estimated chance is ${score}%. Focus on making your essays and ECs memorable.`;
-    case "competitive":
+  switch (classification) {
+    case "safety":
+      return `${collegeName} reads as a safety for your profile (${chance.mid}% chance${multipleClause}). Focus on essays and demonstrating fit.`;
+    case "likely":
       return weakPart
-        ? `Competitive at ${collegeName} (~${score}% chance) — ${strongPart} helps, but ${weakPart} is the gap to close.`
-        : `Competitive at ${collegeName} (~${score}% chance). Strong essays and ECs can tip you in.`;
-    case "possible":
+        ? `${collegeName} is a likely match for your profile (${chance.mid}% chance${multipleClause}). ${strongPart} helps; ${weakPart} is the gap to close.`
+        : `${collegeName} is a likely match (${chance.mid}% chance${multipleClause}). Strong essays and ECs make this a real bet.`;
+    case "target":
       return weakPart
-        ? `A stretch at ${collegeName} (~${score}% chance). ${strongPart} is working for you, but ${weakPart} is holding you back.`
-        : `A stretch at ${collegeName} (~${score}% chance). You'll need exceptional essays and ECs to stand out.`;
-    case "low":
-      // Sub-25% chance often comes from highly-selective schools where even
-      // strong profiles compete in a saturated pool. Don't say "below the
-      // admitted range" — at 4.0 GPA + 35 ACT for Penn the stats ARE in
-      // range; the chance is low because Penn's overall rate is ~6%.
-      return `Reach at ${collegeName} (~${score}% chance). At this level of selectivity, even strong profiles face uncertainty — essays, ECs, and demonstrated interest become decisive.`;
-    case "very-low":
-      return `${collegeName} is a significant reach (~${score}% chance). Apply only if you have something truly unusual to offer.`;
+        ? `Target at ${collegeName} (${chance.mid}% chance${multipleClause}). ${strongPart} is working for you, but ${weakPart} is what to address.`
+        : `Target at ${collegeName} (${chance.mid}% chance${multipleClause}). Realistic but competitive — essays and ECs decide.`;
+    case "reach":
+      // Reach at high selectivity is genuinely good positioning when the
+      // multiple is high. Communicate that, not panic.
+      return multiple >= 1.5
+        ? `${collegeName} is a reach (${chance.mid}% chance), but you're well-positioned — ${multiple.toFixed(1)}× the typical admit rate. At this selectivity, variance dominates: essays, ECs, and demonstrated interest become decisive.`
+        : `${collegeName} is a reach (${chance.mid}% chance). At this selectivity, even strong profiles face uncertainty — essays, ECs, and demonstrated interest become decisive.`;
+    case "unlikely":
+      return `${collegeName} is unlikely on stats alone (${chance.mid}% chance). Would require something exceptional in essays, ECs, or hooks.`;
+    case "insufficient":
+      return `Add a GPA or test score to see a chance estimate for ${collegeName}.`;
   }
 }
 
 function buildNextStep(result: ChanceResult): string {
-  const { band, weaknesses } = result;
+  const { classification, weaknesses } = result;
+  if (classification === "insufficient") {
+    return "Run the GPA Calculator and add SAT or ACT scores in your profile.";
+  }
   if (weaknesses.length === 0) {
-    return band === "strong"
+    return classification === "safety"
       ? "Keep building your extracurricular spike and start essay drafts early."
       : "Your profile is balanced — focus on essay quality and demonstrating fit.";
   }
@@ -59,10 +68,16 @@ function buildNextStep(result: ChanceResult): string {
   return "Address the gap above first — it's your biggest lever.";
 }
 
+// Score-bar segments map to the new five-tier thresholds (5 / 20 / 40 / 70 /
+// 100). Width-weighted so the fill aligns with the labeled segment.
+const SEGMENT_TEMPLATE = "5fr 15fr 20fr 30fr 30fr"; // unlikely | reach | target | likely | safety
+
 export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, collegeName }) => {
-  const style = BAND_STYLES[result.band];
+  const style = TIER_STYLES[result.classification];
   const headline = buildHeadline(result, collegeName);
   const nextStep = buildNextStep(result);
+  const showMultiple = result.classification !== "insufficient" && result.multiple >= 1.5;
+  const tierUpper = result.tierLabel.toUpperCase();
 
   return (
     <motion.div
@@ -70,7 +85,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
       animate={{ opacity: 1, y: 0 }}
       className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06] space-y-6"
     >
-      {/* Band + percentage display */}
+      {/* Tier + percentage display */}
       <div className="text-center">
         <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">
           Your chances at {collegeName}
@@ -82,42 +97,50 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
           className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
         >
           <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
-            {result.score}%
+            {result.classification === "insufficient" ? "—" : `${result.chance.mid}%`}
           </span>
           <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.15em] ${style.text}`}>
-            {result.bandLabel}
+            {tierUpper}
+            {showMultiple && (
+              <span className="ml-1 text-zinc-400 font-normal normal-case tracking-normal">
+                ({result.multiple.toFixed(1)}× typical)
+              </span>
+            )}
           </span>
         </motion.div>
-        {result.confidence !== "high" && (
+        {result.confidence !== "high" && result.classification !== "insufficient" && (
           <p className="mt-2 text-xs text-zinc-600">
             {result.confidence === "low" ? "Low confidence — add GPA and test scores for a better estimate" : "Add more data for a more reliable estimate"}
           </p>
         )}
       </div>
 
-      {/* Score bar — segments are weighted by the actual band thresholds
-          (very-low: 0-10, low: 10-25, possible: 25-50, competitive: 50-75,
-          strong: 75-95) so the fill aligns with the labeled segment. */}
-      <div>
-        <div className="grid text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5"
-             style={{ gridTemplateColumns: "10fr 15fr 25fr 25fr 20fr" }}>
-          <span className="text-left">Very Low</span>
-          <span className="text-center">Low</span>
-          <span className="text-center">Possible</span>
-          <span className="text-center">Competitive</span>
-          <span className="text-right">Strong</span>
+      {/* Tier bar — segments weighted by the actual classification thresholds
+          (unlikely <5, reach 5-19, target 20-39, likely 40-69, safety ≥70).
+          Fill clamps to bar width so the bar position visually matches the
+          tier label even at extreme values. */}
+      {result.classification !== "insufficient" && (
+        <div>
+          <div className="grid text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5"
+               style={{ gridTemplateColumns: SEGMENT_TEMPLATE }}>
+            <span className="text-left">Unlikely</span>
+            <span className="text-center">Reach</span>
+            <span className="text-center">Target</span>
+            <span className="text-center">Likely</span>
+            <span className="text-right">Safety</span>
+          </div>
+          <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full ${style.bar}`}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.max(2, result.chance.mid))}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            />
+          </div>
         </div>
-        <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${style.bar}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(95, Math.max(2, result.score))}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-        </div>
-      </div>
+      )}
 
-      {/* Headline narrative — the warm lead */}
+      {/* Headline narrative */}
       <div className="rounded-xl bg-[#12121f] border border-white/[0.08] p-5">
         <p className="text-[15px] text-zinc-100 leading-relaxed font-medium">
           {headline}

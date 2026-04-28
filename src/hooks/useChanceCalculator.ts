@@ -2,17 +2,21 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { COLLEGES } from "@/data/colleges";
-import type { ChanceInputs, ChanceResult, ChanceBand } from "@/lib/college-types";
+import type { ChanceInputs, ChanceResult, Classification } from "@/lib/college-types";
 import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
-import {
-  computeAdmissionChance,
-  BAND_LABELS,
-  // UNDO [application-plan]: remove this import
-  defaultApplicationPlan,
-} from "@/lib/admissions";
+import { computeAdmissionChance } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
+
+const TIER_LABELS: Record<Classification, string> = {
+  safety: "Safety",
+  likely: "Likely",
+  target: "Target",
+  reach: "Reach",
+  unlikely: "Unlikely",
+  insufficient: "Insufficient data",
+};
 
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
@@ -148,17 +152,16 @@ export function useChanceCalculator() {
 
   const college = inputs.collegeIndex !== null ? COLLEGES[inputs.collegeIndex] : null;
 
-  // UNDO [application-plan]: delete this effect. Without it, stale plans
-  // simply never rematch the new college's options and the helper falls back
-  // to RD, which is still safe — but the UX of the plan selector would be
-  // confusing.
+  // Plan-selector validity: when the user switches colleges, fall back to RD
+  // if the previously-selected plan isn't offered. RD is always a valid
+  // baseline so we don't need a per-college lookup.
   useEffect(() => {
     if (!college) return;
     const validPlans = (college.applicationOptions ?? [{ type: "RD" as const }]).map(
       (o) => o.type,
     );
     if (!validPlans.includes(inputs.applicationPlan)) {
-      setInputs((prev) => ({ ...prev, applicationPlan: defaultApplicationPlan(college) }));
+      setInputs((prev) => ({ ...prev, applicationPlan: "RD" }));
     }
   }, [college, inputs.applicationPlan]);
 
@@ -291,52 +294,57 @@ export function useChanceCalculator() {
       }
     }
 
-    // Map chance midpoint to the legacy ChanceBand enum for the existing UI.
-    const score = r.chance.mid;
-    const band = chanceMidpointToBand(score);
+    const baseAR = college.acceptanceRate;
+    const multiple = baseAR > 0 ? r.chance.mid / baseAR : 0;
     const explanation = buildExplanation(
+      r.classification,
       r.chance,
       college.name,
-      college.acceptanceRate,
+      baseAR,
       r.confidence,
-      r.classification === "insufficient",
     );
 
-    return { band, bandLabel: BAND_LABELS[band], explanation, strengths, weaknesses, score, confidence: r.confidence };
+    return {
+      classification: r.classification,
+      tierLabel: TIER_LABELS[r.classification],
+      chance: r.chance,
+      baseAcceptanceRate: baseAR,
+      multiple,
+      explanation,
+      strengths,
+      weaknesses,
+      confidence: r.confidence,
+    };
   }, [inputs, college]);
 
   return { inputs, updateInput, resetInputs, college, result, colleges: COLLEGES };
 }
 
-function chanceMidpointToBand(mid: number): ChanceBand {
-  if (mid >= 75) return "strong";
-  if (mid >= 50) return "competitive";
-  if (mid >= 25) return "possible";
-  if (mid >= 10) return "low";
-  return "very-low";
-}
-
 function buildExplanation(
+  classification: Classification,
   chance: { low: number; mid: number; high: number },
   name: string,
   rate: number,
   confidence: "low" | "medium" | "high",
-  insufficient: boolean,
 ): string {
-  if (insufficient) {
+  if (classification === "insufficient") {
     return `Insufficient data to estimate your chances at ${name}. Add a GPA or test score to see a percentile-based estimate.`;
   }
+
+  // Tier-based phrasing keyed on the new five-tier classification — never
+  // calls a high-multiple chance "very low" just because the absolute % is
+  // small. 12% at Yale is genuinely strong positioning at that selectivity.
   const range = `${chance.low}–${chance.high}%`;
-  const baseSentence =
-    chance.mid >= 75
-      ? `You're in a strong position for ${name}. Estimated chance: ${chance.mid}% (range ${range}).`
-      : chance.mid >= 50
-      ? `You're a competitive applicant for ${name}. Estimated chance: ${chance.mid}% (range ${range}).`
-      : chance.mid >= 25
-      ? `You have a reasonable shot at ${name}. Estimated chance: ${chance.mid}% (range ${range}).`
-      : chance.mid >= 10
-      ? `${name} is a reach. Estimated chance: ${chance.mid}% (range ${range}). At ${rate}% overall acceptance, even strong applicants face uncertainty here.`
-      : `${name} would be very challenging. Estimated chance: ${chance.mid}% (range ${range}).`;
+  const lead =
+    classification === "safety"
+      ? `${name} reads as a safety for your profile. Estimated chance: ${chance.mid}% (range ${range}).`
+      : classification === "likely"
+      ? `${name} is a likely match for your profile. Estimated chance: ${chance.mid}% (range ${range}).`
+      : classification === "target"
+      ? `${name} sits in the target range for your profile. Estimated chance: ${chance.mid}% (range ${range}).`
+      : classification === "reach"
+      ? `${name} is a reach — at ${rate}% overall acceptance, variance dominates. Estimated chance: ${chance.mid}% (range ${range}).`
+      : `${name} is unlikely on stats alone. Estimated chance: ${chance.mid}% (range ${range}).`;
 
   const confidenceNote =
     confidence === "low"
@@ -345,5 +353,5 @@ function buildExplanation(
       ? " Adding more data (test scores, EC band, essay scores) would tighten this range."
       : "";
 
-  return `${baseSentence}${confidenceNote}`;
+  return `${lead}${confidenceNote}`;
 }

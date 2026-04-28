@@ -366,16 +366,21 @@ export interface ClassifiedCollege {
   readonly bestMatchMajor?: string | null;
 }
 
-export type ChanceBand = "very-low" | "low" | "possible" | "competitive" | "strong";
-
+// /chances result shape — five-tier classification (plus "insufficient")
+// shared with /colleges and /strategy. The legacy ChanceBand enum
+// ("very-low" / "low" / "possible" / "competitive" / "strong") is removed
+// because absolute labels were misleading at high-selectivity schools
+// (12% chance at Yale read as "very low" even though it's 2-3x baseline).
 export interface ChanceResult {
-  readonly band: ChanceBand;
-  readonly bandLabel: string;
+  readonly classification: Classification;
+  readonly tierLabel: string;
+  readonly chance: ChanceRange;        // mid is what we display; low-high is the band
+  readonly baseAcceptanceRate: number; // school's overall AR — for "Nx typical" annotation
+  readonly multiple: number;           // chance.mid / baseAcceptanceRate; UI shows when ≥ 1.5
   readonly explanation: string;
   readonly strengths: string[];
   readonly weaknesses: string[];
-  readonly score: number; // internal 0-100
-  readonly confidence: "low" | "medium" | "high";
+  readonly confidence: ConfidenceTier;
 }
 
 export interface CollegeFilters {
