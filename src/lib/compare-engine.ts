@@ -4,7 +4,7 @@
 // comparison signals, "best by category" picks, and decision insights.
 // No LLM calls — everything is derived from the College interface.
 
-import type { College, Classification, Tier3, ClassifiedCollege } from "./college-types";
+import type { College, Classification, Tier3, ClassifiedCollege, ChanceRange, ConfidenceTier } from "./college-types";
 import { classifyCollege } from "./admissions";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -25,7 +25,11 @@ export interface CategoryComparison {
 export interface CollegeFitSummary {
   readonly college: College;
   readonly classification: Classification;
-  readonly fitScore: number;
+  // Replaces fitScore. Midpoint drives ranking and display; the band width
+  // anchors the low-confidence visual treatment. The compare page renders
+  // chance.mid prominently with chance.low-chance.high underneath.
+  readonly chance: ChanceRange;
+  readonly confidence: ConfidenceTier;
   readonly reason: string;
   readonly fitLabel: string;
 }

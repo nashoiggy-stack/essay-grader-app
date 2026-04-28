@@ -293,7 +293,26 @@ export interface QualitativeClassifications {
   readonly intellectualClimate: IntellectualClimate;
 }
 
-export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
+// Six-tier classification. "insufficient" added (Finding 4.9) for the
+// no-metrics case so the chance model never fakes a tier when it has no
+// data to ground the call.
+export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety" | "insufficient";
+
+// Confidence tier for a chance estimate. Three inputs feed it:
+//   1. Number of stat metrics provided (GPA, test, rigor)
+//   2. Whether profile data is reasonably complete (essay, EC band)
+//   3. Presence of any CDS field on the school (per SPEC W4)
+export type ConfidenceTier = "high" | "medium" | "low";
+
+// Chance range expresses uncertainty as an integer percent band. The
+// midpoint is what we display and rank by; the band width is what we use
+// to communicate "low confidence". Both ends are inclusive integer percents
+// in [0, 100].
+export interface ChanceRange {
+  readonly low: number;
+  readonly mid: number;
+  readonly high: number;
+}
 
 export type MajorMatchLevel = "strong" | "decent" | "none";
 
@@ -301,7 +320,25 @@ export interface ClassifiedCollege {
   readonly college: College;
   readonly classification: Classification;
   readonly reason: string;
-  readonly fitScore: number; // 0-100
+  // Replaces the 0-100 fitScore. Midpoint drives sort and tier assignment;
+  // low/high anchor the displayed range and the low-confidence visual band.
+  readonly chance: ChanceRange;
+  readonly confidence: ConfidenceTier;
+  // Set when the school is yield-protective AND the applicant is top-quartile
+  // in RD without a demonstrated-interest signal. Drives the CollegeCard
+  // "May consider demonstrated interest" note.
+  readonly yieldProtectedNote?: boolean;
+  // Set when the chance value was derived from a fallback (ED rate inferred
+  // from overall × 2.5; EA rate from overall × 1.15) rather than a published
+  // school-specific rate. Surfaces a "based on overall trends" badge.
+  readonly usedFallback?: "ed" | "ea" | null;
+  // Set when the school's data is older than 2 academic cycles (or missing).
+  // Drives the "data may be stale" note.
+  readonly stale?: boolean;
+  // Set when the recruited-athlete pathway fired. The chance/range represent
+  // the published 70-85% band, and the note overrides normal stat-band
+  // reasoning.
+  readonly recruitedAthletePathway?: boolean;
   // Set when the user has picked a major or interest. "strong" = this
   // school is known for it; "decent" = adjacent signal (career pipeline,
   // industry, or token overlap); "none" = no signal or no query.
