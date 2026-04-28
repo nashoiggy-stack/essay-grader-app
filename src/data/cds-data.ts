@@ -50,6 +50,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://www.colgate.edu/sites/default/files/2025-07/Colgate%202024-25%20CDS%20for%20Website_0.pdf",
     data: {"acceptanceRate":13.5,"sat25":1450,"sat75":1530,"act25":33,"act75":34,"yield":28.8,"edAdmitRate":19.5,"regularDecisionAdmitRate":11.2,"avgGPACDS":3.85,"top10HSPercent":79,"pctTopTenClass":79,"studentFacultyRatio":8.8,"fourYearGradRate":84.9,"undergradPopulation":3193,"inStatePercent":24,"percentInternational":8.1,"demographics":{"white":64.3,"asian":5.3,"hispanic":9.6,"black":4.3,"multiracial":6,"international":8.1,"other":2.3},"genderBreakdown":{"male":42.8,"female":55.9}},
   },
+  "College of William & Mary": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://www.wm.edu/offices/ir/university_data/cds/cds_2025-26_a1.pdf",
+    data: {},
+  },
   "Columbia University": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_College_and_Columbia_Engineering_CDS.pdf",
@@ -74,6 +79,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
     data: {"acceptanceRate":10.3,"sat25":1480,"sat75":1540,"act25":32,"act75":35,"yield":40.4,"edAdmitRate":23.2,"avgGPACDS":3.84,"top10HSPercent":80,"pctTopTenClass":80,"studentFacultyRatio":8,"fourYearGradRate":80.9,"undergradPopulation":7407,"inStatePercent":18,"percentInternational":16.7,"demographics":{"white":29.6,"asian":24.8,"hispanic":11.9,"black":10.3,"multiracial":4.1,"international":16.7,"other":2.5},"genderBreakdown":{"male":43.2,"female":56.8}},
+  },
+  "George Washington University": {
+    cdsYear: "2023-2024",
+    sourcePdfUrl: "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2023-2024_Updated.pdf",
+    data: {"acceptanceRate":43.5,"sat25":1360,"sat75":1480,"act25":31,"act75":34,"yield":21.5,"edAdmitRate":64,"top10HSPercent":47.9,"pctTopTenClass":47.9,"studentFacultyRatio":12,"fourYearGradRate":79.5,"undergradPopulation":11387,"inStatePercent":4,"percentInternational":7.3,"demographics":{"white":48.2,"asian":14.7,"hispanic":13,"black":8.1,"multiracial":5.4,"international":7.3,"other":2.3},"genderBreakdown":{"male":36.4,"female":63.6}},
   },
   "Harvard University": {
     cdsYear: "2024-2025",
@@ -131,7 +141,7 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":49.2,"sat25":1300,"sat75":1440,"act25":27,"act75":32,"yield":20.6,"top10HSPercent":73,"pctTopTenClass":73,"studentFacultyRatio":13,"fourYearGradRate":71.2,"undergradPopulation":46627,"inStatePercent":72,"percentInternational":7.1,"demographics":{"white":58,"asian":11.6,"hispanic":6.3,"black":8.5,"multiracial":5.1,"international":7.1,"other":3.4},"genderBreakdown":{"male":49.4,"female":50.6}},
   },
   "Pepperdine University": {
-    cdsYear: "<UNKNOWN>",
+    cdsYear: "",
     sourcePdfUrl: "https://www.pepperdine.edu/oie/content/pdf/heoa_mandated-reporting.pdf",
     data: {},
   },
@@ -259,6 +269,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://www.usf.edu/ods/documents/cds/usf-cds-2025-2026-final-v2.pdf",
     data: {"acceptanceRate":40.7,"sat25":1160,"sat75":1340,"act25":25,"act75":29,"yield":23.1,"avgGPACDS":4.09,"top10HSPercent":29.1,"pctTopTenClass":29.1,"studentFacultyRatio":22,"fourYearGradRate":65.7,"undergradPopulation":39093,"inStatePercent":87.9,"percentInternational":7.5,"demographics":{"white":42.5,"asian":9.1,"hispanic":25.1,"black":8,"multiracial":4.7,"international":7.5,"other":0.3},"genderBreakdown":{"male":43.4,"female":56.5}},
+  },
+  "University of Tennessee Knoxville": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "http://irsa.utk.edu/wp-content/uploads/sites/107/2026/02/CDS_2025-26_A.pdf",
+    data: {},
   },
   "University of Virginia": {
     cdsYear: "2024-2025",
