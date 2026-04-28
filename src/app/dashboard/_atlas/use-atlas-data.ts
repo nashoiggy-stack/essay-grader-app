@@ -5,7 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useCollegePins } from "@/hooks/useCollegePins";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
 import { COLLEGES } from "@/data/colleges";
-import { classifyCollege } from "@/lib/admissions";
+import { classifyCollege, getApplicationOptions } from "@/lib/admissions";
 import { computeDeadlines, DEADLINE_DATES } from "@/lib/deadlines";
 import type { ApplicationPlan, Classification, College } from "@/lib/college-types";
 import type { ActionItem, ShortlistEntry, ToolStatus } from "./types";
@@ -31,9 +31,18 @@ function fmtDate(d: Date | null, isRolling: boolean): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+// Pick a default application plan only from the plans the school actually
+// offers. The previous heuristic ("acceptanceRate < 20 → EA, else RD") was
+// wrong: Vanderbilt at 6% acceptance was getting "EA" even though Vanderbilt
+// only offers RD / ED / ED2. The chance calculator already enumerates the
+// real options via getApplicationOptions; the dashboard should match.
+//
+// Preference: RD when offered (always a valid baseline), otherwise the
+// first declared option.
 function defaultPlan(c: College): ApplicationPlan {
-  if (c.acceptanceRate < 20) return "EA";
-  return "RD";
+  const opts = getApplicationOptions(c);
+  const rd = opts.find((o) => o.type === "RD");
+  return rd ? rd.type : opts[0].type;
 }
 
 interface AtlasData {
