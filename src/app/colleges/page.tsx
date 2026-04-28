@@ -114,9 +114,9 @@ export default function CollegesPage() {
           </p>
         </div>
 
-        {/* Guide — canonical legend for tiers + Fit Score. Opened by the
-            "What do these tiers mean?" button above AND by the "?" icon
-            next to the Fit Score sort control in CollegeResults. */}
+        {/* Guide — canonical legend for tiers + chance estimates. Opened by
+            the "What do these tiers mean?" button above AND by the "?" icon
+            next to the Chance sort control in CollegeResults. */}
         <AnimatePresence>
           {showGuide && (
             <motion.div id="fit-score-guide" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-8">

@@ -1141,7 +1141,7 @@ export function runStrategyAnalysis(p: StrategyProfile): StrategyAnalysis {
       key: "gpa",
       label: "Calculate GPA",
       impact: "medium",
-      unlockDescription: "Sharpens academic tier and per-school fit scores",
+      unlockDescription: "Sharpens academic tier and per-school chance estimates",
       ctaHref: "/gpa",
     });
   }

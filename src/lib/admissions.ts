@@ -8,7 +8,6 @@ import type {
   ApplicationOption,
 } from "./college-types";
 import {
-  classifyStatBandTier,
   getStatBandMultiplier,
   getEcBandMultiplier,
   essayCommonAppMultiplier,

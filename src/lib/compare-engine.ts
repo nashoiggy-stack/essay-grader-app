@@ -4,7 +4,7 @@
 // comparison signals, "best by category" picks, and decision insights.
 // No LLM calls — everything is derived from the College interface.
 
-import type { College, Classification, Tier3, ClassifiedCollege, ChanceRange, ConfidenceTier } from "./college-types";
+import type { College, Classification, Tier3, ChanceRange, ConfidenceTier } from "./college-types";
 import { classifyCollege } from "./admissions";
 
 // ── Types ──────────────────────────────────────────────────────────────────
