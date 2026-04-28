@@ -58,6 +58,23 @@ export interface UserProfile {
   // free-text box for niches (e.g. "sustainability", "quant trading").
   intendedMajor?: string;
   intendedInterest?: string;
+
+  // ── Hook fields (Feature 1 structural — math deferred per SPEC W2) ────────
+  // Booleans are read by the chance model in W4. The /profile UI for these
+  // is intentionally deferred — the data shape is ready so the model and
+  // any future UI both see the same surface.
+  //
+  // - firstGen: parent(s) did not complete a bachelor's degree. Math deferred
+  //   (research disagrees on magnitude — SPEC W2). Logged for future use.
+  // - legacyParent: at least one parent attended this school. Math deferred
+  //   (multiplicative bump pending per-school sourcing — SPEC W2). The chance
+  //   model gates legacy bumps on College.legacyConsidered.
+  // - recruitedAthlete: true triggers the special pathway (~70-85% admit at
+  //   top schools per Harvard SFFA court data) that bypasses the normal
+  //   chance model. Implemented in W4.
+  firstGen?: boolean;
+  legacyParent?: boolean;
+  recruitedAthlete?: boolean;
 }
 
 export const EMPTY_BASIC_STUDENT_INFO: BasicStudentInfo = {

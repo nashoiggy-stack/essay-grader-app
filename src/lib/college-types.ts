@@ -100,6 +100,32 @@ export interface College {
   // or older than 2 academic cycles.
   readonly dataYear?: number;
 
+  // ── Hook fields (W2) ──────────────────────────────────────────────────────
+  // Set in src/data/hook-multipliers.ts and merged by src/data/colleges.ts.
+  //
+  // - legacyConsidered: explicit `false` for schools that publicly state they
+  //   do not consider legacy (MIT, Caltech, all UCs, JHU, Amherst, Tufts).
+  //   Undefined = treat as legacy considered (the historical default at most
+  //   private US universities, though SFFA-era policy is still in flux).
+  //   The chance model gates any future legacy bump on this field.
+  // - yieldProtected: `true` for schools with documented yield-protective
+  //   admissions behavior (waitlisting over-qualified RD applicants, weighting
+  //   demonstrated interest). The chance model caps the top-quartile
+  //   multiplier at 1.0x for these schools; CollegeCard surfaces the note
+  //   "May consider demonstrated interest".
+  readonly legacyConsidered?: boolean;
+  readonly yieldProtected?: boolean;
+
+  // ── Program-specific admit rates (W4 structural — empty in Feature 1) ────
+  // When populated, the chance model surfaces low-confidence for users whose
+  // chosen major matches a known competitive program. Per-program data
+  // sourcing is its own workstream.
+  readonly programs?: readonly {
+    readonly name: string;
+    readonly acceptanceRate: number;
+    readonly year?: number;
+  }[];
+
   // Career / Outcomes — quantitative
   readonly topIndustries?: readonly string[];
   readonly careerPipelines?: readonly string[];

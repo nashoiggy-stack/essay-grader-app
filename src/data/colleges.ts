@@ -1,6 +1,7 @@
 import type { College, ApplicationOption } from "@/lib/college-types";
 import { COLLEGE_EXTENDED_DATA, COLLEGE_ALIASES } from "./college-extended";
 import { CDS_DATA } from "./cds-data";
+import { isLegacyBlind, isYieldProtected } from "./hook-multipliers";
 
 // UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
 // and delete the UNDO block at the bottom of this file.
@@ -293,12 +294,19 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
   // (vibeTags, knownFor, qualitative, campusDetails, cultureDetails,
   // locationDetails, topIndustries, careerPipelines) are never present on
   // cds and therefore survive unchanged.
+  // Hook fields (W2): legacyConsidered=false for the documented legacy-blind
+  // schools, yieldProtected=true for documented yield-protective schools.
+  // Both lists live in src/data/hook-multipliers.ts with citations.
+  const legacyConsidered = isLegacyBlind(c.name) ? { legacyConsidered: false as const } : {};
+  const yieldProtected = isYieldProtected(c.name) ? { yieldProtected: true as const } : {};
   return {
     ...c,
     ...(opts ? { applicationOptions: opts } : {}),
     ...(ext ?? {}),
     ...(cds ?? {}),
     ...(dataYear !== undefined ? { dataYear } : {}),
+    ...legacyConsidered,
+    ...yieldProtected,
     ...(aliases ? { aliases } : {}),
   };
 });
