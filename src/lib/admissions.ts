@@ -15,6 +15,7 @@ import {
   type StatBand,
 } from "@/data/stat-band-multipliers";
 import { isYieldProtected } from "@/data/hook-multipliers";
+import { applySchoolHistory, type SchoolBlendResult } from "./school-data";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -542,6 +543,10 @@ export interface ChanceResultModel {
   readonly breakdown?: ChanceBreakdown;
   readonly statBand?: StatBand;          // exposed for what-if scenarios
   readonly effectiveEcBand?: string;     // exposed for what-if scenarios
+  // School-specific history blend (sandbox feature). Present when the
+  // imported feeder-school data has a record for this college+plan; the
+  // blend may or may not have shifted the chance — see schoolBlend.applied.
+  readonly schoolBlend?: SchoolBlendResult;
 }
 
 export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultModel {
@@ -601,7 +606,18 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
   if (rawMid > capValue) rawMid = capValue;
-  const mid = clamp(rawMid, 0.5, 95);
+  const nationalMid = clamp(rawMid, 0.5, 95);
+
+  // 11b. School-specific history blend. Sandbox feature: when imported feeder
+  // school CSV has a record for this college+plan AND the sample is large
+  // enough (>=5 apps), blend toward the school's observed admit rate. The
+  // blend never replaces the national model — it's weighted at min(0.5,
+  // n/30). See src/lib/school-data.ts for math + anchors.
+  const schoolBlend = applySchoolHistory(nationalMid, college, plan, {
+    gpaWeighted: args.gpaW ?? null,
+    sat: args.sat ?? null,
+  });
+  const mid = schoolBlend.applied ? schoolBlend.mid : nationalMid;
 
   // 12. Confidence + band width.
   const statMetrics = (gBand ? 1 : 0) + (tBand ? 1 : 0);
@@ -646,6 +662,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   if (testOptionalNoScore) reasonParts.push("Test-optional with no score submitted — band widened, test signal not used");
   if (testBlind) reasonParts.push("Test-blind admissions — score not considered, GPA only");
   if (baseResult.planNote) reasonParts.push(baseResult.planNote);
+  if (schoolBlend.callout) reasonParts.push(schoolBlend.callout);
   const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${college.acceptanceRate}% overall acceptance rate.`;
 
   // Build the multiplier-stack trace. Steps show running chance after each
@@ -666,6 +683,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     capApplied: baseResult.rate * dampened * apMult > capValue,
     capBracket: capBracketLabel(college.acceptanceRate, isEdLikePlan),
     finalChance: chance.mid,
+    schoolBlend,
   });
 
   const result: ChanceResultModel = {
@@ -679,6 +697,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     breakdown,
     statBand: combinedBand,
     effectiveEcBand,
+    schoolBlend,
   };
   return result;
 }
@@ -699,6 +718,7 @@ interface BuildBreakdownArgs {
   capApplied: boolean;
   capBracket: string;
   finalChance: number;
+  schoolBlend: SchoolBlendResult;
 }
 
 function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
@@ -752,11 +772,30 @@ function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
 
   // Cap step (only when it fired)
   if (a.capApplied) {
+    running = a.capValue;
     steps.push({
       label: `Selectivity cap (${a.capBracket})`,
       multiplier: a.capValue / running,
       runningChance: a.capValue,
       note: `Capped at ${a.capValue}% — sub-15% schools cannot exceed target tier regardless of profile.`,
+    });
+  }
+
+  // School-history blend step (only when applied; the blend result already
+  // baked the new midpoint, so this step exists for trace transparency).
+  if (a.schoolBlend.applied && a.schoolBlend.record) {
+    const r = a.schoolBlend.record;
+    const blendMult = running > 0 ? a.schoolBlend.mid / running : 1;
+    running = a.schoolBlend.mid;
+    const sample = `${r.totalAdmits}/${r.totalApplicants} admitted`;
+    const weightPct = Math.round(a.schoolBlend.schoolWeight * 100);
+    steps.push({
+      label: `Your school's history (${sample})`,
+      multiplier: blendMult,
+      runningChance: round1(running),
+      note:
+        `Blended at ${weightPct}% weight from your high school's record at this college. ` +
+        `Sample size: ${r.sampleSizeLabel}.`,
     });
   }
 

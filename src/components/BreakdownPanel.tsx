@@ -2,7 +2,9 @@
 
 import React from "react";
 import type { ChanceBreakdown, WhatIfScenario } from "@/lib/admissions";
-import type { Classification } from "@/lib/college-types";
+import type { ApplicationPlan, Classification, College } from "@/lib/college-types";
+import { getSchoolRecord } from "@/lib/school-data";
+import SchoolHistoryScatterplot from "./SchoolHistoryScatterplot";
 
 const TIER_TONE: Record<Classification, string> = {
   safety:       "text-emerald-400",
@@ -25,13 +27,30 @@ const TIER_LABEL: Record<Classification, string> = {
 interface BreakdownPanelProps {
   readonly breakdown: ChanceBreakdown;
   readonly whatIfs?: readonly WhatIfScenario[];
+  // Optional: when supplied, render the school-history scatterplot below the
+  // stack. Sandbox feature gated on imported feeder-school CSV data.
+  readonly college?: College;
+  readonly applicationPlan?: ApplicationPlan;
+  readonly userStats?: {
+    readonly gpaWeighted: number | null;
+    readonly sat: number | null;
+    readonly act: number | null;
+  };
 }
 
 // Renders the multiplier-stack trace as an accumulating list. Each row shows
 // the layer, its multiplier, and the running chance after applying it. The
 // what-if scenarios appear below the stack so users can see how malleable
 // their position is.
-export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({ breakdown, whatIfs = [] }) => {
+export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
+  breakdown,
+  whatIfs = [],
+  college,
+  applicationPlan,
+  userStats,
+}) => {
+  const showScatter =
+    college && applicationPlan && userStats && getSchoolRecord(college, applicationPlan) != null;
   const baseDisplay = round1(breakdown.baseRate);
   return (
     <div className="space-y-4">
@@ -107,6 +126,21 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({ breakdown, whatI
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {showScatter && college && userStats && applicationPlan && (
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400 mb-2">
+            Your school&apos;s history at this college
+          </h4>
+          <div className="rounded-lg bg-white/[0.04] border border-white/[0.04] p-3">
+            <SchoolHistoryScatterplot
+              college={college}
+              userStats={userStats}
+              defaultAppType={applicationPlan}
+            />
+          </div>
         </div>
       )}
     </div>

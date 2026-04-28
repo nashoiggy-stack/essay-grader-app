@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import type { ChanceResult, Classification } from "@/lib/college-types";
+import type { ApplicationPlan, ChanceResult, Classification, College } from "@/lib/college-types";
 import { BreakdownPanel } from "./BreakdownPanel";
 
 // Color coding mirrors /colleges CollegeCard so the same school produces the
@@ -19,6 +19,15 @@ const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: strin
 interface ChanceResultProps {
   readonly result: ChanceResult;
   readonly collegeName: string;
+  // Optional: surface the school-history scatterplot inside the breakdown
+  // panel when feeder-school data is available for this college+plan.
+  readonly college?: College;
+  readonly applicationPlan?: ApplicationPlan;
+  readonly userStats?: {
+    readonly gpaWeighted: number | null;
+    readonly sat: number | null;
+    readonly act: number | null;
+  };
 }
 
 function buildHeadline(result: ChanceResult, collegeName: string): string {
@@ -73,7 +82,13 @@ function buildNextStep(result: ChanceResult): string {
 // 100). Width-weighted so the fill aligns with the labeled segment.
 const SEGMENT_TEMPLATE = "5fr 15fr 20fr 30fr 30fr"; // unlikely | reach | target | likely | safety
 
-export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, collegeName }) => {
+export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
+  result,
+  collegeName,
+  college,
+  applicationPlan,
+  userStats,
+}) => {
   const style = TIER_STYLES[result.classification];
   const headline = buildHeadline(result, collegeName);
   const nextStep = buildNextStep(result);
@@ -167,7 +182,13 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
           </summary>
           <div className="px-4 pb-4 pt-1 space-y-4">
             <p className="text-[12px] text-zinc-500 leading-relaxed">{result.explanation}</p>
-            <BreakdownPanel breakdown={result.breakdown} whatIfs={result.whatIfs} />
+            <BreakdownPanel
+              breakdown={result.breakdown}
+              whatIfs={result.whatIfs}
+              college={college}
+              applicationPlan={applicationPlan}
+              userStats={userStats}
+            />
           </div>
         </details>
       )}
