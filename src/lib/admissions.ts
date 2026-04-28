@@ -10,8 +10,9 @@ import type {
 import {
   getStatBandMultiplier,
   getEcBandMultiplier,
-  essayCommonAppMultiplier,
-  essayVspiceMultiplier,
+  applyCombinedDampener,
+  getChanceCap,
+  STAT_BAND_RANK,
   type StatBand,
 } from "@/data/stat-band-multipliers";
 import { isYieldProtected } from "@/data/hook-multipliers";
@@ -310,36 +311,44 @@ export function majorAdjustment(
 
 // ── Stat band determination ─────────────────────────────────────────────────
 
+// Five-band stat classification (final calibration spec).
+//   above-p75 / above-median / mid-range / below-median / below-p25
+//
+// Calibrated so the spec's elite profile (4.0 UW, 35 ACT, 1540 SAT) buckets
+// as above-p75 on every selective school's published distribution. GPA uses
+// absolute deltas because schools publish a mean only; tests scale slack
+// by the published 25-75 range so narrow ACT bands don't over-bucket.
+
 function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
   if (gpaUW === null) return null;
   const diff = gpaUW - schoolUW;
-  if (diff > 0.15) return "above-p75";
-  if (diff >= -0.10) return "in-range";
-  if (diff >= -0.30) return "below-p25";
-  return "well-below";
+  if (diff >= 0.05) return "above-p75";       // clearly above mean
+  if (diff >= 0.0) return "above-median";     // at or just above mean
+  if (diff >= -0.10) return "mid-range";      // tight band below mean
+  if (diff >= -0.25) return "below-median";   // below mean but in range
+  return "below-p25";
 }
 
 function testBand(score: number | null, p25: number, p75: number, isAct: boolean): StatBand | null {
   if (score === null) return null;
-  const aboveSlack = isAct ? 1 : 10;
-  const belowSlack = isAct ? Math.round((p75 - p25) / 2) : Math.round((p75 - p25) / 2);
-  if (score > p75 + aboveSlack) return "above-p75";
-  if (score >= p25) return "in-range";
-  if (score >= p25 - belowSlack) return "below-p25";
-  return "well-below";
+  const range = Math.max(p75 - p25, 1);
+  const median = (p25 + p75) / 2;
+  // Small floor on the upper-quartile slack so 1540 SAT at 1500-1560 reads
+  // as above-p75 (top end of typical admit). ACT slack is 0 — narrow ranges
+  // (e.g. 33-35) need exact matches.
+  const upperSlack = isAct ? 0 : Math.min(25, Math.round(range * 0.4));
+  const innerSlack = isAct ? 1 : Math.round(range * 0.4);
+  if (score >= p75 - upperSlack) return "above-p75";
+  if (score >= median) return "above-median";
+  if (score >= median - innerSlack) return "mid-range";
+  if (score >= p25 - innerSlack) return "below-median";
+  return "below-p25";
 }
-
-const BAND_RANK: Record<StatBand, number> = {
-  "above-p75": 4,
-  "in-range": 3,
-  "below-p25": 2,
-  "well-below": 1,
-};
 
 function minBand(a: StatBand | null, b: StatBand | null): StatBand | null {
   if (a === null) return b;
   if (b === null) return a;
-  return BAND_RANK[a] <= BAND_RANK[b] ? a : b;
+  return STAT_BAND_RANK[a] <= STAT_BAND_RANK[b] ? a : b;
 }
 
 // ── Per-plan rate selection with fallbacks ──────────────────────────────────
@@ -539,6 +548,14 @@ export interface ChanceInputsModel {
   act: number | null;
   rigor?: "low" | "medium" | "high";
   ecBand?: string;
+  // True when any UserProfile distinguished-EC flag fires (first-author
+  // publication, national competition placement, founder with users, RSI/
+  // TASP-tier selective program admit). Forces effective EC band to
+  // "exceptional" regardless of profile.ecBand.
+  distinguishedEC?: boolean;
+  // Essay scores are display-only in the new chance model — no multiplier.
+  // Kept on the input shape so legacy callers still typecheck; ignored by
+  // the math.
   essayCA?: number | null;
   essayV?: number | null;
   // AP scores feed a small academic-support multiplier. 8+ exams averaging
@@ -593,29 +610,39 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // 6. Per-plan base rate with fallbacks.
   const baseResult = getBaseRateForPlan(college, plan);
 
-  // 7. Stat multiplier from the empirical tier table.
-  let multiplier = getStatBandMultiplier(college, combinedBand);
+  // 7. Stat multiplier from the empirical band table (final calibration).
+  let multiplier = getStatBandMultiplier(combinedBand);
 
   // 8. Yield protection cap.
   const yp = applyYieldProtection(college, combinedBand, multiplier, plan);
   multiplier = yp.multiplier;
 
-  // 9. EC + essay multipliers.
-  const ecMult = getEcBandMultiplier(args.ecBand?.toLowerCase());
-  const essayCaMult = essayCommonAppMultiplier(args.essayCA ?? null);
-  const essayVMult = essayVspiceMultiplier(args.essayV ?? null);
+  // 9. EC multiplier (with distinguished-EC override boost to "exceptional").
+  // Essay does NOT contribute a multiplier per final spec — it surfaces only
+  // as advisory text in CollegeCard. essayScoreAdjustment in this file remains
+  // @deprecated for the legacy /chances pipeline.
+  const effectiveEcBand = args.distinguishedEC === true ? "exceptional" : args.ecBand?.toLowerCase();
+  const ecMult = getEcBandMultiplier(effectiveEcBand);
+
+  // 10. Combined dampener: stat × EC > 4.0 dampened. AP corroborates after.
+  const rawCombined = multiplier * ecMult;
+  const dampened = applyCombinedDampener(rawCombined);
   const apMult = apScoreMultiplier(args.apScores);
 
-  // 10. Compute midpoint.
-  const rawMid = baseResult.rate * multiplier * ecMult * essayCaMult * essayVMult * apMult;
+  // 11. Compute midpoint, then apply the final selectivity cap.
+  let rawMid = baseResult.rate * dampened * apMult;
+  const cap = getChanceCap(college.acceptanceRate);
+  const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
+  const capValue = isEdLikePlan ? cap.ed : cap.rd;
+  if (rawMid > capValue) rawMid = capValue;
   const mid = clamp(rawMid, 0.5, 95);
 
-  // 11. Confidence + band width.
+  // 12. Confidence + band width.
   const statMetrics = (gBand ? 1 : 0) + (tBand ? 1 : 0);
   const confidence = computeConfidence({
     statMetrics,
     hasRigor: !!args.rigor,
-    hasEcOrEssay: !!args.ecBand || args.essayCA != null || args.essayV != null,
+    hasEcOrEssay: !!args.ecBand || args.essayCA != null || args.essayV != null || args.distinguishedEC === true,
     hasCds: typeof college.dataYear === "number" || typeof college.edAdmitRate === "number" || typeof college.regularDecisionAdmitRate === "number",
   });
   const widthBand = bandWidthForConfidence(confidence, testOptionalNoScore);
@@ -625,18 +652,24 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     high: Math.round(clamp(mid * widthBand.hi, 0.5, 95)),
   };
 
-  // 12. Classification from chance midpoint.
+  // 13. Classification from chance midpoint (final calibration thresholds).
+  //   safety  ≥ 70%
+  //   likely  40-69%   (locked out for sub-15% schools by the cap above)
+  //   target  20-39%
+  //   reach    5-19%
+  //   unlikely <5%
   let classification = chanceMidpointToClassification(chance.mid);
 
-  // 13. Hard cliff at 10% admit (SPEC: sub-10% schools cap at "reach").
-  // Sub-10% schools dominate by variance — even strong applicants can't
-  // predict outcomes, AND below-the-line applicants aren't "less likely"
-  // than anyone else in any meaningful way. Everyone who isn't "insufficient"
-  // lands at "reach" so the chance range itself communicates the spread
-  // (e.g. "5–13%, reach" vs "8–22%, reach"), and "unlikely" is reserved
-  // for cases where the school is genuinely a poor stat fit at a non-elite
-  // school.
+  // 14. Hard cliff at 10% admit: sub-10% schools cap at "reach" floor and
+  // ceiling. Variance dominates at that selectivity, "unlikely" is misleading,
+  // and the caps already prevent anything above target there.
   if (college.acceptanceRate < 10 && classification !== "insufficient") {
+    classification = "reach";
+  }
+
+  // 15. Elite-profile floor: never produces "unlikely". Elite =
+  //   GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND ≥ 6 APs.
+  if (classification === "unlikely" && isEliteProfile(args)) {
     classification = "reach";
   }
 
@@ -675,11 +708,25 @@ function pickTestBand(sat: number | null, act: number | null, college: College):
 }
 
 function chanceMidpointToClassification(mid: number): Classification {
-  if (mid >= 75) return "safety";
-  if (mid >= 50) return "likely";
-  if (mid >= 25) return "target";
-  if (mid >= 10) return "reach";
+  // Final calibration thresholds (consolidates spec).
+  if (mid >= 70) return "safety";
+  if (mid >= 40) return "likely";
+  if (mid >= 20) return "target";
+  if (mid >= 5)  return "reach";
   return "unlikely";
+}
+
+// Elite profile: GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND ≥ 6 APs.
+// When met, classification floors at "reach" — even data-driven sub-5%
+// chances become "reach" rather than "unlikely". Hooks the safety net for
+// ultra-selective schools where elite stats are real but variance is huge.
+function isEliteProfile(args: ChanceInputsModel): boolean {
+  if ((args.gpaUW ?? 0) < 3.95) return false;
+  const satOk = (args.sat ?? 0) >= 1540;
+  const actOk = (args.act ?? 0) >= 35;
+  if (!satOk && !actOk) return false;
+  const apCount = args.apScores?.length ?? 0;
+  return apCount >= 6;
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -687,27 +734,34 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 function gpaPhrase(userUW: number, schoolUW: number, band: StatBand): string {
+  const u = userUW.toFixed(2);
+  const s = schoolUW.toFixed(2);
   switch (band) {
-    case "above-p75": return `Your UW GPA (${userUW.toFixed(2)}) is above this school's average (${schoolUW.toFixed(2)})`;
-    case "in-range":  return `Your UW GPA (${userUW.toFixed(2)}) is within this school's typical range`;
-    case "below-p25": return `Your UW GPA (${userUW.toFixed(2)}) is below this school's average (${schoolUW.toFixed(2)})`;
-    case "well-below": return `Your UW GPA (${userUW.toFixed(2)}) is well below this school's average (${schoolUW.toFixed(2)})`;
+    case "above-p75":    return `Your UW GPA (${u}) is above this school's typical range (avg ${s})`;
+    case "above-median": return `Your UW GPA (${u}) is above this school's average (${s}) but within range`;
+    case "mid-range":    return `Your UW GPA (${u}) is right around this school's average (${s})`;
+    case "below-median": return `Your UW GPA (${u}) is below this school's average (${s}) but still within range`;
+    case "below-p25":    return `Your UW GPA (${u}) is below this school's 25th percentile (avg ${s})`;
   }
 }
 
 function testPhrase(sat: number | null, act: number | null, college: College, band: StatBand): string {
   if (sat === null && act === null) return "";
   const useAct = act !== null && (sat === null || actToSatEquivalent(act) >= sat);
-  if (useAct) {
-    const tail = sat !== null ? " (used over SAT as stronger score)" : "";
-    if (band === "above-p75") return `Your ACT (${act}) is above the 75th percentile (${college.act75})${tail}`;
-    if (band === "in-range")  return `Your ACT (${act}) is within range (${college.act25}-${college.act75})${tail}`;
-    return `Your ACT (${act}) is below the 25th percentile (${college.act25})${tail}`;
+  const score = useAct ? act : sat;
+  const which = useAct ? "ACT" : "SAT";
+  const p25 = useAct ? college.act25 : college.sat25;
+  const p75 = useAct ? college.act75 : college.sat75;
+  const tail = useAct
+    ? (sat !== null ? " (used over SAT as stronger score)" : "")
+    : (act !== null ? " (used over ACT as stronger score)" : "");
+  switch (band) {
+    case "above-p75":    return `Your ${which} (${score}) is above the 75th percentile (${p75})${tail}`;
+    case "above-median": return `Your ${which} (${score}) is above the median for this school${tail}`;
+    case "mid-range":    return `Your ${which} (${score}) is around the median (${p25}-${p75})${tail}`;
+    case "below-median": return `Your ${which} (${score}) is below the median but in range (${p25}-${p75})${tail}`;
+    case "below-p25":    return `Your ${which} (${score}) is below the 25th percentile (${p25})${tail}`;
   }
-  const tail = act !== null ? " (used over ACT as stronger score)" : "";
-  if (band === "above-p75") return `Your SAT (${sat}) is above the 75th percentile (${college.sat75})${tail}`;
-  if (band === "in-range")  return `Your SAT (${sat}) is within range (${college.sat25}-${college.sat75})${tail}`;
-  return `Your SAT (${sat}) is below the 25th percentile (${college.sat25})${tail}`;
 }
 
 // ── Classification (for College List Builder) ────────────────────────────────
@@ -726,6 +780,7 @@ export function classifyCollege(
   essayV: number | null = null,
   options?: {
     ecBand?: string;
+    distinguishedEC?: boolean;
     rigor?: "low" | "medium" | "high";
     apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
     recruitedAthlete?: boolean;
@@ -750,6 +805,7 @@ export function classifyCollege(
     essayCA,
     essayV,
     ecBand: options?.ecBand,
+    distinguishedEC: options?.distinguishedEC,
     rigor: options?.rigor,
     apScores: options?.apScores,
     recruitedAthlete: options?.recruitedAthlete,

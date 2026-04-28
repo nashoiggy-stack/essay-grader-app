@@ -177,6 +177,21 @@ export function useChanceCalculator() {
     // hook doesn't surface (per-school applicationPlan, AP support, ACT
     // Science) — those are layered on top as small qualitative signals after
     // the percentile-based midpoint.
+    // Distinguished EC flags live on the shared profile. Read them here so
+    // /chances reflects the same boost the College List does.
+    let distinguishedEC = false;
+    try {
+      const rawProfile = typeof window !== "undefined" ? localStorage.getItem("admitedge-profile") : null;
+      if (rawProfile) {
+        const p = JSON.parse(rawProfile);
+        distinguishedEC =
+          p?.firstAuthorPublication === true ||
+          p?.nationalCompetitionPlacement === true ||
+          p?.founderWithUsers === true ||
+          p?.selectiveProgram === true;
+      }
+    } catch { /* ignore */ }
+
     const r = computeAdmissionChance({
       college,
       gpaUW,
@@ -186,6 +201,7 @@ export function useChanceCalculator() {
       essayCA,
       essayV,
       ecBand: inputs.ecBand || undefined,
+      distinguishedEC,
       rigor: inputs.rigor,
       apScores: inputs.apScores,
       applicationPlan: inputs.applicationPlan,

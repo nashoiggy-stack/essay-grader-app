@@ -162,11 +162,15 @@ function buildPinnedSchools(
     ? parseFloat(profile.essayCommonApp)
     : null;
   const essayV = profile?.essayVspice ? parseFloat(profile.essayVspice) : null;
-  // Pass EC band and rigor to the chance model so exceptional ECs and high
-  // rigor get applied. Without this, every applicant gets a 1.0x EC
-  // multiplier regardless of profile strength.
+  // Pass EC band, rigor, and distinguished-EC flags to the chance model so
+  // strong-profile applicants don't get capped by silent defaults.
   const ecBand = typeof profile?.ecBand === "string" && profile.ecBand ? profile.ecBand : undefined;
   const rigor = profile?.rigor;
+  const distinguishedEC =
+    profile?.firstAuthorPublication === true ||
+    profile?.nationalCompetitionPlacement === true ||
+    profile?.founderWithUsers === true ||
+    profile?.selectiveProgram === true;
 
   const result: StrategyPinnedSchool[] = [];
   for (const pin of pins) {
@@ -180,7 +184,7 @@ function buildPinnedSchools(
       Number.isFinite(act ?? NaN) ? act : null,
       Number.isFinite(essayCA ?? NaN) ? essayCA : null,
       Number.isFinite(essayV ?? NaN) ? essayV : null,
-      { ecBand, rigor },
+      { ecBand, distinguishedEC, rigor, apScores: profile?.apScores },
     );
     const classified: ClassifiedCollege = {
       college,

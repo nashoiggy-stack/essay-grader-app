@@ -75,6 +75,23 @@ export interface UserProfile {
   firstGen?: boolean;
   legacyParent?: boolean;
   recruitedAthlete?: boolean;
+
+  // ── Distinguished EC flags (final calibration) ────────────────────────────
+  // When any of these is true, the chance model promotes the effective EC
+  // band to "exceptional" regardless of the user's profile.ecBand value.
+  // The /profile UI for these is deferred — fields ready for a future PR.
+  //
+  // - firstAuthorPublication: published research as first author at a
+  //   recognized venue
+  // - nationalCompetitionPlacement: placement in national or international
+  //   competition
+  // - founderWithUsers: founded business with measurable users or revenue
+  // - selectiveProgram: admission to a tier-defining selective program
+  //   (RSI, TASP, Telluride, MITES, SSP, etc.)
+  firstAuthorPublication?: boolean;
+  nationalCompetitionPlacement?: boolean;
+  founderWithUsers?: boolean;
+  selectiveProgram?: boolean;
 }
 
 export const EMPTY_BASIC_STUDENT_INFO: BasicStudentInfo = {

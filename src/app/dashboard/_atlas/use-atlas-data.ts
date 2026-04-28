@@ -103,15 +103,31 @@ export function useAtlasData(): AtlasData {
     const gpaW = profile.gpaW ? parseFloat(profile.gpaW) : null;
     const ecBand = profile.ecBand || undefined;
     const rigor = profile.rigor;
+    const distinguishedEC =
+      profile.firstAuthorPublication === true ||
+      profile.nationalCompetitionPlacement === true ||
+      profile.founderWithUsers === true ||
+      profile.selectiveProgram === true;
     return pinned
       .map((pin) => {
         const college = COLLEGE_BY_NAME.get(pin.name);
         if (!college) return null;
-        const result = classifyCollege(college, gpaUW, gpaW, sat, act, essayN, vspiceN, { ecBand, rigor });
+        const result = classifyCollege(college, gpaUW, gpaW, sat, act, essayN, vspiceN, {
+          ecBand,
+          distinguishedEC,
+          rigor,
+          apScores: profile.apScores,
+        });
         return { pin, college, ...result };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
-  }, [pinned, profile.gpaUW, profile.gpaW, profile.ecBand, profile.rigor, sat, act, essayN, vspiceN]);
+  }, [
+    pinned, profile.gpaUW, profile.gpaW, profile.ecBand, profile.rigor,
+    profile.apScores,
+    profile.firstAuthorPublication, profile.nationalCompetitionPlacement,
+    profile.founderWithUsers, profile.selectiveProgram,
+    sat, act, essayN, vspiceN,
+  ]);
 
   const tools = useMemo<ToolStatus[]>(() => {
     const pinCount = pinned.length;

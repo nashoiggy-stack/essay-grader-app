@@ -15,11 +15,11 @@ import type { ClassifiedCollege } from "@/lib/college-types";
 const COLLEGE_SEARCH_INPUT_ID = "colleges-search-input";
 
 const TIERS = [
-  { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", chance: "75%+", description: "Estimated chance of admission is 75% or higher. Your profile lines up well with the school's typical admit. Sub-30% acceptance schools can't classify here." },
-  { label: "Likely", color: "bg-blue-500", textColor: "text-blue-400", chance: "50–75%", description: "Estimated chance is 50–75%. A strong match but not guaranteed." },
-  { label: "Target", color: "bg-amber-500", textColor: "text-amber-400", chance: "25–50%", description: "Estimated chance is 25–50%. Realistic but competitive. Final outcomes depend on essays, recommendations, and demonstrated interest in addition to stats." },
-  { label: "Reach", color: "bg-orange-500", textColor: "text-orange-400", chance: "10–25%", description: "Estimated chance is 10–25%. Admission is possible with strong qualitative profile. Schools with under 10% acceptance always cap here, even with elite stats — outcomes are not predictable at that selectivity." },
-  { label: "Unlikely", color: "bg-red-500", textColor: "text-red-500", chance: "<10%", description: "Estimated chance is below 10%. Would require exceptional circumstances." },
+  { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", chance: "70%+", description: "Estimated chance of admission is 70% or higher. Your profile lines up well with the school's typical admit." },
+  { label: "Likely", color: "bg-blue-500", textColor: "text-blue-400", chance: "40–69%", description: "Estimated chance is 40–69%. A strong match but not guaranteed. Schools under 15% acceptance cannot classify here regardless of profile — top schools have institutional uncertainty (hooked-applicant slots, class composition needs) that prevents unhooked applicants from being 'likely'." },
+  { label: "Target", color: "bg-amber-500", textColor: "text-amber-400", chance: "20–39%", description: "Estimated chance is 20–39%. Realistic but competitive. Final outcomes depend on essays, recommendations, and demonstrated interest in addition to stats." },
+  { label: "Reach", color: "bg-orange-500", textColor: "text-orange-400", chance: "5–19%", description: "Estimated chance is 5–19%. Admission is possible with a strong qualitative profile. Schools with under 10% acceptance always cap here, even with elite stats — outcomes are not predictable at that selectivity." },
+  { label: "Unlikely", color: "bg-red-500", textColor: "text-red-500", chance: "<5%", description: "Estimated chance is below 5%. Would require exceptional circumstances. Elite-profile applicants (4.0 UW, 1540+ SAT or 35+ ACT, 6+ APs) never land here — the chance model floors at 'reach' for that profile." },
   { label: "Insufficient Data", color: "bg-zinc-500", textColor: "text-zinc-400", chance: "—", description: "We don't have enough of your profile to ground a chance estimate. Add a GPA or test score to unlock per-school chances." },
 ];
 
@@ -108,9 +108,12 @@ export default function CollegesPage() {
         <div className="mb-6 rounded-xl bg-amber-500/[0.04] border border-amber-500/[0.15] px-4 py-3">
           <p className="text-[12px] text-amber-200/80 leading-relaxed">
             <span className="font-semibold text-amber-200">Estimates only.</span>{" "}
-            Chance percentages are model-based and assume your profile alone — they don't account for
-            essays, recommendations, demonstrated interest, hooks, or institutional priorities.
-            Treat ranges, not midpoints, as the real signal. Sub-10% schools cap at "Reach" by design.
+            Chance percentages are model-based and assume average essay quality for your stat band — strong
+            essays at high-selectivity schools can shift outcomes meaningfully and aren&apos;t in the math.
+            Recommendations, demonstrated interest, hooks, and institutional priorities also aren&apos;t modeled.
+            In-state public-school advantages (e.g. UF for Florida residents) are not modeled either —
+            non-residents will see realistic numbers, residents&apos; actual chances are higher.
+            Treat ranges, not midpoints, as the real signal. Sub-10% schools cap at &quot;Reach&quot; by design.
           </p>
         </div>
 

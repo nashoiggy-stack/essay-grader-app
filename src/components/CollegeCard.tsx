@@ -178,6 +178,16 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         <MetaStat label="ACT" value={`${c.act25}–${c.act75}`} />
       </div>
 
+      {/* ── Essay advisory note (selective schools only) ──────────────
+          Essays don't contribute a multiplier in the chance model — they're
+          surfaced as advisory text per SPEC. Show only at high-selectivity
+          schools where strong essays can meaningfully shift outcomes. */}
+      {classification !== "insufficient" && c.acceptanceRate < 25 && (
+        <p className="mt-3 text-[11px] text-zinc-500 leading-snug">
+          Numbers assume average essay quality. Strong essays at this selectivity can shift chances meaningfully.
+        </p>
+      )}
+
       {/* ── Confidence + caveat badges ──────────────────────────── */}
       {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
         <div className="mt-4 flex flex-wrap gap-1.5">

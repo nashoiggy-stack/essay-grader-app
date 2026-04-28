@@ -270,13 +270,14 @@ export function useCollegeFilter() {
     const arMin = filters.acceptanceRateMin ? parseFloat(filters.acceptanceRateMin) : 0;
     const arMax = filters.acceptanceRateMax ? parseFloat(filters.acceptanceRateMax) : 100;
 
-    // Read EC band, rigor, and AP scores from profile so the chance model
-    // can apply their multipliers. Without this the model treats every
-    // applicant as EC-band "solid", rigor-neutral, and AP-blank, which
-    // suppresses chances for strong-profile applicants.
+    // Read EC band, rigor, AP scores, and distinguished-EC flags from profile
+    // so the chance model can apply their multipliers. Without this the model
+    // treats every applicant as EC-band "solid", rigor-neutral, AP-blank,
+    // which suppresses chances for strong-profile applicants.
     let ecBand: string | undefined;
     let rigor: "low" | "medium" | "high" | undefined;
     let apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined;
+    let distinguishedEC = false;
     try {
       const rawProfile = localStorage.getItem("admitedge-profile");
       if (rawProfile) {
@@ -291,6 +292,11 @@ export function useCollegeFilter() {
               (a as { score: number }).score >= 1 && (a as { score: number }).score <= 5,
             );
         }
+        distinguishedEC =
+          p?.firstAuthorPublication === true ||
+          p?.nationalCompetitionPlacement === true ||
+          p?.founderWithUsers === true ||
+          p?.selectiveProgram === true;
       }
     } catch { /* ignore */ }
 
@@ -308,7 +314,7 @@ export function useCollegeFilter() {
         return true;
       })
       .map((c) => {
-        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV, { ecBand, rigor, apScores });
+        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV, { ecBand, distinguishedEC, rigor, apScores });
         // Multi-input matcher: scores per active major + active interest,
         // returns max score, max level (OR), the per-entry breakdown for
         // the card UI, and a major-prefixed reason string.
