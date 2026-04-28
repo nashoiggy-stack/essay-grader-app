@@ -18,25 +18,29 @@ interface ChanceResultProps {
 }
 
 function buildHeadline(result: ChanceResult, collegeName: string): string {
-  const { band, strengths, weaknesses } = result;
+  const { band, score, strengths, weaknesses } = result;
   const strongPart = strengths.length > 0 ? strengths[0].split(" is ")[0] || strengths[0].split(" ")[0] : "your profile";
   const weakPart = weaknesses.length > 0 ? weaknesses[0].split(" is ")[0] || weaknesses[0].split(" ")[0] : null;
 
   switch (band) {
     case "strong":
-      return `Your stats are strong for ${collegeName}. Focus on making your essays and ECs memorable.`;
+      return `Strong fit for ${collegeName} — your estimated chance is ${score}%. Focus on making your essays and ECs memorable.`;
     case "competitive":
       return weakPart
-        ? `You're in the competitive range — ${strongPart} helps, but ${weakPart} is the gap to close.`
-        : `You're in the competitive range for ${collegeName}. Strong essays and ECs can tip you in.`;
+        ? `Competitive at ${collegeName} (~${score}% chance) — ${strongPart} helps, but ${weakPart} is the gap to close.`
+        : `Competitive at ${collegeName} (~${score}% chance). Strong essays and ECs can tip you in.`;
     case "possible":
       return weakPart
-        ? `This is a stretch. ${strongPart} is working for you, but ${weakPart} is holding you back.`
-        : `This is possible but a stretch. You'll need exceptional essays and ECs to stand out.`;
+        ? `A stretch at ${collegeName} (~${score}% chance). ${strongPart} is working for you, but ${weakPart} is holding you back.`
+        : `A stretch at ${collegeName} (~${score}% chance). You'll need exceptional essays and ECs to stand out.`;
     case "low":
-      return `Your stats are below the typical admitted range. Consider this a reach school.`;
+      // Sub-25% chance often comes from highly-selective schools where even
+      // strong profiles compete in a saturated pool. Don't say "below the
+      // admitted range" — at 4.0 GPA + 35 ACT for Penn the stats ARE in
+      // range; the chance is low because Penn's overall rate is ~6%.
+      return `Reach at ${collegeName} (~${score}% chance). At this level of selectivity, even strong profiles face uncertainty — essays, ECs, and demonstrated interest become decisive.`;
     case "very-low":
-      return `This school is a significant reach. Apply only if you have something truly unusual to offer.`;
+      return `${collegeName} is a significant reach (~${score}% chance). Apply only if you have something truly unusual to offer.`;
   }
 }
 
@@ -66,7 +70,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
       animate={{ opacity: 1, y: 0 }}
       className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06] space-y-6"
     >
-      {/* Band display */}
+      {/* Band + percentage display */}
       <div className="text-center">
         <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">
           Your chances at {collegeName}
@@ -75,9 +79,12 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className={`inline-block px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
+          className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
         >
-          <span className={`text-2xl sm:text-3xl font-bold ${style.text}`}>
+          <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
+            {result.score}%
+          </span>
+          <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.15em] ${style.text}`}>
             {result.bandLabel}
           </span>
         </motion.div>
@@ -88,20 +95,23 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
         )}
       </div>
 
-      {/* Score bar */}
+      {/* Score bar — segments are weighted by the actual band thresholds
+          (very-low: 0-10, low: 10-25, possible: 25-50, competitive: 50-75,
+          strong: 75-95) so the fill aligns with the labeled segment. */}
       <div>
-        <div className="flex justify-between text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5">
-          <span>Very Low</span>
-          <span>Low</span>
-          <span>Possible</span>
-          <span>Competitive</span>
-          <span>Strong</span>
+        <div className="grid text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5"
+             style={{ gridTemplateColumns: "10fr 15fr 25fr 25fr 20fr" }}>
+          <span className="text-left">Very Low</span>
+          <span className="text-center">Low</span>
+          <span className="text-center">Possible</span>
+          <span className="text-center">Competitive</span>
+          <span className="text-right">Strong</span>
         </div>
         <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
           <motion.div
             className={`h-full rounded-full ${style.bar}`}
             initial={{ width: 0 }}
-            animate={{ width: `${result.score}%` }}
+            animate={{ width: `${Math.min(95, Math.max(2, result.score))}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
           />
         </div>

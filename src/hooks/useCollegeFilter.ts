@@ -270,19 +270,27 @@ export function useCollegeFilter() {
     const arMin = filters.acceptanceRateMin ? parseFloat(filters.acceptanceRateMin) : 0;
     const arMax = filters.acceptanceRateMax ? parseFloat(filters.acceptanceRateMax) : 100;
 
-    // Read EC band and rigor from profile so the chance model can apply
-    // their multipliers. Without this the model treats every applicant as
-    // EC-band "solid" and rigor-neutral, which suppresses chances for
-    // strong-profile applicants (the "20 unlikelies for a 4.0/exceptional"
-    // bug).
+    // Read EC band, rigor, and AP scores from profile so the chance model
+    // can apply their multipliers. Without this the model treats every
+    // applicant as EC-band "solid", rigor-neutral, and AP-blank, which
+    // suppresses chances for strong-profile applicants.
     let ecBand: string | undefined;
     let rigor: "low" | "medium" | "high" | undefined;
+    let apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined;
     try {
       const rawProfile = localStorage.getItem("admitedge-profile");
       if (rawProfile) {
         const p = JSON.parse(rawProfile);
         if (typeof p?.ecBand === "string" && p.ecBand) ecBand = p.ecBand;
         if (p?.rigor === "low" || p?.rigor === "medium" || p?.rigor === "high") rigor = p.rigor;
+        if (Array.isArray(p?.apScores)) {
+          apScores = p.apScores
+            .filter((a: unknown): a is { score: 1 | 2 | 3 | 4 | 5 } =>
+              typeof a === "object" && a !== null && "score" in a &&
+              typeof (a as { score: unknown }).score === "number" &&
+              (a as { score: number }).score >= 1 && (a as { score: number }).score <= 5,
+            );
+        }
       }
     } catch { /* ignore */ }
 
@@ -300,7 +308,7 @@ export function useCollegeFilter() {
         return true;
       })
       .map((c) => {
-        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV, { ecBand, rigor });
+        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV, { ecBand, rigor, apScores });
         // Multi-input matcher: scores per active major + active interest,
         // returns max score, max level (OR), the per-entry breakdown for
         // the card UI, and a major-prefixed reason string.

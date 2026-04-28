@@ -187,6 +187,7 @@ export function useChanceCalculator() {
       essayV,
       ecBand: inputs.ecBand || undefined,
       rigor: inputs.rigor,
+      apScores: inputs.apScores,
       applicationPlan: inputs.applicationPlan,
     });
 
@@ -194,19 +195,25 @@ export function useChanceCalculator() {
     const weaknesses: string[] = [];
 
     // The chance model's `reason` already strings together the headline
-    // GPA + test + plan signals deterministically — split it into individual
-    // sentence fragments so the legacy ChanceResultDisplay UI can list them
-    // as positive vs negative.
+    // GPA + test + plan signals deterministically — split into sentence
+    // fragments so the legacy ChanceResultDisplay UI can list them.
+    // Split on ". " (period+space) so we don't break inside decimals like
+    // "4.00" or test ranges like "34-36".
     if (r.reason) {
-      const parts = r.reason.replace(/\.$/, "").split(/\.\s*/).filter(Boolean);
+      const parts = r.reason
+        .replace(/\.$/, "")
+        .split(". ")
+        .map((s) => s.trim())
+        .filter(Boolean);
       for (const part of parts) {
         const lower = part.toLowerCase();
+        const sentence = part.endsWith(".") ? part : part + ".";
         if (lower.includes("above") || lower.includes("within") || lower.includes("school-published")) {
-          strengths.push(part + ".");
+          strengths.push(sentence);
         } else if (lower.includes("below") || lower.includes("widened") || lower.includes("based on overall trends")) {
-          weaknesses.push(part + ".");
+          weaknesses.push(sentence);
         } else {
-          strengths.push(part + ".");
+          strengths.push(sentence);
         }
       }
     }

@@ -470,6 +470,29 @@ function recruitedAthletePathwayResult(
   };
 }
 
+// ── AP score multiplier ─────────────────────────────────────────────────────
+//
+// AP scores are corroborating evidence for stat band, not a primary signal.
+// Capped contribution: ~1.05x ceiling for 8+ exams averaging 4.5+. Lower
+// counts and lower averages scale down proportionally. Reasonable signal
+// because empirical research (College Board AP/SAT briefs) shows AP success
+// correlates with admission probability at selective schools, but the
+// effect is small once GPA + test scores are controlled for — which the
+// stat-band multiplier already captures.
+
+function apScoreMultiplier(
+  apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined,
+): number {
+  if (!apScores || apScores.length === 0) return 1.0;
+  const avg = apScores.reduce((s, a) => s + a.score, 0) / apScores.length;
+  // Quality factor: 5.0 average → 1.0; 3.0 average → 0; below 3.0 → small drag.
+  const quality = Math.max(-0.4, Math.min(1.0, (avg - 3.0) / 2.0));
+  // Volume factor: 0 exams → 0; 8+ exams → 1.0.
+  const volume = Math.min(1.0, apScores.length / 8);
+  // Combined contribution caps at +5% (1.05x) and floors at -2% (0.98x).
+  return 1.0 + quality * volume * 0.05;
+}
+
 // ── Yield protection adjustment ─────────────────────────────────────────────
 
 function applyYieldProtection(
@@ -518,6 +541,11 @@ export interface ChanceInputsModel {
   ecBand?: string;
   essayCA?: number | null;
   essayV?: number | null;
+  // AP scores feed a small academic-support multiplier. 8+ exams averaging
+  // 4.5+ get the full ~1.05x boost; lower averages or fewer exams scale down
+  // proportionally. Capped at 1.05x because APs are corroborating evidence
+  // for stat band, not a primary signal.
+  apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
   recruitedAthlete?: boolean;
   applicationPlan?: ApplicationPlan;
 }
@@ -576,9 +604,10 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   const ecMult = getEcBandMultiplier(args.ecBand?.toLowerCase());
   const essayCaMult = essayCommonAppMultiplier(args.essayCA ?? null);
   const essayVMult = essayVspiceMultiplier(args.essayV ?? null);
+  const apMult = apScoreMultiplier(args.apScores);
 
   // 10. Compute midpoint.
-  const rawMid = baseResult.rate * multiplier * ecMult * essayCaMult * essayVMult;
+  const rawMid = baseResult.rate * multiplier * ecMult * essayCaMult * essayVMult * apMult;
   const mid = clamp(rawMid, 0.5, 95);
 
   // 11. Confidence + band width.
@@ -698,6 +727,7 @@ export function classifyCollege(
   options?: {
     ecBand?: string;
     rigor?: "low" | "medium" | "high";
+    apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
     recruitedAthlete?: boolean;
     applicationPlan?: ApplicationPlan;
   },
@@ -721,6 +751,7 @@ export function classifyCollege(
     essayV,
     ecBand: options?.ecBand,
     rigor: options?.rigor,
+    apScores: options?.apScores,
     recruitedAthlete: options?.recruitedAthlete,
     applicationPlan: options?.applicationPlan,
   });
