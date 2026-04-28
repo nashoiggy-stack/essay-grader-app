@@ -7,7 +7,7 @@ import { Bookmark, ArrowRight, HelpCircle } from "lucide-react";
 import type { ClassifiedCollege, Classification } from "@/lib/college-types";
 import { CollegeCard } from "./CollegeCard";
 
-type SortKey = "acceptanceRate" | "fit" | "majorMatch";
+type SortKey = "acceptanceRate" | "chance" | "majorMatch";
 
 interface CollegeResultsProps {
   readonly results: ClassifiedCollege[];
@@ -31,8 +31,8 @@ interface CollegeResultsProps {
 }
 
 const SORT_OPTIONS: readonly { key: SortKey; label: string }[] = [
+  { key: "chance",         label: "Chance" },
   { key: "acceptanceRate", label: "Acceptance Rate" },
-  { key: "fit",            label: "Fit Score" },
   { key: "majorMatch",     label: "Major Match" },
 ];
 
@@ -42,6 +42,10 @@ const GROUPS: { key: Classification; label: string; color: string }[] = [
   { key: "target", label: "Target", color: "text-amber-400" },
   { key: "reach", label: "Reach", color: "text-orange-400" },
   { key: "unlikely", label: "Unlikely", color: "text-red-500" },
+  // 6th tier: when the model has no GPA + no test signal it returns
+  // "insufficient" rather than guessing a tier (Finding 4.9). No color
+  // coding — the card itself surfaces the prompt to complete the profile.
+  { key: "insufficient", label: "Insufficient Data", color: "text-zinc-400" },
 ];
 
 export const CollegeResults: React.FC<CollegeResultsProps> = ({
@@ -55,14 +59,16 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
   focusedFlatIndex = -1,
   onSortedChange,
 }) => {
-  const [sort, setSort] = useState<SortKey>("acceptanceRate");
+  const [sort, setSort] = useState<SortKey>("chance");
 
   // Memoize derived arrays — without this, every render produces a new
   // `visualOrder` reference, which invalidates the useEffect deps below
   // and triggers setKeyboardSlice → parent re-render → child re-render →
-  // infinite loop ("Maximum update depth exceeded").
+  // infinite loop ("Maximum update depth exceeded"). `results` is already
+  // sorted by chance midpoint in useCollegeFilter, so when sort === "chance"
+  // we can pass it through unchanged.
   const sorted = useMemo(
-    () => (sort === "acceptanceRate" ? results : sortedBy(sort)),
+    () => (sort === "chance" ? results : sortedBy(sort)),
     [sort, results, sortedBy],
   );
 
@@ -179,8 +185,8 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
           <button
             type="button"
             onClick={onShowGuide}
-            aria-label="What is the Fit Score? Open the full legend."
-            title="What is the Fit Score?"
+            aria-label="How are admission chances calculated? Open the full legend."
+            title="How are admission chances calculated?"
             className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
           >
             <HelpCircle className="w-3.5 h-3.5" />
