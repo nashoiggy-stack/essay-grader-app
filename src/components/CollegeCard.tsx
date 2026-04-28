@@ -12,7 +12,14 @@ const CLASS_COLORS = {
   target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target", ring: "ring-amber-500/25" },
   likely: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Likely", ring: "ring-blue-500/25" },
   safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety", ring: "ring-emerald-500/25" },
+  // Insufficient data: deliberately muted, no semantic color, no tier promise.
+  insufficient: { bg: "bg-zinc-500/5", border: "border-zinc-500/10", text: "text-zinc-400", label: "Insufficient Data", ring: "ring-zinc-500/15" },
 } as const;
+
+// Low-confidence muted variant — overrides tier color so the card visually
+// signals "we don't trust this number much". Applied when confidence === "low"
+// or when the chance was derived from a fallback (ED/EA estimate).
+const LOW_CONF_TEXT = "text-zinc-500";
 
 // Map EC spike categories to college tags for matching
 const SPIKE_TAG_MAP: Record<string, string[]> = {
@@ -55,8 +62,22 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   flatIndex,
   focused = false,
 }) => {
-  const { college: c, classification, reason, fitScore, majorMatch, matchReason } = item;
+  const {
+    college: c,
+    classification,
+    reason,
+    chance,
+    confidence,
+    yieldProtectedNote,
+    usedFallback,
+    stale,
+    recruitedAthletePathway,
+    majorMatch,
+    matchReason,
+  } = item;
   const colors = CLASS_COLORS[classification];
+  const isLowConf = confidence === "low" || usedFallback != null;
+  const chanceTextClass = isLowConf ? LOW_CONF_TEXT : colors.text;
 
   const spikeMatch = useMemo(() => {
     try {
@@ -126,12 +147,22 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               />
             </button>
           )}
-          {/* Fit Score — dominant visual anchor */}
+          {/* Admission chance — replaces the old FIT 80 number. Midpoint is
+              prominent; the low-high range underneath communicates uncertainty
+              without faking precision. Muted color when confidence is low or
+              the value comes from an ED/EA fallback. */}
           <div className="text-right">
-            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Fit</p>
-            <p className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${colors.text}`}>
-              {fitScore}
+            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Chance</p>
+            <p
+              className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${chanceTextClass}`}
+            >
+              {classification === "insufficient" ? "—" : `${chance.mid}%`}
             </p>
+            {classification !== "insufficient" && (
+              <p className="text-[10px] font-mono tabular-nums text-zinc-500 mt-0.5">
+                {chance.low}–{chance.high}%
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -146,6 +177,42 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         <MetaStat label="SAT" value={`${c.sat25}–${c.sat75}`} />
         <MetaStat label="ACT" value={`${c.act25}–${c.act75}`} />
       </div>
+
+      {/* ── Confidence + caveat badges ──────────────────────────── */}
+      {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {recruitedAthletePathway && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25">
+              Recruited athlete pathway
+            </span>
+          )}
+          {confidence === "low" && !recruitedAthletePathway && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              Low confidence
+            </span>
+          )}
+          {usedFallback === "ed" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              ED estimate based on overall trends
+            </span>
+          )}
+          {usedFallback === "ea" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              EA estimate based on overall trends
+            </span>
+          )}
+          {yieldProtectedNote && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              May consider demonstrated interest
+            </span>
+          )}
+          {stale && classification !== "insufficient" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              Data may be stale
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Reasoning (only if present) ─────────────────────────── */}
       {reason && (
