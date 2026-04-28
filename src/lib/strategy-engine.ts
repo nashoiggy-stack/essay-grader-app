@@ -395,14 +395,14 @@ export function analyzeSchoolListDistribution(
   p: StrategyProfile,
 ): SchoolListDistribution {
   const items = p.pinnedSchools;
-  const counts = { safety: 0, likely: 0, target: 0, reach: 0, unlikely: 0 };
+  const counts = { safety: 0, likely: 0, target: 0, reach: 0, unlikely: 0, insufficient: 0 };
   let acceptSum = 0;
-  let fitSum = 0;
+  let chanceSum = 0;
 
   for (const s of items) {
     counts[s.classified.classification]++;
     acceptSum += s.classified.college.acceptanceRate;
-    fitSum += s.classified.fitScore;
+    chanceSum += s.classified.chance.mid;
   }
 
   const total = items.length;
@@ -437,7 +437,7 @@ export function analyzeSchoolListDistribution(
     total,
     counts,
     averageAcceptanceRate: total > 0 ? Math.round(acceptSum / total) : 0,
-    averageFitScore: total > 0 ? Math.round(fitSum / total) : 0,
+    averageChance: total > 0 ? Math.round(chanceSum / total) : 0,
     warnings,
     balance,
   };
@@ -446,39 +446,60 @@ export function analyzeSchoolListDistribution(
 // ── Early application strategy ─────────────────────────────────────────────
 
 /**
- * For each pinned school, recommend the best application plan given:
- *   - the school's available options
- *   - the student's overall strength
- *   - the school's selectivity
+ * For each pinned school, recommend the best application plan.
  *
- * Conservative: ED is recommended for the student's single strongest-fit
- * reach where ED is available. EA is recommended for target-or-better schools
- * where it's offered. REA/SCEA only if the school offers no other early and
- * the fit is at least "target."
+ * Per Decision 2 (SPEC), the best ED candidate is the school where ED gives
+ * the LARGEST MARGINAL GAIN over RD (`edChance − rdChance`), not the school
+ * with the highest overall chance/fit. Binding ED can only be used once, so
+ * it should land where the model says it moves the needle the most.
+ *
+ * For schools without published edAdmitRate, the chance model already
+ * applies the conservative ED fallback (overall × 2.5) so the leverage math
+ * still produces a usable signal — just at lower confidence.
  */
 export function analyzeEarlyStrategy(
   p: StrategyProfile,
 ): readonly EarlyRecommendation[] {
   if (p.pinnedSchools.length === 0) return [];
 
-  // Sort pinned schools by fit score descending so the best fit gets ED priority
+  // Sort pinned schools by chance midpoint descending — overall presentation
+  // order in the strategy UI. ED candidate selection below uses leverage,
+  // not this order.
   const sorted = [...p.pinnedSchools].sort(
-    (a, b) => b.classified.fitScore - a.classified.fitScore,
+    (a, b) => b.classified.chance.mid - a.classified.chance.mid,
   );
 
-  // Find the single best ED candidate: highest fit school that is a reach
-  // (so the boost matters) and that offers ED/ED2, and where the student is
-  // at least "target" tier (not unlikely) — ED doesn't rescue unqualified
-  // applicants.
+  // Best ED candidate = max leverage (edChance − rdChance). Skip schools
+  // already classified "unlikely" or "insufficient" — ED doesn't rescue
+  // unqualified applicants and can't ground a recommendation without data.
+  const essayCA = p.essay?.summaryScore ?? null;
+  const essayV = p.essay?.vspice ?? null;
   let edCandidate: typeof sorted[number] | null = null;
+  let bestLeverage = 0;
   for (const s of sorted) {
     const options = getApplicationOptions(s.classified.college);
     const hasEd = options.some((o) => o.type === "ED" || o.type === "ED2");
     if (!hasEd) continue;
     if (s.classified.classification === "unlikely") continue;
-    if (s.classified.classification === "reach" || s.classified.classification === "target") {
+    if (s.classified.classification === "insufficient") continue;
+    // RD chance is already on the classified card (its plan defaulted to RD).
+    // ED chance: re-classify with applicationPlan: "ED".
+    const edResult = classifyCollege(
+      s.classified.college,
+      p.gpa.uw,
+      p.gpa.w,
+      p.tests.sat,
+      p.tests.act,
+      essayCA,
+      essayV,
+      { applicationPlan: types(options).includes("ED") ? "ED" : "ED2" },
+    );
+    const leverage = edResult.chance.mid - s.classified.chance.mid;
+    // Require the lift to be meaningful (>= 3 percentage points) so we
+    // don't recommend ED based on noise.
+    if (leverage > bestLeverage && leverage >= 3) {
+      bestLeverage = leverage;
       edCandidate = s;
-      break;
     }
   }
 
@@ -592,22 +613,32 @@ export function positioningVsTopSchools(
 
 // ── Major-aware recommendations ─────────────────────────────────────────────
 
+// Helper for analyzeEarlyStrategy — extracts plan types from options.
+function types(options: readonly { type: ApplicationPlan }[]): readonly ApplicationPlan[] {
+  return options.map((o) => o.type);
+}
+
 function classifyAll(p: StrategyProfile): ClassifiedCollege[] {
   const essayCA = p.essay?.summaryScore ?? null;
   const essayV = p.essay?.vspice ?? null;
   const query = { major: p.intendedMajor, interest: p.intendedInterest };
 
   return COLLEGES.map((c) => {
-    const { classification, reason, fitScore } = classifyCollege(
+    const result = classifyCollege(
       c, p.gpa.uw, p.gpa.w, p.tests.sat, p.tests.act, essayCA, essayV,
     );
     const fit = computeMajorFit(c, query);
     const matchReason = buildMatchReason(c, query, fit.signals);
     return {
       college: c,
-      classification,
-      reason,
-      fitScore,
+      classification: result.classification,
+      reason: result.reason,
+      chance: result.chance,
+      confidence: result.confidence,
+      yieldProtectedNote: result.yieldProtectedNote,
+      usedFallback: result.usedFallback,
+      stale: result.stale,
+      recruitedAthletePathway: result.recruitedAthletePathway,
       majorMatch: fit.match,
       majorFitScore: fit.score,
       matchReason,
@@ -623,14 +654,14 @@ function rankByMajorThenFit(a: ClassifiedCollege, b: ClassifiedCollege): number 
   const sa = a.majorFitScore ?? 0;
   const sb = b.majorFitScore ?? 0;
   if (sa !== sb) return sb - sa;
-  return b.fitScore - a.fitScore;
+  return b.chance.mid - a.chance.mid;
 }
 
 function bucketByTier(
   cs: readonly ClassifiedCollege[],
 ): Record<Classification, ClassifiedCollege[]> {
   const out: Record<Classification, ClassifiedCollege[]> = {
-    safety: [], likely: [], target: [], reach: [], unlikely: [],
+    safety: [], likely: [], target: [], reach: [], unlikely: [], insufficient: [],
   };
   for (const c of cs) out[c.classification].push(c);
   return out;

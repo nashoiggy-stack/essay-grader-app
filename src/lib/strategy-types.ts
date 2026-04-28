@@ -119,6 +119,7 @@ export interface SchoolListDistribution {
     readonly target: number;
     readonly reach: number;
     readonly unlikely: number;
+    readonly insufficient: number;
   };
   readonly averageAcceptanceRate: number;   // across pinned
   // Average chance midpoint across the pinned list (0-100). Replaces the old

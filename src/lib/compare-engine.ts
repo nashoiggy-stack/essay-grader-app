@@ -410,6 +410,7 @@ const FIT_LABELS: Record<Classification, string> = {
   target: "Target",
   reach: "Reach",
   unlikely: "Long Shot",
+  insufficient: "Insufficient Data",
 };
 
 const FIT_LABELS_INSUFFICIENT = "Insufficient Data";

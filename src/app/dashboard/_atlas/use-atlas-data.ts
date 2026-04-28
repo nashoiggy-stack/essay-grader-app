@@ -16,6 +16,7 @@ const DESIGN_TIER: Record<Classification, ShortlistEntry["tier"] | null> = {
   target: "target",
   likely: "likely",
   safety: "safety",
+  insufficient: null,
 };
 
 // O(1) lookup table — built once at module load instead of running
@@ -120,12 +121,12 @@ export function useAtlasData(): AtlasData {
 
     const medianChance = classified.length > 0
       ? Math.round(
-          [...classified].sort((a, b) => a.fitScore - b.fitScore)[
+          [...classified].sort((a, b) => a.chance.mid - b.chance.mid)[
             Math.floor(classified.length / 2)
-          ].fitScore,
+          ].chance.mid,
         )
       : 0;
-    const above50 = classified.filter((c) => c.fitScore >= 50).length;
+    const above50 = classified.filter((c) => c.chance.mid >= 50).length;
 
     const gpaW = profile.gpaW;
     const gpaUW = profile.gpaUW;
@@ -317,7 +318,7 @@ export function useAtlasData(): AtlasData {
         name: c.college.name,
         location: c.college.state,
         tier,
-        chance: Math.round(c.fitScore),
+        chance: c.chance.mid,
         plan,
         deadline: fmtDate(date, isRolling),
       });

@@ -61,6 +61,7 @@ const CLASSIFICATION_TEXT: Record<Classification, string> = {
   target: "text-amber-300",
   reach: "text-orange-300",
   unlikely: "text-red-300",
+  insufficient: "text-zinc-400",
 };
 
 export interface StrategyShareViewProps {

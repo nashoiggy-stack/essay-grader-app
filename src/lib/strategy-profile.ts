@@ -167,7 +167,7 @@ function buildPinnedSchools(
   for (const pin of pins) {
     const college = COLLEGES.find((c) => c.name === pin.name);
     if (!college) continue; // pinned a school that's no longer in the DB — skip
-    const { classification, reason, fitScore } = classifyCollege(
+    const r = classifyCollege(
       college,
       Number.isFinite(gpaUW ?? NaN) ? gpaUW : null,
       Number.isFinite(gpaW ?? NaN) ? gpaW : null,
@@ -178,9 +178,14 @@ function buildPinnedSchools(
     );
     const classified: ClassifiedCollege = {
       college,
-      classification,
-      reason,
-      fitScore,
+      classification: r.classification,
+      reason: r.reason,
+      chance: r.chance,
+      confidence: r.confidence,
+      yieldProtectedNote: r.yieldProtectedNote,
+      usedFallback: r.usedFallback,
+      stale: r.stale,
+      recruitedAthletePathway: r.recruitedAthletePathway,
     };
     result.push({ pin, classified });
   }
