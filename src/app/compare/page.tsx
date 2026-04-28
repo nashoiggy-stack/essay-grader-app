@@ -100,6 +100,7 @@ const FIT_COLORS: Record<Classification, { text: string; bg: string; ring: strin
   target: { text: "text-amber-300", bg: "bg-amber-500/10", ring: "ring-amber-500/25" },
   reach: { text: "text-orange-300", bg: "bg-orange-500/10", ring: "ring-orange-500/25" },
   unlikely: { text: "text-red-300", bg: "bg-red-500/10", ring: "ring-red-500/25" },
+  insufficient: { text: "text-zinc-400", bg: "bg-zinc-500/5", ring: "ring-zinc-500/15" },
 };
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -406,7 +407,7 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
                 {f.fitLabel}
               </span>
               <span className="text-[10px] font-mono tabular-nums text-zinc-500">
-                {f.fitScore}
+                {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
               </span>
             </div>
           </div>
@@ -571,8 +572,13 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
                   {f.fitLabel}
                 </span>
                 <span className="text-sm font-mono tabular-nums text-zinc-400">
-                  {f.fitScore}
+                  {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
                 </span>
+                {f.classification !== "insufficient" && (
+                  <span className="text-[10px] font-mono tabular-nums text-zinc-500">
+                    ({f.chance.low}–{f.chance.high}%)
+                  </span>
+                )}
               </div>
             </div>
             <p className="text-[13px] text-zinc-400 leading-relaxed">

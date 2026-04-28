@@ -412,6 +412,8 @@ const FIT_LABELS: Record<Classification, string> = {
   unlikely: "Long Shot",
 };
 
+const FIT_LABELS_INSUFFICIENT = "Insufficient Data";
+
 export function getCollegeFitSummary(
   college: College,
   profileData: {
@@ -423,7 +425,7 @@ export function getCollegeFitSummary(
     essayV: number | null;
   },
 ): CollegeFitSummary {
-  const { classification, reason, fitScore } = classifyCollege(
+  const { classification, reason, chance, confidence } = classifyCollege(
     college,
     profileData.gpaUW,
     profileData.gpaW,
@@ -436,9 +438,10 @@ export function getCollegeFitSummary(
   return {
     college,
     classification,
-    fitScore,
+    chance,
+    confidence,
     reason,
-    fitLabel: FIT_LABELS[classification],
+    fitLabel: classification === "insufficient" ? FIT_LABELS_INSUFFICIENT : FIT_LABELS[classification],
   };
 }
 
