@@ -94,6 +94,37 @@ export interface College {
   readonly regularDecisionAdmitRate?: number;     // 0-100, RD-only admit rate (CDS C1/C21 derived)
   readonly top10HSPercent?: number;               // 0-100, CDS-reported top 10% of HS class (CDS C11)
   readonly avgGPACDS?: number;                    // CDS-reported average HS GPA of enrolled freshmen (CDS C12)
+  // Trailing year of the source CDS academic year (e.g. "2024-2025" → 2025).
+  // Populated for CDS-sourced schools by the merge in src/data/colleges.ts.
+  // Used by the chance model to surface "data may be stale" when undefined
+  // or older than 2 academic cycles.
+  readonly dataYear?: number;
+
+  // ── Hook fields (W2) ──────────────────────────────────────────────────────
+  // Set in src/data/hook-multipliers.ts and merged by src/data/colleges.ts.
+  //
+  // - legacyConsidered: explicit `false` for schools that publicly state they
+  //   do not consider legacy (MIT, Caltech, all UCs, JHU, Amherst, Tufts).
+  //   Undefined = treat as legacy considered (the historical default at most
+  //   private US universities, though SFFA-era policy is still in flux).
+  //   The chance model gates any future legacy bump on this field.
+  // - yieldProtected: `true` for schools with documented yield-protective
+  //   admissions behavior (waitlisting over-qualified RD applicants, weighting
+  //   demonstrated interest). The chance model caps the top-quartile
+  //   multiplier at 1.0x for these schools; CollegeCard surfaces the note
+  //   "May consider demonstrated interest".
+  readonly legacyConsidered?: boolean;
+  readonly yieldProtected?: boolean;
+
+  // ── Program-specific admit rates (W4 structural — empty in Feature 1) ────
+  // When populated, the chance model surfaces low-confidence for users whose
+  // chosen major matches a known competitive program. Per-program data
+  // sourcing is its own workstream.
+  readonly programs?: readonly {
+    readonly name: string;
+    readonly acceptanceRate: number;
+    readonly year?: number;
+  }[];
 
   // Career / Outcomes — quantitative
   readonly topIndustries?: readonly string[];
@@ -262,7 +293,26 @@ export interface QualitativeClassifications {
   readonly intellectualClimate: IntellectualClimate;
 }
 
-export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety";
+// Six-tier classification. "insufficient" added (Finding 4.9) for the
+// no-metrics case so the chance model never fakes a tier when it has no
+// data to ground the call.
+export type Classification = "unlikely" | "reach" | "target" | "likely" | "safety" | "insufficient";
+
+// Confidence tier for a chance estimate. Three inputs feed it:
+//   1. Number of stat metrics provided (GPA, test, rigor)
+//   2. Whether profile data is reasonably complete (essay, EC band)
+//   3. Presence of any CDS field on the school (per SPEC W4)
+export type ConfidenceTier = "high" | "medium" | "low";
+
+// Chance range expresses uncertainty as an integer percent band. The
+// midpoint is what we display and rank by; the band width is what we use
+// to communicate "low confidence". Both ends are inclusive integer percents
+// in [0, 100].
+export interface ChanceRange {
+  readonly low: number;
+  readonly mid: number;
+  readonly high: number;
+}
 
 export type MajorMatchLevel = "strong" | "decent" | "none";
 
@@ -270,7 +320,28 @@ export interface ClassifiedCollege {
   readonly college: College;
   readonly classification: Classification;
   readonly reason: string;
-  readonly fitScore: number; // 0-100
+  // Replaces the 0-100 fitScore. Midpoint drives sort and tier assignment;
+  // low/high anchor the displayed range and the low-confidence visual band.
+  readonly chance: ChanceRange;
+  readonly confidence: ConfidenceTier;
+  // Set when the school is yield-protective AND the applicant is top-quartile
+  // in RD without a demonstrated-interest signal. Drives the CollegeCard
+  // "May consider demonstrated interest" note.
+  readonly yieldProtectedNote?: boolean;
+  // Set when the chance value was derived from a fallback (ED rate inferred
+  // from overall × 2.5; EA rate from overall × 1.15) rather than a published
+  // school-specific rate. Surfaces a "based on overall trends" badge.
+  readonly usedFallback?: "ed" | "ea" | null;
+  // Set when the school's data is older than 2 academic cycles (or missing).
+  // Drives the "data may be stale" note.
+  readonly stale?: boolean;
+  // Set when the recruited-athlete pathway fired. The chance/range represent
+  // the published 70-85% band, and the note overrides normal stat-band
+  // reasoning.
+  readonly recruitedAthletePathway?: boolean;
+  // Multiplier-stack trace for the "See the breakdown" panel on CollegeCard.
+  // Populated by computeAdmissionChance — see src/lib/admissions.ts.
+  readonly breakdown?: import("./admissions").ChanceBreakdown;
   // Set when the user has picked a major or interest. "strong" = this
   // school is known for it; "decent" = adjacent signal (career pipeline,
   // industry, or token overlap); "none" = no signal or no query.
@@ -298,16 +369,30 @@ export interface ClassifiedCollege {
   readonly bestMatchMajor?: string | null;
 }
 
-export type ChanceBand = "very-low" | "low" | "possible" | "competitive" | "strong";
-
+// /chances result shape — five-tier classification (plus "insufficient")
+// shared with /colleges and /strategy. The legacy ChanceBand enum
+// ("very-low" / "low" / "possible" / "competitive" / "strong") is removed
+// because absolute labels were misleading at high-selectivity schools
+// (12% chance at Yale read as "very low" even though it's 2-3x baseline).
+//
+// `breakdown` is the multiplier-stack trace and `whatIfs` are the recomputed
+// alt-scenarios. Both are emitted by computeAdmissionChance + computeWhatIfs
+// in src/lib/admissions.ts and rendered by src/components/BreakdownPanel.tsx.
+//
+// Imported as `unknown`-typed objects here to avoid a circular import; the
+// component imports the concrete types from admissions.ts directly.
 export interface ChanceResult {
-  readonly band: ChanceBand;
-  readonly bandLabel: string;
+  readonly classification: Classification;
+  readonly tierLabel: string;
+  readonly chance: ChanceRange;        // mid is what we display; low-high is the band
+  readonly baseAcceptanceRate: number; // school's overall AR — for "Nx typical" annotation
+  readonly multiple: number;           // chance.mid / baseAcceptanceRate; UI shows when ≥ 1.5
   readonly explanation: string;
   readonly strengths: string[];
   readonly weaknesses: string[];
-  readonly score: number; // internal 0-100
-  readonly confidence: "low" | "medium" | "high";
+  readonly confidence: ConfidenceTier;
+  readonly breakdown?: import("./admissions").ChanceBreakdown;
+  readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];
 }
 
 export interface CollegeFilters {

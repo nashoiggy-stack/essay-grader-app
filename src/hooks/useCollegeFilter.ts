@@ -270,6 +270,36 @@ export function useCollegeFilter() {
     const arMin = filters.acceptanceRateMin ? parseFloat(filters.acceptanceRateMin) : 0;
     const arMax = filters.acceptanceRateMax ? parseFloat(filters.acceptanceRateMax) : 100;
 
+    // Read EC band, rigor, AP scores, and distinguished-EC flags from profile
+    // so the chance model can apply their multipliers. Without this the model
+    // treats every applicant as EC-band "solid", rigor-neutral, AP-blank,
+    // which suppresses chances for strong-profile applicants.
+    let ecBand: string | undefined;
+    let rigor: "low" | "medium" | "high" | undefined;
+    let apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined;
+    let distinguishedEC = false;
+    try {
+      const rawProfile = localStorage.getItem("admitedge-profile");
+      if (rawProfile) {
+        const p = JSON.parse(rawProfile);
+        if (typeof p?.ecBand === "string" && p.ecBand) ecBand = p.ecBand;
+        if (p?.rigor === "low" || p?.rigor === "medium" || p?.rigor === "high") rigor = p.rigor;
+        if (Array.isArray(p?.apScores)) {
+          apScores = p.apScores
+            .filter((a: unknown): a is { score: 1 | 2 | 3 | 4 | 5 } =>
+              typeof a === "object" && a !== null && "score" in a &&
+              typeof (a as { score: unknown }).score === "number" &&
+              (a as { score: number }).score >= 1 && (a as { score: number }).score <= 5,
+            );
+        }
+        distinguishedEC =
+          p?.firstAuthorPublication === true ||
+          p?.nationalCompetitionPlacement === true ||
+          p?.founderWithUsers === true ||
+          p?.selectiveProgram === true;
+      }
+    } catch { /* ignore */ }
+
     // Major is now a *preference*, not a hard filter. Non-matching schools
     // stay in the list so users can discover unexpected fits — we just
     // attach a majorMatch level so the UI can badge strong ones.
@@ -284,7 +314,7 @@ export function useCollegeFilter() {
         return true;
       })
       .map((c) => {
-        const { classification, reason, fitScore } = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV);
+        const result = classifyCollege(c, gpaUW, gpaW, sat, act, essayCA, essayV, { ecBand, distinguishedEC, rigor, apScores });
         // Multi-input matcher: scores per active major + active interest,
         // returns max score, max level (OR), the per-entry breakdown for
         // the card UI, and a major-prefixed reason string.
@@ -296,9 +326,15 @@ export function useCollegeFilter() {
         });
         return {
           college: c,
-          classification,
-          reason,
-          fitScore,
+          classification: result.classification,
+          reason: result.reason,
+          chance: result.chance,
+          confidence: result.confidence,
+          yieldProtectedNote: result.yieldProtectedNote,
+          usedFallback: result.usedFallback,
+          stale: result.stale,
+          recruitedAthletePathway: result.recruitedAthletePathway,
+          breakdown: result.breakdown,
           majorMatch: multi.match,
           majorFitScore: multi.score,
           matchReason: multi.bestReason,
@@ -311,7 +347,8 @@ export function useCollegeFilter() {
           bestMatchMajor: multi.bestMatchName,
         };
       })
-      .sort((a, b) => a.college.acceptanceRate - b.college.acceptanceRate);
+      // Default sort: highest chance midpoint first (replaces fitScore-based sort).
+      .sort((a, b) => b.chance.mid - a.chance.mid);
   }, [filters, interestMap]);
 
   // Derive a single primary major and write it to profile.intendedMajor
@@ -379,17 +416,17 @@ export function useCollegeFilter() {
   }, [filters.activeMajors, filters.activeInterests]);
 
   const sortedBy = (
-    key: "acceptanceRate" | "fit" | "majorMatch" | "majorFitScore",
+    key: "acceptanceRate" | "chance" | "majorMatch" | "majorFitScore",
   ): ClassifiedCollege[] => {
-    if (key === "fit") return [...results].sort((a, b) => b.fitScore - a.fitScore);
+    if (key === "chance") return [...results].sort((a, b) => b.chance.mid - a.chance.mid);
     if (key === "majorFitScore") {
       // Raw graded score — smoother than the tier bucket. Break ties by
-      // academic fit so two same-score schools still order sensibly.
+      // chance midpoint so two same-score schools still order sensibly.
       return [...results].sort((a, b) => {
         const sa = a.majorFitScore ?? 0;
         const sb = b.majorFitScore ?? 0;
         if (sa !== sb) return sb - sa;
-        return b.fitScore - a.fitScore;
+        return b.chance.mid - a.chance.mid;
       });
     }
     if (key === "majorMatch") {
@@ -402,7 +439,7 @@ export function useCollegeFilter() {
         const sa = a.majorFitScore ?? 0;
         const sb = b.majorFitScore ?? 0;
         if (sa !== sb) return sb - sa;
-        return b.fitScore - a.fitScore;
+        return b.chance.mid - a.chance.mid;
       });
     }
     return results;

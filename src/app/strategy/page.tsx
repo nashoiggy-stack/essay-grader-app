@@ -786,6 +786,7 @@ const CLASSIFICATION_COLORS: Record<Classification, string> = {
   target: "bg-amber-500/70",
   reach: "bg-orange-500/70",
   unlikely: "bg-red-500/70",
+  insufficient: "bg-zinc-500/30",
 };
 
 const CLASSIFICATION_TEXT: Record<Classification, string> = {
@@ -794,6 +795,7 @@ const CLASSIFICATION_TEXT: Record<Classification, string> = {
   target: "text-amber-300",
   reach: "text-orange-300",
   unlikely: "text-red-300",
+  insufficient: "text-zinc-400",
 };
 
 function SchoolListBody({
@@ -1273,9 +1275,9 @@ function MajorRecommendationsBody({
 }
 
 // Phase 11 — read-only ranked transparency view of every pinned school.
-// Sorts by majorFitScore desc when a query is set; falls back to fitScore
-// otherwise. Renders inline (not a modal) for cleaner integration with the
-// existing collapsible StrategyCard.
+// Sorts by majorFitScore desc when a query is set; falls back to chance
+// midpoint otherwise. Renders inline (not a modal) for cleaner integration
+// with the existing collapsible StrategyCard.
 function RankedPinnedDisclosure({
   items,
   hasQuery,
@@ -1315,7 +1317,7 @@ function RankedPinnedDisclosure({
               <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold">
                 <span>School</span>
                 <span className="w-16 text-right">Tier</span>
-                <span className="w-12 text-right">Fit</span>
+                <span className="w-12 text-right">Chance</span>
                 <span className="w-16 text-right">Major fit</span>
               </div>
               {items.map((c) => (
@@ -1345,7 +1347,7 @@ function RankedPinnedRow({ item }: { item: ClassifiedCollege }) {
         {item.classification}
       </span>
       <span className="w-12 text-right text-[12px] font-mono tabular-nums text-zinc-300">
-        {item.fitScore}
+        {item.classification === "insufficient" ? "—" : `${item.chance.mid}%`}
       </span>
       <span className="w-16 text-right text-[12px] font-mono tabular-nums text-zinc-300">
         {item.majorFitScore != null ? item.majorFitScore : "—"}

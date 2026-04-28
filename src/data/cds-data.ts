@@ -75,6 +75,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
     data: {"acceptanceRate":10.3,"sat25":1480,"sat75":1540,"act25":32,"act75":35,"yield":40.4,"edAdmitRate":23.2,"avgGPACDS":3.84,"top10HSPercent":80,"pctTopTenClass":80,"studentFacultyRatio":8,"fourYearGradRate":80.9,"undergradPopulation":7407,"inStatePercent":18,"percentInternational":16.7,"demographics":{"white":29.6,"asian":24.8,"hispanic":11.9,"black":10.3,"multiracial":4.1,"international":16.7,"other":2.5},"genderBreakdown":{"male":43.2,"female":56.8}},
   },
+  "George Washington University": {
+    cdsYear: "2023-2024",
+    sourcePdfUrl: "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2023-2024_Updated.pdf",
+    data: {"acceptanceRate":43.5,"sat25":1360,"sat75":1480,"act25":31,"act75":34,"yield":21.5,"edAdmitRate":64,"top10HSPercent":47.9,"pctTopTenClass":47.9,"studentFacultyRatio":12,"fourYearGradRate":79.5,"undergradPopulation":11387,"inStatePercent":4,"percentInternational":7.3,"demographics":{"white":48.2,"asian":14.7,"hispanic":13,"black":8.1,"multiracial":5.4,"international":7.3,"other":2.3},"genderBreakdown":{"male":36.4,"female":63.6}},
+  },
   "Harvard University": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://bpb-us-e1.wpmucdn.com/sites.harvard.edu/dist/6/210/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
@@ -130,11 +135,6 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://irp.osu.edu/sites/default/files/documents/2026/03/CDS-2025-2026-OSU-Columbus-Campus.pdf",
     data: {"acceptanceRate":49.2,"sat25":1300,"sat75":1440,"act25":27,"act75":32,"yield":20.6,"top10HSPercent":73,"pctTopTenClass":73,"studentFacultyRatio":13,"fourYearGradRate":71.2,"undergradPopulation":46627,"inStatePercent":72,"percentInternational":7.1,"demographics":{"white":58,"asian":11.6,"hispanic":6.3,"black":8.5,"multiracial":5.1,"international":7.1,"other":3.4},"genderBreakdown":{"male":49.4,"female":50.6}},
   },
-  "Pepperdine University": {
-    cdsYear: "<UNKNOWN>",
-    sourcePdfUrl: "https://www.pepperdine.edu/oie/content/pdf/heoa_mandated-reporting.pdf",
-    data: {},
-  },
   "Princeton University": {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://ir.princeton.edu/sites/g/files/toruqf2041/files/documents/CDS_2526_Princeton_v1.3.pdf",
@@ -149,11 +149,6 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/Common-Data-Set-2025-2026.pdf",
     data: {"acceptanceRate":47.9,"sat25":1330,"sat75":1470,"act25":29,"act75":33,"yield":17.1,"edAdmitRate":76.4,"avgGPACDS":3.72,"top10HSPercent":47,"pctTopTenClass":47,"studentFacultyRatio":11,"fourYearGradRate":80.6,"undergradPopulation":6695,"inStatePercent":62,"percentInternational":7.1,"demographics":{"white":35.6,"asian":22.2,"hispanic":20.8,"black":3.1,"multiracial":9.3,"international":7.1,"other":1.9},"genderBreakdown":{"male":49.9,"female":50.1}},
-  },
-  "Southern Methodist University": {
-    cdsYear: "2025-2026",
-    sourcePdfUrl: "https://www.smu.edu/-/media/site/ir/orgcharts/2025-2026/fall-2025/president-org-chart-2025-26.pdf",
-    data: {},
   },
   "Stanford University": {
     cdsYear: "2025-2026",
@@ -189,11 +184,6 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://ir.ucsd.edu/stats/undergrad/CDS_2024-2025_Final1.pdf",
     data: {"acceptanceRate":28.6,"yield":20,"avgGPACDS":3.88,"top10HSPercent":100,"pctTopTenClass":100,"fourYearGradRate":74.2,"undergradPopulation":35442,"inStatePercent":91,"percentInternational":12.1,"demographics":{"white":16,"asian":34.6,"hispanic":26.8,"black":1.6,"multiracial":6.4,"international":12.1,"other":2.4},"genderBreakdown":{"male":44.5,"female":53.4}},
-  },
-  "UCLA": {
-    cdsYear: "2019-2020",
-    sourcePdfUrl: "https://apb.ucla.edu/portals/90/documents/campus-stats/cds_2019-20_section_h.pdf",
-    data: {},
   },
   "UNC Chapel Hill": {
     cdsYear: "2024-2025",

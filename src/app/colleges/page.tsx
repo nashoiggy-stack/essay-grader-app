@@ -15,11 +15,12 @@ import type { ClassifiedCollege } from "@/lib/college-types";
 const COLLEGE_SEARCH_INPUT_ID = "colleges-search-input";
 
 const TIERS = [
-  { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", fit: "80-95", description: "Your stats are well above average and the school has a higher acceptance rate. You're very likely to be admitted. Schools under 30% acceptance can never be a safety." },
-  { label: "Likely", color: "bg-blue-500", textColor: "text-blue-400", fit: "65-88", description: "Your stats are above the school's averages. Strong chance, but not guaranteed. Schools under 15% acceptance are capped at Target — no school that selective can be classified as Likely, even with perfect stats." },
-  { label: "Target", color: "bg-amber-500", textColor: "text-amber-400", fit: "40-75", description: "Your stats are within the school's typical range. This is realistic but competitive. Highly selective schools (under 15% acceptance, like Ivy League) are always classified here at best, even if your stats are strong — admissions at these schools are never predictable." },
-  { label: "Reach", color: "bg-orange-500", textColor: "text-orange-400", fit: "15-39", description: "Your stats are below the school's typical range. Admission is possible with strong essays, extracurriculars, and institutional fit." },
-  { label: "Unlikely", color: "bg-red-500", textColor: "text-red-500", fit: "5-14", description: "Stats are significantly below the school's range. Would require exceptional circumstances." },
+  { label: "Safety", color: "bg-emerald-500", textColor: "text-emerald-400", chance: "70%+", description: "Estimated chance of admission is 70% or higher. Your profile lines up well with the school's typical admit." },
+  { label: "Likely", color: "bg-blue-500", textColor: "text-blue-400", chance: "40–69%", description: "Estimated chance is 40–69%. A strong match but not guaranteed. Schools under 15% acceptance cannot classify here regardless of profile — top schools have institutional uncertainty (hooked-applicant slots, class composition needs) that prevents unhooked applicants from being 'likely'." },
+  { label: "Target", color: "bg-amber-500", textColor: "text-amber-400", chance: "20–39%", description: "Estimated chance is 20–39%. Realistic but competitive. Final outcomes depend on essays, recommendations, and demonstrated interest in addition to stats." },
+  { label: "Reach", color: "bg-orange-500", textColor: "text-orange-400", chance: "5–19%", description: "Estimated chance is 5–19%. Admission is possible with a strong qualitative profile. Schools with under 10% acceptance always cap here, even with elite stats — outcomes are not predictable at that selectivity." },
+  { label: "Unlikely", color: "bg-red-500", textColor: "text-red-500", chance: "<5%", description: "Estimated chance is below 5%. Would require exceptional circumstances. Elite-profile applicants (4.0 UW, 1540+ SAT or 35+ ACT, 6+ APs) never land here — the chance model floors at 'reach' for that profile." },
+  { label: "Insufficient Data", color: "bg-zinc-500", textColor: "text-zinc-400", chance: "—", description: "We don't have enough of your profile to ground a chance estimate. Add a GPA or test score to unlock per-school chances." },
 ];
 
 export default function CollegesPage() {
@@ -101,35 +102,50 @@ export default function CollegesPage() {
           </button>
         </motion.div>
 
-        {/* Guide — canonical legend for tiers + Fit Score. Opened by the
-            "What do these tiers mean?" button above AND by the "?" icon
-            next to the Fit Score sort control in CollegeResults. */}
+        {/* Always-visible disclaimer per SPEC W4 (UI honesty). The previous
+            disclaimer was buried inside the expander and most users never
+            read it; admissions estimates need a clear, upfront caveat. */}
+        <div className="mb-6 rounded-xl bg-amber-500/[0.04] border border-amber-500/[0.15] px-4 py-3">
+          <p className="text-[12px] text-amber-200/80 leading-relaxed">
+            <span className="font-semibold text-amber-200">Estimates only.</span>{" "}
+            Chance percentages are model-based and assume average essay quality for your stat band — strong
+            essays at high-selectivity schools can shift outcomes meaningfully and aren&apos;t in the math.
+            Recommendations, demonstrated interest, hooks, and institutional priorities also aren&apos;t modeled.
+            In-state public-school advantages (e.g. UF for Florida residents) are not modeled either —
+            non-residents will see realistic numbers, residents&apos; actual chances are higher.
+            Treat ranges, not midpoints, as the real signal. Sub-10% schools cap at &quot;Reach&quot; by design.
+          </p>
+        </div>
+
+        {/* Guide — canonical legend for tiers + chance estimates. Opened by
+            the "What do these tiers mean?" button above AND by the "?" icon
+            next to the Chance sort control in CollegeResults. */}
         <AnimatePresence>
           {showGuide && (
             <motion.div id="fit-score-guide" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-8">
               <div className="rounded-2xl bg-[#12121f] border border-white/[0.08] p-6">
-                <h3 className="text-sm font-bold text-zinc-200 mb-4">Classification Tiers & Fit Scores</h3>
+                <h3 className="text-sm font-bold text-zinc-200 mb-4">Classification Tiers & Chance Estimates</h3>
                 <div className="space-y-3 mb-6">
                   {TIERS.map((t) => (
                     <div key={t.label} className="flex items-start gap-3">
-                      <div className="flex items-center gap-2 shrink-0 w-24">
+                      <div className="flex items-center gap-2 shrink-0 w-32">
                         <span className={`w-2.5 h-2.5 rounded-full ${t.color}`} />
                         <span className={`text-sm font-semibold ${t.textColor}`}>{t.label}</span>
                       </div>
-                      <span className="text-xs text-zinc-600 font-mono shrink-0 w-12">{t.fit}</span>
+                      <span className="text-xs text-zinc-600 font-mono shrink-0 w-16">{t.chance}</span>
                       <p className="text-xs text-zinc-400 leading-relaxed">{t.description}</p>
                     </div>
                   ))}
                 </div>
                 <div className="border-t border-white/[0.06] pt-4">
-                  <h4 className="text-xs font-semibold text-zinc-300 mb-2">What is Fit Score?</h4>
+                  <h4 className="text-xs font-semibold text-zinc-300 mb-2">How are chances calculated?</h4>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    Fit Score (5&ndash;95) estimates how your profile lines up with each school&apos;s typical admit. It weighs your <span className="text-zinc-300">GPA</span> (unweighted and weighted) against the school&apos;s averages, your <span className="text-zinc-300">SAT/ACT</span> against its 25th&ndash;75th percentile range, and applies a small adjustment from your <span className="text-zinc-300">essay scores</span> if you&apos;ve graded them. Higher = stronger match.
+                    Each school&apos;s estimate starts from its <span className="text-zinc-300">published acceptance rate</span> (school-specific ED/EA rate when available, else a conservative fallback) and is scaled by where your <span className="text-zinc-300">GPA and test scores</span> sit relative to the school&apos;s 25th&ndash;75th percentile band. We use the <span className="text-zinc-300">weaker</span> of the two stats — uneven profiles don&apos;t get the high-stat benefit. EC band and essay scores apply small additional multipliers.
                   </p>
                   <p className="text-xs text-zinc-500 leading-relaxed mt-2">
-                    At highly selective schools (&lt;15% acceptance) the score is capped at 70, and at schools under 30% it&apos;s capped at 82 &mdash; admission there also depends on essays, recommendations, ECs, and demonstrated interest, which a score can&apos;t fully capture.
+                    The displayed range (e.g. &ldquo;8&ndash;14%&rdquo;) is the real signal — a wider range means lower confidence (test-optional with no test, missing CDS data, or sparse profile inputs). Yield-protective schools cap top-quartile applicants at 1.0&times; in RD; the &ldquo;may consider demonstrated interest&rdquo; note flags those.
                   </p>
-                  <p className="text-xs text-zinc-600 mt-2">A balanced list: 2-3 safeties/likelies, 3-5 targets, 2-3 reaches.</p>
+                  <p className="text-xs text-zinc-600 mt-2">A balanced list: 2&ndash;3 safeties/likelies, 3&ndash;5 targets, 2&ndash;3 reaches.</p>
                 </div>
               </div>
             </motion.div>

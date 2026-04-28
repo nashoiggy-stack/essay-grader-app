@@ -4,7 +4,7 @@
 // comparison signals, "best by category" picks, and decision insights.
 // No LLM calls — everything is derived from the College interface.
 
-import type { College, Classification, Tier3, ClassifiedCollege } from "./college-types";
+import type { College, Classification, Tier3, ChanceRange, ConfidenceTier } from "./college-types";
 import { classifyCollege } from "./admissions";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -25,7 +25,11 @@ export interface CategoryComparison {
 export interface CollegeFitSummary {
   readonly college: College;
   readonly classification: Classification;
-  readonly fitScore: number;
+  // Replaces fitScore. Midpoint drives ranking and display; the band width
+  // anchors the low-confidence visual treatment. The compare page renders
+  // chance.mid prominently with chance.low-chance.high underneath.
+  readonly chance: ChanceRange;
+  readonly confidence: ConfidenceTier;
   readonly reason: string;
   readonly fitLabel: string;
 }
@@ -406,7 +410,10 @@ const FIT_LABELS: Record<Classification, string> = {
   target: "Target",
   reach: "Reach",
   unlikely: "Long Shot",
+  insufficient: "Insufficient Data",
 };
+
+const FIT_LABELS_INSUFFICIENT = "Insufficient Data";
 
 export function getCollegeFitSummary(
   college: College,
@@ -419,7 +426,7 @@ export function getCollegeFitSummary(
     essayV: number | null;
   },
 ): CollegeFitSummary {
-  const { classification, reason, fitScore } = classifyCollege(
+  const { classification, reason, chance, confidence } = classifyCollege(
     college,
     profileData.gpaUW,
     profileData.gpaW,
@@ -432,9 +439,10 @@ export function getCollegeFitSummary(
   return {
     college,
     classification,
-    fitScore,
+    chance,
+    confidence,
     reason,
-    fitLabel: FIT_LABELS[classification],
+    fitLabel: classification === "insufficient" ? FIT_LABELS_INSUFFICIENT : FIT_LABELS[classification],
   };
 }
 

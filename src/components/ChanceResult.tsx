@@ -2,14 +2,18 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import type { ChanceResult, ChanceBand } from "@/lib/college-types";
+import type { ChanceResult, Classification } from "@/lib/college-types";
+import { BreakdownPanel } from "./BreakdownPanel";
 
-const BAND_STYLES: Record<ChanceBand, { bg: string; text: string; bar: string; glow: string }> = {
-  "very-low": { bg: "bg-red-500/10", text: "text-red-400", bar: "bg-red-500", glow: "shadow-red-500/20" },
-  low: { bg: "bg-orange-500/10", text: "text-orange-400", bar: "bg-orange-500", glow: "shadow-orange-500/20" },
-  possible: { bg: "bg-amber-500/10", text: "text-amber-400", bar: "bg-amber-500", glow: "shadow-amber-500/20" },
-  competitive: { bg: "bg-blue-500/10", text: "text-blue-400", bar: "bg-blue-500", glow: "shadow-blue-500/20" },
-  strong: { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+// Color coding mirrors /colleges CollegeCard so the same school produces the
+// same visual signal across surfaces. "Insufficient" is intentionally muted.
+const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string; glow: string }> = {
+  safety:       { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+  likely:       { bg: "bg-blue-500/10",    text: "text-blue-400",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
+  target:       { bg: "bg-amber-500/10",   text: "text-amber-400",   bar: "bg-amber-500",   glow: "shadow-amber-500/20" },
+  reach:        { bg: "bg-orange-500/10",  text: "text-orange-400",  bar: "bg-orange-500",  glow: "shadow-orange-500/20" },
+  unlikely:     { bg: "bg-red-500/10",     text: "text-red-500",     bar: "bg-red-500",     glow: "shadow-red-500/20" },
+  insufficient: { bg: "bg-zinc-500/5",     text: "text-zinc-400",    bar: "bg-zinc-500",    glow: "shadow-zinc-500/15" },
 };
 
 interface ChanceResultProps {
@@ -18,32 +22,42 @@ interface ChanceResultProps {
 }
 
 function buildHeadline(result: ChanceResult, collegeName: string): string {
-  const { band, strengths, weaknesses } = result;
+  const { classification, chance, multiple, strengths, weaknesses } = result;
   const strongPart = strengths.length > 0 ? strengths[0].split(" is ")[0] || strengths[0].split(" ")[0] : "your profile";
   const weakPart = weaknesses.length > 0 ? weaknesses[0].split(" is ")[0] || weaknesses[0].split(" ")[0] : null;
+  const multipleClause = multiple >= 1.5 ? ` — that's ${multiple.toFixed(1)}× the typical admit rate` : "";
 
-  switch (band) {
-    case "strong":
-      return `Your stats are strong for ${collegeName}. Focus on making your essays and ECs memorable.`;
-    case "competitive":
+  switch (classification) {
+    case "safety":
+      return `${collegeName} reads as a safety for your profile (${chance.mid}% chance${multipleClause}). Focus on essays and demonstrating fit.`;
+    case "likely":
       return weakPart
-        ? `You're in the competitive range — ${strongPart} helps, but ${weakPart} is the gap to close.`
-        : `You're in the competitive range for ${collegeName}. Strong essays and ECs can tip you in.`;
-    case "possible":
+        ? `${collegeName} is a likely match for your profile (${chance.mid}% chance${multipleClause}). ${strongPart} helps; ${weakPart} is the gap to close.`
+        : `${collegeName} is a likely match (${chance.mid}% chance${multipleClause}). Strong essays and ECs make this a real bet.`;
+    case "target":
       return weakPart
-        ? `This is a stretch. ${strongPart} is working for you, but ${weakPart} is holding you back.`
-        : `This is possible but a stretch. You'll need exceptional essays and ECs to stand out.`;
-    case "low":
-      return `Your stats are below the typical admitted range. Consider this a reach school.`;
-    case "very-low":
-      return `This school is a significant reach. Apply only if you have something truly unusual to offer.`;
+        ? `Target at ${collegeName} (${chance.mid}% chance${multipleClause}). ${strongPart} is working for you, but ${weakPart} is what to address.`
+        : `Target at ${collegeName} (${chance.mid}% chance${multipleClause}). Realistic but competitive — essays and ECs decide.`;
+    case "reach":
+      // Reach at high selectivity is genuinely good positioning when the
+      // multiple is high. Communicate that, not panic.
+      return multiple >= 1.5
+        ? `${collegeName} is a reach (${chance.mid}% chance), but you're well-positioned — ${multiple.toFixed(1)}× the typical admit rate. At this selectivity, variance dominates: essays, ECs, and demonstrated interest become decisive.`
+        : `${collegeName} is a reach (${chance.mid}% chance). At this selectivity, even strong profiles face uncertainty — essays, ECs, and demonstrated interest become decisive.`;
+    case "unlikely":
+      return `${collegeName} is unlikely on stats alone (${chance.mid}% chance). Would require something exceptional in essays, ECs, or hooks.`;
+    case "insufficient":
+      return `Add a GPA or test score to see a chance estimate for ${collegeName}.`;
   }
 }
 
 function buildNextStep(result: ChanceResult): string {
-  const { band, weaknesses } = result;
+  const { classification, weaknesses } = result;
+  if (classification === "insufficient") {
+    return "Run the GPA Calculator and add SAT or ACT scores in your profile.";
+  }
   if (weaknesses.length === 0) {
-    return band === "strong"
+    return classification === "safety"
       ? "Keep building your extracurricular spike and start essay drafts early."
       : "Your profile is balanced — focus on essay quality and demonstrating fit.";
   }
@@ -55,10 +69,16 @@ function buildNextStep(result: ChanceResult): string {
   return "Address the gap above first — it's your biggest lever.";
 }
 
+// Score-bar segments map to the new five-tier thresholds (5 / 20 / 40 / 70 /
+// 100). Width-weighted so the fill aligns with the labeled segment.
+const SEGMENT_TEMPLATE = "5fr 15fr 20fr 30fr 30fr"; // unlikely | reach | target | likely | safety
+
 export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, collegeName }) => {
-  const style = BAND_STYLES[result.band];
+  const style = TIER_STYLES[result.classification];
   const headline = buildHeadline(result, collegeName);
   const nextStep = buildNextStep(result);
+  const showMultiple = result.classification !== "insufficient" && result.multiple >= 1.5;
+  const tierUpper = result.tierLabel.toUpperCase();
 
   return (
     <motion.div
@@ -66,7 +86,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
       animate={{ opacity: 1, y: 0 }}
       className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06] space-y-6"
     >
-      {/* Band display */}
+      {/* Tier + percentage display */}
       <div className="text-center">
         <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">
           Your chances at {collegeName}
@@ -75,39 +95,53 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className={`inline-block px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
+          className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
         >
-          <span className={`text-2xl sm:text-3xl font-bold ${style.text}`}>
-            {result.bandLabel}
+          <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
+            {result.classification === "insufficient" ? "—" : `${result.chance.mid}%`}
+          </span>
+          <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.15em] ${style.text}`}>
+            {tierUpper}
+            {showMultiple && (
+              <span className="ml-1 text-zinc-400 font-normal normal-case tracking-normal">
+                ({result.multiple.toFixed(1)}× typical)
+              </span>
+            )}
           </span>
         </motion.div>
-        {result.confidence !== "high" && (
+        {result.confidence !== "high" && result.classification !== "insufficient" && (
           <p className="mt-2 text-xs text-zinc-600">
             {result.confidence === "low" ? "Low confidence — add GPA and test scores for a better estimate" : "Add more data for a more reliable estimate"}
           </p>
         )}
       </div>
 
-      {/* Score bar */}
-      <div>
-        <div className="flex justify-between text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5">
-          <span>Very Low</span>
-          <span>Low</span>
-          <span>Possible</span>
-          <span>Competitive</span>
-          <span>Strong</span>
+      {/* Tier bar — segments weighted by the actual classification thresholds
+          (unlikely <5, reach 5-19, target 20-39, likely 40-69, safety ≥70).
+          Fill clamps to bar width so the bar position visually matches the
+          tier label even at extreme values. */}
+      {result.classification !== "insufficient" && (
+        <div>
+          <div className="grid text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5"
+               style={{ gridTemplateColumns: SEGMENT_TEMPLATE }}>
+            <span className="text-left">Unlikely</span>
+            <span className="text-center">Reach</span>
+            <span className="text-center">Target</span>
+            <span className="text-center">Likely</span>
+            <span className="text-right">Safety</span>
+          </div>
+          <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full ${style.bar}`}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.max(2, result.chance.mid))}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            />
+          </div>
         </div>
-        <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${style.bar}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${result.score}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-        </div>
-      </div>
+      )}
 
-      {/* Headline narrative — the warm lead */}
+      {/* Headline narrative */}
       <div className="rounded-xl bg-[#12121f] border border-white/[0.08] p-5">
         <p className="text-[15px] text-zinc-100 leading-relaxed font-medium">
           {headline}
@@ -122,18 +156,21 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
         </div>
       </div>
 
-      {/* Technical explanation (secondary) */}
-      <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
-        <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
-          <span className="text-xs text-zinc-500 font-medium">See the breakdown</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </summary>
-        <div className="px-4 pb-4">
-          <p className="text-[13px] text-zinc-400 leading-relaxed">{result.explanation}</p>
-        </div>
-      </details>
+      {/* Multiplier breakdown + what-ifs (collapsible) */}
+      {result.breakdown && (
+        <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
+            <span className="text-xs text-zinc-500 font-medium">See the breakdown</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </summary>
+          <div className="px-4 pb-4 pt-1 space-y-4">
+            <p className="text-[12px] text-zinc-500 leading-relaxed">{result.explanation}</p>
+            <BreakdownPanel breakdown={result.breakdown} whatIfs={result.whatIfs} />
+          </div>
+        </details>
+      )}
 
       {/* Strengths & Weaknesses */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

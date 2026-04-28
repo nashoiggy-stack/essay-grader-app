@@ -2,17 +2,21 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { COLLEGES } from "@/data/colleges";
-import type { ChanceInputs, ChanceResult, ChanceBand } from "@/lib/college-types";
+import type { ChanceInputs, ChanceResult, Classification } from "@/lib/college-types";
 import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
-import {
-  compareGPA, compareTests, selectivityPenalty, majorAdjustment,
-  scoreToBand, BAND_LABELS, essayScoreAdjustment,
-  // UNDO [application-plan]: remove these two imports
-  applicationPlanAdjustment, defaultApplicationPlan,
-} from "@/lib/admissions";
+import { computeAdmissionChance, computeWhatIfs } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
+
+const TIER_LABELS: Record<Classification, string> = {
+  safety: "Safety",
+  likely: "Likely",
+  target: "Target",
+  reach: "Reach",
+  unlikely: "Unlikely",
+  insufficient: "Insufficient data",
+};
 
 export function useChanceCalculator() {
   const [inputs, setInputs] = useState<ChanceInputs>(EMPTY_CHANCE_INPUTS);
@@ -148,17 +152,16 @@ export function useChanceCalculator() {
 
   const college = inputs.collegeIndex !== null ? COLLEGES[inputs.collegeIndex] : null;
 
-  // UNDO [application-plan]: delete this effect. Without it, stale plans
-  // simply never rematch the new college's options and the helper falls back
-  // to RD, which is still safe — but the UX of the plan selector would be
-  // confusing.
+  // Plan-selector validity: when the user switches colleges, fall back to RD
+  // if the previously-selected plan isn't offered. RD is always a valid
+  // baseline so we don't need a per-college lookup.
   useEffect(() => {
     if (!college) return;
     const validPlans = (college.applicationOptions ?? [{ type: "RD" as const }]).map(
       (o) => o.type,
     );
     if (!validPlans.includes(inputs.applicationPlan)) {
-      setInputs((prev) => ({ ...prev, applicationPlan: defaultApplicationPlan(college) }));
+      setInputs((prev) => ({ ...prev, applicationPlan: "RD" }));
     }
   }, [college, inputs.applicationPlan]);
 
@@ -169,152 +172,190 @@ export function useChanceCalculator() {
     const gpaW = inputs.gpaW ? parseFloat(inputs.gpaW) : null;
     const sat = inputs.sat ? parseInt(inputs.sat) : null;
     const act = inputs.act ? parseInt(inputs.act) : null;
+    const essayCA = inputs.essayCommonApp ? parseFloat(inputs.essayCommonApp) : null;
+    const essayV = inputs.essayVspice ? parseFloat(inputs.essayVspice) : null;
 
-    let score = 50;
+    // Drive /chances off the same chance model that powers /colleges, /compare,
+    // /strategy, /dashboard. Inputs here include extras that the College List
+    // hook doesn't surface (per-school applicationPlan, AP support, ACT
+    // Science) — those are layered on top as small qualitative signals after
+    // the percentile-based midpoint.
+    // Distinguished EC flags live on the shared profile. Read them here so
+    // /chances reflects the same boost the College List does.
+    let distinguishedEC = false;
+    try {
+      const rawProfile = typeof window !== "undefined" ? localStorage.getItem("admitedge-profile") : null;
+      if (rawProfile) {
+        const p = JSON.parse(rawProfile);
+        distinguishedEC =
+          p?.firstAuthorPublication === true ||
+          p?.nationalCompetitionPlacement === true ||
+          p?.founderWithUsers === true ||
+          p?.selectiveProgram === true;
+      }
+    } catch { /* ignore */ }
+
+    const chanceArgs = {
+      college,
+      gpaUW,
+      gpaW,
+      sat,
+      act,
+      essayCA,
+      essayV,
+      ecBand: inputs.ecBand || undefined,
+      distinguishedEC,
+      rigor: inputs.rigor,
+      apScores: inputs.apScores,
+      applicationPlan: inputs.applicationPlan,
+    };
+    const r = computeAdmissionChance(chanceArgs);
+    const whatIfs = computeWhatIfs(chanceArgs, r);
+
     const strengths: string[] = [];
     const weaknesses: string[] = [];
 
-    // ── Academic fit ──
-    const gpaResult = compareGPA(gpaUW, gpaW, college.avgGPAUW, college.avgGPAW);
-    for (const s of gpaResult.signals) {
-      (s.delta >= 0 ? strengths : weaknesses).push(s.label);
-    }
-    score += gpaResult.delta * 10;
-
-    const testResult = compareTests(sat, act, college);
-    for (const s of testResult.signals) {
-      (s.delta >= 0 ? strengths : weaknesses).push(s.label);
-    }
-    score += testResult.delta * 10;
-
-    // Test-required penalty if no scores
-    if (sat === null && act === null && college.testPolicy === "required") {
-      score -= 5;
-      weaknesses.push("This school requires test scores — submitting a score would strengthen your application");
-    }
-
-    // ── Selectivity ──
-    const selResult = selectivityPenalty(college.acceptanceRate);
-    score += selResult.adjustment;
-    if (selResult.signal) {
-      (selResult.adjustment < 0 ? weaknesses : strengths).push(selResult.signal.label);
-    }
-
-    // ── Major ──
-    const majResult = majorAdjustment(inputs.major, college.competitiveMajors);
-    score += majResult.adjustment;
-    if (majResult.signal) weaknesses.push(majResult.signal.label);
-
-    // ── ACT Science (small optional boost, no penalty) ──
-    const actScience = inputs.actScience ? parseInt(inputs.actScience) : null;
-    if (actScience !== null && college.testPolicy !== "blind") {
-      // Only a boost if within or above range — no penalty for low/missing
-      const actMid = (college.act25 + college.act75) / 2;
-      if (actScience >= actMid) {
-        const boost = actScience >= college.act75 ? 2 : 1;
-        score += boost;
-        strengths.push(`ACT Science (${actScience}) is ${actScience >= college.act75 ? "above" : "within"} range — modest boost`);
+    // The chance model's `reason` already strings together the headline
+    // GPA + test + plan signals deterministically — split into sentence
+    // fragments so the legacy ChanceResultDisplay UI can list them.
+    // Split on ". " (period+space) so we don't break inside decimals like
+    // "4.00" or test ranges like "34-36".
+    if (r.reason) {
+      const parts = r.reason
+        .replace(/\.$/, "")
+        .split(". ")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      for (const part of parts) {
+        const lower = part.toLowerCase();
+        const sentence = part.endsWith(".") ? part : part + ".";
+        if (lower.includes("above") || lower.includes("within") || lower.includes("school-published")) {
+          strengths.push(sentence);
+        } else if (lower.includes("below") || lower.includes("widened") || lower.includes("based on overall trends")) {
+          weaknesses.push(sentence);
+        } else {
+          strengths.push(sentence);
+        }
       }
     }
 
-    // ── AP Scores (supporting academic evidence, max +6) ──
+    // Caveat flags from the chance model — surface as weaknesses so the user
+    // sees them prominently.
+    if (r.usedFallback === "ed") weaknesses.push("ED estimate based on overall trends, not school-specific data");
+    if (r.usedFallback === "ea") weaknesses.push("EA estimate based on overall trends, not school-specific data");
+    if (r.yieldProtectedNote) weaknesses.push("This school may consider demonstrated interest");
+    if (r.stale) weaknesses.push("Data for this school may be stale (older than 2 academic cycles)");
+
+    // ── EC band display (matches multiplier from chance model) ──
+    const EC_BAND_LABELS: Record<string, { label: string; positive: boolean }> = {
+      exceptional: { label: "Exceptional extracurriculars are a major strength", positive: true },
+      strong: { label: "Strong extracurriculars strengthen your application", positive: true },
+      solid: { label: "Solid extracurricular profile meets expectations", positive: true },
+      developing: { label: "Developing extracurriculars — deeper involvement would help", positive: false },
+      limited: { label: "Limited extracurriculars — consider building a meaningful commitment", positive: false },
+    };
+    if (inputs.ecBand && EC_BAND_LABELS[inputs.ecBand]) {
+      const ec = EC_BAND_LABELS[inputs.ecBand];
+      (ec.positive ? strengths : weaknesses).push(ec.label);
+    }
+
+    // ── Course rigor display ──
+    if (inputs.rigor === "high") strengths.push("Strong course rigor signals academic readiness");
+    else if (inputs.rigor === "low") weaknesses.push("Consider taking more challenging courses");
+
+    // ── Test-required penalty surfaces as a weakness note ──
+    if (sat === null && act === null && college.testPolicy === "required") {
+      weaknesses.push("This school requires test scores — submitting a score would strengthen your application");
+    }
+
+    // ── ACT Science (small qualitative note, no math impact) ──
+    const actScience = inputs.actScience ? parseInt(inputs.actScience) : null;
+    if (actScience !== null && college.testPolicy !== "blind") {
+      const actMid = (college.act25 + college.act75) / 2;
+      if (actScience >= actMid) {
+        strengths.push(`ACT Science (${actScience}) is ${actScience >= college.act75 ? "above" : "within"} range`);
+      }
+    }
+
+    // ── AP Scores (supporting academic evidence) ──
     if (inputs.apScores.length > 0) {
       const hasTests = sat !== null || act !== null;
       const apResult = computeApAcademicSupport(inputs.apScores, inputs.major, hasTests);
-      score += apResult.adjustment;
       for (const s of apResult.signals) {
         (s.delta >= 0 ? strengths : weaknesses).push(s.label);
       }
     }
 
-    // ── Holistic boosts (small) ──
-    if (inputs.rigor === "high") { score += 5; strengths.push("Strong course rigor signals academic readiness"); }
-    else if (inputs.rigor === "low") { score -= 5; weaknesses.push("Consider taking more challenging courses"); }
-
-    // ── EC band (5-level scale from EC Evaluator) ──
-    // Gradient: exceptional = best boost, limited = penalty. Unset = neutral.
-    const EC_BAND_ADJUSTMENT: Record<string, { delta: number; label: string }> = {
-      exceptional: { delta: 10, label: "Exceptional extracurriculars are a major strength" },
-      strong: { delta: 6, label: "Strong extracurriculars strengthen your application" },
-      solid: { delta: 2, label: "Solid extracurricular profile meets expectations" },
-      developing: { delta: -3, label: "Developing extracurriculars — deeper involvement would help" },
-      limited: { delta: -6, label: "Limited extracurriculars — consider building a meaningful commitment" },
-    };
-    if (inputs.ecBand && EC_BAND_ADJUSTMENT[inputs.ecBand]) {
-      const ec = EC_BAND_ADJUSTMENT[inputs.ecBand];
-      score += ec.delta;
-      (ec.delta >= 0 ? strengths : weaknesses).push(ec.label);
+    // ── Major (qualitative note, math already handled by chance model) ──
+    if (inputs.major && inputs.major !== "Any") {
+      const isCompetitive = (college.competitiveMajors ?? []).some(
+        (m) => m.toLowerCase() === inputs.major.toLowerCase(),
+      );
+      if (isCompetitive) {
+        weaknesses.push(`${inputs.major} is a competitive major at this school`);
+      }
     }
 
-    // ── Essay scores (real numbers from grader) ──
-    const essayCA = inputs.essayCommonApp ? parseFloat(inputs.essayCommonApp) : null;
-    const essayV = inputs.essayVspice ? parseFloat(inputs.essayVspice) : null;
-    const essayResult = essayScoreAdjustment(essayCA, essayV);
-    score += essayResult.adjustment;
-    for (const s of essayResult.signals) {
-      (s.delta >= 0 ? strengths : weaknesses).push(s.label);
-    }
-
-    // UNDO [application-plan]: remove this block. The plan adjustment is
-    // deliberately the LAST signal applied so the pre-plan score can gate it
-    // (weak-profile floor in the helper). Order matters here.
-    const preScore = score;
-    const planResult = applicationPlanAdjustment(
-      inputs.applicationPlan,
-      college.acceptanceRate,
-      preScore,
+    const baseAR = college.acceptanceRate;
+    const multiple = baseAR > 0 ? r.chance.mid / baseAR : 0;
+    const explanation = buildExplanation(
+      r.classification,
+      r.chance,
       college.name,
+      baseAR,
+      r.confidence,
     );
-    score += planResult.adjustment;
-    // Plan boosts are never negative by construction (see admissions.ts).
-    // A zero-delta signal (Rolling, or elite-capped weak profile) is still
-    // informational, so always push to strengths for display.
-    if (planResult.signal) {
-      strengths.push(planResult.signal.label);
-    }
-    // end UNDO [application-plan]
 
-    score = Math.max(5, Math.min(95, Math.round(score)));
-
-    // ── Confidence based on how many metrics were provided ──
-    const totalMetrics = gpaResult.metrics + testResult.metrics;
-    const confidence: "low" | "medium" | "high" =
-      totalMetrics >= 3 ? "high" : totalMetrics >= 1 ? "medium" : "low";
-
-    const band = scoreToBand(score);
-    const explanation = buildExplanation(band, college.name, college.acceptanceRate, confidence, strengths, weaknesses);
-
-    return { band, bandLabel: BAND_LABELS[band], explanation, strengths, weaknesses, score, confidence };
+    return {
+      classification: r.classification,
+      tierLabel: TIER_LABELS[r.classification],
+      chance: r.chance,
+      baseAcceptanceRate: baseAR,
+      multiple,
+      explanation,
+      strengths,
+      weaknesses,
+      confidence: r.confidence,
+      breakdown: r.breakdown,
+      whatIfs,
+    };
   }, [inputs, college]);
 
   return { inputs, updateInput, resetInputs, college, result, colleges: COLLEGES };
 }
 
 function buildExplanation(
-  band: ChanceBand,
+  classification: Classification,
+  chance: { low: number; mid: number; high: number },
   name: string,
   rate: number,
   confidence: "low" | "medium" | "high",
-  strengths: string[],
-  weaknesses: string[]
 ): string {
-  const prefix: Record<ChanceBand, string> = {
-    "very-low": `Admission to ${name} (${rate}% acceptance rate) would be very challenging based on your current profile.`,
-    low: `Getting into ${name} (${rate}% acceptance rate) is an uphill battle, but not impossible with the right application.`,
-    possible: `You have a reasonable shot at ${name} (${rate}% acceptance rate). Your profile has both strengths and areas to address.`,
-    competitive: `You're a competitive applicant for ${name} (${rate}% acceptance rate). Your profile aligns well with what they're looking for.`,
-    strong: `You're in a strong position for ${name} (${rate}% acceptance rate). Your stats are well above their typical admitted student.`,
-  };
+  if (classification === "insufficient") {
+    return `Insufficient data to estimate your chances at ${name}. Add a GPA or test score to see a percentile-based estimate.`;
+  }
 
-  const confidenceNote = confidence === "low"
-    ? " Note: limited data was provided, so this estimate is less certain."
-    : confidence === "medium"
-    ? " Adding more data (test scores, GPA) would make this estimate more reliable."
-    : "";
+  // Tier-based phrasing keyed on the new five-tier classification — never
+  // calls a high-multiple chance "very low" just because the absolute % is
+  // small. 12% at Yale is genuinely strong positioning at that selectivity.
+  const range = `${chance.low}–${chance.high}%`;
+  const lead =
+    classification === "safety"
+      ? `${name} reads as a safety for your profile. Estimated chance: ${chance.mid}% (range ${range}).`
+      : classification === "likely"
+      ? `${name} is a likely match for your profile. Estimated chance: ${chance.mid}% (range ${range}).`
+      : classification === "target"
+      ? `${name} sits in the target range for your profile. Estimated chance: ${chance.mid}% (range ${range}).`
+      : classification === "reach"
+      ? `${name} is a reach — at ${rate}% overall acceptance, variance dominates. Estimated chance: ${chance.mid}% (range ${range}).`
+      : `${name} is unlikely on stats alone. Estimated chance: ${chance.mid}% (range ${range}).`;
 
-  const advice = strengths.length > weaknesses.length
-    ? "Focus on making your application stand out through essays and extracurriculars."
-    : "Consider strengthening the areas flagged below to improve your chances.";
+  const confidenceNote =
+    confidence === "low"
+      ? " Limited data was provided — this estimate is uncertain. Add GPA, tests, EC band, and essay scores for a tighter range."
+      : confidence === "medium"
+      ? " Adding more data (test scores, EC band, essay scores) would tighten this range."
+      : "";
 
-  return `${prefix[band]} ${advice}${confidenceNote}`;
+  return `${lead}${confidenceNote}`;
 }

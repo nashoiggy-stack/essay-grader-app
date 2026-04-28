@@ -272,7 +272,14 @@ export function buildStrategyPrompt(
       name: s.classified.college.name,
       acceptanceRate: s.classified.college.acceptanceRate,
       classification: s.classified.classification,
-      fitScore: s.classified.fitScore,
+      // Replaces fitScore. The LLM should reason about admission probability
+      // (chance midpoint with low-high range), not a 0-100 fit number.
+      chance: {
+        mid: s.classified.chance.mid,
+        low: s.classified.chance.low,
+        high: s.classified.chance.high,
+      },
+      confidence: s.classified.confidence,
       reason: s.classified.reason,
     })),
     dreamSchool: profile.dreamSchool,

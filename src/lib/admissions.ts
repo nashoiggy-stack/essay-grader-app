@@ -1,10 +1,20 @@
 import type {
   College,
   Classification,
-  ChanceBand,
+  ChanceRange,
+  ConfidenceTier,
   ApplicationPlan,
   ApplicationOption,
 } from "./college-types";
+import {
+  getStatBandMultiplier,
+  getEcBandMultiplier,
+  applyCombinedDampener,
+  getChanceCap,
+  STAT_BAND_RANK,
+  type StatBand,
+} from "@/data/stat-band-multipliers";
+import { isYieldProtected } from "@/data/hook-multipliers";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -215,54 +225,747 @@ export function compareTests(
 
 // ── Selectivity ──────────────────────────────────────────────────────────────
 
-export function selectivityPenalty(acceptanceRate: number): { adjustment: number; signal: Signal | null } {
-  if (acceptanceRate <= 8) {
-    return {
-      adjustment: -15,
-      signal: { label: `This school is extremely selective (${acceptanceRate}% acceptance rate) — results remain uncertain even for strong applicants`, delta: -1.5 },
-    };
-  }
-  if (acceptanceRate <= 15) {
-    return {
-      adjustment: -10,
-      signal: { label: `Highly selective school (${acceptanceRate}% acceptance rate)`, delta: -1 },
-    };
-  }
-  if (acceptanceRate <= 25) {
-    return { adjustment: -5, signal: null };
-  }
-  if (acceptanceRate >= 65) {
-    return {
-      adjustment: 8,
-      signal: { label: `Higher acceptance rate (${acceptanceRate}%) works in your favor`, delta: 0.5 },
-    };
-  }
-  return { adjustment: 0, signal: null };
+// ── Chance model (Feature 1, W4) ────────────────────────────────────────────
+//
+// Implements the chance-based classification model described in
+// .planning/feat-admission-chances/SPEC.md. Replaces the rule-of-thumb
+// fitScore math with:
+//
+//   1. A base acceptance rate selected by application plan, with school-
+//      specific CDS rates preferred and conservative ED/EA fallbacks.
+//   2. A stat-band multiplier from src/data/stat-band-multipliers.ts that
+//      varies by the school's selectivity tier and where the applicant
+//      sits relative to the school's published 25th/75th percentile band.
+//   3. EC band and essay multipliers, both flagged rule-of-thumb until
+//      empirical sources are available.
+//   4. A recruited-athlete pathway that bypasses the stat math entirely.
+//   5. Yield protection that caps the top-quartile multiplier at 1.0x for
+//      documented yield-protective schools (W2 list).
+//   6. A confidence tier driven by stat coverage, profile completeness,
+//      and presence of CDS data, with the chance range widened
+//      proportionally so the band itself communicates uncertainty.
+//
+// Hard rules (per SPEC, do not relax in this file):
+//   - Sub-10% admit-rate schools cap at "reach" — no safety/likely/target
+//     can ever fire there regardless of stats.
+//   - GPA + test combine via min(), not average — uneven profiles do not
+//     get the high-stat benefit (SPEC Decision 3).
+//   - Test-blind schools (UC system) use GPA only.
+//   - Test-optional with no test submitted does NOT count as below-p25;
+//     the band uses GPA only and confidence drops.
+
+// ── Stat band determination ─────────────────────────────────────────────────
+
+// Five-band stat classification (final calibration spec).
+//   above-p75 / above-median / mid-range / below-median / below-p25
+//
+// Calibrated so the spec's elite profile (4.0 UW, 35 ACT, 1540 SAT) buckets
+// as above-p75 on every selective school's published distribution. GPA uses
+// absolute deltas because schools publish a mean only; tests scale slack
+// by the published 25-75 range so narrow ACT bands don't over-bucket.
+
+function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
+  if (gpaUW === null) return null;
+  const diff = gpaUW - schoolUW;
+  if (diff >= 0.05) return "above-p75";       // clearly above mean
+  if (diff >= 0.0) return "above-median";     // at or just above mean
+  if (diff >= -0.10) return "mid-range";      // tight band below mean
+  if (diff >= -0.25) return "below-median";   // below mean but in range
+  return "below-p25";
 }
 
-// ── Major Adjustment ─────────────────────────────────────────────────────────
+function testBand(score: number | null, p25: number, p75: number, isAct: boolean): StatBand | null {
+  if (score === null) return null;
+  const range = Math.max(p75 - p25, 1);
+  const median = (p25 + p75) / 2;
+  // Small floor on the upper-quartile slack so 1540 SAT at 1500-1560 reads
+  // as above-p75 (top end of typical admit). ACT slack is 0 — narrow ranges
+  // (e.g. 33-35) need exact matches.
+  const upperSlack = isAct ? 0 : Math.min(25, Math.round(range * 0.4));
+  const innerSlack = isAct ? 1 : Math.round(range * 0.4);
+  if (score >= p75 - upperSlack) return "above-p75";
+  if (score >= median) return "above-median";
+  if (score >= median - innerSlack) return "mid-range";
+  if (score >= p25 - innerSlack) return "below-median";
+  return "below-p25";
+}
 
-export function majorAdjustment(
-  major: string,
-  competitiveMajors: string[]
-): { adjustment: number; signal: Signal | null } {
-  if (!major || major === "Any") return { adjustment: 0, signal: null };
+function minBand(a: StatBand | null, b: StatBand | null): StatBand | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  return STAT_BAND_RANK[a] <= STAT_BAND_RANK[b] ? a : b;
+}
 
-  const isCompetitive = competitiveMajors.some(
-    (m) => m.toLowerCase() === major.toLowerCase()
-  );
+// ── Per-plan rate selection with fallbacks ──────────────────────────────────
 
-  if (isCompetitive) {
-    return {
-      adjustment: -4,
-      signal: { label: `${major} is a competitive major at this school — slightly harder to get in`, delta: -0.3 },
-    };
+interface BaseRateResult {
+  rate: number;            // 0-100
+  usedFallback: "ed" | "ea" | null;
+  planNote: string | null;
+}
+
+function getBaseRateForPlan(college: College, plan: ApplicationPlan): BaseRateResult {
+  const overall = college.acceptanceRate;
+  switch (plan) {
+    case "ED":
+    case "ED2": {
+      if (typeof college.edAdmitRate === "number") {
+        return { rate: college.edAdmitRate, usedFallback: null, planNote: "ED admit rate (school-published)" };
+      }
+      // Fallback: overall × 2.5 per Penn published data (CDS Class of 2028
+      // ED 14.22% vs RD 4.05% = 3.5x; Class of 2027 14.85% vs 5.78%; most
+      // ED schools cluster 2.5-3x). 2.5x is conservative.
+      const rate = Math.min(95, overall * 2.5);
+      return { rate, usedFallback: "ed", planNote: "ED estimate based on overall trends, not school-specific" };
+    }
+    case "REA":
+    case "SCEA": {
+      // The verified REA list (Stanford, Harvard, Yale, Princeton, Notre Dame)
+      // publishes either an REA admit rate explicitly or the early/regular
+      // split. Prefer eaAdmitRate when present; otherwise fall back at 1.5x
+      // overall (between EA's 1.15x and ED's 2.5x — REA's residual advantage
+      // sits between non-binding EA and binding ED).
+      if (typeof college.eaAdmitRate === "number") {
+        return { rate: college.eaAdmitRate, usedFallback: null, planNote: "REA/SCEA admit rate (school-published)" };
+      }
+      const rate = Math.min(95, overall * 1.5);
+      return { rate, usedFallback: "ea", planNote: "REA estimate based on overall trends" };
+    }
+    case "EA": {
+      if (typeof college.eaAdmitRate === "number") {
+        return { rate: college.eaAdmitRate, usedFallback: null, planNote: "EA admit rate (school-published)" };
+      }
+      // Fallback: overall × 1.15. EA boost varies widely (MIT EA ~1.5x,
+      // most schools don't publish split). 1.15x is a conservative midpoint
+      // of "small but real bump."
+      const rate = Math.min(95, overall * 1.15);
+      return { rate, usedFallback: "ea", planNote: "EA estimate based on overall trends, not school-specific" };
+    }
+    case "RD": {
+      if (typeof college.regularDecisionAdmitRate === "number") {
+        return { rate: college.regularDecisionAdmitRate, usedFallback: null, planNote: "RD admit rate (school-published)" };
+      }
+      return { rate: overall, usedFallback: null, planNote: null };
+    }
+    case "Rolling": {
+      return { rate: overall, usedFallback: null, planNote: "Rolling — applying early in cycle helps" };
+    }
+  }
+}
+
+// ── Confidence ──────────────────────────────────────────────────────────────
+
+interface ConfidenceInputs {
+  statMetrics: number;     // count of GPA + test metrics provided (0-2)
+  hasRigor: boolean;
+  hasEcOrEssay: boolean;
+  hasCds: boolean;
+}
+
+function computeConfidence(i: ConfidenceInputs): ConfidenceTier {
+  let score = 0;
+  if (i.statMetrics >= 2) score += 2;
+  else if (i.statMetrics === 1) score += 1;
+  if (i.hasRigor) score += 1;
+  if (i.hasEcOrEssay) score += 1;
+  if (i.hasCds) score += 1;
+  if (score >= 4) return "high";
+  if (score >= 2) return "medium";
+  return "low";
+}
+
+function bandWidthForConfidence(c: ConfidenceTier, testOptionalWiden: boolean): { lo: number; hi: number } {
+  // Multiplicative band around midpoint. Below 1.0 = lo factor, above = hi.
+  if (c === "high") return testOptionalWiden ? { lo: 0.78, hi: 1.22 } : { lo: 0.85, hi: 1.15 };
+  if (c === "medium") return testOptionalWiden ? { lo: 0.62, hi: 1.42 } : { lo: 0.70, hi: 1.30 };
+  return testOptionalWiden ? { lo: 0.45, hi: 1.65 } : { lo: 0.55, hi: 1.50 };
+}
+
+// ── Data freshness ──────────────────────────────────────────────────────────
+
+const STALE_YEAR_THRESHOLD = 2;
+const CURRENT_ACADEMIC_YEAR = 2026;
+
+function isStale(dataYear: number | undefined): boolean {
+  if (typeof dataYear !== "number") return true;
+  return CURRENT_ACADEMIC_YEAR - dataYear > STALE_YEAR_THRESHOLD;
+}
+
+// ── Recruited athlete pathway ───────────────────────────────────────────────
+//
+// Per SPEC and Harvard SFFA exhibits, recruited athletes are admitted at
+// roughly 70-85% across top schools regardless of academic profile. We
+// surface this as a special pathway that does NOT run through the normal
+// stat-band math.
+
+function recruitedAthletePathwayResult(
+  college: College,
+): {
+  classification: Classification;
+  reason: string;
+  chance: ChanceRange;
+  confidence: ConfidenceTier;
+  recruitedAthletePathway: true;
+} {
+  // Use 70-85% from RECRUITED_ATHLETE_BAND (data file).
+  const chance: ChanceRange = { low: 70, mid: 78, high: 85 };
+  // Sub-10% schools at the low end of the band cap at "likely" rather than
+  // safety because even recruited athletes face uncertainty at HYPS.
+  const classification: Classification = college.acceptanceRate <= 5 ? "likely" : "safety";
+  return {
+    classification,
+    reason:
+      "Recruited athlete pathway — typical admission ~70-85% at top schools regardless of " +
+      "academic profile. Contact coaches for school-specific likelihood. Estimate below " +
+      "the pathway is for non-recruited applicants.",
+    chance,
+    confidence: "high",
+    recruitedAthletePathway: true,
+  };
+}
+
+// ── AP score multiplier ─────────────────────────────────────────────────────
+//
+// AP scores are corroborating evidence for stat band, not a primary signal.
+// Capped contribution: ~1.05x ceiling for 8+ exams averaging 4.5+. Lower
+// counts and lower averages scale down proportionally. Reasonable signal
+// because empirical research (College Board AP/SAT briefs) shows AP success
+// correlates with admission probability at selective schools, but the
+// effect is small once GPA + test scores are controlled for — which the
+// stat-band multiplier already captures.
+
+function apScoreMultiplier(
+  apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined,
+): number {
+  if (!apScores || apScores.length === 0) return 1.0;
+  const avg = apScores.reduce((s, a) => s + a.score, 0) / apScores.length;
+  // Quality factor: 5.0 average → 1.0; 3.0 average → 0; below 3.0 → small drag.
+  const quality = Math.max(-0.4, Math.min(1.0, (avg - 3.0) / 2.0));
+  // Volume factor: 0 exams → 0; 8+ exams → 1.0.
+  const volume = Math.min(1.0, apScores.length / 8);
+  // Combined contribution caps at +5% (1.05x) and floors at -2% (0.98x).
+  return 1.0 + quality * volume * 0.05;
+}
+
+// ── Yield protection adjustment ─────────────────────────────────────────────
+
+function applyYieldProtection(
+  college: College,
+  band: StatBand | null,
+  baseMultiplier: number,
+  plan: ApplicationPlan,
+): { multiplier: number; note: boolean } {
+  const yieldFlag = college.yieldProtected === true || isYieldProtected(college.name);
+  if (!yieldFlag) return { multiplier: baseMultiplier, note: false };
+  // Yield protection only affects RD top-quartile applicants per SPEC.
+  if (plan !== "RD") return { multiplier: baseMultiplier, note: true };
+  if (band !== "above-p75") return { multiplier: baseMultiplier, note: true };
+  // Cap top-quartile multiplier at 1.0x; apply ~12% reduction to reflect
+  // waitlist risk for elite RD applicants without demonstrated interest.
+  const capped = Math.min(baseMultiplier, 1.0) * 0.88;
+  return { multiplier: capped, note: true };
+}
+
+// ── Insufficient-data path ──────────────────────────────────────────────────
+
+function insufficientDataResult(college: College): {
+  classification: Classification;
+  reason: string;
+  chance: ChanceRange;
+  confidence: ConfidenceTier;
+} {
+  const ar = college.acceptanceRate;
+  return {
+    classification: "insufficient",
+    reason: "Insufficient data — complete your profile to see a chance estimate for this school.",
+    chance: { low: Math.max(0.5, ar * 0.5), mid: ar, high: Math.min(95, ar * 1.5) },
+    confidence: "low",
+  };
+}
+
+// ── Main chance computation ─────────────────────────────────────────────────
+
+export interface ChanceInputsModel {
+  college: College;
+  gpaUW: number | null;
+  gpaW: number | null;
+  sat: number | null;
+  act: number | null;
+  rigor?: "low" | "medium" | "high";
+  ecBand?: string;
+  // True when any UserProfile distinguished-EC flag fires (first-author
+  // publication, national competition placement, founder with users, RSI/
+  // TASP-tier selective program admit). Forces effective EC band to
+  // "exceptional" regardless of profile.ecBand.
+  distinguishedEC?: boolean;
+  // Essay scores are display-only in the new chance model — no multiplier.
+  // Kept on the input shape so legacy callers still typecheck; ignored by
+  // the math.
+  essayCA?: number | null;
+  essayV?: number | null;
+  // AP scores feed a small academic-support multiplier. 8+ exams averaging
+  // 4.5+ get the full ~1.05x boost; lower averages or fewer exams scale down
+  // proportionally. Capped at 1.05x because APs are corroborating evidence
+  // for stat band, not a primary signal.
+  apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
+  recruitedAthlete?: boolean;
+  applicationPlan?: ApplicationPlan;
+}
+
+// Multiplier-stack trace returned alongside the chance result so the UI can
+// render an expandable "See the breakdown" panel showing how each layer
+// shifted the running chance.
+export interface BreakdownStep {
+  readonly label: string;          // e.g. "Stats (above-p75)"
+  readonly multiplier: number;     // 3.0
+  readonly runningChance: number;  // chance after this multiplier (clamped 0.5-95)
+  readonly note?: string;          // optional clarifying note (e.g. "Yield-protected: capped at 1.0×")
+}
+
+export interface ChanceBreakdown {
+  readonly baseRate: number;
+  readonly baseLabel: string;            // "Penn ED admit rate (school-published)"
+  readonly steps: readonly BreakdownStep[];
+  readonly cap: { value: number; applied: boolean; bracket: string };
+  readonly finalChance: number;
+}
+
+export interface ChanceResultModel {
+  readonly classification: Classification;
+  readonly reason: string;
+  readonly chance: ChanceRange;
+  readonly confidence: ConfidenceTier;
+  readonly yieldProtectedNote?: boolean;
+  readonly usedFallback?: "ed" | "ea" | null;
+  readonly stale?: boolean;
+  readonly recruitedAthletePathway?: boolean;
+  readonly breakdown?: ChanceBreakdown;
+  readonly statBand?: StatBand;          // exposed for what-if scenarios
+  readonly effectiveEcBand?: string;     // exposed for what-if scenarios
+}
+
+export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultModel {
+  const college = args.college;
+  const plan: ApplicationPlan = args.applicationPlan ?? "RD";
+
+  // 1. Recruited athlete pathway short-circuit.
+  if (args.recruitedAthlete === true) {
+    return recruitedAthletePathwayResult(college);
   }
 
-  return { adjustment: 0, signal: null };
+  // 2. Determine which stats we have. Test-blind schools and test-optional
+  //    with no test submitted both fall back to GPA-only with widened band.
+  const testBlind = college.testPolicy === "blind";
+  const testOptionalNoScore =
+    college.testPolicy === "optional" && args.sat === null && args.act === null;
+
+  // 3. Compute stat bands. Test-blind drops the test signal entirely.
+  const gBand = gpaBand(args.gpaUW, college.avgGPAUW);
+  const tBand = testBlind ? null : pickTestBand(args.sat, args.act, college);
+
+  // 4. Combine via min() per SPEC Decision 3 — uneven profiles don't get
+  //    the high-stat benefit.
+  const combinedBand = minBand(gBand, tBand);
+
+  // 5. Insufficient-data guard: no GPA AND no test (or test-blind with no
+  //    GPA) means we can't ground a stat-band.
+  if (combinedBand === null) {
+    return insufficientDataResult(college);
+  }
+
+  // 6. Per-plan base rate with fallbacks.
+  const baseResult = getBaseRateForPlan(college, plan);
+
+  // 7. Stat multiplier from the empirical band table (final calibration).
+  let multiplier = getStatBandMultiplier(combinedBand);
+
+  // 8. Yield protection cap.
+  const yp = applyYieldProtection(college, combinedBand, multiplier, plan);
+  multiplier = yp.multiplier;
+
+  // 9. EC multiplier (with distinguished-EC override boost to "exceptional").
+  // Essay does NOT contribute a multiplier per final spec — it surfaces only
+  // as advisory text in CollegeCard. essayScoreAdjustment in this file remains
+  // @deprecated for the legacy /chances pipeline.
+  const effectiveEcBand = args.distinguishedEC === true ? "exceptional" : args.ecBand?.toLowerCase();
+  const ecMult = getEcBandMultiplier(effectiveEcBand);
+
+  // 10. Combined dampener: stat × EC > 4.0 dampened. AP corroborates after.
+  const rawCombined = multiplier * ecMult;
+  const dampened = applyCombinedDampener(rawCombined);
+  const apMult = apScoreMultiplier(args.apScores);
+
+  // 11. Compute midpoint, then apply the final selectivity cap.
+  let rawMid = baseResult.rate * dampened * apMult;
+  const cap = getChanceCap(college.acceptanceRate);
+  const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
+  const capValue = isEdLikePlan ? cap.ed : cap.rd;
+  if (rawMid > capValue) rawMid = capValue;
+  const mid = clamp(rawMid, 0.5, 95);
+
+  // 12. Confidence + band width.
+  const statMetrics = (gBand ? 1 : 0) + (tBand ? 1 : 0);
+  const confidence = computeConfidence({
+    statMetrics,
+    hasRigor: !!args.rigor,
+    hasEcOrEssay: !!args.ecBand || args.essayCA != null || args.essayV != null || args.distinguishedEC === true,
+    hasCds: typeof college.dataYear === "number" || typeof college.edAdmitRate === "number" || typeof college.regularDecisionAdmitRate === "number",
+  });
+  const widthBand = bandWidthForConfidence(confidence, testOptionalNoScore);
+  const chance: ChanceRange = {
+    low: Math.round(clamp(mid * widthBand.lo, 0.5, 95)),
+    mid: Math.round(mid),
+    high: Math.round(clamp(mid * widthBand.hi, 0.5, 95)),
+  };
+
+  // 13. Classification from chance midpoint (final calibration thresholds).
+  //   safety  ≥ 70%
+  //   likely  40-69%   (locked out for sub-15% schools by the cap above)
+  //   target  20-39%
+  //   reach    5-19%
+  //   unlikely <5%
+  let classification = chanceMidpointToClassification(chance.mid);
+
+  // 14. Hard cliff at 10% admit: sub-10% schools cap at "reach" floor and
+  // ceiling. Variance dominates at that selectivity, "unlikely" is misleading,
+  // and the caps already prevent anything above target there.
+  if (college.acceptanceRate < 10 && classification !== "insufficient") {
+    classification = "reach";
+  }
+
+  // 15. Elite-profile floor: never produces "unlikely". Elite =
+  //   GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND ≥ 6 APs.
+  if (classification === "unlikely" && isEliteProfile(args)) {
+    classification = "reach";
+  }
+
+  // 14. Reason prose: surface signal labels deterministically.
+  const reasonParts: string[] = [];
+  if (gBand) reasonParts.push(gpaPhrase(args.gpaUW!, college.avgGPAUW, gBand));
+  if (tBand && !testBlind) reasonParts.push(testPhrase(args.sat, args.act, college, tBand));
+  if (testOptionalNoScore) reasonParts.push("Test-optional with no score submitted — band widened, test signal not used");
+  if (testBlind) reasonParts.push("Test-blind admissions — score not considered, GPA only");
+  if (baseResult.planNote) reasonParts.push(baseResult.planNote);
+  const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${college.acceptanceRate}% overall acceptance rate.`;
+
+  // Build the multiplier-stack trace. Steps show running chance after each
+  // layer so the UI can render an accumulating display.
+  const breakdown = buildBreakdown({
+    baseRate: baseResult.rate,
+    baseLabel: baseResult.planNote ?? `Overall acceptance rate (${college.acceptanceRate}%)`,
+    statBand: combinedBand,
+    statMultiplier: multiplier,
+    yieldProtected: yp.note,
+    rawStatMultiplier: getStatBandMultiplier(combinedBand),
+    ecBand: effectiveEcBand,
+    ecMultiplier: ecMult,
+    rawCombined,
+    dampened,
+    apMultiplier: apMult,
+    capValue,
+    capApplied: baseResult.rate * dampened * apMult > capValue,
+    capBracket: capBracketLabel(college.acceptanceRate, isEdLikePlan),
+    finalChance: chance.mid,
+  });
+
+  const result: ChanceResultModel = {
+    classification,
+    reason,
+    chance,
+    confidence,
+    yieldProtectedNote: yp.note ? true : undefined,
+    usedFallback: baseResult.usedFallback,
+    stale: isStale(college.dataYear) ? true : undefined,
+    breakdown,
+    statBand: combinedBand,
+    effectiveEcBand,
+  };
+  return result;
+}
+
+interface BuildBreakdownArgs {
+  baseRate: number;
+  baseLabel: string;
+  statBand: StatBand;
+  statMultiplier: number;       // post-yield-protection
+  rawStatMultiplier: number;    // pre-yield-protection (for display when capped)
+  yieldProtected: boolean;
+  ecBand: string | undefined;
+  ecMultiplier: number;
+  rawCombined: number;
+  dampened: number;
+  apMultiplier: number;
+  capValue: number;
+  capApplied: boolean;
+  capBracket: string;
+  finalChance: number;
+}
+
+function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
+  const steps: BreakdownStep[] = [];
+  let running = a.baseRate;
+
+  // Stats step
+  const yieldNote = a.yieldProtected && a.rawStatMultiplier !== a.statMultiplier
+    ? `Yield-protected: capped from ${a.rawStatMultiplier.toFixed(2)}× to ${a.statMultiplier.toFixed(2)}×`
+    : undefined;
+  running = clamp(running * a.statMultiplier, 0.5, 95);
+  steps.push({
+    label: `Stats (${prettyBand(a.statBand)})`,
+    multiplier: a.statMultiplier,
+    runningChance: round1(running),
+    note: yieldNote,
+  });
+
+  // EC step
+  running = clamp(running * a.ecMultiplier, 0.5, 95);
+  steps.push({
+    label: `ECs (${a.ecBand ? prettyEc(a.ecBand) : "default"})`,
+    multiplier: a.ecMultiplier,
+    runningChance: round1(running),
+  });
+
+  // Combined dampener (only show when it fired)
+  if (a.dampened !== a.rawCombined) {
+    const dampenerRatio = a.dampened / a.rawCombined;
+    // Re-derive the running chance after dampening: undo the EC step and
+    // replay using the dampened combined multiplier.
+    const baseAfterStat = clamp(a.baseRate * a.statMultiplier, 0.5, 95);
+    running = clamp(baseAfterStat * (a.dampened / a.statMultiplier), 0.5, 95);
+    steps.push({
+      label: "Combined dampener",
+      multiplier: dampenerRatio,
+      runningChance: round1(running),
+      note: `Stats × ECs = ${a.rawCombined.toFixed(2)}× exceeded 4.0× cap; dampened to ${a.dampened.toFixed(2)}×.`,
+    });
+  }
+
+  // AP step (only when it actually moves the number)
+  if (a.apMultiplier !== 1.0) {
+    running = clamp(running * a.apMultiplier, 0.5, 95);
+    steps.push({
+      label: "AP support",
+      multiplier: a.apMultiplier,
+      runningChance: round1(running),
+    });
+  }
+
+  // Cap step (only when it fired)
+  if (a.capApplied) {
+    steps.push({
+      label: `Selectivity cap (${a.capBracket})`,
+      multiplier: a.capValue / running,
+      runningChance: a.capValue,
+      note: `Capped at ${a.capValue}% — sub-15% schools cannot exceed target tier regardless of profile.`,
+    });
+  }
+
+  return {
+    baseRate: a.baseRate,
+    baseLabel: a.baseLabel,
+    steps,
+    cap: { value: a.capValue, applied: a.capApplied, bracket: a.capBracket },
+    finalChance: a.finalChance,
+  };
+}
+
+function prettyBand(band: StatBand): string {
+  return {
+    "above-p75": "above 75th percentile",
+    "above-median": "above median",
+    "mid-range": "around median",
+    "below-median": "below median",
+    "below-p25": "below 25th percentile",
+  }[band];
+}
+
+function prettyEc(ecBand: string): string {
+  const norm = ecBand.toLowerCase();
+  return {
+    limited: "limited",
+    developing: "developing",
+    solid: "solid",
+    strong: "strong",
+    exceptional: "exceptional",
+  }[norm] ?? norm;
+}
+
+function capBracketLabel(ar: number, edLike: boolean): string {
+  const round = edLike ? "ED" : "RD";
+  if (ar < 5)  return `${round}, <5% bracket`;
+  if (ar < 15) return `${round}, 5-15% bracket`;
+  if (ar < 25) return `${round}, 15-25% bracket`;
+  if (ar < 50) return `${round}, 25-50% bracket`;
+  return `${round}, ≥50% bracket`;
+}
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+// What-if scenarios — recompute chance with one input shifted. Returns at
+// most three scenarios (EC-down, stats-down, plan-flip). UI renders below
+// the breakdown stack.
+export interface WhatIfScenario {
+  readonly label: string;
+  readonly chance: number;
+  readonly classification: Classification;
+}
+
+const EC_LADDER: readonly string[] = ["limited", "developing", "solid", "strong", "exceptional"];
+const STAT_LADDER: readonly StatBand[] = ["below-p25", "below-median", "mid-range", "above-median", "above-p75"];
+
+export function computeWhatIfs(args: ChanceInputsModel, current: ChanceResultModel): readonly WhatIfScenario[] {
+  if (current.classification === "insufficient" || current.recruitedAthletePathway) return [];
+  const scenarios: WhatIfScenario[] = [];
+
+  // EC one tier down
+  const currentEc = current.effectiveEcBand ?? args.ecBand?.toLowerCase();
+  if (currentEc) {
+    const idx = EC_LADDER.indexOf(currentEc);
+    if (idx > 0) {
+      const downEc = EC_LADDER[idx - 1];
+      const r = computeAdmissionChance({
+        ...args,
+        ecBand: downEc,
+        distinguishedEC: false, // override the auto-boost so we genuinely model the lower tier
+      });
+      scenarios.push({
+        label: `If your ECs were '${downEc}' instead of '${currentEc}'`,
+        chance: r.chance.mid,
+        classification: r.classification,
+      });
+    }
+  }
+
+  // Stats one tier down — reduce GPA / test slightly to drop one band. Easier:
+  // re-classify by simulating a band override via input adjustment.
+  const currentStatBand = current.statBand;
+  if (currentStatBand) {
+    const idx = STAT_LADDER.indexOf(currentStatBand);
+    if (idx > 0) {
+      const downBand = STAT_LADDER[idx - 1];
+      // Build a synthetic input that lands in the lower band: nudge GPA down
+      // by 0.15 and test by ~10% of the school's range.
+      const college = args.college;
+      const adjustedGpa = args.gpaUW != null ? Math.max(2.0, args.gpaUW - 0.20) : null;
+      const testRange = college.sat75 - college.sat25;
+      const adjustedSat = args.sat != null ? Math.max(800, args.sat - Math.max(60, testRange)) : null;
+      const adjustedAct = args.act != null ? Math.max(15, args.act - 3) : null;
+      const r = computeAdmissionChance({
+        ...args,
+        gpaUW: adjustedGpa,
+        sat: adjustedSat,
+        act: adjustedAct,
+      });
+      scenarios.push({
+        label: `If your stats were '${prettyBand(downBand)}' instead`,
+        chance: r.chance.mid,
+        classification: r.classification,
+      });
+    }
+  }
+
+  // Plan flip — only when school offers both rounds.
+  const plan = args.applicationPlan ?? "RD";
+  const opts = getApplicationOptions(args.college).map((o) => o.type);
+  const isEd = plan === "ED" || plan === "ED2";
+  const isRd = plan === "RD";
+  if (isRd && opts.some((p) => p === "ED" || p === "ED2")) {
+    const targetPlan: ApplicationPlan = opts.includes("ED") ? "ED" : "ED2";
+    const r = computeAdmissionChance({ ...args, applicationPlan: targetPlan });
+    scenarios.push({
+      label: `If you applied ${targetPlan}`,
+      chance: r.chance.mid,
+      classification: r.classification,
+    });
+  } else if (isEd && opts.includes("RD")) {
+    const r = computeAdmissionChance({ ...args, applicationPlan: "RD" });
+    scenarios.push({
+      label: "If you applied RD",
+      chance: r.chance.mid,
+      classification: r.classification,
+    });
+  }
+
+  return scenarios;
+}
+
+function pickTestBand(sat: number | null, act: number | null, college: College): StatBand | null {
+  // Use the better signal on the SAT scale (concordance).
+  if (sat === null && act === null) return null;
+  if (sat !== null && act !== null) {
+    const actAsSat = actToSatEquivalent(act);
+    return actAsSat >= sat
+      ? testBand(act, college.act25, college.act75, true)
+      : testBand(sat, college.sat25, college.sat75, false);
+  }
+  if (sat !== null) return testBand(sat, college.sat25, college.sat75, false);
+  return testBand(act, college.act25, college.act75, true);
+}
+
+function chanceMidpointToClassification(mid: number): Classification {
+  // Final calibration thresholds (consolidates spec).
+  if (mid >= 70) return "safety";
+  if (mid >= 40) return "likely";
+  if (mid >= 20) return "target";
+  if (mid >= 5)  return "reach";
+  return "unlikely";
+}
+
+// Elite profile: GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND ≥ 6 APs.
+// When met, classification floors at "reach" — even data-driven sub-5%
+// chances become "reach" rather than "unlikely". Hooks the safety net for
+// ultra-selective schools where elite stats are real but variance is huge.
+function isEliteProfile(args: ChanceInputsModel): boolean {
+  if ((args.gpaUW ?? 0) < 3.95) return false;
+  const satOk = (args.sat ?? 0) >= 1540;
+  const actOk = (args.act ?? 0) >= 35;
+  if (!satOk && !actOk) return false;
+  const apCount = args.apScores?.length ?? 0;
+  return apCount >= 6;
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function gpaPhrase(userUW: number, schoolUW: number, band: StatBand): string {
+  const u = userUW.toFixed(2);
+  const s = schoolUW.toFixed(2);
+  switch (band) {
+    case "above-p75":    return `Your UW GPA (${u}) is above this school's typical range (avg ${s})`;
+    case "above-median": return `Your UW GPA (${u}) is above this school's average (${s}) but within range`;
+    case "mid-range":    return `Your UW GPA (${u}) is right around this school's average (${s})`;
+    case "below-median": return `Your UW GPA (${u}) is below this school's average (${s}) but still within range`;
+    case "below-p25":    return `Your UW GPA (${u}) is below this school's 25th percentile (avg ${s})`;
+  }
+}
+
+function testPhrase(sat: number | null, act: number | null, college: College, band: StatBand): string {
+  if (sat === null && act === null) return "";
+  const useAct = act !== null && (sat === null || actToSatEquivalent(act) >= sat);
+  const score = useAct ? act : sat;
+  const which = useAct ? "ACT" : "SAT";
+  const p25 = useAct ? college.act25 : college.sat25;
+  const p75 = useAct ? college.act75 : college.sat75;
+  const tail = useAct
+    ? (sat !== null ? " (used over SAT as stronger score)" : "")
+    : (act !== null ? " (used over ACT as stronger score)" : "");
+  switch (band) {
+    case "above-p75":    return `Your ${which} (${score}) is above the 75th percentile (${p75})${tail}`;
+    case "above-median": return `Your ${which} (${score}) is above the median for this school${tail}`;
+    case "mid-range":    return `Your ${which} (${score}) is around the median (${p25}-${p75})${tail}`;
+    case "below-median": return `Your ${which} (${score}) is below the median but in range (${p25}-${p75})${tail}`;
+    case "below-p25":    return `Your ${which} (${score}) is below the 25th percentile (${p25})${tail}`;
+  }
 }
 
 // ── Classification (for College List Builder) ────────────────────────────────
+//
+// Wrapper around computeAdmissionChance preserved for backwards compatibility
+// with existing call sites (compare-engine.ts, useCollegeFilter.ts,
+// strategy-engine.ts, strategy-profile.ts, dashboard atlas).
 
 export function classifyCollege(
   college: College,
@@ -271,285 +974,44 @@ export function classifyCollege(
   sat: number | null,
   act: number | null,
   essayCA: number | null = null,
-  essayV: number | null = null
-): { classification: Classification; reason: string; fitScore: number } {
-  const gpaResult = compareGPA(gpaUW, gpaW, college.avgGPAUW, college.avgGPAW);
-  const testResult = compareTests(sat, act, college);
-  const essayResult = essayScoreAdjustment(essayCA, essayV);
-
-  const allSignals = [...gpaResult.signals, ...testResult.signals, ...essayResult.signals];
-  const totalDelta = gpaResult.delta + testResult.delta;
-  const totalMetrics = gpaResult.metrics + testResult.metrics;
-
-  const avg = totalMetrics > 0 ? totalDelta / totalMetrics : 0;
-  let classification: Classification;
-  let fitScore: number;
-
-  // Essay adjustment applies as a small fitScore modifier (not classification-changing)
-  const essayBoost = essayResult.adjustment * 0.5; // dampen for classification purposes
-
-  // 5-tier classification: unlikely → reach → target → likely → safety
-  if (avg > 0.8 && college.acceptanceRate >= 40) {
-    // Safety: stats well above average AND school isn't too selective
-    classification = "safety";
-    fitScore = Math.min(95, 80 + avg * 10 + essayBoost);
-  } else if (avg > 0.4) {
-    // Likely: stats above average, good chance but not guaranteed
-    classification = "likely";
-    fitScore = Math.min(88, 65 + avg * 20 + essayBoost);
-  } else if (avg > -0.3) {
-    // Target: stats within range
-    classification = "target";
-    fitScore = Math.min(75, 50 + (avg + 0.3) * 35 + essayBoost);
-  } else if (avg > -0.8) {
-    // Reach: stats below range but not impossible
-    classification = "reach";
-    fitScore = Math.max(15, 35 + avg * 20 + essayBoost);
-  } else {
-    // Unlikely: stats well below range
-    classification = "unlikely";
-    fitScore = Math.max(5, 20 + avg * 10 + essayBoost);
-  }
-
-  // Highly selective schools (<15%) can never be safety — cap at likely
-  if ((classification === "safety" || classification === "likely") && college.acceptanceRate < 15) {
-    classification = "target";
-    fitScore = Math.min(fitScore, 70);
-  }
-
-  // Schools under 30% acceptance can't be safety — cap at likely
-  if (classification === "safety" && college.acceptanceRate < 30) {
-    classification = "likely";
-    fitScore = Math.min(fitScore, 82);
-  }
-
-  // No metrics → fall back to acceptance rate heuristic
-  if (totalMetrics === 0) {
-    if (college.acceptanceRate < 15) { classification = "reach"; fitScore = 25; }
-    else if (college.acceptanceRate < 30) { classification = "target"; fitScore = 45; }
-    else if (college.acceptanceRate < 55) { classification = "target"; fitScore = 55; }
-    else if (college.acceptanceRate < 75) { classification = "likely"; fitScore = 68; }
-    else { classification = "safety"; fitScore = 80; }
-  }
-
-  const reason = allSignals.length > 0
-    ? allSignals.map((s) => s.label).join(". ") + "."
-    : `Based on ${college.acceptanceRate}% acceptance rate.`;
-
-  return { classification, reason, fitScore: Math.round(fitScore) };
+  essayV: number | null = null,
+  options?: {
+    ecBand?: string;
+    distinguishedEC?: boolean;
+    rigor?: "low" | "medium" | "high";
+    apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
+    recruitedAthlete?: boolean;
+    applicationPlan?: ApplicationPlan;
+  },
+): ChanceResultModel {
+  return computeAdmissionChance({
+    college,
+    gpaUW,
+    gpaW,
+    sat,
+    act,
+    essayCA,
+    essayV,
+    ecBand: options?.ecBand,
+    distinguishedEC: options?.distinguishedEC,
+    rigor: options?.rigor,
+    apScores: options?.apScores,
+    recruitedAthlete: options?.recruitedAthlete,
+    applicationPlan: options?.applicationPlan,
+  });
 }
 
-// ── Chance Band ──────────────────────────────────────────────────────────────
-
-export const BAND_LABELS: Record<ChanceBand, string> = {
-  "very-low": "Very Low",
-  low: "Low",
-  possible: "Possible",
-  competitive: "Competitive",
-  strong: "Strong",
-};
-
-export function scoreToBand(score: number): ChanceBand {
-  if (score >= 75) return "strong";
-  if (score >= 60) return "competitive";
-  if (score >= 40) return "possible";
-  if (score >= 20) return "low";
-  return "very-low";
-}
-
-// ── Essay Score Adjustment ───────────────────────────────────────────────────
-
-export function essayScoreAdjustment(
-  commonAppScore: number | null, // 0-100
-  vspiceComposite: number | null // 0-24
-): { adjustment: number; signals: Signal[] } {
-  const signals: Signal[] = [];
-  let adjustment = 0;
-
-  if (commonAppScore === null && vspiceComposite === null) {
-    return { adjustment: 0, signals: [] };
-  }
-
-  // Common App score (0-100) — normalize to a -8 to +8 range
-  if (commonAppScore !== null) {
-    const normalized = (commonAppScore - 60) / 40; // 60 is "average", maps to 0
-    const boost = Math.max(-6, Math.min(6, normalized * 8));
-    adjustment += boost;
-
-    if (commonAppScore >= 80) {
-      signals.push({ label: `Strong Common App essay score (${commonAppScore}/100) — this strengthens your application`, delta: boost });
-    } else if (commonAppScore >= 65) {
-      signals.push({ label: `Solid Common App essay score (${commonAppScore}/100)`, delta: boost });
-    } else {
-      signals.push({ label: `Common App essay score (${commonAppScore}/100) has room for improvement`, delta: boost });
-    }
-  }
-
-  // VSPICE composite (0-24 scale: 6 dimensions × 4 pts + bonuses - pitfalls)
-  // Average is ~15 (6 × 2.5). Normalize to a -5 to +5 range.
-  if (vspiceComposite !== null) {
-    const normalized = (vspiceComposite - 15) / 9; // 15 is ~average, 24 is max
-    const boost = Math.max(-4, Math.min(4, normalized * 5));
-    adjustment += boost;
-
-    if (vspiceComposite >= 19) {
-      signals.push({ label: `Strong VSPICE score (${vspiceComposite}/24) — shows depth of character`, delta: boost });
-    } else if (vspiceComposite >= 14) {
-      signals.push({ label: `Solid VSPICE score (${vspiceComposite}/24)`, delta: boost });
-    } else {
-      signals.push({ label: `VSPICE score (${vspiceComposite}/24) could be strengthened`, delta: boost });
-    }
-  }
-
-  return { adjustment: Math.round(adjustment), signals };
-}
-
-// ── UNDO [application-plan] ─────────────────────────────────────────────────
-// Everything below this marker (getApplicationOptions, applicationPlanAdjustment)
-// is part of the application-plan feature. To revert, delete this block
-// entirely. Nothing above depends on these symbols.
-// ────────────────────────────────────────────────────────────────────────────
+// ── Application options helper ──────────────────────────────────────────────
+//
+// Used by /chances ChanceForm and the strategy engine to enumerate which
+// plans a school offers. The chance model itself takes applicationPlan as
+// an input rather than computing a default.
 
 const DEFAULT_APPLICATION_OPTIONS: readonly ApplicationOption[] = [{ type: "RD" }];
 
-/**
- * Normalize a college's application options. Colleges without the field fall
- * back to RD-only so callers never have to null-check, and UI always has
- * something to render.
- */
 export function getApplicationOptions(college: College): readonly ApplicationOption[] {
   if (college.applicationOptions && college.applicationOptions.length > 0) {
     return college.applicationOptions;
   }
   return DEFAULT_APPLICATION_OPTIONS;
 }
-
-/**
- * Return the default plan for a college when the user hasn't chosen one yet,
- * or when the current plan is no longer valid after a college switch.
- * Prefers RD; otherwise the first declared option.
- */
-export function defaultApplicationPlan(college: College): ApplicationPlan {
-  const opts = getApplicationOptions(college);
-  const rd = opts.find((o) => o.type === "RD");
-  return rd ? rd.type : opts[0].type;
-}
-
-/**
- * Fixed, hand-tuned per-plan boost table.
- *
- * IMPORTANT: These numbers are NOT derived from ED vs RD acceptance rate
- * differences. Early-round acceptance rates are misleading because the early
- * pool is loaded with athletes, legacies, recruited applicants, and
- * institutional priorities. Scaling a boost off that ratio would pretend the
- * model captures hooks it doesn't actually see.
- *
- * Instead, these values reflect the *residual* early advantage for otherwise
- * identical applicants, as reported in admissions research. They are:
- *
- *   - Small enough that no single plan can shift a profile more than one band
- *   - Strictly ordered: RD < EA < REA/SCEA < ED/ED2
- *   - Capped further at elite schools (acceptance rate ≤ 10%) because the
- *     plan advantage is demonstrably smaller the more selective the school
- *
- * Do NOT rescale these based on published ED acceptance rates.
- */
-const PLAN_BOOST_NON_ELITE: Record<ApplicationPlan, number> = {
-  RD: 0,
-  Rolling: 0,
-  EA: 1,
-  REA: 2,
-  SCEA: 2,
-  ED: 4,
-  ED2: 4,
-};
-
-const PLAN_BOOST_ELITE: Record<ApplicationPlan, number> = {
-  RD: 0,
-  Rolling: 0,
-  EA: 1,
-  REA: 2,
-  SCEA: 2,
-  ED: 3,
-  ED2: 3,
-};
-
-const ELITE_THRESHOLD = 10; // acceptance rate <= this counts as elite
-const WEAK_PROFILE_FLOOR = 30; // below this, no plan boost applies
-const MAX_PLAN_BOOST = 5; // absolute cap (bands are 15-20 pts wide)
-
-/**
- * Adjustment for the chosen application plan.
- *
- * Guardrails enforced here (all necessary — do not remove any individually):
- *
- *   1. Lookup-table boosts are strictly ordered EA ≤ REA/SCEA ≤ ED.
- *   2. Elite schools (≤10% acceptance) use a tighter table that caps ED at +3.
- *   3. Weak pre-plan profiles (<30) receive no boost. ED does not rescue
- *      unqualified applicants — binding commitment is not a bypass.
- *   4. Absolute cap of +5 on any boost. Bands are 15-20 points wide, so a 5
- *      point boost can shift at most one band.
- */
-export function applicationPlanAdjustment(
-  plan: ApplicationPlan,
-  acceptanceRate: number,
-  preScore: number,
-  collegeName: string,
-): { adjustment: number; signal: Signal | null } {
-  // RD and Rolling never contribute a numeric boost.
-  if (plan === "RD" || plan === "Rolling") {
-    if (plan === "Rolling") {
-      return {
-        adjustment: 0,
-        signal: {
-          label: `Rolling admissions at ${collegeName} — applying early in the cycle maximizes your timing advantage`,
-          delta: 0,
-        },
-      };
-    }
-    return { adjustment: 0, signal: null };
-  }
-
-  const isElite = acceptanceRate <= ELITE_THRESHOLD;
-  const table = isElite ? PLAN_BOOST_ELITE : PLAN_BOOST_NON_ELITE;
-  let boost = table[plan];
-
-  // Guardrail 3: weak profile floor.
-  if (preScore < WEAK_PROFILE_FLOOR) {
-    boost = 0;
-  }
-
-  // Guardrail 4: absolute cap.
-  boost = Math.min(MAX_PLAN_BOOST, Math.max(0, boost));
-
-  if (boost === 0) {
-    return { adjustment: 0, signal: null };
-  }
-
-  const label = buildApplicationPlanLabel(plan, isElite, collegeName);
-  return { adjustment: boost, signal: { label, delta: boost / 10 } };
-}
-
-function buildApplicationPlanLabel(
-  plan: ApplicationPlan,
-  isElite: boolean,
-  collegeName: string,
-): string {
-  const eliteNote = isElite
-    ? ` At ${collegeName}, application plan only modestly affects outcomes.`
-    : "";
-  switch (plan) {
-    case "EA":
-      return `Early Action may provide a slight timing advantage.${eliteNote}`;
-    case "REA":
-    case "SCEA":
-      return `Restrictive Early Action may provide a modest early-application advantage.${eliteNote}`;
-    case "ED":
-    case "ED2":
-      return `Binding Early Decision may provide a stronger advantage due to your commitment to attend.${eliteNote}`;
-    default:
-      return "";
-  }
-}
-
-// end UNDO [application-plan]

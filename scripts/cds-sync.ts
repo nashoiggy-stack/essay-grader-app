@@ -609,7 +609,16 @@ async function writeGeneratedFile(entries: Record<string, CDSEntry>): Promise<vo
     "export const CDS_DATA: Record<string, CDSEntry> = {",
   ];
 
-  const keys = Object.keys(entries).sort();
+  // Skip entries where Claude couldn't extract any usable fields from the
+  // source PDF (e.g. the auto-discoverer landed on a Section A-only PDF, an
+  // org chart, or a financial-aid section). Logging an empty data{} would
+  // create a false signal that the school has CDS coverage when it doesn't,
+  // and would also leak a stale dataYear into the College merge in
+  // src/data/colleges.ts. Better to omit the entry entirely so the College
+  // surface falls back to the hand-curated estimate.
+  const keys = Object.keys(entries)
+    .filter((name) => Object.keys(entries[name].data).length > 0)
+    .sort();
   for (const name of keys) {
     const entry = entries[name];
     lines.push(`  ${JSON.stringify(name)}: {`);

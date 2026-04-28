@@ -25,7 +25,7 @@ export interface ActionItem {
 export interface ShortlistEntry {
   readonly name: string;
   readonly location: string;
-  readonly tier: "reach" | "target" | "likely" | "safety";
+  readonly tier: "unlikely" | "reach" | "target" | "likely" | "safety";
   readonly chance: number;
   readonly plan: string;
   readonly deadline: string;

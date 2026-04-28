@@ -5,17 +5,18 @@ import { useProfile } from "@/hooks/useProfile";
 import { useCollegePins } from "@/hooks/useCollegePins";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
 import { COLLEGES } from "@/data/colleges";
-import { classifyCollege } from "@/lib/admissions";
+import { classifyCollege, getApplicationOptions } from "@/lib/admissions";
 import { computeDeadlines, DEADLINE_DATES } from "@/lib/deadlines";
 import type { ApplicationPlan, Classification, College } from "@/lib/college-types";
 import type { ActionItem, ShortlistEntry, ToolStatus } from "./types";
 
 const DESIGN_TIER: Record<Classification, ShortlistEntry["tier"] | null> = {
-  unlikely: "reach",
+  unlikely: "unlikely",
   reach: "reach",
   target: "target",
   likely: "likely",
   safety: "safety",
+  insufficient: null,
 };
 
 // O(1) lookup table — built once at module load instead of running
@@ -30,9 +31,18 @@ function fmtDate(d: Date | null, isRolling: boolean): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+// Pick a default application plan only from the plans the school actually
+// offers. The previous heuristic ("acceptanceRate < 20 → EA, else RD") was
+// wrong: Vanderbilt at 6% acceptance was getting "EA" even though Vanderbilt
+// only offers RD / ED / ED2. The chance calculator already enumerates the
+// real options via getApplicationOptions; the dashboard should match.
+//
+// Preference: RD when offered (always a valid baseline), otherwise the
+// first declared option.
 function defaultPlan(c: College): ApplicationPlan {
-  if (c.acceptanceRate < 20) return "EA";
-  return "RD";
+  const opts = getApplicationOptions(c);
+  const rd = opts.find((o) => o.type === "RD");
+  return rd ? rd.type : opts[0].type;
 }
 
 interface AtlasData {
@@ -100,15 +110,33 @@ export function useAtlasData(): AtlasData {
   const classifiedPins = useMemo(() => {
     const gpaUW = profile.gpaUW ? parseFloat(profile.gpaUW) : null;
     const gpaW = profile.gpaW ? parseFloat(profile.gpaW) : null;
+    const ecBand = profile.ecBand || undefined;
+    const rigor = profile.rigor;
+    const distinguishedEC =
+      profile.firstAuthorPublication === true ||
+      profile.nationalCompetitionPlacement === true ||
+      profile.founderWithUsers === true ||
+      profile.selectiveProgram === true;
     return pinned
       .map((pin) => {
         const college = COLLEGE_BY_NAME.get(pin.name);
         if (!college) return null;
-        const result = classifyCollege(college, gpaUW, gpaW, sat, act, essayN, vspiceN);
+        const result = classifyCollege(college, gpaUW, gpaW, sat, act, essayN, vspiceN, {
+          ecBand,
+          distinguishedEC,
+          rigor,
+          apScores: profile.apScores,
+        });
         return { pin, college, ...result };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
-  }, [pinned, profile.gpaUW, profile.gpaW, sat, act, essayN, vspiceN]);
+  }, [
+    pinned, profile.gpaUW, profile.gpaW, profile.ecBand, profile.rigor,
+    profile.apScores,
+    profile.firstAuthorPublication, profile.nationalCompetitionPlacement,
+    profile.founderWithUsers, profile.selectiveProgram,
+    sat, act, essayN, vspiceN,
+  ]);
 
   const tools = useMemo<ToolStatus[]>(() => {
     const pinCount = pinned.length;
@@ -120,12 +148,12 @@ export function useAtlasData(): AtlasData {
 
     const medianChance = classified.length > 0
       ? Math.round(
-          [...classified].sort((a, b) => a.fitScore - b.fitScore)[
+          [...classified].sort((a, b) => a.chance.mid - b.chance.mid)[
             Math.floor(classified.length / 2)
-          ].fitScore,
+          ].chance.mid,
         )
       : 0;
-    const above50 = classified.filter((c) => c.fitScore >= 50).length;
+    const above50 = classified.filter((c) => c.chance.mid >= 50).length;
 
     const gpaW = profile.gpaW;
     const gpaUW = profile.gpaUW;
@@ -317,7 +345,7 @@ export function useAtlasData(): AtlasData {
         name: c.college.name,
         location: c.college.state,
         tier,
-        chance: Math.round(c.fitScore),
+        chance: c.chance.mid,
         plan,
         deadline: fmtDate(date, isRolling),
       });

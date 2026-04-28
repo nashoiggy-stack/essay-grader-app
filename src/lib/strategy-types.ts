@@ -119,9 +119,12 @@ export interface SchoolListDistribution {
     readonly target: number;
     readonly reach: number;
     readonly unlikely: number;
+    readonly insufficient: number;
   };
   readonly averageAcceptanceRate: number;   // across pinned
-  readonly averageFitScore: number;
+  // Average chance midpoint across the pinned list (0-100). Replaces the old
+  // averageFitScore. Computed from ClassifiedCollege.chance.mid.
+  readonly averageChance: number;
   readonly warnings: readonly string[];     // "too reach-heavy", "no safeties", etc.
   readonly balance: "balanced" | "reach-heavy" | "safety-heavy" | "thin" | "empty";
 }
@@ -266,8 +269,10 @@ export interface DreamSchoolSection {
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
-// v4: DreamSchoolSection no longer carries whatWouldChangeThis — the
-// levers list is read from analysis.dreamSchool.leversToImprove. Old v3
-// cached results lacked the action/tone fields entirely. Both shapes are
-// invalidated by this bump.
-export const STRATEGY_CACHE_VERSION = "v4";
+// v5: Feature 1 chance-model rewrite — fitScore removed from
+// ClassifiedCollege, averageFitScore renamed to averageChance, classifyCollege
+// returns a ChanceRange + ConfidenceTier. v4 cached strategies will crash
+// without this bump because their pinned schools carry the old shape.
+// v4: DreamSchoolSection no longer carries whatWouldChangeThis. v3 lacked
+// action/tone fields. Both old shapes are invalidated by this bump.
+export const STRATEGY_CACHE_VERSION = "v5";

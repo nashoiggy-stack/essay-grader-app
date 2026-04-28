@@ -5,6 +5,8 @@ import { motion } from "motion/react";
 import { Bookmark, GraduationCap } from "lucide-react";
 import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
+import { hasProgramVariance } from "@/data/hook-multipliers";
+import { BreakdownPanel } from "./BreakdownPanel";
 
 const CLASS_COLORS = {
   unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
@@ -12,7 +14,14 @@ const CLASS_COLORS = {
   target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target", ring: "ring-amber-500/25" },
   likely: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Likely", ring: "ring-blue-500/25" },
   safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety", ring: "ring-emerald-500/25" },
+  // Insufficient data: deliberately muted, no semantic color, no tier promise.
+  insufficient: { bg: "bg-zinc-500/5", border: "border-zinc-500/10", text: "text-zinc-400", label: "Insufficient Data", ring: "ring-zinc-500/15" },
 } as const;
+
+// Low-confidence muted variant — overrides tier color so the card visually
+// signals "we don't trust this number much". Applied when confidence === "low"
+// or when the chance was derived from a fallback (ED/EA estimate).
+const LOW_CONF_TEXT = "text-zinc-500";
 
 // Map EC spike categories to college tags for matching
 const SPIKE_TAG_MAP: Record<string, string[]> = {
@@ -55,8 +64,23 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   flatIndex,
   focused = false,
 }) => {
-  const { college: c, classification, reason, fitScore, majorMatch, matchReason } = item;
+  const {
+    college: c,
+    classification,
+    reason,
+    chance,
+    confidence,
+    yieldProtectedNote,
+    usedFallback,
+    stale,
+    recruitedAthletePathway,
+    breakdown,
+    majorMatch,
+    matchReason,
+  } = item;
   const colors = CLASS_COLORS[classification];
+  const isLowConf = confidence === "low" || usedFallback != null;
+  const chanceTextClass = isLowConf ? LOW_CONF_TEXT : colors.text;
 
   const spikeMatch = useMemo(() => {
     try {
@@ -81,7 +105,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         focused ? "ring-2 ring-blue-500/30" : ""
       }`}
     >
-      {/* ── Header: Name + Fit Score dominant ──────────────────── */}
+      {/* ── Header: Name + chance dominant ─────────────────────── */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1.5">
@@ -102,7 +126,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           </p>
         </div>
 
-        {/* Right column: pin + fit score */}
+        {/* Right column: pin + chance estimate */}
         <div className="shrink-0 flex items-start gap-2">
           {onTogglePin && (
             <button
@@ -126,12 +150,22 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               />
             </button>
           )}
-          {/* Fit Score — dominant visual anchor */}
+          {/* Admission chance — replaces the old FIT 80 number. Midpoint is
+              prominent; the low-high range underneath communicates uncertainty
+              without faking precision. Muted color when confidence is low or
+              the value comes from an ED/EA fallback. */}
           <div className="text-right">
-            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Fit</p>
-            <p className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${colors.text}`}>
-              {fitScore}
+            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Chance</p>
+            <p
+              className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${chanceTextClass}`}
+            >
+              {classification === "insufficient" ? "—" : `${chance.mid}%`}
             </p>
+            {classification !== "insufficient" && (
+              <p className="text-[10px] font-mono tabular-nums text-zinc-500 mt-0.5">
+                {chance.low}–{chance.high}%
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -146,6 +180,64 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         <MetaStat label="SAT" value={`${c.sat25}–${c.sat75}`} />
         <MetaStat label="ACT" value={`${c.act25}–${c.act75}`} />
       </div>
+
+      {/* ── Essay advisory note (selective schools only) ──────────────
+          Essays don't contribute a multiplier in the chance model — they're
+          surfaced as advisory text per SPEC. Show only at high-selectivity
+          schools where strong essays can meaningfully shift outcomes. */}
+      {classification !== "insufficient" && c.acceptanceRate < 25 && (
+        <p className="mt-3 text-[11px] text-zinc-500 leading-snug">
+          Numbers assume average essay quality. Strong essays at this selectivity can shift chances meaningfully.
+        </p>
+      )}
+
+      {/* ── Program-specific variance note ─────────────────────────────
+          Schools where program admit rates differ meaningfully from school-
+          overall (Penn M&T, Cornell college splits, Berkeley CS/EECS, etc.)
+          The chance model uses school-overall always; this note flags that
+          a competitive program could shift things. Per-program data sourcing
+          is a separate workstream. */}
+      {classification !== "insufficient" && hasProgramVariance(c.name) && (
+        <p className="mt-2 text-[11px] text-zinc-500 leading-snug">
+          Some programs at this school may have admit rates that differ from the school overall.
+        </p>
+      )}
+
+      {/* ── Confidence + caveat badges ──────────────────────────── */}
+      {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {recruitedAthletePathway && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25">
+              Recruited athlete pathway
+            </span>
+          )}
+          {confidence === "low" && !recruitedAthletePathway && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              Low confidence
+            </span>
+          )}
+          {usedFallback === "ed" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              ED estimate based on overall trends
+            </span>
+          )}
+          {usedFallback === "ea" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              EA estimate based on overall trends
+            </span>
+          )}
+          {yieldProtectedNote && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              May consider demonstrated interest
+            </span>
+          )}
+          {stale && classification !== "insufficient" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              Data may be stale
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Reasoning (only if present) ─────────────────────────── */}
       {reason && (
@@ -171,6 +263,27 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
         <p className="mt-1 ml-[18px] text-[11px] text-zinc-500 leading-snug">
           {matchReason}
         </p>
+      )}
+
+      {/* ── Multiplier-stack breakdown (collapsible) ──────────────────────
+          Renders the same accumulating-chance trace shown on /chances. The
+          card-level expander is intentionally subtle — power users can
+          inspect the math without taking visual real estate from scanning
+          the list. What-if scenarios are intentionally scoped to /chances
+          (where the user has a single school selected) since rendering them
+          per-card would balloon visual footprint. */}
+      {breakdown && classification !== "insufficient" && (
+        <details className="group mt-4 pt-4 border-t border-white/[0.05]">
+          <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-open:rotate-180">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            See the breakdown
+          </summary>
+          <div className="mt-3">
+            <BreakdownPanel breakdown={breakdown} />
+          </div>
+        </details>
       )}
     </motion.div>
   );

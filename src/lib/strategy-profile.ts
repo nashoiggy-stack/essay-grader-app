@@ -162,12 +162,21 @@ function buildPinnedSchools(
     ? parseFloat(profile.essayCommonApp)
     : null;
   const essayV = profile?.essayVspice ? parseFloat(profile.essayVspice) : null;
+  // Pass EC band, rigor, and distinguished-EC flags to the chance model so
+  // strong-profile applicants don't get capped by silent defaults.
+  const ecBand = typeof profile?.ecBand === "string" && profile.ecBand ? profile.ecBand : undefined;
+  const rigor = profile?.rigor;
+  const distinguishedEC =
+    profile?.firstAuthorPublication === true ||
+    profile?.nationalCompetitionPlacement === true ||
+    profile?.founderWithUsers === true ||
+    profile?.selectiveProgram === true;
 
   const result: StrategyPinnedSchool[] = [];
   for (const pin of pins) {
     const college = COLLEGES.find((c) => c.name === pin.name);
     if (!college) continue; // pinned a school that's no longer in the DB — skip
-    const { classification, reason, fitScore } = classifyCollege(
+    const r = classifyCollege(
       college,
       Number.isFinite(gpaUW ?? NaN) ? gpaUW : null,
       Number.isFinite(gpaW ?? NaN) ? gpaW : null,
@@ -175,12 +184,18 @@ function buildPinnedSchools(
       Number.isFinite(act ?? NaN) ? act : null,
       Number.isFinite(essayCA ?? NaN) ? essayCA : null,
       Number.isFinite(essayV ?? NaN) ? essayV : null,
+      { ecBand, distinguishedEC, rigor, apScores: profile?.apScores },
     );
     const classified: ClassifiedCollege = {
       college,
-      classification,
-      reason,
-      fitScore,
+      classification: r.classification,
+      reason: r.reason,
+      chance: r.chance,
+      confidence: r.confidence,
+      yieldProtectedNote: r.yieldProtectedNote,
+      usedFallback: r.usedFallback,
+      stale: r.stale,
+      recruitedAthletePathway: r.recruitedAthletePathway,
     };
     result.push({ pin, classified });
   }
