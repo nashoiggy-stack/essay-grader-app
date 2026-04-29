@@ -21,6 +21,12 @@
  *
  * DE excluded — wide variance in rigor and reporting.
  *
+ * AI refinement: the W/UW ratio feeds in as a corroborating signal alongside
+ * AP/IB scores. When a student has compounded weighting bonuses through
+ * advanced coursework, ratio ≥1.20 reads "strong" and can promote rigor
+ * tier by one band. Provides a non-zero rigor signal for students who
+ * haven't entered AP scores yet but whose weighted GPA reflects rigor.
+ *
  * Mark: rule-of-thumb. Pending W3 empirical research on per-tier admit-rate
  * differentiation. Reasoning is sourced to common counselor intuition that
  * (a) consistency matters as much as ceiling — 8 fives reads stronger than
@@ -28,6 +34,7 @@
  * AP at the top of the curve.
  */
 import type { AdvancedCourseworkRow } from "./profile-types";
+import type { WuwSignal } from "./academic-index";
 
 export type RigorTier = "top" | "high" | "solid" | "mixed" | "weak" | "none";
 
@@ -56,9 +63,27 @@ function classifyRow(row: AdvancedCourseworkRow): Equivalent {
   return null;
 }
 
+const RIGOR_RANK: Record<RigorTier, number> = {
+  none: 0,
+  weak: 1,
+  mixed: 2,
+  solid: 3,
+  high: 4,
+  top: 5,
+};
+const RIGOR_BY_RANK: Record<number, RigorTier> = {
+  0: "none",
+  1: "weak",
+  2: "mixed",
+  3: "solid",
+  4: "high",
+  5: "top",
+};
+
 export function classifyRigor(
   coursework: readonly AdvancedCourseworkRow[] | undefined,
   available: "all" | "limited" | "none" | undefined,
+  wuwSignal: WuwSignal = null,
 ): RigorTier {
   if (available === "none") return "none";
   const rows = coursework ?? [];
@@ -66,7 +91,14 @@ export function classifyRigor(
     .map((r) => classifyRow(r))
     .filter((e): e is Exclude<Equivalent, null> => e !== null);
 
-  if (scored.length === 0) return "none";
+  // No scored coursework: fall back on W/UW ratio when available. A 'strong'
+  // ratio (≥1.20) without entered AP scores reads as 'mixed' rigor — enough
+  // to corroborate but not enough to promote to 'solid' without scores.
+  if (scored.length === 0) {
+    if (wuwSignal === "strong") return "mixed";
+    if (wuwSignal === "solid") return "weak";
+    return "none";
+  }
 
   const fives = scored.filter((e) => e === "5-eq").length;
   const fours = scored.filter((e) => e === "4-eq").length;
@@ -79,23 +111,28 @@ export function classifyRigor(
   const threesAndBelow = threes + lows;
 
   // top: ≥6 fives AND ≥75% of all scores are fives.
-  if (fives >= 6 && fivesPct >= 0.75) return "top";
-
+  let tier: RigorTier;
+  if (fives >= 6 && fivesPct >= 0.75) tier = "top";
   // high: ≥4 fives AND majority fives (>50%).
-  if (fives >= 4 && fivesPct > 0.5) return "high";
-
+  else if (fives >= 4 && fivesPct > 0.5) tier = "high";
   // solid: ≥4 advanced courses AND majority 4-or-5.
-  if (total >= 4 && fivesAndFoursPct > 0.5) return "solid";
-
+  else if (total >= 4 && fivesAndFoursPct > 0.5) tier = "solid";
   // mixed: threes present AND 4s+5s are majority.
-  if (threes >= 1 && fivesAndFoursPct > 0.5) return "mixed";
-
+  else if (threes >= 1 && fivesAndFoursPct > 0.5) tier = "mixed";
   // weak: majority 3-or-below.
-  if (threesAndBelow / total >= 0.5) return "weak";
-
+  else if (threesAndBelow / total >= 0.5) tier = "weak";
   // Fallback: small sample, ambiguous. Treat as mixed when at least one
   // 4-or-5 exists, otherwise weak.
-  return fives + fours > 0 ? "mixed" : "weak";
+  else tier = fives + fours > 0 ? "mixed" : "weak";
+
+  // W/UW ratio refinement: a strong ratio (≥1.20) promotes rigor by one
+  // band when it'd otherwise be tied (e.g. 'solid' → 'high' when AP scores
+  // are mostly 4s but the student's weighted GPA confirms heavy advanced
+  // coursework load). Capped so it can't elevate weak-foundation profiles.
+  if (wuwSignal === "strong" && tier !== "top" && tier !== "weak") {
+    return RIGOR_BY_RANK[RIGOR_RANK[tier] + 1];
+  }
+  return tier;
 }
 
 // Maps the 6-tier rigor classification to a coarse signal used by the

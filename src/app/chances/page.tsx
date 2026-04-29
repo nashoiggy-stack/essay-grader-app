@@ -34,10 +34,16 @@ export default function ChancesPage() {
         <div className="mb-8 rounded-xl bg-amber-500/[0.04] border border-amber-500/[0.15] px-4 py-3">
           <p className="text-[12px] text-amber-200/80 leading-relaxed">
             <span className="font-semibold text-amber-200">Estimates only.</span>{" "}
-            Chance estimates use data-informed multipliers but are not empirically validated against real
-            outcomes. Use as a strategic framework, not a prediction. Your essays, recommendations, and specific
+            Chance estimates use data-informed multipliers calibrated against published research.
+            Use as a strategic framework, not a prediction. Your essays, recommendations, and specific
             application context matter more than this number. Estimates may be inaccurate for:
-            state-residency-dependent schools, program-specific admissions, schools where data is sparse.
+            state-residency-dependent schools, program-specific admissions, schools where data is sparse.{" "}
+            <a
+              href="/methodology"
+              className="font-semibold text-amber-100 underline decoration-amber-400/40 underline-offset-2 hover:text-amber-50"
+            >
+              Read our methodology →
+            </a>
           </p>
         </div>
 

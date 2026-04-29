@@ -143,18 +143,38 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
       })()}
       {/* end UNDO [application-plan] */}
 
+      {/* GPA-scale note spans both columns. Surfaces the 5.0-scale
+          assumption that the Academic Index depends on; users with
+          differently weighted scales (4.5/6.0/100-pt) need to convert
+          via the GPA Calculator first. */}
+      <div className="col-span-2 sm:col-span-3">
+        <GpaScaleNote />
+      </div>
+
       {/* Stats */}
       <div>
         <label className={labelClass}>Unweighted GPA (4.0)</label>
         <input type="number" step="0.01" min="0" max="4.0" placeholder="e.g. 3.8"
           className={inputClass} value={inputs.gpaUW}
+          aria-invalid={isOverScale(inputs.gpaUW, 4.0) ? true : undefined}
           onChange={(e) => onUpdate("gpaUW", e.target.value)} />
+        {isOverScale(inputs.gpaUW, 4.0) && (
+          <p className="mt-1 text-[10px] text-rose-400 leading-snug">
+            Exceeds 4.0 scale — convert via GPA calculator.
+          </p>
+        )}
       </div>
       <div>
         <label className={labelClass}>Weighted GPA (5.0)</label>
         <input type="number" step="0.01" min="0" max="5.0" placeholder="e.g. 4.3"
           className={inputClass} value={inputs.gpaW}
+          aria-invalid={isOverScale(inputs.gpaW, 5.0) ? true : undefined}
           onChange={(e) => onUpdate("gpaW", e.target.value)} />
+        {isOverScale(inputs.gpaW, 5.0) && (
+          <p className="mt-1 text-[10px] text-rose-400 leading-snug">
+            Exceeds 5.0 scale — convert via GPA calculator.
+          </p>
+        )}
       </div>
       <div>
         <label className={labelClass}>SAT (optional)</label>
@@ -279,3 +299,55 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
   </div>
   );
 };
+
+// Weighted-scale advisory card. Mirrors the /profile version — surfaces the
+// 5.0-scale assumption the Academic Index depends on with a quick deep-link
+// to the GPA Calculator for students whose schools use a different scale.
+function GpaScaleNote() {
+  return (
+    <div className="rounded-xl bg-blue-500/[0.05] border border-blue-500/[0.18] px-4 py-3 flex items-start gap-3">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mt-0.5 text-blue-400 shrink-0"
+        aria-hidden="true"
+      >
+        <rect x="4" y="2" width="16" height="20" rx="2" />
+        <line x1="8" y1="6" x2="16" y2="6" />
+        <line x1="8" y1="10" x2="16" y2="10" />
+        <line x1="8" y1="14" x2="12" y2="14" />
+      </svg>
+      <div className="flex-1 min-w-0">
+        <p className="text-[12px] font-semibold text-blue-200 leading-snug">
+          Use the 5.0 normalized scale
+        </p>
+        <p className="text-[11px] text-blue-200/70 mt-0.5 leading-relaxed">
+          If your school uses a different weighted scale (4.5, 6.0, 100-point, etc.),
+          convert your GPA first.
+        </p>
+        <a
+          href="/gpa"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-300 hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
+        >
+          Open GPA Calculator
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function isOverScale(raw: string, ceiling: number): boolean {
+  if (!raw || raw.trim() === "") return false;
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return false;
+  return n > ceiling;
+}

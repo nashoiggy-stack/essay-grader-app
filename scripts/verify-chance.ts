@@ -12,9 +12,11 @@ import type { ApplicationPlan } from "../src/lib/college-types";
 
 const MAXED = {
   gpaUW: 4.0,
-  gpaW: 4.7,
-  // Spec verification profile uses 35 ACT (not 36); upperSlack=1 for ACT
-  // means 35 reads as above-p75 at any school with ACT75≤36.
+  // Spec "distinguished maxed profile" uses W=4.79. With AI = (4.79/5×80)×1.5
+  // + ((1560-400)/1200×80)×1.5 = 230.96, this lands in the top-quartile tier
+  // (≥230 cutoff). At W=4.70 the AI would land at 228.8, dropping to the
+  // above-median tier.
+  gpaW: 4.79,
   sat: 1560,
   act: 35,
   ecBand: "exceptional" as "limited" | "developing" | "solid" | "strong" | "exceptional",
