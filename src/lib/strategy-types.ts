@@ -269,10 +269,11 @@ export interface DreamSchoolSection {
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
-// v5: Feature 1 chance-model rewrite — fitScore removed from
-// ClassifiedCollege, averageFitScore renamed to averageChance, classifyCollege
-// returns a ChanceRange + ConfidenceTier. v4 cached strategies will crash
-// without this bump because their pinned schools carry the old shape.
+// v6: final calibration — two-tier routing (algorithmic vs holistic-elite),
+// essay multiplier reintroduced (graded-only), advancedCoursework[] replaces
+// rigor dropdown, admissionsType cap split in 15-25% bracket. v5 strategy
+// caches reference chance values that no longer match the new model.
+// v5: Feature 1 chance-model rewrite — fitScore removed.
 // v4: DreamSchoolSection no longer carries whatWouldChangeThis. v3 lacked
 // action/tone fields. Both old shapes are invalidated by this bump.
-export const STRATEGY_CACHE_VERSION = "v5";
+export const STRATEGY_CACHE_VERSION = "v6";
