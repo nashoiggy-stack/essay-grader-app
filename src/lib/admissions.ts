@@ -291,10 +291,13 @@ function testBand(score: number | null, p25: number, p75: number, isAct: boolean
   if (score === null) return null;
   const range = Math.max(p75 - p25, 1);
   const median = (p25 + p75) / 2;
-  // Small floor on the upper-quartile slack so 1540 SAT at 1500-1560 reads
-  // as above-p75 (top end of typical admit). ACT slack is 0 — narrow ranges
-  // (e.g. 33-35) need exact matches.
-  const upperSlack = isAct ? 0 : Math.min(25, Math.round(range * 0.4));
+  // Upper-quartile slack: SAT scales with range (~40% of spread, capped 25);
+  // ACT uses a flat 1-point slack so a 35 at a 34-36 school reads as
+  // above-p75 — one ACT point at the top of the curve is not a meaningful
+  // differentiator. Without this slack, the spec's "distinguished maxed
+  // profile (35 ACT)" can't trigger the maxed branch at Stanford/MIT/Yale
+  // (all ACT75=36) since 35 < 36 fails the strict cutoff.
+  const upperSlack = isAct ? 1 : Math.min(25, Math.round(range * 0.4));
   const innerSlack = isAct ? 1 : Math.round(range * 0.4);
   if (score >= p75 - upperSlack) return "above-p75";
   if (score >= median) return "above-median";

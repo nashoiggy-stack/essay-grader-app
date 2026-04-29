@@ -13,8 +13,10 @@ import type { ApplicationPlan } from "../src/lib/college-types";
 const MAXED = {
   gpaUW: 4.0,
   gpaW: 4.7,
-  sat: 1600,
-  act: 36,
+  // Spec verification profile uses 35 ACT (not 36); upperSlack=1 for ACT
+  // means 35 reads as above-p75 at any school with ACT75≤36.
+  sat: 1560,
+  act: 35,
   ecBand: "exceptional" as "limited" | "developing" | "solid" | "strong" | "exceptional",
   distinguishedEC: true,
   advancedCoursework: Array.from({ length: 8 }, (_, i) => ({
