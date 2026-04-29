@@ -15,7 +15,7 @@ const MAXED = {
   gpaW: 4.7,
   sat: 1600,
   act: 36,
-  ecBand: "exceptional" as const,
+  ecBand: "exceptional" as "limited" | "developing" | "solid" | "strong" | "exceptional",
   distinguishedEC: true,
   advancedCoursework: Array.from({ length: 8 }, (_, i) => ({
     type: "AP" as const,
