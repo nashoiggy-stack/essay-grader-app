@@ -204,6 +204,25 @@ export function useChanceCalculator() {
       }
     } catch { /* ignore */ }
 
+    // Synthesize an essayScores entry from the form's Common App + VSPICE
+    // inputs when /profile hasn't surfaced graded essays yet. Auto-filled by
+    // the Essay Grader, but the form values are read-trusted: if essayCA is
+    // set and is in the Essay Grader's range, treat it as the combinedScore.
+    // Without this, the chance model stays at the 1.0× neutral essay
+    // multiplier and the user can't reach the maxed branches via the form.
+    if ((!essayScores || essayScores.length === 0) && essayCA != null) {
+      const vspice0to24 = essayV != null ? Math.max(0, Math.min(24, essayV)) : 0;
+      essayScores = [
+        {
+          promptId: "chances-form",
+          combinedScore: essayCA,
+          rubricScore: essayCA,
+          vspiceScore: vspice0to24,
+          gradedAt: Date.now(),
+        },
+      ];
+    }
+
     const chanceArgs = {
       college,
       gpaUW,

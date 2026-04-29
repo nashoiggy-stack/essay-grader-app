@@ -488,6 +488,43 @@ export default function ProfilePage() {
                 Auto-fills from EC Evaluator. You can also set this manually.
               </p>
             </div>
+
+            {/* Distinguished EC flags. Triggers the 'exceptional' band override
+                in the chance model and unlocks the holistic-elite distinguished
+                maxed multiplier (3.5×). Check only what's true; these are
+                tier-defining signals (not "I led a club"). */}
+            <div className="mt-5 pt-5 border-t border-white/[0.06]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-2">
+                Distinguished signals
+              </div>
+              <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
+                Tier-defining accomplishments only. Each box, when checked, promotes your EC band to
+                &ldquo;exceptional&rdquo; and unlocks the holistic-elite distinguished-maxed multiplier
+                (top schools).
+              </p>
+              <div className="space-y-2">
+                <FlagCheckbox
+                  label="First-author research publication at a recognized venue"
+                  checked={profile.firstAuthorPublication === true}
+                  onChange={(v) => updateField("firstAuthorPublication", v)}
+                />
+                <FlagCheckbox
+                  label="National or international competition placement"
+                  checked={profile.nationalCompetitionPlacement === true}
+                  onChange={(v) => updateField("nationalCompetitionPlacement", v)}
+                />
+                <FlagCheckbox
+                  label="Founded a business with measurable users or revenue"
+                  checked={profile.founderWithUsers === true}
+                  onChange={(v) => updateField("founderWithUsers", v)}
+                />
+                <FlagCheckbox
+                  label="Selective summer program admit (RSI, TASP, MITES, SSP, Telluride)"
+                  checked={profile.selectiveProgram === true}
+                  onChange={(v) => updateField("selectiveProgram", v)}
+                />
+              </div>
+            </div>
           </div>
         </ScrollReveal>
 
@@ -674,6 +711,28 @@ function AdvancedCourseworkSection({
         </>
       )}
     </div>
+  );
+}
+
+function FlagCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer text-[12px] text-zinc-300 hover:text-zinc-100 transition-colors">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/[0.04] text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0"
+      />
+      <span className="leading-snug">{label}</span>
+    </label>
   );
 }
 
