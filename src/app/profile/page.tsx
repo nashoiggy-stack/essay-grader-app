@@ -6,9 +6,7 @@ import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { useProfile } from "@/hooks/useProfile";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
-import type { APScoreProfile } from "@/lib/profile-types";
 import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
-import { AP_SUBJECTS } from "@/lib/ap-scores";
 import { MajorSelect } from "@/components/MajorSelect";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -46,10 +44,15 @@ export default function ProfilePage() {
   const sections = [
     { key: "GPA", done: !!profile.gpaUW },
     { key: "Test", done: satComposite !== null || actComposite !== null },
-    { key: "APs", done: profile.apScores.length > 0 },
-    { key: "Essay", done: !!profile.essayCommonApp },
+    { key: "APs", done: profile.apScores.length > 0 || (profile.advancedCoursework?.length ?? 0) > 0 },
+    { key: "Essay", done: !!profile.essayCommonApp || (profile.essayScores?.length ?? 0) > 0 },
     { key: "ECs", done: !!profile.ecBand },
-    { key: "Rigor", done: !!profile.rigor },
+    {
+      key: "Coursework",
+      done:
+        profile.advancedCourseworkAvailable === "none" ||
+        (profile.advancedCoursework?.length ?? 0) > 0,
+    },
   ];
   const completed = sections.filter((s) => s.done).length;
   const total = sections.length;
@@ -256,6 +259,13 @@ export default function ProfilePage() {
               <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">GPA</h2>
               {computed?.gpaUW && <SourceBadge source="GPA Calculator" />}
             </div>
+
+            {/* Weighted-scale note — informational, sits above the inputs.
+                Surfaces the 5.0-scale assumption that the chance model's
+                Academic Index depends on. Schools that weight differently
+                (4.5/6.0/100-pt) need conversion via the GPA Calculator. */}
+            <GpaScaleNote />
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Unweighted GPA</label>
@@ -268,10 +278,17 @@ export default function ProfilePage() {
                   value={profile.gpaUW}
                   onChange={(e) => updateField("gpaUW", e.target.value)}
                   className={inputClass}
+                  aria-invalid={isOverScale(profile.gpaUW, 4.0) ? true : undefined}
                 />
+                {isOverScale(profile.gpaUW, 4.0) && (
+                  <p className="mt-1.5 text-[11px] text-rose-400 leading-snug">
+                    Unweighted GPA exceeds the 4.0 scale. Use the GPA calculator to
+                    convert your school&rsquo;s scale to the standard 4.0 unweighted scale.
+                  </p>
+                )}
               </div>
               <div>
-                <label className={labelClass}>Weighted GPA</label>
+                <label className={labelClass}>Weighted GPA (5.0 scale)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -281,22 +298,47 @@ export default function ProfilePage() {
                   value={profile.gpaW}
                   onChange={(e) => updateField("gpaW", e.target.value)}
                   className={inputClass}
+                  aria-invalid={isOverScale(profile.gpaW, 5.0) ? true : undefined}
                 />
+                {isOverScale(profile.gpaW, 5.0) && (
+                  <p className="mt-1.5 text-[11px] text-rose-400 leading-snug">
+                    Weighted GPA exceeds 5.0 scale. Use the GPA calculator to convert
+                    your school&rsquo;s scale to the normalized 5.0 scale.
+                  </p>
+                )}
               </div>
             </div>
             <div className="mt-4">
-              <label className={labelClass}>Course Rigor</label>
+              <label className={labelClass}>Advanced Coursework Availability</label>
               <select
-                value={profile.rigor}
-                onChange={(e) => updateField("rigor", e.target.value as "low" | "medium" | "high")}
+                value={profile.advancedCourseworkAvailable ?? "all"}
+                onChange={(e) =>
+                  updateField(
+                    "advancedCourseworkAvailable",
+                    e.target.value as "all" | "limited" | "none",
+                  )
+                }
                 className={`${inputClass} appearance-none cursor-pointer`}
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="all">My school offers a full AP/IB menu</option>
+                <option value="limited">Limited offerings (a few APs)</option>
+                <option value="none">School doesn&rsquo;t offer AP/IB</option>
               </select>
+              <p className="mt-1 text-[10px] text-zinc-500 leading-relaxed">
+                The chance model uses this to interpret your coursework. &lsquo;None&rsquo;
+                waives the rigor signal entirely (no penalty for not having APs).
+              </p>
             </div>
           </div>
+        </ScrollReveal>
+
+        {/* Advanced Coursework — replaces the old single rigor dropdown */}
+        <ScrollReveal delay={0.18}>
+          <AdvancedCourseworkSection
+            rows={profile.advancedCoursework ?? []}
+            available={profile.advancedCourseworkAvailable ?? "all"}
+            onUpdate={(rows) => updateField("advancedCoursework", rows)}
+          />
         </ScrollReveal>
 
         {/* SAT Section */}
@@ -405,14 +447,6 @@ export default function ProfilePage() {
           </div>
         </ScrollReveal>
 
-        {/* AP Scores */}
-        <ScrollReveal delay={0.22}>
-          <APScoresSection
-            apScores={profile.apScores ?? []}
-            onUpdate={(scores) => updateField("apScores", scores)}
-          />
-        </ScrollReveal>
-
         {/* Essay Scores */}
         <ScrollReveal delay={0.25}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
@@ -475,6 +509,43 @@ export default function ProfilePage() {
                 Auto-fills from EC Evaluator. You can also set this manually.
               </p>
             </div>
+
+            {/* Distinguished EC flags. Triggers the 'exceptional' band override
+                in the chance model and unlocks the holistic-elite distinguished
+                maxed multiplier (3.5×). Check only what's true; these are
+                tier-defining signals (not "I led a club"). */}
+            <div className="mt-5 pt-5 border-t border-white/[0.06]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-2">
+                Distinguished signals
+              </div>
+              <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
+                Tier-defining accomplishments only. Each box, when checked, promotes your EC band to
+                &ldquo;exceptional&rdquo; and unlocks the holistic-elite distinguished-maxed multiplier
+                (top schools).
+              </p>
+              <div className="space-y-2">
+                <FlagCheckbox
+                  label="First-author research publication at a recognized venue"
+                  checked={profile.firstAuthorPublication === true}
+                  onChange={(v) => updateField("firstAuthorPublication", v)}
+                />
+                <FlagCheckbox
+                  label="National or international competition placement"
+                  checked={profile.nationalCompetitionPlacement === true}
+                  onChange={(v) => updateField("nationalCompetitionPlacement", v)}
+                />
+                <FlagCheckbox
+                  label="Founded a business with measurable users or revenue"
+                  checked={profile.founderWithUsers === true}
+                  onChange={(v) => updateField("founderWithUsers", v)}
+                />
+                <FlagCheckbox
+                  label="Selective summer program admit (RSI, TASP, MITES, SSP, Telluride)"
+                  checked={profile.selectiveProgram === true}
+                  onChange={(v) => updateField("selectiveProgram", v)}
+                />
+              </div>
+            </div>
           </div>
         </ScrollReveal>
 
@@ -493,7 +564,14 @@ export default function ProfilePage() {
               <SummaryItem label="Essay" value={profile.essayCommonApp ? `${profile.essayCommonApp}/100` : "—"} />
               <SummaryItem label="VSPICE" value={profile.essayVspice ? `${profile.essayVspice}/24` : "—"} />
               <SummaryItem label="ECs" value={profile.ecBand ? (EC_BAND_LABELS as Record<string, string>)[profile.ecBand] ?? profile.ecBand : "—"} />
-              <SummaryItem label="Rigor" value={profile.rigor.charAt(0).toUpperCase() + profile.rigor.slice(1)} />
+              <SummaryItem
+                label="Coursework"
+                value={
+                  profile.advancedCourseworkAvailable === "none"
+                    ? "n/a"
+                    : `${(profile.advancedCoursework ?? []).length} courses`
+                }
+              />
               <SummaryItem label="Major" value={profile.intendedMajor || "—"} />
               <SummaryItem label="Interest" value={profile.intendedInterest || "—"} />
             </div>
@@ -504,33 +582,62 @@ export default function ProfilePage() {
   );
 }
 
-function APScoresSection({ apScores, onUpdate }: { apScores: APScoreProfile[]; onUpdate: (scores: APScoreProfile[]) => void }) {
-  const [subject, setSubject] = useState("");
-  const [score, setScore] = useState<string>("5");
-  const [expanded, setExpanded] = useState(apScores.length > 0);
+function AdvancedCourseworkSection({
+  rows,
+  available,
+  onUpdate,
+}: {
+  rows: import("@/lib/profile-types").AdvancedCourseworkRow[];
+  available: "all" | "limited" | "none";
+  onUpdate: (rows: import("@/lib/profile-types").AdvancedCourseworkRow[]) => void;
+}) {
+  const [type, setType] = useState<"AP" | "IB-HL" | "IB-SL">("AP");
+  const [name, setName] = useState("");
+  const [score, setScore] = useState<string>("");
+  const [expanded, setExpanded] = useState(rows.length > 0);
 
-  const addScore = () => {
-    if (!subject.trim()) return;
-    const s = parseInt(score) as 1 | 2 | 3 | 4 | 5;
-    if (s < 1 || s > 5) return;
-    onUpdate([...apScores, { subject: subject.trim(), score: s }]);
-    setSubject("");
-    setScore("5");
+  const maxScore = type === "AP" ? 5 : 7;
+  const addRow = () => {
+    if (!name.trim()) return;
+    const s = score ? parseInt(score, 10) : undefined;
+    if (s !== undefined && (s < 1 || s > maxScore)) return;
+    onUpdate([...rows, { type, name: name.trim(), score: s }]);
+    setName("");
+    setScore("");
   };
+  const removeRow = (index: number) => onUpdate(rows.filter((_, i) => i !== index));
 
-  const removeScore = (index: number) => {
-    onUpdate(apScores.filter((_, i) => i !== index));
-  };
+  if (available === "none") {
+    return (
+      <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+        <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider mb-2">
+          Advanced Coursework
+        </h2>
+        <p className="text-[12px] text-zinc-500 leading-relaxed">
+          You marked your school as not offering AP/IB. The chance model
+          waives the rigor requirement — no penalty for not having scores.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">AP Exam Scores</h2>
-          <p className="text-[10px] text-zinc-600 mt-0.5">Optional — saved to your profile and auto-filled into Chance Calculator</p>
+          <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">
+            Advanced Coursework
+          </h2>
+          <p className="text-[10px] text-zinc-600 mt-0.5">
+            AP / IB-HL / IB-SL courses with scores. DE excluded. The chance
+            model derives a 6-tier rigor signal from these.
+          </p>
         </div>
         {!expanded && (
-          <button onClick={() => setExpanded(true)} className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+          <button
+            onClick={() => setExpanded(true)}
+            className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+          >
             <Plus className="w-3.5 h-3.5" /> Add
           </button>
         )}
@@ -538,55 +645,115 @@ function APScoresSection({ apScores, onUpdate }: { apScores: APScoreProfile[]; o
 
       {expanded && (
         <>
-          {apScores.length > 0 && (
+          {rows.length > 0 && (
             <div className="space-y-1.5 mb-4">
-              {apScores.map((ap, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5">
-                  <span className="flex-1 text-xs text-zinc-300 truncate">{ap.subject}</span>
-                  <span className={`text-xs font-bold ${ap.score >= 4 ? "text-emerald-400" : ap.score === 3 ? "text-amber-400" : "text-zinc-500"}`}>{ap.score}</span>
-                  <button onClick={() => removeScore(i)} className="text-zinc-600 hover:text-red-400 transition-colors p-0.5">
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+              {rows.map((row, i) => {
+                const tone =
+                  row.score == null
+                    ? "text-zinc-500"
+                    : row.type === "AP"
+                      ? row.score >= 4
+                        ? "text-emerald-400"
+                        : row.score === 3
+                          ? "text-amber-400"
+                          : "text-zinc-500"
+                      : row.score >= 6
+                        ? "text-emerald-400"
+                        : row.score >= 4
+                          ? "text-amber-400"
+                          : "text-zinc-500";
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5"
+                  >
+                    <span className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 w-16">
+                      {row.type}
+                    </span>
+                    <span className="flex-1 text-xs text-zinc-300 truncate">{row.name}</span>
+                    <span className={`text-xs font-bold ${tone}`}>
+                      {row.score == null ? "in progress" : row.score}
+                    </span>
+                    <button
+                      onClick={() => removeRow(i)}
+                      className="text-zinc-600 hover:text-red-400 transition-colors p-0.5"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="grid grid-cols-12 gap-2">
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value as "AP" | "IB-HL" | "IB-SL")}
+              className={`${inputClass} col-span-3 appearance-none cursor-pointer`}
+            >
+              <option value="AP">AP</option>
+              <option value="IB-HL">IB-HL</option>
+              <option value="IB-SL">IB-SL</option>
+            </select>
             <input
               type="text"
-              list="profile-ap-subjects"
-              placeholder="AP Subject..."
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addScore(); } }}
-              className={`${inputClass} flex-1`}
+              placeholder={type === "AP" ? "AP subject…" : "IB course…"}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addRow();
+                }
+              }}
+              className={`${inputClass} col-span-5`}
             />
-            <datalist id="profile-ap-subjects">
-              {AP_SUBJECTS.map((s) => <option key={s} value={s} />)}
-            </datalist>
-            <select
+            <input
+              type="number"
+              min={1}
+              max={maxScore}
+              placeholder={`/${maxScore}`}
               value={score}
               onChange={(e) => setScore(e.target.value)}
-              className={`${inputClass} w-16 appearance-none cursor-pointer`}
-            >
-              <option value="5">5</option>
-              <option value="4">4</option>
-              <option value="3">3</option>
-              <option value="2">2</option>
-              <option value="1">1</option>
-            </select>
+              className={`${inputClass} col-span-2`}
+            />
             <button
-              onClick={addScore}
-              disabled={!subject.trim()}
-              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              onClick={addRow}
+              disabled={!name.trim()}
+              className="col-span-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Add
             </button>
           </div>
+          <p className="mt-2 text-[10px] text-zinc-600 leading-relaxed">
+            Score optional — leave blank for in-progress courses.
+          </p>
         </>
       )}
     </div>
+  );
+}
+
+function FlagCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer text-[12px] text-zinc-300 hover:text-zinc-100 transition-colors">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/[0.04] text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0"
+      />
+      <span className="leading-snug">{label}</span>
+    </label>
   );
 }
 
@@ -598,4 +765,59 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
       <p className={`text-lg font-bold font-mono ${isEmpty ? "text-zinc-700" : "text-zinc-200"}`}>{value}</p>
     </div>
   );
+}
+
+// Weighted-scale advisory card. Sits above the GPA inputs to surface the
+// 5.0-scale assumption that the Academic Index relies on. Tone is
+// informational, not warning — most students don't need to convert.
+function GpaScaleNote() {
+  return (
+    <div className="mb-4 rounded-xl bg-blue-500/[0.05] border border-blue-500/[0.18] px-4 py-3 flex items-start gap-3">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mt-0.5 text-blue-400 shrink-0"
+        aria-hidden="true"
+      >
+        <rect x="4" y="2" width="16" height="20" rx="2" />
+        <line x1="8" y1="6" x2="16" y2="6" />
+        <line x1="8" y1="10" x2="16" y2="10" />
+        <line x1="8" y1="14" x2="12" y2="14" />
+      </svg>
+      <div className="flex-1 min-w-0">
+        <p className="text-[12px] font-semibold text-blue-200 leading-snug">
+          Use the 5.0 normalized scale
+        </p>
+        <p className="text-[11px] text-blue-200/70 mt-0.5 leading-relaxed">
+          If your school uses a different weighted scale (4.5, 6.0, 100-point, etc.),
+          convert your GPA first.
+        </p>
+        <a
+          href="/gpa"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-300 hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
+        >
+          Open GPA Calculator
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// Soft-validation: returns true when the input parses to a number above the
+// stated ceiling. Empty string and unparsable inputs are not flagged — the
+// type=number input plus max attribute already constrain typical entry.
+function isOverScale(raw: string, ceiling: number): boolean {
+  if (!raw || raw.trim() === "") return false;
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return false;
+  return n > ceiling;
 }
