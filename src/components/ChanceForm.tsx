@@ -152,19 +152,9 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
       </div>
 
-      {/* Course rigor moved to /profile.advancedCoursework — keeping the
-          dropdown here would create two competing inputs. The chance model
-          falls back to 'none' (no penalty, no boost) when the array is empty. */}
-      <div className="md:col-span-2">
-        <p className="text-[11px] text-zinc-500 leading-relaxed">
-          Add AP/IB scores in your{" "}
-          <a href="/profile" className="text-zinc-300 underline underline-offset-2 hover:text-white">
-            profile
-          </a>
-          {" "}for fuller signal. Without them, the chance estimate skips the
-          rigor refinement (no penalty).
-        </p>
-      </div>
+      {/* Course rigor moved to /profile.advancedCoursework. The dropdown was
+          removed to avoid two competing inputs. AP entry stays inline below;
+          IB scores live in /profile (linked from the AP Exam Scores header). */}
       <div>
         <label className={labelClass}>Intended Major</label>
         <MajorSelect
@@ -205,19 +195,36 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
 
     {/* AP Scores — optional */}
     <div className="mt-5 pt-5 border-t border-white/[0.06]">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <div>
           <h4 className="text-sm font-semibold text-zinc-300">AP Exam Scores</h4>
-          <p className="text-[10px] text-zinc-600 mt-0.5">Optional — helps refine academic context</p>
+          <p className="text-[10px] text-zinc-600 mt-0.5">
+            Optional — helps refine academic context. IB scores live in{" "}
+            <a
+              href="/profile"
+              className="text-zinc-400 underline underline-offset-2 hover:text-zinc-200"
+            >
+              your profile
+            </a>
+            .
+          </p>
         </div>
-        {!showApSection && (
-          <button
-            onClick={() => setShowApSection(true)}
-            className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href="/profile"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-zinc-300 hover:bg-white/[0.06] hover:text-white transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" /> Add AP Scores
-          </button>
-        )}
+            Open profile
+          </a>
+          {!showApSection && (
+            <button
+              onClick={() => setShowApSection(true)}
+              className="inline-flex items-center gap-1.5 rounded-md bg-blue-600/90 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-blue-500 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add AP Scores
+            </button>
+          )}
+        </div>
       </div>
 
       {showApSection && (
