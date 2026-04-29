@@ -98,6 +98,19 @@ function run(label: string, profile: typeof MAXED | typeof STRONG): void {
 run("MAXED PROFILE", MAXED);
 run("STRONG (not maxed) PROFILE", STRONG);
 
+// Spec verification: stats must influence the chance. Compare maxed UW 4.0
+// vs reduced UW 3.6 — if outputs identical, the GPA input isn't being read.
+const REDUCED_UW: typeof MAXED = { ...MAXED, gpaUW: 3.6, gpaW: 4.2 };
+run("REDUCED UW (3.6) — stats should drop band", REDUCED_UW);
+
+// Spec verification: removing distinguished flags should drop EC tier.
+const NO_DISTINGUISHED: typeof MAXED = {
+  ...MAXED,
+  distinguishedEC: false,
+  ecBand: "strong",
+};
+run("NO DISTINGUISHED FLAGS, EC=strong", NO_DISTINGUISHED);
+
 // Debug: print the breakdown for Stanford REA to see what's happening.
 const stanford = COLLEGES.find((c) => c.name === "Stanford University")!;
 const r = computeAdmissionChance({

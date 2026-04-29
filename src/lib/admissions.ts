@@ -560,11 +560,16 @@ function computeHolisticEliteChance(
   const headlineRate = baseResult.rate;
 
   // Fit ladder.
+  // The four distinguished EC auto-flag fields (firstAuthorPublication,
+  // nationalCompetitionPlacement, founderWithUsers, selectiveProgram) are
+  // signals to the EC tier classifier — when any is true, treat the band
+  // as 'exceptional' regardless of the user-set ecBand. They are NOT a
+  // separate multiplier branch (the previous distinguished-maxed 3.5x tier
+  // was removed because it duplicated EC-tier judgment).
   const effectiveEcBand =
     args.distinguishedEC === true ? "exceptional" : args.ecBand?.toLowerCase();
   const essayInfo = essayMultiplier(args.essayScores);
   const essayAvg = essayInfo.avgCombined ?? 0;
-  const distinguishedFlag = args.distinguishedEC === true;
 
   const aboveThreshold =
     combinedBand !== "below-p25" && combinedBand !== "below-median";
@@ -587,15 +592,15 @@ function computeHolisticEliteChance(
       fitMult = 1.0;
       fitLabel = "at threshold, average EC/essay";
     }
-  } else if (maxedStat && distinguishedFlag && ecExceptional && essayHigh) {
-    // Citation: Arcidiacono Harvard top-decile non-ALDC admit rate 15.3% /
-    // baseline 4.0% = 3.83x. Distinguished maxed applicants are top few
-    // percent of the unhooked pool, where admit rates exceed decile averages.
-    // 3.5x sits at the conservative end of the empirical range.
-    fitMult = 3.5;
-    fitLabel = "distinguished maxed profile";
   } else if (maxedStat && ecExceptional && essayHigh) {
-    fitMult = 2.3;
+    // Single maxed multiplier 3.0× for top-quartile stats + exceptional ECs
+    // + 90+ essay. The previous distinguished-maxed (3.5×) tier was removed
+    // because it duplicated EC-tier judgment that the classifier already
+    // makes via the 4 auto-flag fields.
+    // Citation: Arcidiacono Harvard top-decile non-ALDC admit rate 15.3% /
+    // baseline 4.0% = 3.83×. 3.0× is the conservative-side of the empirical
+    // range for unhooked top-decile applicants.
+    fitMult = 3.0;
     fitLabel = "maxed profile";
   } else if (ecExceptional && essayDecent) {
     fitMult = 1.8;
