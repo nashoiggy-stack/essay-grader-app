@@ -102,18 +102,15 @@ export default function CollegesPage() {
           </button>
         </motion.div>
 
-        {/* Always-visible disclaimer per SPEC W4 (UI honesty). The previous
-            disclaimer was buried inside the expander and most users never
-            read it; admissions estimates need a clear, upfront caveat. */}
+        {/* Always-visible disclaimer per final calibration spec. Sits above
+            the fold so it's read alongside the chance numbers, not buried. */}
         <div className="mb-6 rounded-xl bg-amber-500/[0.04] border border-amber-500/[0.15] px-4 py-3">
           <p className="text-[12px] text-amber-200/80 leading-relaxed">
             <span className="font-semibold text-amber-200">Estimates only.</span>{" "}
-            Chance percentages are model-based and assume average essay quality for your stat band — strong
-            essays at high-selectivity schools can shift outcomes meaningfully and aren&apos;t in the math.
-            Recommendations, demonstrated interest, hooks, and institutional priorities also aren&apos;t modeled.
-            In-state public-school advantages (e.g. UF for Florida residents) are not modeled either —
-            non-residents will see realistic numbers, residents&apos; actual chances are higher.
-            Treat ranges, not midpoints, as the real signal. Sub-10% schools cap at &quot;Reach&quot; by design.
+            Chance estimates use data-informed multipliers but are not empirically validated against real
+            outcomes. Use as a strategic framework, not a prediction. Your essays, recommendations, and specific
+            application context matter more than this number. Estimates may be inaccurate for:
+            state-residency-dependent schools, program-specific admissions, schools where data is sparse.
           </p>
         </div>
 

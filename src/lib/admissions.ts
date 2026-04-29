@@ -268,11 +268,15 @@ export function compareTests(
 
 function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
   if (gpaUW === null) return null;
+  // FP tolerance: 4.0 - 3.95 evaluates to 0.04999999999999982 in IEEE 754,
+  // which used to flip a perfect-GPA Stanford applicant out of the
+  // above-p75 band. Subtract a small epsilon from each comparison.
   const diff = gpaUW - schoolUW;
-  if (diff >= 0.05) return "above-p75";       // clearly above mean
-  if (diff >= 0.0) return "above-median";     // at or just above mean
-  if (diff >= -0.10) return "mid-range";      // tight band below mean
-  if (diff >= -0.25) return "below-median";   // below mean but in range
+  const EPS = 1e-9;
+  if (diff >= 0.05 - EPS) return "above-p75";       // clearly above mean
+  if (diff >= 0.0 - EPS)  return "above-median";    // at or just above mean
+  if (diff >= -0.10 - EPS) return "mid-range";      // tight band below mean
+  if (diff >= -0.25 - EPS) return "below-median";   // below mean but in range
   return "below-p25";
 }
 
@@ -324,14 +328,16 @@ function getBaseRateForPlan(college: College, plan: ApplicationPlan): BaseRateRe
     case "SCEA": {
       // The verified REA list (Stanford, Harvard, Yale, Princeton, Notre Dame)
       // publishes either an REA admit rate explicitly or the early/regular
-      // split. Prefer eaAdmitRate when present; otherwise fall back at 1.5x
-      // overall (between EA's 1.15x and ED's 2.5x — REA's residual advantage
-      // sits between non-binding EA and binding ED).
+      // split. Prefer eaAdmitRate when present; otherwise fall back.
+      // Final calibration: bumped fallback from 1.5x → 2.2x. Empirical REA
+      // rates at HYPS land at ~9-12% vs overall 3-5% (2-3x). 1.5x undercounted.
+      // Harvard SCEA 2024: 8.7% vs overall 3.6% = 2.4x. Stanford REA ~9% vs
+      // 3.8% = 2.4x. Yale SCEA ~11% vs 4.5% = 2.4x. Cluster supports 2.2x.
       if (typeof college.eaAdmitRate === "number") {
         return { rate: college.eaAdmitRate, usedFallback: null, planNote: "REA/SCEA admit rate (school-published)" };
       }
-      const rate = Math.min(95, overall * 1.5);
-      return { rate, usedFallback: "ea", planNote: "REA estimate based on overall trends" };
+      const rate = Math.min(95, overall * 2.2);
+      return { rate, usedFallback: "ea", planNote: "REA estimate based on overall trends (2.2x fallback)" };
     }
     case "EA": {
       if (typeof college.eaAdmitRate === "number") {
