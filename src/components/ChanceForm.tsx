@@ -152,15 +152,18 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
       </div>
 
-      {/* Qualitative */}
-      <div>
-        <label className={labelClass}>Course Rigor</label>
-        <select className={selectClass} value={inputs.rigor}
-          onChange={(e) => onUpdate("rigor", e.target.value as ChanceInputs["rigor"])}>
-          <option value="low">Basic / On-level</option>
-          <option value="medium">Some Honors/AP</option>
-          <option value="high">Mostly AP/IB/DE</option>
-        </select>
+      {/* Course rigor moved to /profile.advancedCoursework — keeping the
+          dropdown here would create two competing inputs. The chance model
+          falls back to 'none' (no penalty, no boost) when the array is empty. */}
+      <div className="md:col-span-2">
+        <p className="text-[11px] text-zinc-500 leading-relaxed">
+          Add AP/IB scores in your{" "}
+          <a href="/profile" className="text-zinc-300 underline underline-offset-2 hover:text-white">
+            profile
+          </a>
+          {" "}for fuller signal. Without them, the chance estimate skips the
+          rigor refinement (no penalty).
+        </p>
       </div>
       <div>
         <label className={labelClass}>Intended Major</label>
