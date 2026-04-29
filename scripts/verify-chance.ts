@@ -113,6 +113,27 @@ const NO_DISTINGUISHED: typeof MAXED = {
 };
 run("NO DISTINGUISHED FLAGS, EC=strong", NO_DISTINGUISHED);
 
+// Spec verification: AP scores must influence Tier 2. Same maxed profile,
+// but ACT 34 (one below typical p75=36). Without the rigor pipeline in
+// Tier 2, this drops to 1.8x. With it, rigor='top' bumps the band up.
+const MAXED_ACT34: typeof MAXED = { ...MAXED, act: 34 };
+run("MAXED PROFILE, ACT 34 — rigor should rescue stat band", MAXED_ACT34);
+
+// Spec verification: low-rigor profile should pull Tier 2 down.
+const LOW_RIGOR: typeof MAXED = {
+  ...MAXED,
+  advancedCoursework: [
+    { type: "AP", name: "AP Lit", score: 3 },
+    { type: "AP", name: "AP US Hist", score: 3 },
+  ],
+};
+run("MAXED STATS + LOW RIGOR (2 AP threes) — band should drop", LOW_RIGOR);
+
+// Near-perfect GPA at Stanford (avg 3.95). Before the slack fix, 3.97 UW
+// landed in above-median; after, it's above-p75.
+const NEAR_PERFECT_GPA: typeof MAXED = { ...MAXED, gpaUW: 3.97 };
+run("NEAR-PERFECT UW 3.97 — should still hit maxed branch", NEAR_PERFECT_GPA);
+
 // Debug: print the breakdown for Stanford REA to see what's happening.
 const stanford = COLLEGES.find((c) => c.name === "Stanford University")!;
 const r = computeAdmissionChance({

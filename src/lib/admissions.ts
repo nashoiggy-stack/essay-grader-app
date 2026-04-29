@@ -275,12 +275,15 @@ function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
   // in above-median. The short-circuit captures the conceptual intent
   // (a maxed transcript IS top quartile at every school).
   if (gpaUW >= 4.0) return "above-p75";
-  // FP tolerance: 4.0 - 3.95 evaluates to 0.04999999999999982 in IEEE 754,
-  // which used to flip a perfect-GPA Stanford applicant out of the
-  // above-p75 band. Subtract a small epsilon from each comparison.
+  // FP tolerance: 4.0 - 3.95 evaluates to 0.04999999999999982 in IEEE 754.
+  // Subtract a small epsilon from each comparison.
   const diff = gpaUW - schoolUW;
   const EPS = 1e-9;
-  if (diff >= 0.05 - EPS) return "above-p75";       // clearly above mean
+  // Above-p75 slack 0.02: a 3.97 UW at a 3.95-avg school is at the practical
+  // top of the distribution, so the previous 0.05 cliff produced surprising
+  // "above-median" outputs for near-perfect GPAs. Mirrors the 1-point ACT
+  // slack — both reflect "one notch off perfect is still top-quartile".
+  if (diff >= 0.02 - EPS) return "above-p75";       // top quartile (slack 0.02)
   if (diff >= 0.0 - EPS)  return "above-median";    // at or just above mean
   if (diff >= -0.10 - EPS) return "mid-range";      // tight band below mean
   if (diff >= -0.25 - EPS) return "below-median";   // below mean but in range
@@ -553,7 +556,20 @@ function computeHolisticEliteChance(
   const testBlind = college.testPolicy === "blind";
   const gBand = gpaBand(args.gpaUW, college.avgGPAUW);
   const tBand = testBlind ? null : pickTestBand(args.sat, args.act, college);
-  const combinedBand = minBand(gBand, tBand);
+  const combinedBandRaw = minBand(gBand, tBand);
+
+  // Rigor signal as third axis, mirroring Tier 1. Without this, AP/IB
+  // scores were entirely ignored at holistic-elite schools — 8 APs all 5s
+  // read identical to 2 APs both 3s. Migrate legacy apScores into the
+  // advancedCoursework array when no new array is provided.
+  const coursework =
+    args.advancedCoursework && args.advancedCoursework.length > 0
+      ? args.advancedCoursework
+      : migrateApToCoursework(args.apScores);
+  const rigorTier: RigorTier = classifyRigor(coursework, args.advancedCourseworkAvailable);
+  const rSignal = rigorSignal(rigorTier);
+  const combinedBand = consensusBand(combinedBandRaw, rSignal);
+
   if (combinedBand === null) {
     return insufficientDataResult(college);
   }
@@ -653,6 +669,7 @@ function computeHolisticEliteChance(
   const reasonParts: string[] = [];
   if (gBand) reasonParts.push(gpaPhrase(args.gpaUW!, college.avgGPAUW, gBand));
   if (tBand && !testBlind) reasonParts.push(testPhrase(args.sat, args.act, college, tBand));
+  if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
   reasonParts.push(`Holistic-elite: ${fitLabel}`);
   reasonParts.push(
     "Top schools have institutional uncertainty even for maxed profiles. " +
@@ -661,6 +678,12 @@ function computeHolisticEliteChance(
   const reason = reasonParts.join(". ") + ".";
 
   // Build a minimal breakdown — fit factors as one line, no stack.
+  // Surface the rigor tier in the note so users see when AP/IB scores
+  // shifted their stat band (consensus rule firing).
+  const fitNote =
+    rigorTier !== "none"
+      ? `Holistic-elite model. Stats + rigor (${rigorLabel(rigorTier)}) clear the academic bar; chance reflects baseline rate with fit adjustments.`
+      : "Holistic-elite model. Stats clear the academic bar; chance reflects baseline rate with fit adjustments.";
   const breakdown: ChanceBreakdown = {
     baseRate: headlineRate,
     baseLabel: baseResult.planNote ?? `Headline admit rate (${headlineRate}%)`,
@@ -669,7 +692,7 @@ function computeHolisticEliteChance(
         label: `Fit (${fitLabel})`,
         multiplier: fitMult,
         runningChance: round1(clamp(headlineRate * fitMult, 0.5, 95)),
-        note: "Holistic-elite model. Stats clear the academic bar; chance reflects baseline rate with fit adjustments.",
+        note: fitNote,
       },
     ],
     cap: { value: cap, applied: headlineRate * fitMult > cap, bracket: `${plan}, holistic-elite` },
