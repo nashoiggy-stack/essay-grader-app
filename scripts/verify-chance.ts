@@ -134,6 +134,16 @@ run("MAXED STATS + LOW RIGOR (2 AP threes) — band should drop", LOW_RIGOR);
 const NEAR_PERFECT_GPA: typeof MAXED = { ...MAXED, gpaUW: 3.97 };
 run("NEAR-PERFECT UW 3.97 — should still hit maxed branch", NEAR_PERFECT_GPA);
 
+// Weighted should rescue when UW is lower. School avg W is 4.50 at HE
+// schools. User with UW 3.85 (below median) but W 4.85 (well above 4.50)
+// should land above-p75 via the weighted axis taking the higher band.
+const HIGH_W_LOW_UW: typeof MAXED = { ...MAXED, gpaUW: 3.85, gpaW: 4.85 };
+run("HIGH WEIGHTED 4.85, LOW UW 3.85 — W should rescue band", HIGH_W_LOW_UW);
+
+// Weighted alone (no UW provided) should still classify.
+const W_ONLY: typeof MAXED = { ...MAXED, gpaUW: null as unknown as number, gpaW: 4.85 };
+run("WEIGHTED-ONLY 4.85 (UW unset) — should still classify", W_ONLY);
+
 // Debug: print the breakdown for Stanford REA to see what's happening.
 const stanford = COLLEGES.find((c) => c.name === "Stanford University")!;
 const r = computeAdmissionChance({

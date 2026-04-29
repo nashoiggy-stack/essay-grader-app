@@ -266,28 +266,54 @@ export function compareTests(
 // absolute deltas because schools publish a mean only; tests scale slack
 // by the published 25-75 range so narrow ACT bands don't over-bucket.
 
-function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
-  if (gpaUW === null) return null;
-  // Perfect-GPA short-circuit: 4.0 UW is the absolute max on the unweighted
-  // scale, so it always counts as above-p75 regardless of school avg. The
-  // diff-based band fails for elite schools where avgGPAUW ≥ 3.96 (MIT,
-  // Caltech etc.) — a perfect 4.0 reads as only +0.04 above mean and lands
-  // in above-median. The short-circuit captures the conceptual intent
-  // (a maxed transcript IS top quartile at every school).
-  if (gpaUW >= 4.0) return "above-p75";
-  // FP tolerance: 4.0 - 3.95 evaluates to 0.04999999999999982 in IEEE 754.
-  // Subtract a small epsilon from each comparison.
-  const diff = gpaUW - schoolUW;
+// Single-axis GPA banding from a diff (gpa - schoolAvg), parameterized by
+// the slack appropriate for that axis. UW uses tight 0.02 slack (4.0 ceiling
+// gives little spread above the mean); W uses wider 0.05 slack (5.0 scale
+// is more granular at the top because of AP/IB weighting bonuses).
+function gpaBandFromDiff(diff: number, slack: number): StatBand {
   const EPS = 1e-9;
-  // Above-p75 slack 0.02: a 3.97 UW at a 3.95-avg school is at the practical
-  // top of the distribution, so the previous 0.05 cliff produced surprising
-  // "above-median" outputs for near-perfect GPAs. Mirrors the 1-point ACT
-  // slack — both reflect "one notch off perfect is still top-quartile".
-  if (diff >= 0.02 - EPS) return "above-p75";       // top quartile (slack 0.02)
-  if (diff >= 0.0 - EPS)  return "above-median";    // at or just above mean
-  if (diff >= -0.10 - EPS) return "mid-range";      // tight band below mean
-  if (diff >= -0.25 - EPS) return "below-median";   // below mean but in range
+  if (diff >= slack - EPS) return "above-p75";
+  if (diff >= 0.0 - EPS) return "above-median";
+  // Below-band thresholds also scale: UW uses -0.10 / -0.25; W uses -0.20 / -0.50.
+  // The ratio between slack and below thresholds matches the original UW design.
+  const midThresh = -slack * 5;
+  const lowThresh = -slack * 12.5;
+  if (diff >= midThresh - EPS) return "mid-range";
+  if (diff >= lowThresh - EPS) return "below-median";
   return "below-p25";
+}
+
+// Band the user's GPA against the school. Reads BOTH unweighted and weighted
+// when available and returns the higher (more favorable) band — gives credit
+// for whichever signal is stronger. The app's GPA calculator normalizes
+// weighted GPA to a 5.0 scale, so College.avgGPAW comparisons are
+// school-neutral and meaningful.
+function gpaBand(
+  gpaUW: number | null,
+  gpaW: number | null,
+  schoolUW: number,
+  schoolW: number,
+): StatBand | null {
+  if (gpaUW === null && gpaW === null) return null;
+
+  // Perfect-GPA short-circuits — either axis at the practical ceiling
+  // dominates. UW 4.0 is the absolute max; W 4.95+ is "all A's with full
+  // weighting bonus on every advanced class".
+  if (gpaUW != null && gpaUW >= 4.0) return "above-p75";
+  if (gpaW != null && gpaW >= 4.95) return "above-p75";
+
+  const uwBand = gpaUW != null
+    ? gpaBandFromDiff(gpaUW - schoolUW, 0.02)
+    : null;
+  const wBand = gpaW != null
+    ? gpaBandFromDiff(gpaW - schoolW, 0.05)
+    : null;
+
+  // Take the higher band. STAT_BAND_RANK is ascending: below-p25=0,
+  // above-p75=4. Higher rank = better band.
+  if (uwBand === null) return wBand;
+  if (wBand === null) return uwBand;
+  return STAT_BAND_RANK[uwBand] >= STAT_BAND_RANK[wBand] ? uwBand : wBand;
 }
 
 function testBand(score: number | null, p25: number, p75: number, isAct: boolean): StatBand | null {
@@ -554,7 +580,7 @@ function computeHolisticEliteChance(
   // contact remains the authoritative signal.
 
   const testBlind = college.testPolicy === "blind";
-  const gBand = gpaBand(args.gpaUW, college.avgGPAUW);
+  const gBand = gpaBand(args.gpaUW, args.gpaW, college.avgGPAUW, college.avgGPAW);
   const tBand = testBlind ? null : pickTestBand(args.sat, args.act, college);
   const combinedBandRaw = minBand(gBand, tBand);
 
@@ -667,7 +693,8 @@ function computeHolisticEliteChance(
 
   // Reason prose.
   const reasonParts: string[] = [];
-  if (gBand) reasonParts.push(gpaPhrase(args.gpaUW!, college.avgGPAUW, gBand));
+  if (gBand && args.gpaUW != null) reasonParts.push(gpaPhrase(args.gpaUW, college.avgGPAUW, gBand));
+  else if (gBand && args.gpaW != null) reasonParts.push(gpaPhraseW(args.gpaW, college.avgGPAW, gBand));
   if (tBand && !testBlind) reasonParts.push(testPhrase(args.sat, args.act, college, tBand));
   if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
   reasonParts.push(`Holistic-elite: ${fitLabel}`);
@@ -841,7 +868,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     college.testPolicy === "optional" && args.sat === null && args.act === null;
 
   // 3. Compute stat bands. Test-blind drops the test signal entirely.
-  const gBand = gpaBand(args.gpaUW, college.avgGPAUW);
+  const gBand = gpaBand(args.gpaUW, args.gpaW, college.avgGPAUW, college.avgGPAW);
   const tBand = testBlind ? null : pickTestBand(args.sat, args.act, college);
 
   // 4. Combine via min() per SPEC Decision 3 — uneven profiles don't get
@@ -937,7 +964,8 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
 
   // 14. Reason prose: surface signal labels deterministically.
   const reasonParts: string[] = [];
-  if (gBand) reasonParts.push(gpaPhrase(args.gpaUW!, college.avgGPAUW, gBand));
+  if (gBand && args.gpaUW != null) reasonParts.push(gpaPhrase(args.gpaUW, college.avgGPAUW, gBand));
+  else if (gBand && args.gpaW != null) reasonParts.push(gpaPhraseW(args.gpaW, college.avgGPAW, gBand));
   if (tBand && !testBlind) reasonParts.push(testPhrase(args.sat, args.act, college, tBand));
   if (testOptionalNoScore) reasonParts.push("Test-optional with no score submitted — band widened, test signal not used");
   if (testBlind) reasonParts.push("Test-blind admissions — score not considered, GPA only");
@@ -1250,6 +1278,19 @@ function gpaPhrase(userUW: number, schoolUW: number, band: StatBand): string {
     case "mid-range":    return `Your UW GPA (${u}) is right around this school's average (${s})`;
     case "below-median": return `Your UW GPA (${u}) is below this school's average (${s}) but still within range`;
     case "below-p25":    return `Your UW GPA (${u}) is below this school's 25th percentile (avg ${s})`;
+  }
+}
+
+// Weighted-GPA phrasing fallback for users who only entered weighted (no UW).
+function gpaPhraseW(userW: number, schoolW: number, band: StatBand): string {
+  const u = userW.toFixed(2);
+  const s = schoolW.toFixed(2);
+  switch (band) {
+    case "above-p75":    return `Your weighted GPA (${u}) is above this school's typical range (avg ${s})`;
+    case "above-median": return `Your weighted GPA (${u}) is above this school's average (${s}) but within range`;
+    case "mid-range":    return `Your weighted GPA (${u}) is right around this school's average (${s})`;
+    case "below-median": return `Your weighted GPA (${u}) is below this school's average (${s}) but still within range`;
+    case "below-p25":    return `Your weighted GPA (${u}) is below this school's 25th percentile (avg ${s})`;
   }
 }
 
