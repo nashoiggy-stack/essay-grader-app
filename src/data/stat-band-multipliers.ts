@@ -123,10 +123,30 @@ export interface ChanceCap {
   ed: number;
 }
 
-export function getChanceCap(overallAcceptanceRate: number): ChanceCap {
-  if (overallAcceptanceRate < 5)  return { rd: 25, ed: 35 };
-  if (overallAcceptanceRate < 15) return { rd: 30, ed: 39 };
-  if (overallAcceptanceRate < 25) return { rd: 50, ed: 60 };
-  if (overallAcceptanceRate < 50) return { rd: 75, ed: 75 };
+// Final calibration: caps reflect that top schools have institutional
+// uncertainty even for maxed profiles, AND that stats-driven publics in the
+// 15-25% bracket are genuinely "likely" for stat-strong applicants while
+// holistic privates of the same selectivity are not.
+//
+// Mark: rule-of-thumb. Tightened sub-15% caps (was 25/35 in v5; now 18/25)
+// reflect the audit finding that maxed profiles at Stanford/Penn produced
+// 22-32% chances exceeding empirical reality. Holistic-elite tier handles
+// those schools separately; this function still serves the algorithmic tier.
+export function getChanceCap(
+  overallAcceptanceRate: number,
+  admissionsType: "stats-driven" | "holistic" | "mixed" = "holistic",
+): ChanceCap {
+  if (overallAcceptanceRate < 5)  return { rd: 18, ed: 25 };
+  if (overallAcceptanceRate < 10) return { rd: 22, ed: 30 };
+  if (overallAcceptanceRate < 15) return { rd: 28, ed: 35 };
+  if (overallAcceptanceRate < 25) {
+    // Stats-driven publics (UMich, UVA, Georgia Tech, all UCs etc.) read as
+    // genuinely likely for stat-strong profiles — their decisions are largely
+    // formulaic. Holistic privates of the same selectivity stay capped lower.
+    return admissionsType === "stats-driven"
+      ? { rd: 75, ed: 80 }
+      : { rd: 45, ed: 55 };
+  }
+  if (overallAcceptanceRate < 50) return { rd: 70, ed: 70 };
   return { rd: 90, ed: 90 };
 }

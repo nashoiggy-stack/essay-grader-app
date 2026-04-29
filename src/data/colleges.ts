@@ -2,6 +2,7 @@ import type { College, ApplicationOption } from "@/lib/college-types";
 import { COLLEGE_EXTENDED_DATA, COLLEGE_ALIASES } from "./college-extended";
 import { CDS_DATA } from "./cds-data";
 import { isLegacyBlind, isYieldProtected } from "./hook-multipliers";
+import { admissionsTierForSchool, admissionsTypeForSchool } from "./admissions-tier";
 
 // UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
 // and delete the UNDO block at the bottom of this file.
@@ -299,6 +300,11 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
   // Both lists live in src/data/hook-multipliers.ts with citations.
   const legacyConsidered = isLegacyBlind(c.name) ? { legacyConsidered: false as const } : {};
   const yieldProtected = isYieldProtected(c.name) ? { yieldProtected: true as const } : {};
+  // Final calibration tier tags. Routes to algorithmic vs holistic-elite math
+  // (admissionsTier) and differentiates 15-25% bracket caps for stats-driven
+  // publics (admissionsType). Lists in src/data/admissions-tier.ts.
+  const admissionsTier = admissionsTierForSchool(c.name);
+  const admissionsType = admissionsTypeForSchool(c.name);
   return {
     ...c,
     ...(opts ? { applicationOptions: opts } : {}),
@@ -307,6 +313,8 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
     ...(dataYear !== undefined ? { dataYear } : {}),
     ...legacyConsidered,
     ...yieldProtected,
+    admissionsTier,
+    admissionsType,
     ...(aliases ? { aliases } : {}),
   };
 });
