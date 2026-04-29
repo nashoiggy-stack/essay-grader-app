@@ -50,10 +50,18 @@ const TARGETS: { name: string; plans: ApplicationPlan[] }[] = [
   { name: "Harvard University", plans: ["RD", "SCEA"] },
   { name: "Yale University", plans: ["RD", "SCEA"] },
   { name: "Princeton University", plans: ["RD", "SCEA"] },
-  { name: "MIT", plans: ["RD"] },
+  { name: "MIT", plans: ["RD", "EA"] },
+  { name: "Cornell University", plans: ["RD", "ED"] },
+  { name: "Duke University", plans: ["RD", "ED"] },
+  { name: "Northwestern University", plans: ["RD", "ED"] },
+  { name: "Johns Hopkins University", plans: ["RD", "ED"] },
+  { name: "University of Notre Dame", plans: ["RD", "REA"] },
   { name: "University of Florida", plans: ["RD"] },
   { name: "University of Michigan", plans: ["RD"] },
   { name: "Washington University in St. Louis", plans: ["RD", "ED"] },
+  { name: "Northeastern University", plans: ["RD"] },
+  { name: "Tufts University", plans: ["RD", "ED"] },
+  { name: "Case Western Reserve University", plans: ["RD"] },
 ];
 
 function run(label: string, profile: typeof MAXED | typeof STRONG): void {

@@ -268,6 +268,13 @@ export function compareTests(
 
 function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
   if (gpaUW === null) return null;
+  // Perfect-GPA short-circuit: 4.0 UW is the absolute max on the unweighted
+  // scale, so it always counts as above-p75 regardless of school avg. The
+  // diff-based band fails for elite schools where avgGPAUW ≥ 3.96 (MIT,
+  // Caltech etc.) — a perfect 4.0 reads as only +0.04 above mean and lands
+  // in above-median. The short-circuit captures the conceptual intent
+  // (a maxed transcript IS top quartile at every school).
+  if (gpaUW >= 4.0) return "above-p75";
   // FP tolerance: 4.0 - 3.95 evaluates to 0.04999999999999982 in IEEE 754,
   // which used to flip a perfect-GPA Stanford applicant out of the
   // above-p75 band. Subtract a small epsilon from each comparison.
@@ -535,10 +542,10 @@ function computeHolisticEliteChance(
 ): ChanceResultModel {
   const college = args.college;
 
-  // Recruited-athlete short-circuit applies here too.
-  if (args.recruitedAthlete === true) {
-    return recruitedAthletePathwayResult(college);
-  }
+  // Recruited-athlete pathway routing dropped per final calibration. The
+  // schema field on UserProfile remains for future re-enabling. Recruited
+  // applicants currently fall through to the regular Tier 2 math; coach
+  // contact remains the authoritative signal.
 
   const testBlind = college.testPolicy === "blind";
   const gBand = gpaBand(args.gpaUW, college.avgGPAUW);
@@ -581,7 +588,11 @@ function computeHolisticEliteChance(
       fitLabel = "at threshold, average EC/essay";
     }
   } else if (maxedStat && distinguishedFlag && ecExceptional && essayHigh) {
-    fitMult = 2.5;
+    // Citation: Arcidiacono Harvard top-decile non-ALDC admit rate 15.3% /
+    // baseline 4.0% = 3.83x. Distinguished maxed applicants are top few
+    // percent of the unhooked pool, where admit rates exceed decile averages.
+    // 3.5x sits at the conservative end of the empirical range.
+    fitMult = 3.5;
     fitLabel = "distinguished maxed profile";
   } else if (maxedStat && ecExceptional && essayHigh) {
     fitMult = 2.3;
@@ -598,9 +609,14 @@ function computeHolisticEliteChance(
   }
 
   // Compute, cap, classify.
+  // Flat 35% cap across all plans (RD, ED, REA, SCEA, EA). Top schools never
+  // reach 'likely' tier (40%+) for any unhooked applicant regardless of when
+  // they apply. Binding-ED leverage is already captured in the per-plan
+  // headline admit rate (Penn ED 14.22% > Penn RD 4.05%); differentiating
+  // the cap by plan would double-count the early-round advantage.
   const isEdLikePlan =
     plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
-  const cap = isEdLikePlan ? 40 : 30;
+  const cap = 35;
   let mid = headlineRate * fitMult;
   if (mid > cap) mid = cap;
   mid = clamp(mid, 0.5, 95);
@@ -783,10 +799,9 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     return computeHolisticEliteChance(args, plan);
   }
 
-  // 1. Recruited athlete pathway short-circuit.
-  if (args.recruitedAthlete === true) {
-    return recruitedAthletePathwayResult(college);
-  }
+  // 1. Recruited-athlete pathway routing dropped per final calibration. The
+  //    schema field on UserProfile remains; the special-case math is shelved
+  //    until coach-contact data can ground the multipliers.
 
   // 2. Determine which stats we have. Test-blind schools and test-optional
   //    with no test submitted both fall back to GPA-only with widened band.

@@ -35,7 +35,7 @@ export const HOLISTIC_ELITE_SCHOOLS: ReadonlySet<string> = new Set([
   "Northwestern University",
   "Johns Hopkins University",
   "University of Chicago",
-  "Notre Dame",
+  "University of Notre Dame",
   "Vanderbilt University",
   "Rice University",
   // Top liberal arts
