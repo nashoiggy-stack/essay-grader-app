@@ -604,59 +604,35 @@ function computeHolisticEliteChance(
   const baseResult = getBaseRateForPlan(college, plan);
   const headlineRate = baseResult.rate;
 
-  // Fit ladder.
-  // The four distinguished EC auto-flag fields (firstAuthorPublication,
-  // nationalCompetitionPlacement, founderWithUsers, selectiveProgram) are
-  // signals to the EC tier classifier — when any is true, treat the band
-  // as 'exceptional' regardless of the user-set ecBand. They are NOT a
-  // separate multiplier branch (the previous distinguished-maxed 3.5x tier
-  // was removed because it duplicated EC-tier judgment).
+  // Multiplicative stack — separate stat / EC / essay multipliers so the
+  // breakdown panel can show what each input contributed instead of one
+  // opaque "fit" number. Calibrated so the maxed combination produces the
+  // same ~3.0× total as the prior fit-ladder approach.
+  //
+  // The 4 distinguished EC auto-flags promote effectiveEcBand to 'exceptional'
+  // when any is true.
   const effectiveEcBand =
     args.distinguishedEC === true ? "exceptional" : args.ecBand?.toLowerCase();
   const essayInfo = essayMultiplier(args.essayScores);
-  const essayAvg = essayInfo.avgCombined ?? 0;
 
-  const aboveThreshold =
-    combinedBand !== "below-p25" && combinedBand !== "below-median";
-  const maxedStat = combinedBand === "above-p75";
-  const ecExceptional = effectiveEcBand === "exceptional";
-  const ecStrong = effectiveEcBand === "strong" || effectiveEcBand === "exceptional";
-  const essayHigh = essayAvg >= 90;
-  const essayDecent = essayAvg >= 75;
-
-  let fitMult: number;
-  let fitLabel: string;
-  if (combinedBand === "below-p25") {
-    fitMult = 0.4;
-    fitLabel = "below academic threshold";
-  } else if (!aboveThreshold) {
-    if (effectiveEcBand === undefined || effectiveEcBand === "limited" || effectiveEcBand === "developing") {
-      fitMult = 0.7;
-      fitLabel = "at threshold, weak EC/essay";
-    } else {
-      fitMult = 1.0;
-      fitLabel = "at threshold, average EC/essay";
-    }
-  } else if (maxedStat && ecExceptional && essayHigh) {
-    // Single maxed multiplier 3.0× for top-quartile stats + exceptional ECs
-    // + 90+ essay. The previous distinguished-maxed (3.5×) tier was removed
-    // because it duplicated EC-tier judgment that the classifier already
-    // makes via the 4 auto-flag fields.
-    // Citation: Arcidiacono Harvard top-decile non-ALDC admit rate 15.3% /
-    // baseline 4.0% = 3.83×. 3.0× is the conservative-side of the empirical
-    // range for unhooked top-decile applicants.
-    fitMult = 3.0;
-    fitLabel = "maxed profile";
-  } else if (ecExceptional && essayDecent) {
-    fitMult = 1.8;
-    fitLabel = "above threshold, exceptional EC + essay";
-  } else if (ecStrong) {
-    fitMult = 1.4;
-    fitLabel = "above threshold, strong EC/essay";
-  } else {
-    fitMult = 1.0;
-    fitLabel = "above threshold, average EC/essay";
-  }
+  // Tier 2 stat multipliers are COMPRESSED relative to Tier 1: at top schools,
+  // stats stop predicting outcomes past the academic threshold (Caltech rejects
+  // 1600 SATs every cycle). Above-p75 still gets a real boost; above-median
+  // and mid-range read identical because both clear the bar with no further
+  // differentiation. Below-threshold drags chance down.
+  // Mark: rule-of-thumb. Calibrated against Arcidiacono Harvard top-decile
+  // 15.3% / baseline 4.0% = 3.83× — combined with 1.7× exceptional EC and
+  // 1.15× 90+ essay, 1.5× stat lands at 2.93× total ≈ 3.0× target.
+  const TIER2_STAT_MULT: Record<StatBand, number> = {
+    "above-p75":    1.5,
+    "above-median": 1.0,
+    "mid-range":    1.0,
+    "below-median": 0.7,
+    "below-p25":    0.4,
+  };
+  const statMult = TIER2_STAT_MULT[combinedBand];
+  const ecMult = getEcBandMultiplier(effectiveEcBand);
+  const essayMult = essayInfo.multiplier;
 
   // Compute, cap, classify.
   // Flat 35% cap across all plans (RD, ED, REA, SCEA, EA). Top schools never
@@ -667,8 +643,10 @@ function computeHolisticEliteChance(
   const isEdLikePlan =
     plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
   const cap = 35;
-  let mid = headlineRate * fitMult;
-  if (mid > cap) mid = cap;
+  const totalMult = statMult * ecMult * essayMult;
+  let mid = headlineRate * totalMult;
+  const capApplied = mid > cap;
+  if (capApplied) mid = cap;
   mid = clamp(mid, 0.5, 95);
 
   const chance: ChanceRange = {
@@ -697,32 +675,72 @@ function computeHolisticEliteChance(
   else if (gBand && args.gpaW != null) reasonParts.push(gpaPhraseW(args.gpaW, college.avgGPAW, gBand));
   if (tBand && !testBlind) reasonParts.push(testPhrase(args.sat, args.act, college, tBand));
   if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
-  reasonParts.push(`Holistic-elite: ${fitLabel}`);
   reasonParts.push(
     "Top schools have institutional uncertainty even for maxed profiles. " +
       "This estimate reflects unhooked applicant reality.",
   );
   const reason = reasonParts.join(". ") + ".";
 
-  // Build a minimal breakdown — fit factors as one line, no stack.
-  // Surface the rigor tier in the note so users see when AP/IB scores
-  // shifted their stat band (consensus rule firing).
-  const fitNote =
+  // Multi-step breakdown — separate stat / EC / essay rows so users can see
+  // what each input contributed. Mirrors the Tier 1 layout, with Tier 2 stat
+  // multipliers that reflect "stats stop predicting past the academic bar".
+  const steps: BreakdownStep[] = [];
+  let running = headlineRate;
+
+  // Stats step (rigor surfaced in note when the consensus rule fired).
+  running = clamp(running * statMult, 0.5, 95);
+  const statNote =
     rigorTier !== "none"
-      ? `Holistic-elite model. Stats + rigor (${rigorLabel(rigorTier)}) clear the academic bar; chance reflects baseline rate with fit adjustments.`
-      : "Holistic-elite model. Stats clear the academic bar; chance reflects baseline rate with fit adjustments.";
+      ? `Rigor: ${rigorLabel(rigorTier)}`
+      : "Tier 2 stat multiplier compressed: at top schools, stats stop predicting outcomes past the academic threshold.";
+  steps.push({
+    label: `Stats (${prettyBand(combinedBand)})`,
+    multiplier: statMult,
+    runningChance: round1(running),
+    note: statNote,
+  });
+
+  // EC step.
+  running = clamp(running * ecMult, 0.5, 95);
+  steps.push({
+    label: `ECs (${effectiveEcBand ? prettyEc(effectiveEcBand) : "default"})`,
+    multiplier: ecMult,
+    runningChance: round1(running),
+  });
+
+  // Essay step (advisory when no graded essay).
+  if (essayInfo.count === 0) {
+    steps.push({
+      label: "Essays (not measured)",
+      multiplier: 1.0,
+      runningChance: round1(running),
+      note: "Essay quality not measured. Grade your essays through the essay tool for a fuller estimate.",
+    });
+  } else {
+    running = clamp(running * essayMult, 0.5, 95);
+    const avg = essayInfo.avgCombined ?? 0;
+    steps.push({
+      label: `Essays (combined ${avg.toFixed(0)}, ${essayInfo.count} graded)`,
+      multiplier: essayMult,
+      runningChance: round1(running),
+    });
+  }
+
+  // Cap step (only when fired).
+  if (capApplied) {
+    steps.push({
+      label: `Selectivity cap (holistic-elite, ${plan})`,
+      multiplier: cap / running,
+      runningChance: cap,
+      note: `Capped at ${cap}% — top schools never reach 'likely' tier for unhooked applicants.`,
+    });
+  }
+
   const breakdown: ChanceBreakdown = {
     baseRate: headlineRate,
     baseLabel: baseResult.planNote ?? `Headline admit rate (${headlineRate}%)`,
-    steps: [
-      {
-        label: `Fit (${fitLabel})`,
-        multiplier: fitMult,
-        runningChance: round1(clamp(headlineRate * fitMult, 0.5, 95)),
-        note: fitNote,
-      },
-    ],
-    cap: { value: cap, applied: headlineRate * fitMult > cap, bracket: `${plan}, holistic-elite` },
+    steps,
+    cap: { value: cap, applied: capApplied, bracket: `${plan}, holistic-elite` },
     finalChance: chance.mid,
   };
 
