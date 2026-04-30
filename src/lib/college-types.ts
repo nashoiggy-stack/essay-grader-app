@@ -390,6 +390,10 @@ export interface ChanceResult {
   readonly explanation: string;
   readonly strengths: string[];
   readonly weaknesses: string[];
+  // Neutral CTAs for inputs the user hasn't provided yet (e.g. AP scores).
+  // Surfaced as a separate UI section so absence of data isn't styled as a
+  // weakness/penalty. Each entry is { label, href }.
+  readonly missingDataHints?: readonly { label: string; href: string }[];
   readonly confidence: ConfidenceTier;
   readonly breakdown?: import("./admissions").ChanceBreakdown;
   readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];

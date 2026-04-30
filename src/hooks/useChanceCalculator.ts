@@ -214,6 +214,7 @@ export function useChanceCalculator() {
 
     const strengths: string[] = [];
     const weaknesses: string[] = [];
+    const missingDataHints: { label: string; href: string }[] = [];
 
     // The chance model's `reason` already strings together the headline
     // GPA + test + plan signals deterministically — split into sentence
@@ -260,8 +261,20 @@ export function useChanceCalculator() {
     }
 
     // ── Course rigor display ──
-    if (inputs.rigor === "high") strengths.push("Strong course rigor signals academic readiness");
-    else if (inputs.rigor === "low") weaknesses.push("Consider taking more challenging courses");
+    // Rigor is auto-derived from gpa-calc weighted GPA. Without AP exam
+    // scores the signal is unreliable — a strong UW GPA in CP/Honors classes
+    // would otherwise read as "low rigor". Treat absence of AP data as
+    // unknown rigor: surface a missing-data CTA, not a weakness.
+    if (inputs.apScores.length === 0) {
+      missingDataHints.push({
+        label: "Add AP/IB scores for a sharper estimate",
+        href: "/profile#ap-scores",
+      });
+    } else if (inputs.rigor === "high") {
+      strengths.push("Strong course rigor signals academic readiness");
+    } else if (inputs.rigor === "low") {
+      weaknesses.push("Consider taking more challenging courses");
+    }
 
     // ── Test-required penalty surfaces as a weakness note ──
     if (sat === null && act === null && college.testPolicy === "required") {
@@ -315,6 +328,7 @@ export function useChanceCalculator() {
       explanation,
       strengths,
       weaknesses,
+      missingDataHints,
       confidence: r.confidence,
       breakdown: r.breakdown,
       whatIfs,

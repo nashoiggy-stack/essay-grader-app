@@ -232,6 +232,23 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </div>
       </div>
 
+      {/* Missing data hints — neutral CTAs, not weaknesses */}
+      {result.missingDataHints && result.missingDataHints.length > 0 && (
+        <ul className="rounded-lg bg-zinc-500/5 border border-white/[0.06] p-3 space-y-1.5">
+          {result.missingDataHints.map((hint, i) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+              <span className="text-zinc-500 mt-0.5 shrink-0">+</span>
+              <a
+                href={hint.href}
+                className="hover:text-zinc-200 underline decoration-zinc-700 underline-offset-2"
+              >
+                {hint.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {/* Disclaimer */}
       <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-3">
         <p className="text-[11px] text-amber-400/70 leading-relaxed">
