@@ -4,6 +4,8 @@ import React from "react";
 import { motion } from "motion/react";
 import type { ApplicationPlan, ChanceResult, Classification, College } from "@/lib/college-types";
 import { BreakdownPanel } from "./BreakdownPanel";
+import { getSchoolRecord } from "@/lib/school-data";
+import SchoolHistoryScatterplot from "./SchoolHistoryScatterplot";
 
 // Color coding mirrors /colleges CollegeCard so the same school produces the
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
@@ -171,6 +173,17 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </div>
       </div>
 
+      {/* School-history scatterplot — visible by default when feeder data
+          exists for this college+plan. Sandbox feature; renders nothing
+          gracefully when no record is found. */}
+      {college && applicationPlan && userStats && getSchoolRecord(college, applicationPlan) && (
+        <SchoolHistoryScatterplot
+          college={college}
+          userStats={userStats}
+          defaultAppType={applicationPlan}
+        />
+      )}
+
       {/* Multiplier breakdown + what-ifs (collapsible) */}
       {result.breakdown && (
         <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
@@ -182,13 +195,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           </summary>
           <div className="px-4 pb-4 pt-1 space-y-4">
             <p className="text-[12px] text-zinc-500 leading-relaxed">{result.explanation}</p>
-            <BreakdownPanel
-              breakdown={result.breakdown}
-              whatIfs={result.whatIfs}
-              college={college}
-              applicationPlan={applicationPlan}
-              userStats={userStats}
-            />
+            <BreakdownPanel breakdown={result.breakdown} whatIfs={result.whatIfs} />
           </div>
         </details>
       )}
