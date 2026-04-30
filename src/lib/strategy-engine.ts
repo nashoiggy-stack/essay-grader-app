@@ -147,9 +147,9 @@ export function analyzeECStrength(p: StrategyProfile): ECStrength {
     activities,
     spikes: p.ec.spikes,
   });
-  const band = bandFromScore(score);
 
   const tier1Count = activities.filter((a) => a.tier === 1).length;
+  const band = bandFromScore(score, tier1Count);
   const tier2Count = activities.filter((a) => a.tier === 2).length;
   const leadershipRate = activities.filter((a) => a.scores.leadership >= 3).length / activities.length;
   const impactRate = activities.filter((a) => a.scores.impact >= 3).length / activities.length;

@@ -65,8 +65,16 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
     [result]
   );
   // Derive the displayed band from the continuous score — the score is the
-  // source of truth, the band is just a label.
-  const displayBand = useMemo(() => bandFromScore(score), [score]);
+  // source of truth, the band is just a label. Tier-1 count gates the
+  // 'exceptional' band per EXCEPTIONAL_TIER1_MIN.
+  const tier1Count = useMemo(
+    () => result.activities.filter((a) => a.tier === 1).length,
+    [result.activities],
+  );
+  const displayBand = useMemo(
+    () => bandFromScore(score, tier1Count),
+    [score, tier1Count],
+  );
   const nextStep = useMemo(() => buildReadinessNextStep(score), [score]);
 
   return (

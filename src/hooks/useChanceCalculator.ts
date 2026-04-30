@@ -180,9 +180,13 @@ export function useChanceCalculator() {
     // hook doesn't surface (per-school applicationPlan, AP support, ACT
     // Science) — those are layered on top as small qualitative signals after
     // the percentile-based midpoint.
-    // Distinguished EC flags live on the shared profile. Read them here so
-    // /chances reflects the same boost the College List does.
+    // Distinguished EC flags + advancedCoursework + essayScores live on the
+    // shared profile. Read them here so /chances reflects the same chance
+    // math the rest of the app does.
     let distinguishedEC = false;
+    let advancedCoursework: import("@/lib/profile-types").AdvancedCourseworkRow[] | undefined;
+    let advancedCourseworkAvailable: "all" | "limited" | "none" | undefined;
+    let essayScores: import("@/lib/profile-types").EssayScoreRecord[] | undefined;
     try {
       const rawProfile = typeof window !== "undefined" ? localStorage.getItem("admitedge-profile") : null;
       if (rawProfile) {
@@ -192,8 +196,32 @@ export function useChanceCalculator() {
           p?.nationalCompetitionPlacement === true ||
           p?.founderWithUsers === true ||
           p?.selectiveProgram === true;
+        if (Array.isArray(p?.advancedCoursework)) advancedCoursework = p.advancedCoursework;
+        if (p?.advancedCourseworkAvailable === "all" || p?.advancedCourseworkAvailable === "limited" || p?.advancedCourseworkAvailable === "none") {
+          advancedCourseworkAvailable = p.advancedCourseworkAvailable;
+        }
+        if (Array.isArray(p?.essayScores)) essayScores = p.essayScores;
       }
     } catch { /* ignore */ }
+
+    // Synthesize an essayScores entry from the form's Common App + VSPICE
+    // inputs when /profile hasn't surfaced graded essays yet. Auto-filled by
+    // the Essay Grader, but the form values are read-trusted: if essayCA is
+    // set and is in the Essay Grader's range, treat it as the combinedScore.
+    // Without this, the chance model stays at the 1.0× neutral essay
+    // multiplier and the user can't reach the maxed branches via the form.
+    if ((!essayScores || essayScores.length === 0) && essayCA != null) {
+      const vspice0to24 = essayV != null ? Math.max(0, Math.min(24, essayV)) : 0;
+      essayScores = [
+        {
+          promptId: "chances-form",
+          combinedScore: essayCA,
+          rubricScore: essayCA,
+          vspiceScore: vspice0to24,
+          gradedAt: Date.now(),
+        },
+      ];
+    }
 
     const chanceArgs = {
       college,
@@ -207,6 +235,9 @@ export function useChanceCalculator() {
       distinguishedEC,
       rigor: inputs.rigor,
       apScores: inputs.apScores,
+      advancedCoursework,
+      advancedCourseworkAvailable,
+      essayScores,
       applicationPlan: inputs.applicationPlan,
     };
     const r = computeAdmissionChance(chanceArgs);

@@ -110,12 +110,28 @@ export const BAND_ORDER: readonly ECBand[] = [
   "exceptional",
 ] as const;
 
+/** Minimum number of Tier-1 activities required to land in 'exceptional'.
+ *  A high readiness score alone doesn't earn the top band — admissions
+ *  reads "exceptional" as multiple distinction-tier accomplishments, not
+ *  one tier-1 surrounded by deep tier-2/3 supports. Sub-threshold profiles
+ *  with score ≥ 90 demote to 'strong'. */
+export const EXCEPTIONAL_TIER1_MIN = 2;
+
 /**
  * Derive the qualitative band label from a continuous score.
  * Score → label is one-directional: the score is the source of truth.
+ *
+ * Optional tier1Count gates the 'exceptional' band — see EXCEPTIONAL_TIER1_MIN.
+ * Callers without activity data omit the count and accept the loose mapping;
+ * bandFromEvaluation always passes it.
  */
-export function bandFromScore(score: number): ECBand {
-  if (score >= 90) return "exceptional";
+export function bandFromScore(score: number, tier1Count?: number): ECBand {
+  if (score >= 90) {
+    if (tier1Count !== undefined && tier1Count < EXCEPTIONAL_TIER1_MIN) {
+      return "strong";
+    }
+    return "exceptional";
+  }
   if (score >= 80) return "strong";
   if (score >= 65) return "solid";
   if (score >= 45) return "developing";
@@ -136,7 +152,8 @@ export function bandFromEvaluation(r: {
     activities: r.activities,
     spikes: r.spikes,
   });
-  return bandFromScore(score);
+  const tier1Count = r.activities.filter((a) => a.tier === 1).length;
+  return bandFromScore(score, tier1Count);
 }
 
 interface ReadinessInput {

@@ -116,6 +116,25 @@ export interface College {
   readonly legacyConsidered?: boolean;
   readonly yieldProtected?: boolean;
 
+  // ── Two-tier routing (final calibration) ─────────────────────────────────
+  // The chance model has two distinct pathways. Algorithmic uses the standard
+  // multiplier stack with caps. Holistic-elite uses a fit-multiplier model
+  // because at the top-20 level, stats stop predicting outcomes past the
+  // academic threshold and institutional-fit factors dominate. Default is
+  // 'algorithmic' for any school not explicitly tagged 'holistic-elite'.
+  //
+  // Holistic-elite cohort: all 8 Ivies, Stanford, MIT, Caltech, Duke,
+  // Northwestern, JHU, UChicago, Notre Dame, Vanderbilt, Rice, Williams,
+  // Amherst, Pomona, Swarthmore.
+  readonly admissionsTier?: "algorithmic" | "holistic-elite";
+
+  // Differentiates how the school evaluates applicants in the algorithmic
+  // tier. Stats-driven publics (UF, all UCs, UMich, UVA, etc.) cap chance
+  // generously in the 15-25% admit-rate bracket because their decisions are
+  // largely formulaic. Holistic privates cap conservatively because soft
+  // factors swing more weight. Default 'holistic'.
+  readonly admissionsType?: "stats-driven" | "holistic" | "mixed";
+
   // ── Program-specific admit rates (W4 structural — empty in Feature 1) ────
   // When populated, the chance model surfaces low-confidence for users whose
   // chosen major matches a known competitive program. Per-program data

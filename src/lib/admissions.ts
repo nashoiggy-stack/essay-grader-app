@@ -11,11 +11,19 @@ import {
   getEcBandMultiplier,
   applyCombinedDampener,
   getChanceCap,
-  STAT_BAND_RANK,
   type StatBand,
 } from "@/data/stat-band-multipliers";
 import { isYieldProtected } from "@/data/hook-multipliers";
 import { applySchoolHistory, type SchoolBlendResult } from "./school-data";
+import type { AdvancedCourseworkRow, EssayScoreRecord } from "./profile-types";
+import { classifyRigor, rigorSignal, rigorLabel, type RigorTier } from "./rigor";
+import {
+  computeAcademicIndex,
+  computeWuwRatio,
+  statBandFromAi,
+  actToSatEquivalent,
+  type AcademicIndex,
+} from "./academic-index";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,205 +32,11 @@ export interface Signal {
   readonly delta: number;
 }
 
-export interface AcademicFit {
-  readonly signals: Signal[];
-  readonly totalDelta: number;
-  readonly metrics: number;
-}
-
-// ── GPA Comparison ───────────────────────────────────────────────────────────
-
-export function compareGPA(
-  userUW: number | null,
-  userW: number | null,
-  schoolUW: number,
-  schoolW: number
-): { signals: Signal[]; delta: number; metrics: number } {
-  const signals: Signal[] = [];
-  let delta = 0;
-  let metrics = 0;
-
-  if (userUW !== null) {
-    const diff = userUW - schoolUW;
-    const normalized = diff / 0.5;
-    delta += normalized;
-    metrics++;
-
-    if (diff >= 0.15) {
-      signals.push({ label: `Your UW GPA (${userUW.toFixed(2)}) is above this school's average (${schoolUW.toFixed(2)})`, delta: normalized });
-    } else if (diff >= -0.1) {
-      signals.push({ label: `Your UW GPA (${userUW.toFixed(2)}) is within this school's typical range`, delta: normalized });
-    } else {
-      signals.push({ label: `Your UW GPA (${userUW.toFixed(2)}) is below this school's average (${schoolUW.toFixed(2)})`, delta: normalized });
-    }
-  }
-
-  if (userW !== null) {
-    const diff = userW - schoolW;
-    const normalized = diff / 0.6;
-    delta += normalized;
-    metrics++;
-
-    if (diff >= 0.2) {
-      signals.push({ label: `Your weighted GPA (${userW.toFixed(2)}) is above average (${schoolW.toFixed(2)})`, delta: normalized });
-    } else if (diff >= -0.15) {
-      signals.push({ label: `Your weighted GPA (${userW.toFixed(2)}) is within range`, delta: normalized });
-    } else {
-      signals.push({ label: `Your weighted GPA (${userW.toFixed(2)}) is below average (${schoolW.toFixed(2)})`, delta: normalized });
-    }
-  }
-
-  return { signals, delta, metrics };
-}
-
-// ── Test Score Utilities ─────────────────────────────────────────────────────
-// UNDO: To revert to the old linear/stacking model, replace this entire
-// section (from "Test Score Utilities" to the end of "compareTests") with
-// the original compareTests function that processed SAT and ACT independently.
-
-/**
- * Normalize a test score against a school's range with school-specific
- * diminishing returns.
- *
- * Ceiling: 0.4 (= max 4 points on 0-100 scale)
- * Decay speed: based on range width — narrow ranges flatten fast,
- * wide ranges flatten slowly.
- *
- * Below p25: linear negative penalty (clamped at -1.5 = -15 pts)
- * At p25: 0 (neutral)
- * Within range: meaningful positive (higher at wider-range schools)
- * Above p75: diminishing returns (faster at narrow-range schools)
- *
- * UNDO: Replace this function with the 0.15-ceiling version.
- */
-function normalizeTestScore(
-  score: number,
-  p25: number,
-  p75: number,
-  minSpread: number
-): number {
-  const range = Math.max(p75 - p25, minSpread * 2);
-  const position = (score - p25) / range;
-
-  // Below p25: linear negative (clamped at -1.5)
-  if (position <= 0) return Math.max(-1.5, position * 1.2);
-
-  // School-specific decay factor:
-  // Narrow range (elite) → high decay → flattens fast
-  // Wide range (mid-tier) → low decay → flattens slowly
-  //
-  // SAT range 100 (1480-1580, Harvard) → decay = 3.0 (very fast)
-  // SAT range 200 (1200-1400, mid-tier) → decay = 1.5 (moderate)
-  // ACT range 2 (34-36, Harvard) → uses minSpread 3→range 6 → decay = 3.0
-  // ACT range 4 (28-32, mid-tier) → decay = 2.25
-  //
-  // Formula: decay = 1.0 + 200 / range (SAT) or 1.0 + 12 / range (ACT)
-  // Simplified: use range directly — smaller range = faster decay
-  const decay = 1.0 + 12.0 / range;
-
-  // Exponential saturation: ceiling 0.4 (= 4 pts max)
-  // output = 0.4 * (1 - e^(-position * decay))
-  return 0.4 * (1 - Math.exp(-position * decay));
-}
-
-/** Normalize SAT to a school-relative fit index. */
-export function normalizeSatToIndex(sat: number, college: College): number {
-  return normalizeTestScore(sat, college.sat25, college.sat75, 60);
-}
-
-/** Normalize ACT to a school-relative fit index. */
-export function normalizeActToIndex(act: number, college: College): number {
-  return normalizeTestScore(act, college.act25, college.act75, 3);
-}
-
-/**
- * Official ACT-to-SAT concordance table (College Board / ACT joint study).
- * Maps ACT composite → equivalent SAT total.
- * Used to compare SAT and ACT on a common scale before picking the better one.
- * Scores 35-36 and 1530-1600 are intentionally close — they're near-identical.
- */
-const ACT_TO_SAT: Record<number, number> = {
-  36: 1590, 35: 1560, 34: 1530, 33: 1500, 32: 1470, 31: 1440,
-  30: 1410, 29: 1380, 28: 1350, 27: 1320, 26: 1290, 25: 1260,
-  24: 1230, 23: 1200, 22: 1170, 21: 1140, 20: 1110, 19: 1080,
-  18: 1050, 17: 1020, 16: 990, 15: 960, 14: 930, 13: 900, 12: 870,
-};
-
-/** Convert ACT to equivalent SAT using concordance table. */
-export function actToSatEquivalent(act: number): number {
-  const clamped = Math.round(Math.max(12, Math.min(36, act)));
-  return ACT_TO_SAT[clamped] ?? 1050;
-}
-
-/**
- * Pick the best single test signal. If both SAT and ACT are provided,
- * convert ACT to SAT-equivalent using the official concordance table,
- * then use whichever represents the higher score on that common scale.
- * A 35 ACT (≈1560 SAT) and a 1550 SAT are nearly identical — the 35 ACT wins
- * marginally, and adding the 1550 SAT does NOT boost anything.
- */
-export function getBestTestSignal(
-  sat: number | null,
-  act: number | null,
-  college: College
-): { type: "sat" | "act" | null; score: number | null; normalized: number } {
-  if (college.testPolicy === "blind") return { type: null, score: null, normalized: 0 };
-
-  if (sat !== null && act !== null) {
-    // Compare on SAT scale using concordance
-    const actAsSat = actToSatEquivalent(act);
-    if (actAsSat >= sat) {
-      // ACT is equal or stronger — use ACT
-      return { type: "act", score: act, normalized: normalizeActToIndex(act, college) };
-    }
-    // SAT is stronger — use SAT
-    return { type: "sat", score: sat, normalized: normalizeSatToIndex(sat, college) };
-  }
-
-  if (sat !== null) return { type: "sat", score: sat, normalized: normalizeSatToIndex(sat, college) };
-  if (act !== null) return { type: "act", score: act, normalized: normalizeActToIndex(act, college) };
-  return { type: null, score: null, normalized: 0 };
-}
-
-// ── Test Score Comparison (uses best single test) ───────────────────────────
-
-export function compareTests(
-  sat: number | null,
-  act: number | null,
-  college: College
-): { signals: Signal[]; delta: number; metrics: number } {
-  const best = getBestTestSignal(sat, act, college);
-
-  if (best.type === null || best.score === null) {
-    return { signals: [], delta: 0, metrics: 0 };
-  }
-
-  const signals: Signal[] = [];
-  const normalized = best.normalized;
-
-  if (best.type === "sat") {
-    const bothNote = act !== null ? " (used over ACT as stronger score)" : "";
-    if (best.score >= college.sat75 + 10) {
-      signals.push({ label: `Your SAT (${best.score}) is well above the 75th percentile (${college.sat75})${bothNote}`, delta: normalized });
-    } else if (best.score >= college.sat25) {
-      signals.push({ label: `Your SAT (${best.score}) is within the school's range (${college.sat25}-${college.sat75})${bothNote}`, delta: normalized });
-    } else {
-      signals.push({ label: `Your SAT (${best.score}) is below the 25th percentile (${college.sat25})${bothNote}`, delta: normalized });
-    }
-  } else {
-    const bothNote = sat !== null ? " (used over SAT as stronger score)" : "";
-    if (best.score >= college.act75 + 1) {
-      signals.push({ label: `Your ACT (${best.score}) is above the 75th percentile (${college.act75})${bothNote}`, delta: normalized });
-    } else if (best.score >= college.act25) {
-      signals.push({ label: `Your ACT (${best.score}) is within range (${college.act25}-${college.act75})${bothNote}`, delta: normalized });
-    } else {
-      signals.push({ label: `Your ACT (${best.score}) is below the 25th percentile (${college.act25})${bothNote}`, delta: normalized });
-    }
-  }
-
-  // Always exactly 1 metric for tests (never 2)
-  return { signals, delta: normalized, metrics: 1 };
-}
+// ── ACT-SAT concordance (re-export) ─────────────────────────────────────────
+// Concordance table now lives in academic-index.ts. Re-exported here for
+// backward compat with callers that imported `actToSatEquivalent` from this
+// module before the AI refactor.
+export { actToSatEquivalent };
 
 // ── Selectivity ──────────────────────────────────────────────────────────────
 
@@ -249,52 +63,64 @@ export function compareTests(
 // Hard rules (per SPEC, do not relax in this file):
 //   - Sub-10% admit-rate schools cap at "reach" — no safety/likely/target
 //     can ever fire there regardless of stats.
-//   - GPA + test combine via min(), not average — uneven profiles do not
-//     get the high-stat benefit (SPEC Decision 3).
-//   - Test-blind schools (UC system) use GPA only.
-//   - Test-optional with no test submitted does NOT count as below-p25;
-//     the band uses GPA only and confidence drops.
-
-// ── Stat band determination ─────────────────────────────────────────────────
-
-// Five-band stat classification (final calibration spec).
-//   above-p75 / above-median / mid-range / below-median / below-p25
+//   - Stat band derives from the Academic Index (AI), not school-relative
+//     percentiles. AI = (weightedGPA/5 × 80) × 1.5 + ((bestTest-400)/1200
+//     × 80) × 1.5. Cutoffs anchored to Arcidiacono Harvard SFFA 2019.
+//   - Test-blind schools (UC system) use GPA-only AI mode.
+//   - Test-optional with no test submitted uses GPA-only AI mode and
+//     widens the Tier 2 uncertainty range from ±20% to ±30%.
 //
-// Calibrated so the spec's elite profile (4.0 UW, 35 ACT, 1540 SAT) buckets
-// as above-p75 on every selective school's published distribution. GPA uses
-// absolute deltas because schools publish a mean only; tests scale slack
-// by the published 25-75 range so narrow ACT bands don't over-bucket.
+// Refer to src/lib/academic-index.ts for the AI formula and tier cutoffs.
 
-function gpaBand(gpaUW: number | null, schoolUW: number): StatBand | null {
-  if (gpaUW === null) return null;
-  const diff = gpaUW - schoolUW;
-  if (diff >= 0.05) return "above-p75";       // clearly above mean
-  if (diff >= 0.0) return "above-median";     // at or just above mean
-  if (diff >= -0.10) return "mid-range";      // tight band below mean
-  if (diff >= -0.25) return "below-median";   // below mean but in range
-  return "below-p25";
+// ── Stat band determination via Academic Index ─────────────────────────────
+//
+// Replaces the prior school-relative percentile classifier (gpaBand /
+// testBand / minBand). The AI uses absolute cutoffs anchored to Arcidiacono
+// SFFA Harvard 2019 decile admit-rate data:
+//
+//   AI ≥ 230 → above-p75    (top decile non-ALDC admit ~15.3%, 3.83× baseline)
+//   AI 220-229 → above-median (deciles 8-9)
+//   AI 210-219 → mid-range    (deciles 6-7)
+//   AI 200-209 → below-median (deciles 4-5)
+//   AI < 200   → below-p25    (deciles 1-3)
+//
+// Citation: http://humcap.uchicago.edu/RePEc/hka/wpaper/Arcidiacono_Kinsler_Ransom_2019_recruit-to-reject.pdf
+
+interface AiBandResult {
+  ai: AcademicIndex | null;
+  band: StatBand | null;
+  testBlind: boolean;
+  testOptionalNoScore: boolean;
 }
 
-function testBand(score: number | null, p25: number, p75: number, isAct: boolean): StatBand | null {
-  if (score === null) return null;
-  const range = Math.max(p75 - p25, 1);
-  const median = (p25 + p75) / 2;
-  // Small floor on the upper-quartile slack so 1540 SAT at 1500-1560 reads
-  // as above-p75 (top end of typical admit). ACT slack is 0 — narrow ranges
-  // (e.g. 33-35) need exact matches.
-  const upperSlack = isAct ? 0 : Math.min(25, Math.round(range * 0.4));
-  const innerSlack = isAct ? 1 : Math.round(range * 0.4);
-  if (score >= p75 - upperSlack) return "above-p75";
-  if (score >= median) return "above-median";
-  if (score >= median - innerSlack) return "mid-range";
-  if (score >= p25 - innerSlack) return "below-median";
-  return "below-p25";
-}
+/**
+ * Compute the AI and derived StatBand for a chance computation. Handles:
+ *   - test-blind schools (force GPA-only AI mode regardless of submitted scores)
+ *   - test-optional with no test submitted (GPA-only mode + widened range
+ *     downstream)
+ *   - missing weighted GPA (fall back to unweighted as a 5.0-scale proxy)
+ *   - missing both GPA and test (returns band: null → insufficient data)
+ */
+function computeAiBand(args: ChanceInputsModel, college: College): AiBandResult {
+  const testBlind = college.testPolicy === "blind";
+  const testOptionalNoScore =
+    college.testPolicy === "optional" && args.sat === null && args.act === null;
 
-function minBand(a: StatBand | null, b: StatBand | null): StatBand | null {
-  if (a === null) return b;
-  if (b === null) return a;
-  return STAT_BAND_RANK[a] <= STAT_BAND_RANK[b] ? a : b;
+  // Effective weighted GPA. App's GPA calculator normalizes to 5.0 scale, so
+  // a directly entered W is school-neutral. When only UW is provided we
+  // treat it as weighted — matches the spec's "weighted = unweighted, ratio
+  // = 1.0" handling for unweighted-only schools.
+  const effectiveW =
+    args.gpaW != null ? args.gpaW :
+    args.gpaUW != null ? args.gpaUW :
+    null;
+
+  const sat = testBlind ? null : args.sat;
+  const act = testBlind ? null : args.act;
+
+  const ai = computeAcademicIndex(effectiveW, sat, act);
+  const band = ai != null ? statBandFromAi(ai.value) : null;
+  return { ai, band, testBlind, testOptionalNoScore };
 }
 
 // ── Per-plan rate selection with fallbacks ──────────────────────────────────
@@ -323,14 +149,16 @@ function getBaseRateForPlan(college: College, plan: ApplicationPlan): BaseRateRe
     case "SCEA": {
       // The verified REA list (Stanford, Harvard, Yale, Princeton, Notre Dame)
       // publishes either an REA admit rate explicitly or the early/regular
-      // split. Prefer eaAdmitRate when present; otherwise fall back at 1.5x
-      // overall (between EA's 1.15x and ED's 2.5x — REA's residual advantage
-      // sits between non-binding EA and binding ED).
+      // split. Prefer eaAdmitRate when present; otherwise fall back.
+      // Final calibration: bumped fallback from 1.5x → 2.2x. Empirical REA
+      // rates at HYPS land at ~9-12% vs overall 3-5% (2-3x). 1.5x undercounted.
+      // Harvard SCEA 2024: 8.7% vs overall 3.6% = 2.4x. Stanford REA ~9% vs
+      // 3.8% = 2.4x. Yale SCEA ~11% vs 4.5% = 2.4x. Cluster supports 2.2x.
       if (typeof college.eaAdmitRate === "number") {
         return { rate: college.eaAdmitRate, usedFallback: null, planNote: "REA/SCEA admit rate (school-published)" };
       }
-      const rate = Math.min(95, overall * 1.5);
-      return { rate, usedFallback: "ea", planNote: "REA estimate based on overall trends" };
+      const rate = Math.min(95, overall * 2.2);
+      return { rate, usedFallback: "ea", planNote: "REA estimate based on overall trends (2.2x fallback)" };
     }
     case "EA": {
       if (typeof college.eaAdmitRate === "number") {
@@ -435,17 +263,300 @@ function recruitedAthletePathwayResult(
 // effect is small once GPA + test scores are controlled for — which the
 // stat-band multiplier already captures.
 
-function apScoreMultiplier(
+// Final calibration: rigor signal refines stat-band classification (third
+// axis). The standalone apScoreMultiplier is removed — rigor is no longer a
+// separate multiplier on chance, per the spec finding that volume + quality
+// of advanced coursework is better expressed by adjusting the stat band than
+// by a small additive multiplier.
+
+// Migrate legacy apScores[] (type-tagged AP with score). The chance model
+// always reads advancedCoursework[]; old data round-trips through this.
+function migrateApToCoursework(
   apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined,
-): number {
-  if (!apScores || apScores.length === 0) return 1.0;
-  const avg = apScores.reduce((s, a) => s + a.score, 0) / apScores.length;
-  // Quality factor: 5.0 average → 1.0; 3.0 average → 0; below 3.0 → small drag.
-  const quality = Math.max(-0.4, Math.min(1.0, (avg - 3.0) / 2.0));
-  // Volume factor: 0 exams → 0; 8+ exams → 1.0.
-  const volume = Math.min(1.0, apScores.length / 8);
-  // Combined contribution caps at +5% (1.05x) and floors at -2% (0.98x).
-  return 1.0 + quality * volume * 0.05;
+): AdvancedCourseworkRow[] {
+  if (!apScores) return [];
+  return apScores.map((a) => ({ type: "AP", name: "AP exam", score: a.score }));
+}
+
+// Essay multiplier from graded scores. Reintroduced in final calibration —
+// Feature 1 had removed it because self-reported quality wasn't trustworthy.
+// The new tool-graded path passes that bar: combinedScore comes from a
+// rubric-validated grader, not the user.
+//
+// Mark: rule-of-thumb. The 0.9-1.15× range is conservative — essays are real
+// signal but bounded by the dampener so they can't override stat-band
+// reality. Pending W3 empirical validation against admit-rate deltas.
+function essayMultiplier(
+  essayScores: readonly EssayScoreRecord[] | undefined,
+): { multiplier: number; avgCombined: number | null; count: number } {
+  if (!essayScores || essayScores.length === 0) {
+    return { multiplier: 1.0, avgCombined: null, count: 0 };
+  }
+  const avg =
+    essayScores.reduce((s, e) => s + e.combinedScore, 0) / essayScores.length;
+  let multiplier: number;
+  if (avg >= 90) multiplier = 1.15;
+  else if (avg >= 75) multiplier = 1.05;
+  else if (avg >= 60) multiplier = 1.0;
+  else multiplier = 0.9;
+  return { multiplier, avgCombined: avg, count: essayScores.length };
+}
+
+// Stat-band consensus rule. Three axes: GPA percentile + test percentile +
+// rigor signal. Consensus of any two determines band; when all three
+// disagree, take the median. Implemented as a small lookup against rigor
+// signal coarseness (strong/moderate/weak/null).
+//
+// Mark: rule-of-thumb. The "consensus of two" rule is the only sensible
+// extension we found — alternatives over-weighted rigor (which can be
+// inflated by easy classes) or under-weighted it (missing the genuine signal
+// when GPA is curve-inflated).
+function consensusBand(
+  combinedStat: StatBand | null,
+  rigor: ReturnType<typeof rigorSignal>,
+): StatBand | null {
+  if (combinedStat === null) return null;
+  if (rigor === null) return combinedStat;
+  // GPA + test combined band already used min() so it represents the lower of
+  // the two. Now refine with rigor:
+  // - combined top + rigor weak → drop one band (GPA may be inflated).
+  // - combined mid + rigor strong → bump up half a band (rigor confirms).
+  // - combined low + rigor strong → bump up one band (rigor compensates).
+  if (combinedStat === "above-p75" && rigor === "weak") return "above-median";
+  if (combinedStat === "below-p25" && rigor === "strong") return "below-median";
+  if (combinedStat === "below-median" && rigor === "strong") return "mid-range";
+  if (combinedStat === "mid-range" && rigor === "strong") return "above-median";
+  return combinedStat;
+}
+
+// ── Tier 2: holistic-elite computation ─────────────────────────────────────
+//
+// For ~20 top schools (all Ivies, Stanford, MIT, Caltech, Duke, Northwestern,
+// JHU, UChicago, Notre Dame, Vanderbilt, Rice, Williams, Amherst, Pomona,
+// Swarthmore), the algorithmic multiplier model overstates chances for maxed
+// profiles because past the academic threshold, stats stop being predictive.
+// Caltech rejects 1600 SATs every cycle; that's a real signal, not noise.
+//
+// Math:
+//   final = headlineAdmitRate × fitMultiplier
+//   range = ±20% of midpoint
+//   cap = 30% RD / 40% ED — Tier 2 schools never reach "likely"
+//
+// fitMultiplier ladder (rule-of-thumb, pending W3):
+//   below threshold        — 0.4×   (below-p25 stat band)
+//   threshold, weak EC     — 0.7×   (below-median stat + ≤ developing EC)
+//   threshold, avg EC      — 1.0×   (mid-range stat + solid EC)
+//   above threshold + strong EC                               — 1.4×
+//   above threshold + exceptional EC + 75+ essay              — 1.8×
+//   maxed (top-quartile + exceptional + 90+ essay)            — 2.3×
+//   distinguished maxed (any distinguished flag, plus maxed)  — 2.5×
+function computeHolisticEliteChance(
+  args: ChanceInputsModel,
+  plan: ApplicationPlan,
+): ChanceResultModel {
+  const college = args.college;
+
+  // Recruited-athlete pathway routing dropped per final calibration. The
+  // schema field on UserProfile remains for future re-enabling. Recruited
+  // applicants currently fall through to the regular Tier 2 math; coach
+  // contact remains the authoritative signal.
+
+  // Stat band derived from Academic Index (AI). See computeAiBand for
+  // test-blind / test-optional handling.
+  const aiResult = computeAiBand(args, college);
+  const { ai, band: combinedBandRaw, testBlind, testOptionalNoScore } = aiResult;
+
+  // W/UW ratio feeds rigor classifier as a corroborating signal alongside
+  // AP/IB scores. ratio ≥1.20 = strong rigor signal contribution.
+  const wuwInfo = computeWuwRatio(args.gpaW, args.gpaUW);
+  const wuwSignal = wuwInfo?.signal ?? null;
+
+  // Rigor signal as third axis, mirroring Tier 1. Without this, AP/IB
+  // scores were entirely ignored at holistic-elite schools — 8 APs all 5s
+  // read identical to 2 APs both 3s. Migrate legacy apScores into the
+  // advancedCoursework array when no new array is provided.
+  const coursework =
+    args.advancedCoursework && args.advancedCoursework.length > 0
+      ? args.advancedCoursework
+      : migrateApToCoursework(args.apScores);
+  const rigorTier: RigorTier = classifyRigor(
+    coursework,
+    args.advancedCourseworkAvailable,
+    wuwSignal,
+  );
+  const rSignal = rigorSignal(rigorTier);
+  const combinedBand = consensusBand(combinedBandRaw, rSignal);
+
+  if (combinedBand === null) {
+    return insufficientDataResult(college);
+  }
+
+  // Headline admit rate — same precedence cascade as algorithmic Tier 1.
+  const baseResult = getBaseRateForPlan(college, plan);
+  const headlineRate = baseResult.rate;
+
+  // Multiplicative stack — separate stat / EC / essay multipliers so the
+  // breakdown panel can show what each input contributed instead of one
+  // opaque "fit" number. Calibrated so the maxed combination produces the
+  // same ~3.0× total as the prior fit-ladder approach.
+  //
+  // The 4 distinguished EC auto-flags promote effectiveEcBand to 'exceptional'
+  // when any is true.
+  const effectiveEcBand =
+    args.distinguishedEC === true ? "exceptional" : args.ecBand?.toLowerCase();
+  const essayInfo = essayMultiplier(args.essayScores);
+
+  // Tier 2 stat multipliers are COMPRESSED relative to Tier 1: at top schools,
+  // stats stop predicting outcomes past the academic threshold (Caltech rejects
+  // 1600 SATs every cycle). Above-p75 still gets a real boost; below-threshold
+  // drags chance down.
+  // Mark: rule-of-thumb. Calibrated against Arcidiacono Harvard top-decile
+  // 15.3% / baseline 4.0% = 3.83× — combined with 1.7× exceptional EC and
+  // 1.15× 90+ essay, 1.5× stat lands at 2.93× total ≈ 3.0× target.
+  // AI refinement (per spec): above-median 1.0→1.2 and below-p25 0.4→0.5 to
+  // reflect that even at Tier 2 schools, stats just above the median still
+  // matter slightly more than stats at the median itself, and below-p25
+  // applicants aren't quite as penalized as the prior calibration assumed.
+  const TIER2_STAT_MULT: Record<StatBand, number> = {
+    "above-p75":    1.5,
+    "above-median": 1.2,
+    "mid-range":    1.0,
+    "below-median": 0.7,
+    "below-p25":    0.5,
+  };
+  const statMult = TIER2_STAT_MULT[combinedBand];
+  const ecMult = getEcBandMultiplier(effectiveEcBand);
+  const essayMult = essayInfo.multiplier;
+
+  // Compute, cap, classify.
+  // Flat 35% cap across all plans (RD, ED, REA, SCEA, EA). Top schools never
+  // reach 'likely' tier (40%+) for any unhooked applicant regardless of when
+  // they apply. Binding-ED leverage is already captured in the per-plan
+  // headline admit rate (Penn ED 14.22% > Penn RD 4.05%); differentiating
+  // the cap by plan would double-count the early-round advantage.
+  const isEdLikePlan =
+    plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
+  const cap = 35;
+  const totalMult = statMult * ecMult * essayMult;
+  let mid = headlineRate * totalMult;
+  const capApplied = mid > cap;
+  if (capApplied) mid = cap;
+  mid = clamp(mid, 0.5, 95);
+
+  // Default Tier 2 range = ±20%. Widen to ±30% when test-optional with no
+  // test submitted: AI is computed in GPA-only mode and the uncertainty is
+  // genuinely higher.
+  const rangeFactor = testOptionalNoScore ? 0.3 : 0.2;
+  const chance: ChanceRange = {
+    low: Math.round(clamp(mid * (1 - rangeFactor), 0.5, 95)),
+    mid: Math.round(mid),
+    high: Math.round(clamp(mid * (1 + rangeFactor), 0.5, 95)),
+  };
+
+  let classification = chanceMidpointToClassification(chance.mid);
+  // Hard 10% cliff floor still applies.
+  if (college.acceptanceRate < 10 && classification === "unlikely") {
+    classification = "reach";
+  }
+  // Tier 2 schools never read as "likely" — cap defends, but be explicit.
+  if (classification === "likely" || classification === "safety") {
+    classification = "target";
+  }
+
+  // Confidence: holistic-elite is medium by default — caps reflect real
+  // institutional uncertainty. Drops to low when test-optional GPA-only.
+  const confidence: ConfidenceTier = testOptionalNoScore ? "low" : "medium";
+
+  // Reason prose.
+  const reasonParts: string[] = [];
+  if (ai != null) reasonParts.push(aiPhrase(ai, combinedBand));
+  if (testBlind) reasonParts.push("Test-blind admissions — score not considered, AI uses GPA only");
+  if (testOptionalNoScore) reasonParts.push("Test-optional with no score submitted — AI uses GPA only, range widened");
+  if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
+  reasonParts.push(
+    "Top schools have institutional uncertainty even for maxed profiles. " +
+      "This estimate reflects unhooked applicant reality.",
+  );
+  const reason = reasonParts.join(". ") + ".";
+
+  // Multi-step breakdown — separate stat / EC / essay rows so users can see
+  // what each input contributed. Mirrors the Tier 1 layout, with Tier 2 stat
+  // multipliers that reflect "stats stop predicting past the academic bar".
+  const steps: BreakdownStep[] = [];
+  let running = headlineRate;
+
+  // Stats step (rigor surfaced in note when the consensus rule fired).
+  running = clamp(running * statMult, 0.5, 95);
+  const noteParts: string[] = [];
+  if (rigorTier !== "none") noteParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
+  if (testOptionalNoScore) noteParts.push("AI computed using GPA only (no test submitted) — uncertainty range widened");
+  noteParts.push(
+    "Tier 2 stat multipliers anchored to Arcidiacono SFFA Harvard 2019 decile data. " +
+    "Friedman et al. NBER 2025 shows test scores predict outcomes ~4× stronger than GPA at Ivy-Plus colleges with continuous gradient (not a step function past threshold).",
+  );
+  steps.push({
+    label: ai != null
+      ? `Stats (${prettyBand(combinedBand)}, AI ${Math.round(ai.value)})`
+      : `Stats (${prettyBand(combinedBand)})`,
+    multiplier: statMult,
+    runningChance: round1(running),
+    note: noteParts.join(" "),
+  });
+
+  // EC step.
+  running = clamp(running * ecMult, 0.5, 95);
+  steps.push({
+    label: `ECs (${effectiveEcBand ? prettyEc(effectiveEcBand) : "default"})`,
+    multiplier: ecMult,
+    runningChance: round1(running),
+  });
+
+  // Essay step (advisory when no graded essay).
+  if (essayInfo.count === 0) {
+    steps.push({
+      label: "Essays (not measured)",
+      multiplier: 1.0,
+      runningChance: round1(running),
+      note: "Essay quality not measured. Grade your essays through the essay tool for a fuller estimate.",
+    });
+  } else {
+    running = clamp(running * essayMult, 0.5, 95);
+    const avg = essayInfo.avgCombined ?? 0;
+    steps.push({
+      label: `Essays (combined ${avg.toFixed(0)}, ${essayInfo.count} graded)`,
+      multiplier: essayMult,
+      runningChance: round1(running),
+    });
+  }
+
+  // Cap step (only when fired).
+  if (capApplied) {
+    steps.push({
+      label: `Selectivity cap (holistic-elite, ${plan})`,
+      multiplier: cap / running,
+      runningChance: cap,
+      note: `Capped at ${cap}% — top schools never reach 'likely' tier for unhooked applicants.`,
+    });
+  }
+
+  const breakdown: ChanceBreakdown = {
+    baseRate: headlineRate,
+    baseLabel: baseResult.planNote ?? `Headline admit rate (${headlineRate}%)`,
+    steps,
+    cap: { value: cap, applied: capApplied, bracket: `${plan}, holistic-elite` },
+    finalChance: chance.mid,
+  };
+
+  return {
+    classification,
+    reason,
+    chance,
+    confidence,
+    breakdown,
+    statBand: combinedBand,
+    effectiveEcBand,
+    stale: isStale(college.dataYear) ? true : undefined,
+  };
 }
 
 // ── Yield protection adjustment ─────────────────────────────────────────────
@@ -492,6 +603,9 @@ export interface ChanceInputsModel {
   gpaW: number | null;
   sat: number | null;
   act: number | null;
+  // @deprecated kept for backward compat with strategy-engine and other
+  // legacy callers. The new model derives rigor from advancedCoursework.
+  // When advancedCoursework is present, rigor is ignored.
   rigor?: "low" | "medium" | "high";
   ecBand?: string;
   // True when any UserProfile distinguished-EC flag fires (first-author
@@ -499,15 +613,25 @@ export interface ChanceInputsModel {
   // TASP-tier selective program admit). Forces effective EC band to
   // "exceptional" regardless of profile.ecBand.
   distinguishedEC?: boolean;
-  // Essay scores are display-only in the new chance model — no multiplier.
-  // Kept on the input shape so legacy callers still typecheck; ignored by
-  // the math.
+  // @deprecated self-reported essay numbers. Self-reporting is intentionally
+  // not trusted — use essayScores[] from the grading tool instead. Kept on
+  // the input shape so legacy callers still typecheck; ignored by the math.
   essayCA?: number | null;
   essayV?: number | null;
-  // AP scores feed a small academic-support multiplier. 8+ exams averaging
-  // 4.5+ get the full ~1.05x boost; lower averages or fewer exams scale down
-  // proportionally. Capped at 1.05x because APs are corroborating evidence
-  // for stat band, not a primary signal.
+  // Graded essay records from the essay tool. The chance model averages
+  // combinedScore across entries and applies a multiplier (0.9× to 1.15×).
+  // Empty array → 1.0× and "Essay quality not measured" advisory.
+  essayScores?: readonly EssayScoreRecord[];
+  // Per-row advanced coursework (AP / IB-HL / IB-SL). The model derives a
+  // 6-tier rigor classification from this array via classifyRigor() in
+  // src/lib/rigor.ts. When present, replaces the legacy rigor field.
+  advancedCoursework?: readonly AdvancedCourseworkRow[];
+  // 'none' explicitly waives the rigor requirement (no penalty, no boost).
+  // 'limited' acknowledges fewer offerings — same math but breakdown panel
+  // surfaces the constraint. Default 'all' = full menu.
+  advancedCourseworkAvailable?: "all" | "limited" | "none";
+  // @deprecated kept for migrate-on-read. Old apScores entries fold into
+  // advancedCoursework with type='AP'.
   apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
   recruitedAthlete?: boolean;
   applicationPlan?: ApplicationPlan;
@@ -553,24 +677,39 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   const college = args.college;
   const plan: ApplicationPlan = args.applicationPlan ?? "RD";
 
-  // 1. Recruited athlete pathway short-circuit.
-  if (args.recruitedAthlete === true) {
-    return recruitedAthletePathwayResult(college);
+  // 0. Two-tier routing. Holistic-elite schools use a different math entirely.
+  if (college.admissionsTier === "holistic-elite") {
+    return computeHolisticEliteChance(args, plan);
   }
 
-  // 2. Determine which stats we have. Test-blind schools and test-optional
-  //    with no test submitted both fall back to GPA-only with widened band.
-  const testBlind = college.testPolicy === "blind";
-  const testOptionalNoScore =
-    college.testPolicy === "optional" && args.sat === null && args.act === null;
+  // 1. Recruited-athlete pathway routing dropped per final calibration. The
+  //    schema field on UserProfile remains; the special-case math is shelved
+  //    until coach-contact data can ground the multipliers.
 
-  // 3. Compute stat bands. Test-blind drops the test signal entirely.
-  const gBand = gpaBand(args.gpaUW, college.avgGPAUW);
-  const tBand = testBlind ? null : pickTestBand(args.sat, args.act, college);
+  // 2. Stat band derived from Academic Index (AI). Handles test-blind /
+  //    test-optional / GPA-only scenarios in one place.
+  const aiResult = computeAiBand(args, college);
+  const { ai, band: combinedBandRaw, testBlind, testOptionalNoScore } = aiResult;
 
-  // 4. Combine via min() per SPEC Decision 3 — uneven profiles don't get
-  //    the high-stat benefit.
-  const combinedBand = minBand(gBand, tBand);
+  // 3. W/UW ratio feeds rigor classifier as a corroborating signal alongside
+  //    AP/IB scores. ratio ≥1.20 = strong rigor signal contribution.
+  const wuwInfo = computeWuwRatio(args.gpaW, args.gpaUW);
+  const wuwSignal = wuwInfo?.signal ?? null;
+
+  // 4. Final calibration: rigor signal as third axis (consensus rule
+  //    refines AI tier). Migrate legacy apScores into advancedCoursework if
+  //    no new array provided.
+  const coursework =
+    args.advancedCoursework && args.advancedCoursework.length > 0
+      ? args.advancedCoursework
+      : migrateApToCoursework(args.apScores);
+  const rigorTier: RigorTier = classifyRigor(
+    coursework,
+    args.advancedCourseworkAvailable,
+    wuwSignal,
+  );
+  const rSignal = rigorSignal(rigorTier);
+  const combinedBand = consensusBand(combinedBandRaw, rSignal);
 
   // 5. Insufficient-data guard: no GPA AND no test (or test-blind with no
   //    GPA) means we can't ground a stat-band.
@@ -589,20 +728,24 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   multiplier = yp.multiplier;
 
   // 9. EC multiplier (with distinguished-EC override boost to "exceptional").
-  // Essay does NOT contribute a multiplier per final spec — it surfaces only
-  // as advisory text in CollegeCard. essayScoreAdjustment in this file remains
-  // @deprecated for the legacy /chances pipeline.
   const effectiveEcBand = args.distinguishedEC === true ? "exceptional" : args.ecBand?.toLowerCase();
   const ecMult = getEcBandMultiplier(effectiveEcBand);
 
-  // 10. Combined dampener: stat × EC > 4.0 dampened. AP corroborates after.
-  const rawCombined = multiplier * ecMult;
+  // 10. Essay multiplier from graded scores (final calibration). When the
+  //     essay tool hasn't been used, multiplier = 1.0 and breakdown surfaces
+  //     the advisory.
+  const essayInfo = essayMultiplier(args.essayScores);
+  const essayMult = essayInfo.multiplier;
+
+  // 10b. Combined dampener: stat × EC × essay > 4.0 dampened.
+  const rawCombined = multiplier * ecMult * essayMult;
   const dampened = applyCombinedDampener(rawCombined);
-  const apMult = apScoreMultiplier(args.apScores);
 
   // 11. Compute midpoint, then apply the final selectivity cap.
-  let rawMid = baseResult.rate * dampened * apMult;
-  const cap = getChanceCap(college.acceptanceRate);
+  //     admissionsType differentiates 15-25% holistic vs stats-driven.
+  let rawMid = baseResult.rate * dampened;
+  const admType = college.admissionsType ?? "holistic";
+  const cap = getChanceCap(college.acceptanceRate, admType);
   const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
   if (rawMid > capValue) rawMid = capValue;
@@ -619,12 +762,16 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   });
   const mid = schoolBlend.applied ? schoolBlend.mid : nationalMid;
 
-  // 12. Confidence + band width.
-  const statMetrics = (gBand ? 1 : 0) + (tBand ? 1 : 0);
+  // 12. Confidence + band width. Stat metrics: weighted GPA + best test
+  //     score (each 1 if present). AI tracks both internally so we mirror
+  //     that count for the legacy confidence rule.
+  const hasGpa = args.gpaW != null || args.gpaUW != null;
+  const hasTest = !testBlind && (args.sat != null || args.act != null);
+  const statMetrics = (hasGpa ? 1 : 0) + (hasTest ? 1 : 0);
   const confidence = computeConfidence({
     statMetrics,
-    hasRigor: !!args.rigor,
-    hasEcOrEssay: !!args.ecBand || args.essayCA != null || args.essayV != null || args.distinguishedEC === true,
+    hasRigor: rigorTier !== "none",
+    hasEcOrEssay: !!args.ecBand || essayInfo.count > 0 || args.distinguishedEC === true,
     hasCds: typeof college.dataYear === "number" || typeof college.edAdmitRate === "number" || typeof college.regularDecisionAdmitRate === "number",
   });
   const widthBand = bandWidthForConfidence(confidence, testOptionalNoScore);
@@ -650,17 +797,18 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   }
 
   // 15. Elite-profile floor: never produces "unlikely". Elite =
-  //   GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND ≥ 6 APs.
-  if (classification === "unlikely" && isEliteProfile(args)) {
+  //   GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND rigor in {top, high}.
+  //   When advancedCourseworkAvailable === 'none', rigor requirement waived.
+  if (classification === "unlikely" && isEliteProfile(args, rigorTier)) {
     classification = "reach";
   }
 
-  // 14. Reason prose: surface signal labels deterministically.
+  // 14. Reason prose: surface AI tier + plan note + rigor deterministically.
   const reasonParts: string[] = [];
-  if (gBand) reasonParts.push(gpaPhrase(args.gpaUW!, college.avgGPAUW, gBand));
-  if (tBand && !testBlind) reasonParts.push(testPhrase(args.sat, args.act, college, tBand));
-  if (testOptionalNoScore) reasonParts.push("Test-optional with no score submitted — band widened, test signal not used");
-  if (testBlind) reasonParts.push("Test-blind admissions — score not considered, GPA only");
+  if (ai != null) reasonParts.push(aiPhrase(ai, combinedBand));
+  if (testOptionalNoScore) reasonParts.push("Test-optional with no score submitted — AI uses GPA only, range widened");
+  if (testBlind) reasonParts.push("Test-blind admissions — score not considered, AI uses GPA only");
+  if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
   if (baseResult.planNote) reasonParts.push(baseResult.planNote);
   if (schoolBlend.callout) reasonParts.push(schoolBlend.callout);
   const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${college.acceptanceRate}% overall acceptance rate.`;
@@ -678,9 +826,12 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     ecMultiplier: ecMult,
     rawCombined,
     dampened,
-    apMultiplier: apMult,
+    essayInfo,
+    rigorTier,
+    ai,
+    testOptionalNoScore,
     capValue,
-    capApplied: baseResult.rate * dampened * apMult > capValue,
+    capApplied: baseResult.rate * dampened > capValue,
     capBracket: capBracketLabel(college.acceptanceRate, isEdLikePlan),
     finalChance: chance.mid,
     schoolBlend,
@@ -711,9 +862,12 @@ interface BuildBreakdownArgs {
   yieldProtected: boolean;
   ecBand: string | undefined;
   ecMultiplier: number;
-  rawCombined: number;
-  dampened: number;
-  apMultiplier: number;
+  rawCombined: number;            // stat × ec × essay before dampener
+  dampened: number;               // post-dampener
+  essayInfo: { multiplier: number; avgCombined: number | null; count: number };
+  rigorTier: RigorTier;
+  ai: AcademicIndex | null;
+  testOptionalNoScore: boolean;
   capValue: number;
   capApplied: boolean;
   capBracket: string;
@@ -725,13 +879,28 @@ function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
   const steps: BreakdownStep[] = [];
   let running = a.baseRate;
 
-  // Stats step
-  const yieldNote = a.yieldProtected && a.rawStatMultiplier !== a.statMultiplier
-    ? `Yield-protected: capped from ${a.rawStatMultiplier.toFixed(2)}× to ${a.statMultiplier.toFixed(2)}×`
-    : undefined;
+  // Stats step (rigor folded into the band, surfaced in note when not 'none')
+  const noteFragments: string[] = [];
+  if (a.yieldProtected && a.rawStatMultiplier !== a.statMultiplier) {
+    noteFragments.push(
+      `Yield-protected: capped from ${a.rawStatMultiplier.toFixed(2)}× to ${a.statMultiplier.toFixed(2)}×`,
+    );
+  }
+  if (a.rigorTier !== "none") {
+    noteFragments.push(`Rigor: ${rigorLabel(a.rigorTier)}`);
+  }
+  if (a.testOptionalNoScore) {
+    noteFragments.push("AI computed using GPA only (no test submitted)");
+  }
+  noteFragments.push(
+    "Multipliers anchored to Arcidiacono SFFA Harvard 2019. Top decile non-ALDC admit rate 15.3% / baseline 4.0% = 3.83×.",
+  );
+  const yieldNote = noteFragments.join(" ");
   running = clamp(running * a.statMultiplier, 0.5, 95);
   steps.push({
-    label: `Stats (${prettyBand(a.statBand)})`,
+    label: a.ai != null
+      ? `Stats (${prettyBand(a.statBand)}, AI ${Math.round(a.ai.value)})`
+      : `Stats (${prettyBand(a.statBand)})`,
     multiplier: a.statMultiplier,
     runningChance: round1(running),
     note: yieldNote,
@@ -745,28 +914,38 @@ function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
     runningChance: round1(running),
   });
 
+  // Essay step. When the user has graded essays, show V-SPICE + Rubric in
+  // the note so the breakdown panel makes the connection between essay
+  // feedback and chance impact explicit. When no essays graded, show the
+  // 1.0× neutral with the advisory.
+  const essay = a.essayInfo;
+  if (essay.count === 0) {
+    steps.push({
+      label: "Essays (not measured)",
+      multiplier: 1.0,
+      runningChance: round1(running),
+      note: "Essay quality not measured. Grade your essays through the essay tool for a fuller estimate.",
+    });
+  } else {
+    running = clamp(running * essay.multiplier, 0.5, 95);
+    const avg = essay.avgCombined ?? 0;
+    steps.push({
+      label: `Essays (combined ${avg.toFixed(0)}, ${essay.count} graded)`,
+      multiplier: essay.multiplier,
+      runningChance: round1(running),
+    });
+  }
+
   // Combined dampener (only show when it fired)
   if (a.dampened !== a.rawCombined) {
     const dampenerRatio = a.dampened / a.rawCombined;
-    // Re-derive the running chance after dampening: undo the EC step and
-    // replay using the dampened combined multiplier.
-    const baseAfterStat = clamp(a.baseRate * a.statMultiplier, 0.5, 95);
-    running = clamp(baseAfterStat * (a.dampened / a.statMultiplier), 0.5, 95);
+    // Replay from base using the dampened combined multiplier.
+    running = clamp(a.baseRate * a.dampened, 0.5, 95);
     steps.push({
       label: "Combined dampener",
       multiplier: dampenerRatio,
       runningChance: round1(running),
-      note: `Stats × ECs = ${a.rawCombined.toFixed(2)}× exceeded 4.0× cap; dampened to ${a.dampened.toFixed(2)}×.`,
-    });
-  }
-
-  // AP step (only when it actually moves the number)
-  if (a.apMultiplier !== 1.0) {
-    running = clamp(running * a.apMultiplier, 0.5, 95);
-    steps.push({
-      label: "AP support",
-      multiplier: a.apMultiplier,
-      runningChance: round1(running),
+      note: `Stats × ECs × Essay = ${a.rawCombined.toFixed(2)}× exceeded 4.0× cap; dampened to ${a.dampened.toFixed(2)}×.`,
     });
   }
 
@@ -777,7 +956,7 @@ function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
       label: `Selectivity cap (${a.capBracket})`,
       multiplier: a.capValue / running,
       runningChance: a.capValue,
-      note: `Capped at ${a.capValue}% — sub-15% schools cannot exceed target tier regardless of profile.`,
+      note: `Capped at ${a.capValue}% — bracket reflects institutional uncertainty.`,
     });
   }
 
@@ -930,19 +1109,6 @@ export function computeWhatIfs(args: ChanceInputsModel, current: ChanceResultMod
   return scenarios;
 }
 
-function pickTestBand(sat: number | null, act: number | null, college: College): StatBand | null {
-  // Use the better signal on the SAT scale (concordance).
-  if (sat === null && act === null) return null;
-  if (sat !== null && act !== null) {
-    const actAsSat = actToSatEquivalent(act);
-    return actAsSat >= sat
-      ? testBand(act, college.act25, college.act75, true)
-      : testBand(sat, college.sat25, college.sat75, false);
-  }
-  if (sat !== null) return testBand(sat, college.sat25, college.sat75, false);
-  return testBand(act, college.act25, college.act75, true);
-}
-
 function chanceMidpointToClassification(mid: number): Classification {
   // Final calibration thresholds (consolidates spec).
   if (mid >= 70) return "safety";
@@ -952,51 +1118,38 @@ function chanceMidpointToClassification(mid: number): Classification {
   return "unlikely";
 }
 
-// Elite profile: GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND ≥ 6 APs.
-// When met, classification floors at "reach" — even data-driven sub-5%
-// chances become "reach" rather than "unlikely". Hooks the safety net for
-// ultra-selective schools where elite stats are real but variance is huge.
-function isEliteProfile(args: ChanceInputsModel): boolean {
+// Elite profile: GPA UW ≥ 3.95 AND (SAT ≥ 1540 OR ACT ≥ 35) AND rigor in
+// {top, high}. When advancedCourseworkAvailable === 'none' the rigor
+// requirement is waived — UW + test alone qualify. Final calibration uses
+// the rigor classifier, not raw AP count.
+function isEliteProfile(args: ChanceInputsModel, rigor: RigorTier): boolean {
   if ((args.gpaUW ?? 0) < 3.95) return false;
   const satOk = (args.sat ?? 0) >= 1540;
   const actOk = (args.act ?? 0) >= 35;
   if (!satOk && !actOk) return false;
-  const apCount = args.apScores?.length ?? 0;
-  return apCount >= 6;
+  if (args.advancedCourseworkAvailable === "none") return true;
+  return rigor === "top" || rigor === "high";
 }
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function gpaPhrase(userUW: number, schoolUW: number, band: StatBand): string {
-  const u = userUW.toFixed(2);
-  const s = schoolUW.toFixed(2);
+// Phrase the user's stat band using the Academic Index. AI is school-neutral
+// (anchored to Arcidiacono Harvard 2019 deciles), so we describe the
+// applicant's tier rather than their position relative to a specific
+// school's distribution.
+function aiPhrase(ai: AcademicIndex, band: StatBand): string {
+  const v = Math.round(ai.value);
+  const mode = ai.gpaOnlyMode ? " (GPA-only mode — no test submitted)"
+    : ai.testOnlyMode ? " (test-only mode — no GPA on file)"
+    : "";
   switch (band) {
-    case "above-p75":    return `Your UW GPA (${u}) is above this school's typical range (avg ${s})`;
-    case "above-median": return `Your UW GPA (${u}) is above this school's average (${s}) but within range`;
-    case "mid-range":    return `Your UW GPA (${u}) is right around this school's average (${s})`;
-    case "below-median": return `Your UW GPA (${u}) is below this school's average (${s}) but still within range`;
-    case "below-p25":    return `Your UW GPA (${u}) is below this school's 25th percentile (avg ${s})`;
-  }
-}
-
-function testPhrase(sat: number | null, act: number | null, college: College, band: StatBand): string {
-  if (sat === null && act === null) return "";
-  const useAct = act !== null && (sat === null || actToSatEquivalent(act) >= sat);
-  const score = useAct ? act : sat;
-  const which = useAct ? "ACT" : "SAT";
-  const p25 = useAct ? college.act25 : college.sat25;
-  const p75 = useAct ? college.act75 : college.sat75;
-  const tail = useAct
-    ? (sat !== null ? " (used over SAT as stronger score)" : "")
-    : (act !== null ? " (used over ACT as stronger score)" : "");
-  switch (band) {
-    case "above-p75":    return `Your ${which} (${score}) is above the 75th percentile (${p75})${tail}`;
-    case "above-median": return `Your ${which} (${score}) is above the median for this school${tail}`;
-    case "mid-range":    return `Your ${which} (${score}) is around the median (${p25}-${p75})${tail}`;
-    case "below-median": return `Your ${which} (${score}) is below the median but in range (${p25}-${p75})${tail}`;
-    case "below-p25":    return `Your ${which} (${score}) is below the 25th percentile (${p25})${tail}`;
+    case "above-p75":    return `Your Academic Index of ${v} is in the top decile (≥230) per Arcidiacono Harvard 2019${mode}`;
+    case "above-median": return `Your Academic Index of ${v} sits above the median (220-229, deciles 8-9)${mode}`;
+    case "mid-range":    return `Your Academic Index of ${v} is in the mid-range (210-219, deciles 6-7)${mode}`;
+    case "below-median": return `Your Academic Index of ${v} is below the median (200-209, deciles 4-5)${mode}`;
+    case "below-p25":    return `Your Academic Index of ${v} is below the 25th percentile (<200, deciles 1-3)${mode}`;
   }
 }
 
@@ -1019,6 +1172,9 @@ export function classifyCollege(
     distinguishedEC?: boolean;
     rigor?: "low" | "medium" | "high";
     apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
+    advancedCoursework?: readonly AdvancedCourseworkRow[];
+    advancedCourseworkAvailable?: "all" | "limited" | "none";
+    essayScores?: readonly EssayScoreRecord[];
     recruitedAthlete?: boolean;
     applicationPlan?: ApplicationPlan;
   },
@@ -1035,6 +1191,9 @@ export function classifyCollege(
     distinguishedEC: options?.distinguishedEC,
     rigor: options?.rigor,
     apScores: options?.apScores,
+    advancedCoursework: options?.advancedCoursework,
+    advancedCourseworkAvailable: options?.advancedCourseworkAvailable,
+    essayScores: options?.essayScores,
     recruitedAthlete: options?.recruitedAthlete,
     applicationPlan: options?.applicationPlan,
   });

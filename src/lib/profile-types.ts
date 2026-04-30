@@ -15,6 +15,43 @@ export interface APScoreProfile {
   readonly score: 1 | 2 | 3 | 4 | 5;
 }
 
+// Final calibration: rigor signal lives on advancedCoursework[] (not the old
+// single "rigor" dropdown). Each row captures one course; the chance model
+// derives a 6-tier rigor classification from the array (top/high/solid/mixed/
+// weak/none) plus advancedCourseworkAvailable. Volume baked into thresholds,
+// not a separate multiplier.
+//
+// AP and IB-HL with score ≥6 are treated as the strongest signal ("5-equivalent");
+// IB-SL caps at "4-equivalent" even at score 7. Dual-Enrollment (DE) is excluded
+// from the classifier — wide variance in rigor and reporting.
+export type AdvancedCourseworkType = "AP" | "IB-HL" | "IB-SL";
+
+export interface AdvancedCourseworkRow {
+  readonly type: AdvancedCourseworkType;
+  readonly name: string;
+  // 1-5 for AP, 1-7 for IB. Optional when course is in progress / no score yet.
+  readonly score?: number;
+}
+
+// Graded essay record. Populated by the essay grading tool — the only trusted
+// source for essay quality. Self-reported quality is intentionally NOT trusted.
+// When essayScores[] is empty, the chance model uses a 1.0× multiplier and
+// surfaces the "Essay quality not measured" advisory instead.
+export interface EssayScoreRecord {
+  // Stable identifier from the essay tool — distinguishes "Why us?" from main.
+  readonly promptId: string;
+  // V-SPICE composite (0-25). Surfaces in the breakdown panel for transparency
+  // alongside combinedScore.
+  readonly vspiceScore: number;
+  // Rubric composite (0-100). Surfaces in the breakdown panel.
+  readonly rubricScore: number;
+  // The single number the chance model multiplies by. Computed by the essay
+  // tool from V-SPICE + rubric; chance math reads ONLY this field.
+  readonly combinedScore: number;
+  // Epoch ms. Drives the "graded N weeks ago" freshness note (>4w = stale).
+  readonly gradedAt: number;
+}
+
 // Shared student identity used by resume, cover letters, etc.
 // Optional — tools degrade gracefully when basicInfo is absent.
 export interface BasicStudentInfo {
@@ -35,10 +72,39 @@ export interface UserProfile {
   sat: SATScores;
   act: ACTScores;
 
-  // AP scores — user-entered, persists across sessions
+  // AP scores — user-entered, persists across sessions.
+  // @deprecated kept only for legacy data round-trip. The chance model now
+  // reads advancedCoursework[] instead. Migrate-on-read in the chance
+  // calculator: an apScores entry is treated as advancedCoursework with
+  // type='AP'. Cleanup PR will drop this field.
   apScores: APScoreProfile[];
 
-  // Essay — auto-filled from essay grader
+  // Final calibration: per-row advanced coursework. Each row is a single AP
+  // exam, IB-HL course, or IB-SL course (DE excluded). Score optional when
+  // course is in progress or pre-exam. Replaces the old free-floating apScores
+  // for the chance model's rigor classifier.
+  advancedCoursework?: AdvancedCourseworkRow[];
+
+  // Total IB diploma score (24-45 typical). Optional — only meaningful for
+  // full-IB-diploma candidates. Read by the rigor classifier as a corroborating
+  // signal alongside individual HL/SL scores.
+  ibDiplomaScore?: number;
+
+  // Explicit "school doesn't offer AP/IB" signal. When 'none', the chance
+  // model waives the rigor requirement (no penalty, no boost) for elite-
+  // profile floor and stat-band consensus rule. 'limited' means a few APs
+  // are offered; 'all' means full menu. Default undefined = treat as 'all'.
+  advancedCourseworkAvailable?: "all" | "limited" | "none";
+
+  // Graded essay records — populated by the essay grading tool.
+  // The chance model reads combinedScore from each entry, averages, and
+  // applies a multiplier (0.9× to 1.15×). Self-reported essay quality is
+  // intentionally NOT trusted — only graded scores from the tool count.
+  essayScores?: EssayScoreRecord[];
+
+  // Essay — auto-filled from essay grader.
+  // @deprecated chance model now reads essayScores[]. Kept for legacy
+  // /chances form display while users transition.
   essayCommonApp: string; // 0-100
   essayVspice: string;    // 0-4
 
@@ -46,7 +112,10 @@ export interface UserProfile {
   ecBand: string;         // limited|developing|solid|strong|exceptional
   ecStrength: "low" | "medium" | "high";
 
-  // Course rigor — auto-filled from weighted GPA
+  // Course rigor — auto-filled from weighted GPA.
+  // @deprecated replaced by advancedCoursework[] + advancedCourseworkAvailable.
+  // The new chance model derives a 6-tier rigor signal from the array and
+  // ignores this field. Kept for legacy round-trip; cleanup PR removes it.
   rigor: "low" | "medium" | "high";
 
   // Shared student identity (used by resume, future cover letters, etc.)

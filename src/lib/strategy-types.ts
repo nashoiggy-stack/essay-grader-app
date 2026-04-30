@@ -269,10 +269,15 @@ export interface DreamSchoolSection {
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
-// v5: Feature 1 chance-model rewrite — fitScore removed from
-// ClassifiedCollege, averageFitScore renamed to averageChance, classifyCollege
-// returns a ChanceRange + ConfidenceTier. v4 cached strategies will crash
-// without this bump because their pinned schools carry the old shape.
+// v7: Academic Index (AI) replaces the school-relative percentile classifier.
+// AI = (weightedGPA/5×80)×1.5 + ((bestTest-400)/1200×80)×1.5, mapped to
+// stat bands via Arcidiacono Harvard 2019 decile cutoffs. Tier 2 multipliers
+// rebalanced (above-median 1.0→1.2, below-p25 0.4→0.5). v6 caches reference
+// chance values produced by the prior school-relative classifier.
+// v6: final calibration — two-tier routing (algorithmic vs holistic-elite),
+// essay multiplier reintroduced (graded-only), advancedCoursework[] replaces
+// rigor dropdown, admissionsType cap split in 15-25% bracket.
+// v5: Feature 1 chance-model rewrite — fitScore removed.
 // v4: DreamSchoolSection no longer carries whatWouldChangeThis. v3 lacked
 // action/tone fields. Both old shapes are invalidated by this bump.
-export const STRATEGY_CACHE_VERSION = "v5";
+export const STRATEGY_CACHE_VERSION = "v7";
