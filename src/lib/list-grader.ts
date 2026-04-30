@@ -14,8 +14,77 @@
 import type { College, PinnedCollege, Classification, ApplicationPlan } from "./college-types";
 import type { AdvancedCourseworkRow, EssayScoreRecord } from "./profile-types";
 import { COLLEGES } from "@/data/colleges";
-import { classifyCollege, getApplicationOptions } from "./admissions";
+import { classifyCollege, getApplicationOptions, type ChanceResultModel } from "./admissions";
 import { computeMajorFit } from "./major-match";
+
+// ── Per-render caches (perf only — no behavior change) ──────────────────────
+//
+// gradeList is called many times during a single recommendForList run (up
+// to 480x at the swap horizon). Each call resolves the same pins against
+// the same profile, hitting classifyCollege twice per pin and COLLEGES.find
+// per pin. With a fresh cache passed through one render, repeated work
+// collapses to one call per (collegeName, applicationPlan).
+//
+// The cache is opaque to callers — gradeList accepts it as an optional
+// second argument and creates a fresh cache when omitted, so the public
+// signature is unchanged.
+
+export type ChanceCache = Map<string, ChanceResultModel>;
+export type CollegeIndex = Map<string, College>;
+
+export interface GraderCaches {
+  readonly chance: ChanceCache;
+  readonly index: CollegeIndex;
+}
+
+function emptyCaches(): GraderCaches {
+  // Built once per gradeList call when no caches are passed; built once per
+  // recommendForList call and shared across simulations.
+  const index: CollegeIndex = new Map();
+  for (const c of COLLEGES) index.set(c.name, c);
+  return { chance: new Map(), index };
+}
+
+export function createGraderCaches(): GraderCaches {
+  return emptyCaches();
+}
+
+function lookupCollege(name: string, caches: GraderCaches): College | undefined {
+  const cached = caches.index.get(name);
+  if (cached) return cached;
+  // Fallback if a name was added since the index was built.
+  const found = COLLEGES.find((c) => c.name === name);
+  if (found) caches.index.set(name, found);
+  return found;
+}
+
+function classifyCached(
+  college: College,
+  plan: ApplicationPlan,
+  profile: ListGraderProfile,
+  caches: GraderCaches,
+): ChanceResultModel {
+  const key = `${college.name}|${plan}`;
+  const hit = caches.chance.get(key);
+  if (hit) return hit;
+  const result = classifyCollege(
+    college,
+    profile.gpaUW, profile.gpaW, profile.sat, profile.act,
+    profile.essayCA ?? null, profile.essayV ?? null,
+    {
+      ecBand: profile.ecBand,
+      distinguishedEC: profile.distinguishedEC,
+      rigor: profile.rigor,
+      apScores: profile.apScores,
+      advancedCoursework: profile.advancedCoursework,
+      advancedCourseworkAvailable: profile.advancedCourseworkAvailable,
+      essayScores: profile.essayScores,
+      applicationPlan: plan,
+    },
+  );
+  caches.chance.set(key, result);
+  return result;
+}
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
@@ -102,27 +171,15 @@ interface ResolvedPin {
 function resolvePins(
   pinned: readonly PinnedCollege[],
   profile: ListGraderProfile,
+  caches: GraderCaches,
 ): readonly ResolvedPin[] {
   const out: ResolvedPin[] = [];
   for (const pin of pinned) {
-    const college = COLLEGES.find((c) => c.name === pin.name);
+    const college = lookupCollege(pin.name, caches);
     if (!college) continue;
-    const baseOpts = {
-      ecBand: profile.ecBand,
-      distinguishedEC: profile.distinguishedEC,
-      rigor: profile.rigor,
-      apScores: profile.apScores,
-      advancedCoursework: profile.advancedCoursework,
-      advancedCourseworkAvailable: profile.advancedCourseworkAvailable,
-      essayScores: profile.essayScores,
-    };
     // Use the user's selected plan if present; otherwise the card defaults to RD.
     const userPlan: ApplicationPlan = pin.applicationPlan ?? "RD";
-    const result = classifyCollege(
-      college, profile.gpaUW, profile.gpaW, profile.sat, profile.act,
-      profile.essayCA ?? null, profile.essayV ?? null,
-      { ...baseOpts, applicationPlan: userPlan },
-    );
+    const result = classifyCached(college, userPlan, profile, caches);
 
     // ED leverage = edChance − rdChance. Compute when the school offers
     // ED/ED2 and the user isn't already viewing ED. Skip when the school
@@ -135,28 +192,16 @@ function resolvePins(
       if (userPlan === "ED" || userPlan === "ED2") {
         edChance = result.chance.mid;
       } else {
-        const ed = classifyCollege(
-          college, profile.gpaUW, profile.gpaW, profile.sat, profile.act,
-          profile.essayCA ?? null, profile.essayV ?? null,
-          { ...baseOpts, applicationPlan: edPlan },
-        );
-        edChance = ed.chance.mid;
+        edChance = classifyCached(college, edPlan, profile, caches).chance.mid;
       }
     }
 
     // Always compute RD chance for ED-leverage delta, even when the user
     // selected ED. Otherwise leverage = 0 and we miss the candidate.
-    let rdChance: number;
-    if (userPlan === "RD") {
-      rdChance = result.chance.mid;
-    } else {
-      const rd = classifyCollege(
-        college, profile.gpaUW, profile.gpaW, profile.sat, profile.act,
-        profile.essayCA ?? null, profile.essayV ?? null,
-        { ...baseOpts, applicationPlan: "RD" },
-      );
-      rdChance = rd.chance.mid;
-    }
+    const rdChance: number =
+      userPlan === "RD"
+        ? result.chance.mid
+        : classifyCached(college, "RD", profile, caches).chance.mid;
 
     out.push({ pin, college, classification: result.classification, rdChance, edChance });
   }
@@ -423,8 +468,9 @@ function scoreToLetter(score: number): Letter {
 export function gradeList(
   pinned: readonly PinnedCollege[],
   profile: ListGraderProfile,
+  caches: GraderCaches = emptyCaches(),
 ): GradeResult {
-  const resolved = resolvePins(pinned, profile);
+  const resolved = resolvePins(pinned, profile, caches);
   const tierCounts = countTiers(resolved);
 
   // balanceScore (sum to 100)

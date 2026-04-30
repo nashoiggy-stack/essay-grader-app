@@ -19,7 +19,13 @@
 
 import type { College, PinnedCollege } from "./college-types";
 import { COLLEGES } from "@/data/colleges";
-import { gradeList, type ListGraderProfile, type GradeResult } from "./list-grader";
+import {
+  gradeList,
+  createGraderCaches,
+  type GraderCaches,
+  type ListGraderProfile,
+  type GradeResult,
+} from "./list-grader";
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
@@ -112,11 +118,12 @@ function findBestAdds(
   pinned: readonly PinnedCollege[],
   profile: ListGraderProfile,
   before: GradeResult,
+  caches: GraderCaches,
 ): readonly RecommendationResult[] {
   const candidates = candidatePool(pinned, profile);
   const scored: { college: College; after: GradeResult; delta: number }[] = [];
   for (const c of candidates) {
-    const after = gradeList(withAdded(pinned, c), profile);
+    const after = gradeList(withAdded(pinned, c), profile, caches);
     const delta = after.officialScore - before.officialScore;
     if (delta >= MIN_DELTA_FOR_ADD) {
       scored.push({ college: c, after, delta });
@@ -142,6 +149,7 @@ function findBestSwaps(
   pinned: readonly PinnedCollege[],
   profile: ListGraderProfile,
   before: GradeResult,
+  caches: GraderCaches,
 ): readonly RecommendationResult[] {
   const candidates = candidatePool(pinned, profile);
   const scored: { add: College; remove: string; after: GradeResult; delta: number }[] = [];
@@ -153,7 +161,7 @@ function findBestSwaps(
   for (const pin of pinned) {
     for (const add of candidates) {
       if (add.name === pin.name) continue;
-      const after = gradeList(withSwapped(pinned, pin.name, add), profile);
+      const after = gradeList(withSwapped(pinned, pin.name, add), profile, caches);
       const delta = after.officialScore - before.officialScore;
       if (delta >= MIN_DELTA_FOR_SWAP) {
         scored.push({ add, remove: pin.name, after, delta });
@@ -247,21 +255,27 @@ export function recommendForList(
 ): readonly RecommendationResult[] {
   void allColleges; // reserved for future server-fed candidate pools
 
-  const before = gradeList(pinned, profile);
+  // One cache for the entire run. Every simulation re-classifies the same
+  // pinned schools under the same plans; with the cache, classifyCollege
+  // is called once per (collegeName, applicationPlan) instead of hundreds
+  // of times. Pure perf — output is bit-identical to the cache-free path.
+  const caches = createGraderCaches();
+
+  const before = gradeList(pinned, profile, caches);
   const total = pinned.length;
 
   if (total < SWEET_SPOT_MIN) {
     // Always recommend at least one add toward the 8-12 sweet spot.
-    return findBestAdds(pinned, profile, before);
+    return findBestAdds(pinned, profile, before, caches);
   }
 
   if (total >= SWEET_SPOT_MIN && total < SWEET_SPOT_MAX) {
     // Only suggest a swap if it's a clear improvement; skip pure adds when
     // the list is already in the sweet spot — adding past 12 is its own
     // problem.
-    return findBestSwaps(pinned, profile, before);
+    return findBestSwaps(pinned, profile, before, caches);
   }
 
   // total >= SWEET_SPOT_MAX: swap-only mode. Adding pushes past the cap.
-  return findBestSwaps(pinned, profile, before);
+  return findBestSwaps(pinned, profile, before, caches);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useDeferredValue } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Plus, ArrowRight, Bookmark, RefreshCw, X } from "lucide-react";
@@ -120,9 +120,16 @@ export default function ListPage() {
     [pinned, graderProfile],
   );
 
+  // Recommendations are the heavy compute. Run them against deferred
+  // values so React can paint the grade card + pinned cards first and
+  // schedule the recommender as a low-priority update. Output is
+  // bit-identical to a non-deferred path — same recommendations, just
+  // not blocking first paint.
+  const deferredPinned = useDeferredValue(pinned);
+  const deferredProfile = useDeferredValue(graderProfile);
   const recommendations = useMemo<readonly RecommendationResult[]>(
-    () => recommendForList(pinned, COLLEGES, graderProfile),
-    [pinned, graderProfile],
+    () => recommendForList(deferredPinned, COLLEGES, deferredProfile),
+    [deferredPinned, deferredProfile],
   );
 
   const pinnedClassified = useMemo<ClassifiedCollege[]>(() => {
