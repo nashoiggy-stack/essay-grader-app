@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/extracurriculars", label: "ECs" },
   { href: "/resume", label: "Resume" },
   { href: "/colleges", label: "Colleges" },
+  { href: "/list", label: "List" },
   { href: "/chances", label: "Chances" },
   { href: "/compare", label: "Compare" },
   { href: "/strategy", label: "Strategy" },
