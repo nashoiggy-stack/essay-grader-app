@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { UserProfile, SATScores, ACTScores, BasicStudentInfo } from "@/lib/profile-types";
-import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO } from "@/lib/profile-types";
+import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO, normalizeProfile } from "@/lib/profile-types";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
 
@@ -160,7 +160,10 @@ export function useProfile() {
     try {
       const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (saved) {
-        const parsed: UserProfile = JSON.parse(saved);
+        // Cloud-loaded blobs can be partial (older accounts may lack `sat`,
+        // `act`, etc.) — normalizeProfile fills every required field with a
+        // safe default before we touch nested properties.
+        const parsed = normalizeProfile(JSON.parse(saved));
         // Merge rule: fresh computed values always overwrite the saved ones
         // UNLESS the user manually edited that field.
         setProfile({
@@ -186,10 +189,7 @@ export function useProfile() {
         });
       }
     } catch {
-      setProfile({
-        ...EMPTY_PROFILE,
-        ...computedVals,
-      });
+      setProfile(normalizeProfile({ ...EMPTY_PROFILE, ...computedVals }));
     }
 
     setLoaded(true);
@@ -239,8 +239,20 @@ export function useProfile() {
       }
     };
 
-    // Cloud restore: re-read everything after cloud data loads
-    const onCloudLoaded = () => syncFromComputed();
+    // Cloud restore: re-read both the profile blob and the computed sources
+    // after cloud data lands in localStorage. Without re-reading the blob,
+    // sat/act/apScores entered on another device wouldn't appear until the
+    // next page reload.
+    const onCloudLoaded = () => {
+      try {
+        const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
+        if (saved) {
+          const parsed = normalizeProfile(JSON.parse(saved));
+          setProfile((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch { /* ignore */ }
+      syncFromComputed();
+    };
 
     window.addEventListener("focus", onFocus);
     window.addEventListener("storage", onStorage);

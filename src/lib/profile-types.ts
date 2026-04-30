@@ -121,6 +121,49 @@ export const EMPTY_PROFILE: UserProfile = {
 
 export const PROFILE_STORAGE_KEY = "admitedge-profile";
 
+// Cloud-loaded profile blobs can be partial — older accounts and partially
+// hydrated localStorage caches sometimes lack `sat`, `act`, or `apScores`
+// entirely. The UserProfile type declares those fields non-optional, so
+// downstream code reads `profile.sat.readingWriting` directly. Without
+// normalization on load, that crashes with "Cannot read properties of
+// undefined". `normalizeProfile` fills every required field with a safe
+// default and preserves user-set values, so the static type is honest at
+// runtime. Keep this in sync with the UserProfile interface above — any new
+// required field MUST be added here too.
+export function normalizeProfile(raw: unknown): UserProfile {
+  const p = (raw && typeof raw === "object" ? raw : {}) as Partial<UserProfile>;
+  return {
+    gpaUW: p.gpaUW ?? "",
+    gpaW: p.gpaW ?? "",
+    sat: {
+      readingWriting: p.sat?.readingWriting ?? "",
+      math: p.sat?.math ?? "",
+    },
+    act: {
+      english: p.act?.english ?? "",
+      math: p.act?.math ?? "",
+      reading: p.act?.reading ?? "",
+      science: p.act?.science ?? "",
+    },
+    apScores: Array.isArray(p.apScores) ? p.apScores : [],
+    essayCommonApp: p.essayCommonApp ?? "",
+    essayVspice: p.essayVspice ?? "",
+    ecBand: p.ecBand ?? "",
+    ecStrength: p.ecStrength ?? "medium",
+    rigor: p.rigor ?? "medium",
+    basicInfo: p.basicInfo,
+    intendedMajor: p.intendedMajor,
+    intendedInterest: p.intendedInterest,
+    firstGen: p.firstGen,
+    legacyParent: p.legacyParent,
+    recruitedAthlete: p.recruitedAthlete,
+    firstAuthorPublication: p.firstAuthorPublication,
+    nationalCompetitionPlacement: p.nationalCompetitionPlacement,
+    founderWithUsers: p.founderWithUsers,
+    selectiveProgram: p.selectiveProgram,
+  };
+}
+
 export function computeSATComposite(scores: SATScores): number | null {
   const rw = scores.readingWriting ? parseInt(scores.readingWriting) : null;
   const m = scores.math ? parseInt(scores.math) : null;
