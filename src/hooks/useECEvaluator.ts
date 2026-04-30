@@ -15,15 +15,6 @@ import {
   bandFromScore,
 } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
-import {
-  getCachedJson,
-  setJson,
-  removeKey,
-  type CloudKey,
-} from "@/lib/cloud-storage";
-
-const ACTIVITIES_KEY: CloudKey = EC_ACTIVITIES_KEY as CloudKey;
-const RESULT_KEY: CloudKey = EC_STORAGE_KEY as CloudKey;
 
 /**
  * Reconcile the band field with the computed readiness score.
@@ -64,25 +55,33 @@ export function useECEvaluator() {
   const [saveFlash, setSaveFlash] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Load saved activities through cloud-storage cache.
+  // Load saved activities from localStorage
   useEffect(() => {
-    const saved = getCachedJson<ECConversation[]>(ACTIVITIES_KEY);
-    if (Array.isArray(saved) && saved.length > 0) setConversations(saved);
-
-    const parsed = getCachedJson<ProfileEvaluation>(RESULT_KEY);
-    if (parsed) {
-      const reconciled = reconcileBand(parsed);
-      setResult(reconciled);
-      if (reconciled.band !== parsed.band) {
-        setItemAndNotify(RESULT_KEY, JSON.stringify(reconciled));
+    try {
+      const raw = localStorage.getItem(EC_ACTIVITIES_KEY);
+      if (raw) {
+        const saved: ECConversation[] = JSON.parse(raw);
+        if (saved.length > 0) setConversations(saved);
       }
+      const resultRaw = localStorage.getItem(EC_STORAGE_KEY);
+      if (resultRaw) {
+        // Reconcile on load so a stored result with a drifted band is fixed
+        const parsed: ProfileEvaluation = JSON.parse(resultRaw);
+        const reconciled = reconcileBand(parsed);
+        setResult(reconciled);
+        if (reconciled.band !== parsed.band) {
+          setItemAndNotify(EC_STORAGE_KEY, JSON.stringify(reconciled));
+        }
+      }
+    } catch {
+      // ignore
     }
   }, []);
 
-  // Persist activities through cloud-storage on change.
+  // Save activities to localStorage on change
   useEffect(() => {
     if (conversations.length > 0) {
-      setJson<ECConversation[]>(ACTIVITIES_KEY, conversations);
+      localStorage.setItem(EC_ACTIVITIES_KEY, JSON.stringify(conversations));
     }
   }, [conversations]);
 
@@ -332,8 +331,8 @@ export function useECEvaluator() {
     setResult(null);
     setChatInput("");
     setEvalError("");
-    removeKey(ACTIVITIES_KEY);
-    removeKey(RESULT_KEY);
+    localStorage.removeItem(EC_ACTIVITIES_KEY);
+    localStorage.removeItem(EC_STORAGE_KEY);
   }, []);
 
   const doneCount = conversations.filter((c) => c.done && !c.disabled).length;

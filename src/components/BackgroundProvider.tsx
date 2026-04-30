@@ -3,11 +3,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { setItemAndNotify } from "@/lib/sync-event";
-import { getCachedRaw, type CloudKey } from "@/lib/cloud-storage";
 
 export type BackgroundChoice = "shader" | "dark" | "light" | "monochrome";
 
-const STORAGE_KEY: CloudKey = "admitedge-bg-preference";
+const STORAGE_KEY = "admitedge-bg-preference";
 const DEFAULT_CHOICE: BackgroundChoice = "monochrome";
 
 interface BackgroundContextValue {
@@ -27,7 +26,8 @@ function isBackgroundChoice(value: string | null): value is BackgroundChoice {
 }
 
 function readStoredChoice(): BackgroundChoice {
-  const raw = getCachedRaw(STORAGE_KEY);
+  if (typeof window === "undefined") return DEFAULT_CHOICE;
+  const raw = window.localStorage.getItem(STORAGE_KEY);
   return isBackgroundChoice(raw) ? raw : DEFAULT_CHOICE;
 }
 
@@ -53,7 +53,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
     setTheme(themeForChoice(stored));
   }, [setTheme]);
 
-  // Re-read on cross-tab / cloud-storage writes / cloud reconcile.
+  // Re-read on cross-tab/cloud-sync writes
   useEffect(() => {
     const onUpdate = (event: Event) => {
       const detail = (event as CustomEvent<{ key?: string }>).detail;
@@ -62,19 +62,8 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
       setBackgroundState(fresh);
       setTheme(themeForChoice(fresh));
     };
-    const onReconciled = () => {
-      const fresh = readStoredChoice();
-      setBackgroundState(fresh);
-      setTheme(themeForChoice(fresh));
-    };
     window.addEventListener("profile-source-updated", onUpdate);
-    window.addEventListener("cloud-storage-changed", onUpdate);
-    window.addEventListener("cloud-storage-reconciled", onReconciled);
-    return () => {
-      window.removeEventListener("profile-source-updated", onUpdate);
-      window.removeEventListener("cloud-storage-changed", onUpdate);
-      window.removeEventListener("cloud-storage-reconciled", onReconciled);
-    };
+    return () => window.removeEventListener("profile-source-updated", onUpdate);
   }, [setTheme]);
 
   const setBackground = useCallback(
