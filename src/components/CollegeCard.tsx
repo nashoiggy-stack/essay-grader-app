@@ -73,7 +73,6 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
     confidence,
     yieldProtectedNote,
     usedFallback,
-    stale,
     recruitedAthletePathway,
     breakdown,
     majorMatch,
@@ -201,7 +200,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       )}
 
       {/* ── Confidence + caveat badges ──────────────────────────── */}
-      {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
+      {(isLowConf || yieldProtectedNote || usedFallback || recruitedAthletePathway) && (
         <div className="mt-4 flex flex-wrap gap-1.5">
           {recruitedAthletePathway && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25">
@@ -226,11 +225,6 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           {yieldProtectedNote && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
               May consider demonstrated interest
-            </span>
-          )}
-          {stale && classification !== "insufficient" && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
-              Data may be stale
             </span>
           )}
         </div>

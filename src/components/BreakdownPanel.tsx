@@ -31,7 +31,10 @@ interface BreakdownPanelProps {
 // the layer, its multiplier, and the running chance after applying it. The
 // what-if scenarios appear below the stack so users can see how malleable
 // their position is.
-export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({ breakdown, whatIfs = [] }) => {
+export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
+  breakdown,
+  whatIfs = [],
+}) => {
   const baseDisplay = round1(breakdown.baseRate);
   return (
     <div className="space-y-4">
@@ -109,6 +112,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({ breakdown, whatI
           </ul>
         </div>
       )}
+
     </div>
   );
 };

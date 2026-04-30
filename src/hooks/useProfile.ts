@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { UserProfile, SATScores, ACTScores, BasicStudentInfo } from "@/lib/profile-types";
-import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO } from "@/lib/profile-types";
+import { EMPTY_PROFILE, PROFILE_STORAGE_KEY, EMPTY_BASIC_STUDENT_INFO, normalizeProfile } from "@/lib/profile-types";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
 import {
@@ -162,17 +162,22 @@ export function useProfile() {
     const overrides = readOverrides();
     setComputed(computedVals);
 
-    const saved = getCachedJson<UserProfile>(PROFILE_KEY);
-    if (saved) {
+    // Cloud-loaded blobs can be partial (older accounts may lack `sat`,
+    // `act`, etc.) — normalizeProfile fills every required field with a
+    // safe default before we touch nested properties. cloud-storage
+    // returns null when the cache is empty; fall through to EMPTY_PROFILE.
+    const rawSaved = getCachedJson<unknown>(PROFILE_KEY);
+    if (rawSaved !== null) {
+      const parsed = normalizeProfile(rawSaved);
       setProfile({
-        ...saved,
-        gpaUW: overrides.gpaUW ? saved.gpaUW : (computedVals.gpaUW || saved.gpaUW),
-        gpaW: overrides.gpaW ? saved.gpaW : (computedVals.gpaW || saved.gpaW),
-        essayCommonApp: overrides.essayCommonApp ? saved.essayCommonApp : (computedVals.essayCommonApp || saved.essayCommonApp),
-        essayVspice: overrides.essayVspice ? saved.essayVspice : (computedVals.essayVspice || saved.essayVspice),
-        ecBand: overrides.ecBand ? saved.ecBand : (computedVals.ecBand || saved.ecBand),
-        ecStrength: overrides.ecStrength ? saved.ecStrength : computedVals.ecStrength,
-        rigor: overrides.rigor ? saved.rigor : computedVals.rigor,
+        ...parsed,
+        gpaUW: overrides.gpaUW ? parsed.gpaUW : (computedVals.gpaUW || parsed.gpaUW),
+        gpaW: overrides.gpaW ? parsed.gpaW : (computedVals.gpaW || parsed.gpaW),
+        essayCommonApp: overrides.essayCommonApp ? parsed.essayCommonApp : (computedVals.essayCommonApp || parsed.essayCommonApp),
+        essayVspice: overrides.essayVspice ? parsed.essayVspice : (computedVals.essayVspice || parsed.essayVspice),
+        ecBand: overrides.ecBand ? parsed.ecBand : (computedVals.ecBand || parsed.ecBand),
+        ecStrength: overrides.ecStrength ? parsed.ecStrength : computedVals.ecStrength,
+        rigor: overrides.rigor ? parsed.rigor : computedVals.rigor,
       });
     } else {
       setProfile({
@@ -241,7 +246,18 @@ export function useProfile() {
       }
     };
 
-    const onReconciled = () => syncFromComputed();
+    // Cloud reconcile: re-read both the profile blob and the computed sources.
+    // Without re-reading the blob, sat/act/apScores entered on another device
+    // wouldn't appear until the next page reload. normalizeProfile guards
+    // against partial blobs from older accounts.
+    const onReconciled = () => {
+      const rawSaved = getCachedJson<unknown>(PROFILE_KEY);
+      if (rawSaved !== null) {
+        const parsed = normalizeProfile(rawSaved);
+        setProfile((prev) => ({ ...prev, ...parsed }));
+      }
+      syncFromComputed();
+    };
 
     window.addEventListener("focus", onFocus);
     window.addEventListener("storage", onStorage);

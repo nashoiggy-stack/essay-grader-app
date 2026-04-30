@@ -86,12 +86,17 @@ export function useAtlasData(): AtlasData {
     setToday(new Date());
   }, []);
 
-  const sat = computeSATComposite(profile.sat);
-  const act = computeACTComposite(profile.act);
-  const apCount = profile.apScores.length;
-  const apFives = profile.apScores.filter((a) => a.score === 5).length;
+  // Defensive: useProfile applies normalizeProfile on hydration, so nested
+  // shapes are guaranteed for the normal flow. Optional chaining here is a
+  // belt-and-braces guard against any path that constructs a profile
+  // without going through the hook (legacy code, future refactors).
+  const sat = profile.sat ? computeSATComposite(profile.sat) : null;
+  const act = profile.act ? computeACTComposite(profile.act) : null;
+  const apList = profile.apScores ?? [];
+  const apCount = apList.length;
+  const apFives = apList.filter((a) => a.score === 5).length;
   const apAvg = apCount > 0
-    ? (profile.apScores.reduce((s, a) => s + a.score, 0) / apCount).toFixed(1)
+    ? (apList.reduce((s, a) => s + a.score, 0) / apCount).toFixed(1)
     : "—";
 
   const ecLabel = profile.ecBand
@@ -447,8 +452,8 @@ export function useAtlasData(): AtlasData {
       gpaW: profile.gpaW || "—",
       sat: sat !== null ? String(sat) : "—",
       act: act !== null ? String(act) : "—",
-      satRW: profile.sat.readingWriting || "—",
-      satMath: profile.sat.math || "—",
+      satRW: profile.sat?.readingWriting || "—",
+      satMath: profile.sat?.math || "—",
       apCount,
       apFives,
       apAvg,
