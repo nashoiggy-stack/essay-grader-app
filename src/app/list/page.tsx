@@ -98,11 +98,23 @@ const LETTER_TONE: Record<Letter, string> = {
 };
 
 // ── Reusable typographic tokens (editorial chrome) ─────────────────────────
+//
+// Editorial-luxury direction in dark mode. EYEBROW is the inline form;
+// PILL_EYEBROW is a slightly more crafted variant used at major section
+// boundaries — same letterforms, but in a hairline-bordered pill so the
+// header anchors visually before the serif drops in.
 
 const EYEBROW = "text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-medium";
+const PILL_EYEBROW =
+  "inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.025] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-zinc-400 font-medium";
 const HAIRLINE = "border-t border-white/[0.06]";
 const SERIF = "font-[family-name:var(--font-display)]";
 const MONO = "font-[family-name:var(--font-geist-mono)] tabular-nums";
+
+// Lucide defaults to strokeWidth=2 which reads as "tech-ish" rather than
+// editorial. Pin every icon on this page to 1.5 for an ultra-light precision
+// line that pairs with the Young_Serif display face.
+const ICON_STROKE = 1.5 as const;
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
@@ -184,21 +196,24 @@ export default function ListPage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-20 sm:py-32 font-[family-name:var(--font-geist-sans)]">
         {/* ── Masthead ─────────────────────────────────────────────────── */}
         <motion.header
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-          className="mb-12 sm:mb-16"
+          transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+          className="mb-14 sm:mb-20"
         >
-          <p className={EYEBROW}>Your application cycle</p>
+          <span className={PILL_EYEBROW}>
+            <span className="size-1 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(110,231,183,0.6)]" />
+            Your application cycle
+          </span>
           <h1
-            className={`${SERIF} mt-2 text-[clamp(2.75rem,6vw,4.5rem)] leading-[0.95] tracking-tight text-zinc-100`}
+            className={`${SERIF} mt-5 text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.95] tracking-tight text-zinc-100`}
           >
             The list, graded.
           </h1>
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-400">
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-zinc-400">
             A second-opinion read on tier balance, ED leverage, financial mix,
             geographic spread, and major fit — calibrated against the same
             chance model that powers the rest of AdmitEdge.
@@ -208,7 +223,7 @@ export default function ListPage() {
         {isEmpty ? (
           <EmptyState />
         ) : (
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-14 sm:space-y-20">
             <ScrollReveal delay={0.05}>
               <GradeMasthead grade={grade} />
             </ScrollReveal>
@@ -293,22 +308,35 @@ function ListSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="border border-white/[0.06] rounded-3xl bg-[#0a0a14]/40 px-8 sm:px-12 py-14 sm:py-20">
-      <p className={EYEBROW}>No schools pinned</p>
-      <h2 className={`${SERIF} mt-3 text-3xl sm:text-4xl text-zinc-100 leading-tight`}>
-        Start by pinning a few schools.
-      </h2>
-      <p className="mt-3 max-w-md text-[14px] text-zinc-400 leading-relaxed">
-        We grade the list on tier balance, count, ED leverage, financial mix,
-        geographic diversity, and major fit. Aim for 8–12 schools across reach,
-        target, likely, and safety.
-      </p>
-      <Link
-        href="/colleges"
-        className="mt-7 inline-flex items-center gap-2 text-[14px] font-medium text-zinc-100 hover:text-white transition-colors"
+    // Double-bezel: outer shell (machined frame) + inner core (the actual
+    // panel). The 1.5px gap between rings reads like a physical mat board
+    // around a print, not a flat card on a flat background.
+    <div className="rounded-[2rem] border border-white/[0.05] bg-white/[0.015] p-1.5">
+      <div
+        className="rounded-[calc(2rem-0.375rem)] border border-white/[0.04] bg-[#0a0a14]/55 px-8 sm:px-14 py-14 sm:py-20 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
       >
-        Browse colleges <ArrowRight className="w-4 h-4" />
-      </Link>
+        <span className={PILL_EYEBROW}>
+          <span className="size-1 rounded-full bg-zinc-400" />
+          No schools pinned
+        </span>
+        <h2 className={`${SERIF} mt-5 text-3xl sm:text-4xl text-zinc-100 leading-tight tracking-tight`}>
+          Start by pinning a few schools.
+        </h2>
+        <p className="mt-4 max-w-md text-[14px] text-zinc-400 leading-relaxed">
+          We grade the list on tier balance, count, ED leverage, financial mix,
+          geographic diversity, and major fit. Aim for 8–12 schools across reach,
+          target, likely, and safety.
+        </p>
+        <Link
+          href="/colleges"
+          className="group/cta mt-8 inline-flex items-center gap-2.5 rounded-full bg-zinc-100 hover:bg-white pl-5 pr-1.5 py-1.5 text-[13px] font-medium text-zinc-950 transition-[transform,background-color] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98]"
+        >
+          Browse colleges
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-950/10 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-[1px]">
+            <ArrowRight className="w-3.5 h-3.5" strokeWidth={ICON_STROKE} />
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -545,10 +573,12 @@ function PinnedSection({
         </div>
         <Link
           href="/colleges"
-          className="group/link text-[12px] text-zinc-400 hover:text-zinc-100 inline-flex items-center gap-1.5 transition-colors duration-200"
+          className="group/link inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] pl-3.5 pr-1 py-1 text-[12px] font-medium text-zinc-300 hover:text-zinc-50 hover:border-white/[0.12] transition-[color,border-color,background-color,transform] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97]"
         >
           Browse more
-          <ArrowRight className="w-3 h-3 transition-transform duration-200 group-hover/link:translate-x-0.5" />
+          <span className="flex items-center justify-center size-6 rounded-full bg-white/[0.06] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/link:translate-x-0.5 group-hover/link:-translate-y-[1px]">
+            <ArrowRight className="w-3 h-3" strokeWidth={ICON_STROKE} />
+          </span>
         </Link>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -651,7 +681,7 @@ function RecommendationRow({
           </h3>
           {rec.kind === "swap" && rec.replaces && (
             <span className="text-[11px] text-zinc-500 inline-flex items-center gap-1">
-              <X className="w-3 h-3" /> {rec.replaces}
+              <X className="w-3 h-3" strokeWidth={ICON_STROKE} /> {rec.replaces}
             </span>
           )}
         </div>
@@ -660,43 +690,45 @@ function RecommendationRow({
         </p>
       </div>
       <div className="text-right">
-        <div className={`${MONO} text-[12px] text-zinc-400 tabular-nums transition-colors duration-200 group-hover:text-zinc-200`}>
+        <div className={`${MONO} text-[12px] text-zinc-400 tabular-nums transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:text-zinc-200`}>
           +{rec.gradeDelta.toFixed(1)}
         </div>
         <div className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">
           grade
         </div>
       </div>
+      {/* Desktop: nested icon-circle pill (button-in-button) */}
       <button
         type="button"
         onClick={apply}
-        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-100 hover:text-white transition-[color,transform] duration-200 active:translate-y-[0.5px]"
+        aria-label={rec.kind === "swap" ? `Swap in ${rec.college.name}` : `Pin ${rec.college.name}`}
+        className="group/cta hidden sm:inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] pl-3.5 pr-1 py-1 text-[12px] font-medium text-zinc-200 hover:text-zinc-50 hover:border-white/[0.14] hover:bg-white/[0.04] transition-[color,border-color,background-color,transform] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97]"
       >
-        {rec.kind === "swap" ? (
-          <>
-            <RefreshCw className="w-3 h-3" /> Swap in
-          </>
-        ) : (
-          <>
-            <Plus className="w-3 h-3" /> Pin
-          </>
-        )}
+        {rec.kind === "swap" ? "Swap in" : "Pin"}
+        <span className="flex items-center justify-center size-6 rounded-full bg-white/[0.06] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-[1px]">
+          {rec.kind === "swap" ? (
+            <RefreshCw className="w-3 h-3" strokeWidth={ICON_STROKE} />
+          ) : (
+            <Plus className="w-3 h-3" strokeWidth={ICON_STROKE} />
+          )}
+        </span>
       </button>
-      {/* Mobile: full-row CTA */}
+      {/* Mobile: full-row CTA, same architecture */}
       <button
         type="button"
         onClick={apply}
-        className="sm:hidden col-span-3 mt-2 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium text-zinc-100 border border-white/[0.08] rounded-full py-2 transition-[background-color,transform] duration-200 hover:bg-white/[0.04] active:scale-[0.99]"
+        className="group/cta sm:hidden col-span-3 mt-3 inline-flex items-center justify-between gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] pl-5 pr-1.5 py-1.5 text-[13px] font-medium text-zinc-100 transition-[background-color,border-color,transform] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.05] active:scale-[0.98]"
       >
-        {rec.kind === "swap" ? (
-          <>
-            <RefreshCw className="w-3 h-3" /> Swap in {rec.college.name}
-          </>
-        ) : (
-          <>
-            <Plus className="w-3 h-3" /> Pin {rec.college.name}
-          </>
-        )}
+        <span className="truncate">
+          {rec.kind === "swap" ? `Swap in ${rec.college.name}` : `Pin ${rec.college.name}`}
+        </span>
+        <span className="flex items-center justify-center size-7 rounded-full bg-white/[0.06] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-0.5">
+          {rec.kind === "swap" ? (
+            <RefreshCw className="w-3.5 h-3.5" strokeWidth={ICON_STROKE} />
+          ) : (
+            <Plus className="w-3.5 h-3.5" strokeWidth={ICON_STROKE} />
+          )}
+        </span>
       </button>
     </motion.li>
   );
