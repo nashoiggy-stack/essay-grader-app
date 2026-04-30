@@ -1,0 +1,33 @@
+{
+  "name": "C — Insufficient school data, no blend",
+  "user": {
+    "gpaUW": 4.0,
+    "gpaW": 4.5,
+    "act": 35,
+    "sat": null,
+    "rigor": "high",
+    "ecBand": "strong",
+    "essayCommonApp": "80",
+    "essayVspice": "3",
+    "applicationPlan": "RD"
+  },
+  "college": "Brown University",
+  "syntheticHistory": {
+    "appType": "RD",
+    "totalApplicants": 2,
+    "admits": 1,
+    "denies": 1,
+    "waitlists": 0,
+    "admittedAvgGpaW": 4.5,
+    "admittedAvgSat": 1500,
+    "admittedSdSat": null
+  },
+  "expected": {
+    "shiftDirection": "none",
+    "minShiftPct": 0,
+    "maxShiftPct": 0,
+    "scatterplotPosition": "raw points render but no blend message",
+    "noteIncludes": "limited"
+  },
+  "rationale": "Sample of 2 falls below the 5-app threshold for blending. Chance should equal national chance exactly. Scatterplot renders with the 2 raw points; breakdown panel shows the existence of the data with a 'limited' confidence label."
+}
