@@ -28,7 +28,8 @@ function reconcileBand(result: ProfileEvaluation): ProfileEvaluation {
     activities: result.activities,
     spikes: result.spikes,
   });
-  return { ...result, band: bandFromScore(score) };
+  const tier1Count = result.activities.filter((a) => a.tier === 1).length;
+  return { ...result, band: bandFromScore(score, tier1Count) };
 }
 
 function generateId(): string {
