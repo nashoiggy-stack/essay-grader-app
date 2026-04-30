@@ -245,7 +245,9 @@ export function useChanceCalculator() {
     if (r.usedFallback === "ed") weaknesses.push("ED estimate based on overall trends, not school-specific data");
     if (r.usedFallback === "ea") weaknesses.push("EA estimate based on overall trends, not school-specific data");
     if (r.yieldProtectedNote) weaknesses.push("This school may consider demonstrated interest");
-    if (r.stale) weaknesses.push("Data for this school may be stale (older than 2 academic cycles)");
+    // r.stale is no longer surfaced to users — most schools lack CDS sync,
+    // so this fired as an unactionable yellow warning on the majority. The
+    // flag still flows through the chance model's confidence calculation.
 
     // ── EC band display (matches multiplier from chance model) ──
     const EC_BAND_LABELS: Record<string, { label: string; positive: boolean }> = {
