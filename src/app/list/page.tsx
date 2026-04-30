@@ -3,7 +3,7 @@
 import { useMemo, useDeferredValue } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Plus, ArrowRight, Bookmark, RefreshCw, X } from "lucide-react";
+import { Plus, ArrowRight, RefreshCw, X } from "lucide-react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeCard } from "@/components/CollegeCard";
@@ -273,16 +273,16 @@ function ListSkeleton() {
     <main
       aria-busy="true"
       aria-label="Loading your list"
-      className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)] animate-pulse"
+      className="mx-auto max-w-5xl px-4 sm:px-6 py-20 sm:py-32 font-[family-name:var(--font-geist-sans)] animate-pulse"
     >
-      <div className="mb-12 sm:mb-16">
-        <SkeletonBar className="h-3 w-40" />
-        <SkeletonBar className="mt-4 h-12 w-3/4 max-w-2xl" />
+      <div className="mb-14 sm:mb-20">
+        <SkeletonBar className="h-6 w-44 rounded-full" />
+        <SkeletonBar className="mt-5 h-12 w-3/4 max-w-2xl" />
         <SkeletonBar className="mt-5 h-3 w-full max-w-xl" />
         <SkeletonBar className="mt-2 h-3 w-2/3 max-w-md" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-y-8 md:gap-x-8">
-        <div className="md:col-span-7 flex items-end gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-y-10 md:gap-x-10">
+        <div className="md:col-span-7 flex items-end gap-5 sm:gap-7">
           <SkeletonBar className="h-[clamp(7rem,18vw,13rem)] w-[clamp(6rem,14vw,10rem)]" />
           <div className="pb-2 sm:pb-4 space-y-3 flex-1">
             <SkeletonBar className="h-7 w-32" />
@@ -396,7 +396,7 @@ function GradeMasthead({ grade }: { grade: GradeResult }) {
                 transition={{ delay: 0.18 + i * 0.06, duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
                 className={`grid grid-cols-[2.25rem_1fr] gap-2 pt-3 ${HAIRLINE}`}
               >
-                <span className={`${MONO} text-[11px] text-zinc-500 mt-0.5 tabular-nums`}>
+                <span className={`${MONO} text-[11px] text-zinc-500 mt-0.5`}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="text-[13px] text-zinc-300 leading-relaxed">{r}</span>
@@ -437,8 +437,8 @@ function Breakdown({ grade }: { grade: GradeResult }) {
         <p className={EYEBROW} id="grade-breakdown">
           Breakdown
         </p>
-        <p className="text-[11px] text-zinc-600 max-w-[20ch] text-right">
-          balance + major / 2 = official
+        <p className="text-[11px] text-zinc-600 max-w-[24ch] text-right">
+          (balance + major) ÷ 2 = official
         </p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10">
@@ -462,7 +462,7 @@ function BreakdownColumn({
     <div>
       <div className="flex items-baseline justify-between pb-3 mb-1 border-b border-white/[0.08]">
         <h3 className={`${SERIF} text-2xl text-zinc-100 leading-none`}>{title}</h3>
-        <div className={`${MONO} text-[14px] text-zinc-200 tabular-nums`}>
+        <div className={`${MONO} text-[14px] text-zinc-200`}>
           {total.toFixed(1)}
           <span className="text-zinc-600"> / {totalOut}</span>
         </div>
@@ -480,7 +480,7 @@ function BreakdownColumn({
                 </p>
               </div>
               <div className="text-right">
-                <div className={`${MONO} text-[13px] text-zinc-200 tabular-nums`}>
+                <div className={`${MONO} text-[13px] text-zinc-200`}>
                   {r.score.toFixed(1)}
                   <span className="text-zinc-600"> / {r.out}</span>
                 </div>
@@ -504,9 +504,6 @@ function BreakdownColumn({
 
 function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
   const denom = counts.total || 1;
-  const segments = TIER_KEYS
-    .map((tier) => ({ tier, n: counts[tier] }))
-    .filter((s) => s.n > 0);
   return (
     <section aria-labelledby="tier-strip">
       <div className="flex items-baseline justify-between mb-4">
@@ -525,7 +522,7 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
             <div key={tier} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between">
                 <span className="text-[11px] text-zinc-400">{TIER_LABEL[tier]}</span>
-                <span className={`${MONO} text-[11px] text-zinc-300 tabular-nums`}>{n}</span>
+                <span className={`${MONO} text-[11px] text-zinc-300`}>{n}</span>
               </div>
               <div className="h-px bg-white/[0.06]">
                 <div
@@ -541,8 +538,6 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
       <p className="mt-4 text-[11px] text-zinc-600">
         Ideal target: ~30% reach · 30% target · 25% likely · 15% safety.
       </p>
-      {/* Hide unused segments mention */}
-      <p className="sr-only">{segments.length} segments rendered.</p>
     </section>
   );
 }
@@ -568,7 +563,7 @@ function PinnedSection({
             Your pinned schools
           </p>
           <span className={`${MONO} text-[11px] text-zinc-500`}>
-            ·  {sorted.length}
+            · {sorted.length}
           </span>
         </div>
         <Link
@@ -609,12 +604,12 @@ function RecommendationsSection({
       return (
         <section>
           <p className={EYEBROW}>Engine suggestions</p>
-          <p className={`${SERIF} mt-3 text-2xl sm:text-3xl text-zinc-100 max-w-2xl leading-tight`}>
+          <p className={`${SERIF} mt-4 text-2xl sm:text-3xl text-zinc-100 max-w-2xl leading-tight tracking-tight`}>
             Your list is solid.
           </p>
           <p className="mt-3 max-w-md text-[13px] text-zinc-400 leading-relaxed">
             No clear improvements to suggest right now. The breakdown above
-            shows what's driving your score — refine those if you want a
+            shows what&apos;s driving your score — refine those if you want a
             higher grade.
           </p>
         </section>
@@ -669,7 +664,7 @@ function RecommendationRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="group grid grid-cols-[3rem_1fr_auto] sm:grid-cols-[3rem_1fr_auto_auto] gap-4 sm:gap-6 py-5 items-baseline transition-colors duration-200 hover:bg-white/[0.015]"
+      className="group grid grid-cols-[3rem_1fr_auto] sm:grid-cols-[3rem_1fr_auto_auto] gap-4 sm:gap-6 py-5 items-baseline transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.015]"
     >
       <span className={`${MONO} text-[12px] text-zinc-600`}>
         {String(index + 1).padStart(2, "0")}
@@ -690,7 +685,7 @@ function RecommendationRow({
         </p>
       </div>
       <div className="text-right">
-        <div className={`${MONO} text-[12px] text-zinc-400 tabular-nums transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:text-zinc-200`}>
+        <div className={`${MONO} text-[12px] text-zinc-400 transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:text-zinc-200`}>
           +{rec.gradeDelta.toFixed(1)}
         </div>
         <div className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">
@@ -702,7 +697,7 @@ function RecommendationRow({
         type="button"
         onClick={apply}
         aria-label={rec.kind === "swap" ? `Swap in ${rec.college.name}` : `Pin ${rec.college.name}`}
-        className="group/cta hidden sm:inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] pl-3.5 pr-1 py-1 text-[12px] font-medium text-zinc-200 hover:text-zinc-50 hover:border-white/[0.14] hover:bg-white/[0.04] transition-[color,border-color,background-color,transform] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97]"
+        className="group/cta hidden sm:inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] pl-3.5 pr-1 py-1 text-[12px] font-medium text-zinc-200 hover:text-zinc-50 hover:border-white/[0.12] hover:bg-white/[0.04] transition-[color,border-color,background-color,transform] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97]"
       >
         {rec.kind === "swap" ? "Swap in" : "Pin"}
         <span className="flex items-center justify-center size-6 rounded-full bg-white/[0.06] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-[1px]">
@@ -734,5 +729,3 @@ function RecommendationRow({
   );
 }
 
-// Make the unused symbol from the type imports tree-shake cleanly.
-void Bookmark;
