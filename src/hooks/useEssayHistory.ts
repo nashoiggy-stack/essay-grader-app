@@ -1,29 +1,28 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { SavedEssay, GradingResult } from "@/lib/types";
+import {
+  getCachedJson,
+  setJson,
+  type CloudKey,
+} from "@/lib/cloud-storage";
 
-const STORAGE_KEY = "essay-grader-history";
+const KEY: CloudKey = "essay-grader-history";
 
-function loadHistory(): SavedEssay[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+function isSavedEssayArray(v: unknown): v is SavedEssay[] {
+  return Array.isArray(v);
 }
 
-function persistHistory(essays: SavedEssay[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(essays));
-  } catch (e) {
-    console.warn("Could not save essay history:", e);
-  }
+function loadHistory(): SavedEssay[] {
+  return getCachedJson<SavedEssay[]>(KEY, isSavedEssayArray) ?? [];
+}
+
+function persistHistory(essays: SavedEssay[]): void {
+  setJson<SavedEssay[]>(KEY, essays);
 }
 
 function generateTitle(text: string): string {
-  // Use the first ~40 characters of the essay as the title
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= 40) return clean || "Untitled Essay";
   return clean.slice(0, 40).trim() + "...";
@@ -40,9 +39,22 @@ interface UseEssayHistoryReturn {
 export function useEssayHistory(): UseEssayHistoryReturn {
   const [essays, setEssays] = useState<SavedEssay[]>([]);
 
-  // Load on mount
   useEffect(() => {
     setEssays(loadHistory());
+
+    const refresh = () => setEssays(loadHistory());
+    const onChange = (e: Event) => {
+      const ce = e as CustomEvent<{ key?: string }>;
+      if (ce.detail?.key === KEY) refresh();
+    };
+    const onReconciled = () => refresh();
+
+    window.addEventListener("cloud-storage-changed", onChange);
+    window.addEventListener("cloud-storage-reconciled", onReconciled);
+    return () => {
+      window.removeEventListener("cloud-storage-changed", onChange);
+      window.removeEventListener("cloud-storage-reconciled", onReconciled);
+    };
   }, []);
 
   const save = useCallback((essayText: string, result: GradingResult) => {
@@ -53,7 +65,6 @@ export function useEssayHistory(): UseEssayHistoryReturn {
       result,
       savedAt: Date.now(),
     };
-
     setEssays((prev) => {
       const updated = [newEssay, ...prev];
       persistHistory(updated);
@@ -61,9 +72,10 @@ export function useEssayHistory(): UseEssayHistoryReturn {
     });
   }, []);
 
-  const load = useCallback((id: string): SavedEssay | null => {
-    return essays.find((e) => e.id === id) ?? null;
-  }, [essays]);
+  const load = useCallback(
+    (id: string): SavedEssay | null => essays.find((e) => e.id === id) ?? null,
+    [essays],
+  );
 
   const remove = useCallback((id: string) => {
     setEssays((prev) => {
@@ -76,7 +88,7 @@ export function useEssayHistory(): UseEssayHistoryReturn {
   const rename = useCallback((id: string, newTitle: string) => {
     setEssays((prev) => {
       const updated = prev.map((e) =>
-        e.id === id ? { ...e, title: newTitle } : e
+        e.id === id ? { ...e, title: newTitle } : e,
       );
       persistHistory(updated);
       return updated;

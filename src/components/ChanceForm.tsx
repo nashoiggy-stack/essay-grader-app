@@ -7,6 +7,7 @@ import type { College } from "@/lib/college-types";
 import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
 import { getApplicationOptions } from "@/lib/admissions";
 import type { AdvancedCourseworkRow } from "@/lib/profile-types";
+import { getCachedJson } from "@/lib/cloud-storage";
 import { MajorSelect } from "./MajorSelect";
 
 interface ChanceFormProps {
@@ -32,36 +33,47 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
   useEffect(() => {
     if (typeof window === "undefined") return;
     const sync = (): void => {
-      try {
-        const raw = window.localStorage.getItem("admitedge-profile");
-        if (!raw) return;
-        const p = JSON.parse(raw);
-        // Prefer new advancedCoursework; fall back to legacy apScores so users
-        // with old data still see their courses listed.
-        if (Array.isArray(p?.advancedCoursework) && p.advancedCoursework.length > 0) {
-          setProfileCoursework(p.advancedCoursework);
-        } else if (Array.isArray(p?.apScores)) {
-          setProfileCoursework(
-            p.apScores.map((a: { subject: string; score: 1 | 2 | 3 | 4 | 5 }) => ({
-              type: "AP" as const,
-              name: a.subject,
-              score: a.score,
-            })),
-          );
-        } else {
-          setProfileCoursework([]);
-        }
-        if (p?.advancedCourseworkAvailable === "all" || p?.advancedCourseworkAvailable === "limited" || p?.advancedCourseworkAvailable === "none") {
-          setProfileAvailability(p.advancedCourseworkAvailable);
-        }
-      } catch {
-        /* ignore */
+      type ProfileSlice = {
+        advancedCoursework?: AdvancedCourseworkRow[];
+        apScores?: { subject: string; score: 1 | 2 | 3 | 4 | 5 }[];
+        advancedCourseworkAvailable?: "all" | "limited" | "none";
+      };
+      const p = getCachedJson<ProfileSlice>("admitedge-profile") ?? {};
+      if (Array.isArray(p.advancedCoursework) && p.advancedCoursework.length > 0) {
+        setProfileCoursework(p.advancedCoursework);
+      } else if (Array.isArray(p.apScores)) {
+        setProfileCoursework(
+          p.apScores.map((a) => ({
+            type: "AP" as const,
+            name: a.subject,
+            score: a.score,
+          })),
+        );
+      } else {
+        setProfileCoursework([]);
+      }
+      if (
+        p.advancedCourseworkAvailable === "all" ||
+        p.advancedCourseworkAvailable === "limited" ||
+        p.advancedCourseworkAvailable === "none"
+      ) {
+        setProfileAvailability(p.advancedCourseworkAvailable);
       }
     };
     sync();
-    // Refresh when storage changes (e.g. user opens /profile in another tab).
+    // Refresh when storage changes (other tab, cloud reconcile, same-tab write).
+    const onChange = (e: Event) => {
+      const ce = e as CustomEvent<{ key?: string }>;
+      if (ce.detail?.key === "admitedge-profile") sync();
+    };
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+    window.addEventListener("cloud-storage-changed", onChange);
+    window.addEventListener("cloud-storage-reconciled", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("cloud-storage-changed", onChange);
+      window.removeEventListener("cloud-storage-reconciled", sync);
+    };
   }, []);
 
   return (

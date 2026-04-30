@@ -15,6 +15,15 @@ import type {
 import { EMPTY_RESUME, RESUME_STORAGE_KEY, generateResumeId } from "@/lib/resume-types";
 import { buildInitialResume, importFromECEvaluator } from "@/lib/resume-import";
 import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
+import {
+  getCachedJson,
+  setJson,
+  removeKey,
+  type CloudKey,
+} from "@/lib/cloud-storage";
+
+const RESUME_KEY: CloudKey = RESUME_STORAGE_KEY as CloudKey;
+const PROFILE_KEY: CloudKey = PROFILE_STORAGE_KEY as CloudKey;
 
 // ── List-section keys (everything except basicInfo / skills) ────────────────
 
@@ -46,17 +55,12 @@ export function useResume() {
 
   // ── Initial load ──────────────────────────────────────────────────────────
   useEffect(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem(RESUME_STORAGE_KEY) : null;
-      if (raw) {
-        const parsed = JSON.parse(raw) as ResumeData;
-        setResume(parsed);
-      } else {
-        // Seed from profile/GPA calc on first load
-        setResume(buildInitialResume(EMPTY_RESUME));
-      }
-    } catch {
-      setResume(EMPTY_RESUME);
+    const parsed = getCachedJson<ResumeData>(RESUME_KEY);
+    if (parsed) {
+      setResume(parsed);
+    } else {
+      // Seed from profile/GPA calc on first load
+      setResume(buildInitialResume(EMPTY_RESUME));
     }
     setLoaded(true);
   }, []);
@@ -66,51 +70,50 @@ export function useResume() {
     if (!loaded) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      try {
-        localStorage.setItem(RESUME_STORAGE_KEY, JSON.stringify(resume));
-      } catch { /* ignore quota errors */ }
+      setJson<ResumeData>(RESUME_KEY, resume);
     }, 500);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, [resume, loaded]);
 
-  // ── Re-sync from external sources on focus ────────────────────────────────
-  // If the profile page or another tab updates basicInfo / GPA, pull the
-  // freshest values into the resume.
+  // ── Re-sync from external sources on focus / cloud reconcile ──────────────
   useEffect(() => {
     if (!loaded) return;
 
     const syncFromExternal = () => {
-      try {
-        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
-        if (!raw) return;
-        const profile = JSON.parse(raw) as { basicInfo?: BasicInfo };
-        if (profile.basicInfo) {
-          setResume((prev) => {
-            // Only fill empty fields — don't stomp user edits in the resume
-            const merged: BasicInfo = {
-              name: prev.basicInfo.name || profile.basicInfo!.name || "",
-              email: prev.basicInfo.email || profile.basicInfo!.email || "",
-              phone: prev.basicInfo.phone || profile.basicInfo!.phone || "",
-              school: prev.basicInfo.school || profile.basicInfo!.school || "",
-              graduationYear: prev.basicInfo.graduationYear || profile.basicInfo!.graduationYear || "",
-              address: prev.basicInfo.address || profile.basicInfo!.address || "",
-            };
-            return { ...prev, basicInfo: merged };
-          });
-        }
-      } catch { /* ignore */ }
+      const profile = getCachedJson<{ basicInfo?: BasicInfo }>(PROFILE_KEY);
+      if (!profile?.basicInfo) return;
+      setResume((prev) => {
+        const merged: BasicInfo = {
+          name: prev.basicInfo.name || profile.basicInfo!.name || "",
+          email: prev.basicInfo.email || profile.basicInfo!.email || "",
+          phone: prev.basicInfo.phone || profile.basicInfo!.phone || "",
+          school: prev.basicInfo.school || profile.basicInfo!.school || "",
+          graduationYear: prev.basicInfo.graduationYear || profile.basicInfo!.graduationYear || "",
+          address: prev.basicInfo.address || profile.basicInfo!.address || "",
+        };
+        return { ...prev, basicInfo: merged };
+      });
     };
 
+    const onCloudChange = (e: Event) => {
+      const ce = e as CustomEvent<{ key?: string }>;
+      if (ce.detail?.key === PROFILE_KEY) syncFromExternal();
+    };
+    const onReconciled = () => syncFromExternal();
     const onStorage = (e: StorageEvent) => {
-      if (e.key === PROFILE_STORAGE_KEY) syncFromExternal();
+      if (e.key === PROFILE_KEY) syncFromExternal();
     };
 
     window.addEventListener("focus", syncFromExternal);
+    window.addEventListener("cloud-storage-changed", onCloudChange);
+    window.addEventListener("cloud-storage-reconciled", onReconciled);
     window.addEventListener("storage", onStorage);
     return () => {
       window.removeEventListener("focus", syncFromExternal);
+      window.removeEventListener("cloud-storage-changed", onCloudChange);
+      window.removeEventListener("cloud-storage-reconciled", onReconciled);
       window.removeEventListener("storage", onStorage);
     };
   }, [loaded]);
@@ -122,13 +125,10 @@ export function useResume() {
   const updateBasicInfo = useCallback((patch: Partial<BasicInfo>) => {
     setResume((prev) => {
       const next = { ...prev, basicInfo: { ...prev.basicInfo, ...patch } };
-      // Mirror to shared profile
-      try {
-        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
-        const profile = raw ? JSON.parse(raw) : {};
-        profile.basicInfo = next.basicInfo;
-        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-      } catch { /* ignore */ }
+      // Mirror to shared profile through cloud-storage.
+      const profile = getCachedJson<Record<string, unknown>>(PROFILE_KEY) ?? {};
+      profile.basicInfo = next.basicInfo;
+      setJson<Record<string, unknown>>(PROFILE_KEY, profile);
       return next;
     });
   }, []);
@@ -384,23 +384,17 @@ export function useResume() {
   // ── Save manually (explicit button) ───────────────────────────────────────
 
   const saveNow = useCallback(() => {
-    try {
-      localStorage.setItem(RESUME_STORAGE_KEY, JSON.stringify(resume));
-      setSaveFlash(true);
-      setTimeout(() => setSaveFlash(false), 1500);
-      return true;
-    } catch {
-      return false;
-    }
+    setJson<ResumeData>(RESUME_KEY, resume);
+    setSaveFlash(true);
+    setTimeout(() => setSaveFlash(false), 1500);
+    return true;
   }, [resume]);
 
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   const resetResume = useCallback(() => {
     setResume(buildInitialResume(EMPTY_RESUME));
-    try {
-      localStorage.removeItem(RESUME_STORAGE_KEY);
-    } catch { /* ignore */ }
+    removeKey(RESUME_KEY);
   }, []);
 
   // ── Replace a single activity entry (used by Activities Helper Mode) ──────

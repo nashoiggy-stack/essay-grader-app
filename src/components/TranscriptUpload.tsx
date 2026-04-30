@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 interface TranscriptUploadProps {
   /** Called after localStorage has been updated so the iframe can reload */
@@ -51,8 +52,10 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
         return;
       }
 
-      // Write directly to localStorage — same origin, iframe picks it up on reload
-      localStorage.setItem("gpa-calc-v1", JSON.stringify(data));
+      // Persist through cloud-storage; setItemAndNotify also dispatches the
+      // "profile-source-updated" event the iframe and downstream hooks listen
+      // for, so a single call covers both the cache write and the wake-up.
+      setItemAndNotify("gpa-calc-v1", JSON.stringify(data));
 
       const totalClasses = data.years.reduce(
         (sum: number, y: { rows: unknown[] }) => sum + y.rows.length,
@@ -60,8 +63,6 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
       );
       setStatus("success");
       setMessage(`Extracted ${totalClasses} classes across ${data.years.length} year${data.years.length > 1 ? "s" : ""}. Reloading calculator...`);
-
-      window.dispatchEvent(new CustomEvent("profile-source-updated", { detail: { key: "gpa-calc-v1" } }));
 
       setTimeout(() => {
         onSuccess?.();

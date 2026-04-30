@@ -24,18 +24,12 @@ import { EC_STORAGE_KEY, EC_ACTIVITIES_KEY } from "./extracurricular-types";
 import type { UserProfile } from "./profile-types";
 import { PROFILE_STORAGE_KEY } from "./profile-types";
 import { classifyActivity, type ResumeSectionTarget } from "./resume-classifier";
+import { getCachedJson, type CloudKey } from "./cloud-storage";
 
-// ── Safe localStorage reads ─────────────────────────────────────────────────
+// ── Safe cache reads (delegates to cloud-storage) ───────────────────────────
 
 function safeParse<T>(key: string): T | null {
-  try {
-    if (typeof window === "undefined") return null;
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
+  return getCachedJson<T>(key as CloudKey);
 }
 
 // ── GPA fallback computation (mirrors useProfile.ts COL_UW table) ───────────

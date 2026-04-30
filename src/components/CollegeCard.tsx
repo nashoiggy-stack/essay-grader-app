@@ -7,6 +7,7 @@ import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 import { hasProgramVariance } from "@/data/hook-multipliers";
 import { BreakdownPanel } from "./BreakdownPanel";
+import { getCachedJson } from "@/lib/cloud-storage";
 
 const CLASS_COLORS = {
   unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
@@ -83,15 +84,11 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   const chanceTextClass = isLowConf ? LOW_CONF_TEXT : colors.text;
 
   const spikeMatch = useMemo(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem("ec-evaluator-result") : null;
-      if (!raw) return null;
-      const ecResult = JSON.parse(raw);
-      if (!ecResult?.spikes?.length) return null;
-      return getSpikeMatch(ecResult.spikes, c.tags);
-    } catch {
-      return null;
-    }
+    const ecResult = getCachedJson<{ spikes?: Parameters<typeof getSpikeMatch>[0] }>(
+      "ec-evaluator-result",
+    );
+    if (!ecResult?.spikes?.length) return null;
+    return getSpikeMatch(ecResult.spikes, c.tags);
   }, [c.tags]);
 
   return (
