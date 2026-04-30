@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -76,47 +77,57 @@ export default function CollegesPage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
-        {/* Header */}
-        <motion.div
-          className="mb-10 text-center"
-          initial={{ opacity: 0, y: -30 }}
+      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+        {/* ── Masthead ─────────────────────────────────────────────────── */}
+        <motion.header
+          className="mb-10 sm:mb-12"
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="text-gradient">College List Builder</span>
-          </h1>
-          <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
-            Find your safety, likely, target, reach, and unlikely schools based on your academic profile.
+          <div className="flex items-baseline justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-medium">
+                Browse · Pin · Build your list
+              </p>
+              <h1 className="font-[family-name:var(--font-display)] mt-2 text-[clamp(2.75rem,6vw,4.5rem)] leading-[0.95] tracking-tight text-zinc-100">
+                Colleges
+              </h1>
+            </div>
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              className="text-[12px] text-zinc-400 hover:text-zinc-100 inline-flex items-center gap-1.5 transition-colors"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
+              </svg>
+              {showGuide ? "Hide tiers" : "What do these tiers mean?"}
+            </button>
+          </div>
+          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-400">
+            Sortable by chance, acceptance rate, or major fit. Pin schools to
+            assemble your list, then head to{" "}
+            <Link href="/list" className="text-zinc-200 underline decoration-white/15 underline-offset-2 hover:text-white">
+              your graded list
+            </Link>{" "}
+            for the second-opinion read.
           </p>
+        </motion.header>
 
-          <button
-            onClick={() => setShowGuide(!showGuide)}
-            className="mt-4 inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
-            </svg>
-            {showGuide ? "Hide" : "What do these tiers mean?"}
-          </button>
-        </motion.div>
-
-        {/* Always-visible disclaimer per final calibration spec. Sits above
-            the fold so it's read alongside the chance numbers, not buried. */}
-        <div className="mb-6 rounded-xl bg-amber-500/[0.04] border border-amber-500/[0.15] px-4 py-3">
-          <p className="text-[12px] text-amber-200/80 leading-relaxed">
+        {/* Always-visible disclaimer — kept editorial, methodology one click away. */}
+        <div className="mb-8 border-y border-amber-500/[0.18] py-3">
+          <p className="text-[12px] text-amber-200/85 leading-relaxed">
             <span className="font-semibold text-amber-200">Estimates only.</span>{" "}
-            Chance estimates use data-informed multipliers calibrated against published research.
-            Use as a strategic framework, not a prediction. Your essays, recommendations, and specific
-            application context matter more than this number. Estimates may be inaccurate for:
-            state-residency-dependent schools, program-specific admissions, schools where data is sparse.{" "}
-            <a
+            Chance estimates use data-informed multipliers calibrated against published research —
+            a strategic framework, not a prediction. Estimates may be inaccurate for
+            state-residency-dependent schools, program-specific admissions, and schools where
+            data is sparse.{" "}
+            <Link
               href="/methodology"
               className="font-semibold text-amber-100 underline decoration-amber-400/40 underline-offset-2 hover:text-amber-50"
             >
               Read our methodology →
-            </a>
+            </Link>
           </p>
         </div>
 
