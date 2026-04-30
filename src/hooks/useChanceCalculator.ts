@@ -245,7 +245,6 @@ export function useChanceCalculator() {
 
     const strengths: string[] = [];
     const weaknesses: string[] = [];
-    const missingDataHints: { label: string; href: string }[] = [];
 
     // The chance model's `reason` already strings together the headline
     // GPA + test + plan signals deterministically — split into sentence
@@ -276,9 +275,7 @@ export function useChanceCalculator() {
     if (r.usedFallback === "ed") weaknesses.push("ED estimate based on overall trends, not school-specific data");
     if (r.usedFallback === "ea") weaknesses.push("EA estimate based on overall trends, not school-specific data");
     if (r.yieldProtectedNote) weaknesses.push("This school may consider demonstrated interest");
-    // r.stale is no longer surfaced to users — most schools lack CDS sync,
-    // so this fired as an unactionable yellow warning on the majority. The
-    // flag still flows through the chance model's confidence calculation.
+    if (r.stale) weaknesses.push("Data for this school may be stale (older than 2 academic cycles)");
 
     // ── EC band display (matches multiplier from chance model) ──
     const EC_BAND_LABELS: Record<string, { label: string; positive: boolean }> = {
@@ -294,20 +291,8 @@ export function useChanceCalculator() {
     }
 
     // ── Course rigor display ──
-    // Rigor is auto-derived from gpa-calc weighted GPA. Without AP exam
-    // scores the signal is unreliable — a strong UW GPA in CP/Honors classes
-    // would otherwise read as "low rigor". Treat absence of AP data as
-    // unknown rigor: surface a missing-data CTA, not a weakness.
-    if (inputs.apScores.length === 0) {
-      missingDataHints.push({
-        label: "Add AP/IB scores for a sharper estimate",
-        href: "/profile#ap-scores",
-      });
-    } else if (inputs.rigor === "high") {
-      strengths.push("Strong course rigor signals academic readiness");
-    } else if (inputs.rigor === "low") {
-      weaknesses.push("Consider taking more challenging courses");
-    }
+    if (inputs.rigor === "high") strengths.push("Strong course rigor signals academic readiness");
+    else if (inputs.rigor === "low") weaknesses.push("Consider taking more challenging courses");
 
     // ── Test-required penalty surfaces as a weakness note ──
     if (sat === null && act === null && college.testPolicy === "required") {
@@ -361,7 +346,6 @@ export function useChanceCalculator() {
       explanation,
       strengths,
       weaknesses,
-      missingDataHints,
       confidence: r.confidence,
       breakdown: r.breakdown,
       whatIfs,

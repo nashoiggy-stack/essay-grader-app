@@ -2,10 +2,8 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import type { ApplicationPlan, ChanceResult, Classification, College } from "@/lib/college-types";
+import type { ChanceResult, Classification } from "@/lib/college-types";
 import { BreakdownPanel } from "./BreakdownPanel";
-import { getSchoolRecord } from "@/lib/school-data";
-import SchoolHistoryScatterplot from "./SchoolHistoryScatterplot";
 
 // Color coding mirrors /colleges CollegeCard so the same school produces the
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
@@ -21,15 +19,6 @@ const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: strin
 interface ChanceResultProps {
   readonly result: ChanceResult;
   readonly collegeName: string;
-  // Optional: surface the school-history scatterplot inside the breakdown
-  // panel when feeder-school data is available for this college+plan.
-  readonly college?: College;
-  readonly applicationPlan?: ApplicationPlan;
-  readonly userStats?: {
-    readonly gpaWeighted: number | null;
-    readonly sat: number | null;
-    readonly act: number | null;
-  };
 }
 
 function buildHeadline(result: ChanceResult, collegeName: string): string {
@@ -84,13 +73,7 @@ function buildNextStep(result: ChanceResult): string {
 // 100). Width-weighted so the fill aligns with the labeled segment.
 const SEGMENT_TEMPLATE = "5fr 15fr 20fr 30fr 30fr"; // unlikely | reach | target | likely | safety
 
-export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
-  result,
-  collegeName,
-  college,
-  applicationPlan,
-  userStats,
-}) => {
+export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, collegeName }) => {
   const style = TIER_STYLES[result.classification];
   const headline = buildHeadline(result, collegeName);
   const nextStep = buildNextStep(result);
@@ -173,17 +156,6 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </div>
       </div>
 
-      {/* School-history scatterplot — visible by default when feeder data
-          exists for this college+plan. Sandbox feature; renders nothing
-          gracefully when no record is found. */}
-      {college && applicationPlan && userStats && getSchoolRecord(college, applicationPlan) && (
-        <SchoolHistoryScatterplot
-          college={college}
-          userStats={userStats}
-          defaultAppType={applicationPlan}
-        />
-      )}
-
       {/* Multiplier breakdown + what-ifs (collapsible) */}
       {result.breakdown && (
         <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
@@ -231,23 +203,6 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           )}
         </div>
       </div>
-
-      {/* Missing data hints — neutral CTAs, not weaknesses */}
-      {result.missingDataHints && result.missingDataHints.length > 0 && (
-        <ul className="rounded-lg bg-zinc-500/5 border border-white/[0.06] p-3 space-y-1.5">
-          {result.missingDataHints.map((hint, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-              <span className="text-zinc-500 mt-0.5 shrink-0">+</span>
-              <a
-                href={hint.href}
-                className="hover:text-zinc-200 underline decoration-zinc-700 underline-offset-2"
-              >
-                {hint.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
 
       {/* Disclaimer */}
       <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-3">
