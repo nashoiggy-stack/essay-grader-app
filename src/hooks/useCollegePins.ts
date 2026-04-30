@@ -5,6 +5,7 @@ import type { PinnedCollege, ApplicationPlan } from "@/lib/college-types";
 import { PINNED_COLLEGES_KEY } from "@/lib/college-types";
 import {
   getCachedJson,
+  getCachedRaw,
   setJson,
   type CloudKey,
 } from "@/lib/cloud-storage";
@@ -73,8 +74,17 @@ export function useCollegePins(): UseCollegePinsReturn {
   }, []);
 
   // Persist on change. cloud-storage.ts handles localStorage cache + Supabase.
+  // Skip the write when the cache already serializes to the same value —
+  // the cloud-storage-changed listener above re-reads on its own writes,
+  // returning a fresh array reference each time. Without this guard, that
+  // forms an infinite render loop: persist → notify → listener →
+  // setPinned(new array) → persist → notify → ... ("Maximum update depth
+  // exceeded"). The string compare is cheap for the typical 8-12 pin list.
   useEffect(() => {
-    if (loaded) setJson<PinnedCollege[]>(PINS_KEY, pinned);
+    if (!loaded) return;
+    const next = JSON.stringify(pinned);
+    if (getCachedRaw(PINS_KEY) === next) return;
+    setJson<PinnedCollege[]>(PINS_KEY, pinned);
   }, [pinned, loaded]);
 
   const isPinned = useCallback(
