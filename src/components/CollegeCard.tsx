@@ -7,7 +7,6 @@ import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 import { hasProgramVariance } from "@/data/hook-multipliers";
 import { BreakdownPanel } from "./BreakdownPanel";
-import { getCachedJson } from "@/lib/cloud-storage";
 
 const CLASS_COLORS = {
   unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
@@ -73,6 +72,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
     confidence,
     yieldProtectedNote,
     usedFallback,
+    stale,
     recruitedAthletePathway,
     breakdown,
     majorMatch,
@@ -83,11 +83,15 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   const chanceTextClass = isLowConf ? LOW_CONF_TEXT : colors.text;
 
   const spikeMatch = useMemo(() => {
-    const ecResult = getCachedJson<{ spikes?: Parameters<typeof getSpikeMatch>[0] }>(
-      "ec-evaluator-result",
-    );
-    if (!ecResult?.spikes?.length) return null;
-    return getSpikeMatch(ecResult.spikes, c.tags);
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("ec-evaluator-result") : null;
+      if (!raw) return null;
+      const ecResult = JSON.parse(raw);
+      if (!ecResult?.spikes?.length) return null;
+      return getSpikeMatch(ecResult.spikes, c.tags);
+    } catch {
+      return null;
+    }
   }, [c.tags]);
 
   return (
@@ -200,7 +204,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       )}
 
       {/* ── Confidence + caveat badges ──────────────────────────── */}
-      {(isLowConf || yieldProtectedNote || usedFallback || recruitedAthletePathway) && (
+      {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
         <div className="mt-4 flex flex-wrap gap-1.5">
           {recruitedAthletePathway && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25">
@@ -225,6 +229,11 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           {yieldProtectedNote && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
               May consider demonstrated interest
+            </span>
+          )}
+          {stale && classification !== "insufficient" && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+              Data may be stale
             </span>
           )}
         </div>

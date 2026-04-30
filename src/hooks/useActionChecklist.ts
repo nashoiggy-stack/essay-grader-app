@@ -2,36 +2,37 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ACTION_CHECKLIST_KEY } from "@/lib/strategy-types";
-import {
-  getCachedJson,
-  setJson,
-  type CloudKey,
-} from "@/lib/cloud-storage";
 
-const KEY: CloudKey = ACTION_CHECKLIST_KEY as CloudKey;
-
-// Shape stored under the cache:
+// Shape stored in localStorage:
 // {
 //   "<generatedAt>": { "<actionIndex>": true, ... }
 // }
 // Keyed by generation timestamp so a fresh strategy run resets the checklist
-// automatically — done state is tied to a specific plan.
+// automatically — done state is tied to a specific plan, not to the concept
+// of "done forever."
 type ChecklistState = Record<string, Record<string, boolean>>;
 
-function isChecklistState(v: unknown): v is ChecklistState {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-
 function readChecklist(): ChecklistState {
-  return getCachedJson<ChecklistState>(KEY, isChecklistState) ?? {};
+  try {
+    const raw = localStorage.getItem(ACTION_CHECKLIST_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
 function writeChecklist(state: ChecklistState): void {
-  // Keep only the 5 most recent strategies to cap storage growth.
-  const keys = Object.keys(state).sort((a, b) => Number(b) - Number(a));
-  const trimmed: ChecklistState = {};
-  for (const k of keys.slice(0, 5)) trimmed[k] = state[k];
-  setJson<ChecklistState>(KEY, trimmed);
+  try {
+    // Keep only the 5 most recent strategies to cap storage growth
+    const keys = Object.keys(state).sort((a, b) => Number(b) - Number(a));
+    const trimmed: ChecklistState = {};
+    for (const k of keys.slice(0, 5)) trimmed[k] = state[k];
+    localStorage.setItem(ACTION_CHECKLIST_KEY, JSON.stringify(trimmed));
+  } catch {
+    // Quota or disabled — silently degrade.
+  }
 }
 
 export interface UseActionChecklistReturn {
@@ -51,6 +52,7 @@ export function useActionChecklist(
 ): UseActionChecklistReturn {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
+  // Load on mount / when generatedAt changes
   useEffect(() => {
     if (generatedAt == null) {
       setChecked({});
@@ -80,7 +82,7 @@ export function useActionChecklist(
   );
 
   const completedCount = Object.values(checked).filter(Boolean).length;
-  void totalItems;
+  void totalItems; // totalItems reserved for a future "X of Y done" badge
 
   return { isDone, toggle, completedCount };
 }

@@ -8,36 +8,6 @@ import { classifyCollege } from "@/lib/admissions";
 import { computeMajorFit, computeMajorFitMulti, MAJOR_MATCH_RANK } from "@/lib/major-match";
 import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
 import { setItemAndNotify } from "@/lib/sync-event";
-import { getCachedJson } from "@/lib/cloud-storage";
-
-type ProfileShape = {
-  essayCommonApp?: string;
-  essayVspice?: string;
-  gpaUW?: string;
-  gpaW?: string;
-  sat?: { readingWriting?: string; math?: string };
-  act?: { english?: string; math?: string; reading?: string; science?: string };
-  ecBand?: string;
-  rigor?: "low" | "medium" | "high";
-  apScores?: unknown[];
-  firstAuthorPublication?: boolean;
-  nationalCompetitionPlacement?: boolean;
-  founderWithUsers?: boolean;
-  selectiveProgram?: boolean;
-  intendedMajor?: string;
-  intendedInterest?: string;
-  intendedMajors?: string[];
-  activeMajors?: string[];
-  intendedInterests?: string[];
-  activeInterests?: string[];
-  interest_map?: {
-    interest?: string;
-    relatedMajors?: unknown;
-    keywords?: unknown;
-    confidence?: number;
-    generatedAt?: number;
-  };
-};
 
 // Caps from the spec — keeps the chip UI scannable and the per-card
 // breakdown popover from running off the screen.
@@ -102,43 +72,47 @@ export function useCollegeFilter() {
   // ── Auto-fill from profile + source keys (direct read) ─────────────────
   const fillFromSources = useCallback(() => {
     try {
-      const p = getCachedJson<ProfileShape>("admitedge-profile") ?? {};
+      const raw = localStorage.getItem("admitedge-profile");
+      const p = raw ? JSON.parse(raw) : {};
 
       // Direct reads from source tools
       let essayCA = p.essayCommonApp || "";
       let essayV = p.essayVspice || "";
-      const e = getCachedJson<{ rawScore?: number; vspiceComposite?: number }>(
-        "essay-grader-result",
-      );
-      if (e) {
-        if (e.rawScore != null) essayCA = String(e.rawScore);
-        if (e.vspiceComposite != null) essayV = String(e.vspiceComposite);
-      }
+      try {
+        const er = localStorage.getItem("essay-grader-result");
+        if (er) {
+          const e = JSON.parse(er);
+          if (e?.rawScore != null) essayCA = String(e.rawScore);
+          if (e?.vspiceComposite != null) essayV = String(e.vspiceComposite);
+        }
+      } catch { /* ignore */ }
 
       let gpaUW = p.gpaUW || "";
       let gpaW = p.gpaW || "";
-      const state = getCachedJson<{
-        years?: { rows?: { grade?: string; credits?: string; level?: string; nonCore?: boolean }[] }[];
-      }>("gpa-calc-v1");
-      if (state?.years?.length) {
-        const COL_UW: Record<string, number> = {
-          "A+": 4, "A": 4, "A−": 3.7, "B+": 3.3, "B": 3, "B−": 2.7,
-          "C+": 2.3, "C": 2, "C−": 1.7, "D+": 1, "D": 1, "F": 0,
-        };
-        const COL_BONUS: Record<string, number> = { CP: 0, Honors: 0.5, DE: 1, HDE: 1, AP: 1 };
-        let uw = 0, w = 0, tc = 0;
-        for (const year of state.years) {
-          for (const row of year.rows ?? []) {
-            if (!row.grade || row.nonCore) continue;
-            const cr = parseFloat(row.credits ?? "1") || 1;
-            const base = COL_UW[row.grade] ?? 0;
-            uw += base * cr;
-            w += (row.grade === "F" ? 0 : base + (COL_BONUS[row.level ?? "CP"] ?? 0)) * cr;
-            tc += cr;
+      try {
+        const gr = localStorage.getItem("gpa-calc-v1");
+        if (gr) {
+          const state = JSON.parse(gr);
+          if (state?.years?.length) {
+            const COL_UW: Record<string, number> = {
+              "A+":4,"A":4,"A−":3.7,"B+":3.3,"B":3,"B−":2.7,"C+":2.3,"C":2,"C−":1.7,"D+":1,"D":1,"F":0,
+            };
+            const COL_BONUS: Record<string, number> = { CP:0, Honors:0.5, DE:1, HDE:1, AP:1 };
+            let uw = 0, w = 0, tc = 0;
+            for (const year of state.years) {
+              for (const row of year.rows) {
+                if (!row.grade || row.nonCore) continue;
+                const cr = parseFloat(row.credits) || 1;
+                const base = COL_UW[row.grade] ?? 0;
+                uw += base * cr;
+                w += (row.grade === "F" ? 0 : base + (COL_BONUS[row.level] ?? 0)) * cr;
+                tc += cr;
+              }
+            }
+            if (tc > 0) { gpaUW = (uw / tc).toFixed(2); gpaW = (w / tc).toFixed(2); }
           }
         }
-        if (tc > 0) { gpaUW = (uw / tc).toFixed(2); gpaW = (w / tc).toFixed(2); }
-      }
+      } catch { /* ignore */ }
 
       const prefs = readMajorPrefs(p as Record<string, unknown>);
 
@@ -172,12 +146,10 @@ export function useCollegeFilter() {
 
     const onUpdated = () => fillFromSources();
     window.addEventListener("profile-source-updated", onUpdated);
-    window.addEventListener("cloud-storage-changed", onUpdated);
-    window.addEventListener("cloud-storage-reconciled", onUpdated);
+    window.addEventListener("cloud-sync-loaded", onUpdated);
     return () => {
       window.removeEventListener("profile-source-updated", onUpdated);
-      window.removeEventListener("cloud-storage-changed", onUpdated);
-      window.removeEventListener("cloud-storage-reconciled", onUpdated);
+      window.removeEventListener("cloud-sync-loaded", onUpdated);
     };
   }, [fillFromSources]);
 
@@ -207,25 +179,24 @@ export function useCollegeFilter() {
     }
 
     // Reuse a cached mapping if it's for this exact interest and still fresh.
-    const profile = getCachedJson<ProfileShape>(PROFILE_STORAGE_KEY);
-    const cached = profile?.interest_map;
-    if (
-      cached &&
-      cached.interest === interest &&
-      typeof cached.generatedAt === "number" &&
-      Date.now() - cached.generatedAt < INTEREST_MAP_TTL_MS
-    ) {
-      setInterestMap({
-        relatedMajors: Array.isArray(cached.relatedMajors)
-          ? cached.relatedMajors.filter((s): s is string => typeof s === "string")
-          : [],
-        keywords: Array.isArray(cached.keywords)
-          ? cached.keywords.filter((s): s is string => typeof s === "string")
-          : [],
-        confidence: typeof cached.confidence === "number" ? cached.confidence : 0,
-      });
-      return;
-    }
+    try {
+      const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+      const p = raw ? JSON.parse(raw) : {};
+      const cached = p.interest_map;
+      if (
+        cached &&
+        cached.interest === interest &&
+        typeof cached.generatedAt === "number" &&
+        Date.now() - cached.generatedAt < INTEREST_MAP_TTL_MS
+      ) {
+        setInterestMap({
+          relatedMajors: Array.isArray(cached.relatedMajors) ? cached.relatedMajors : [],
+          keywords: Array.isArray(cached.keywords) ? cached.keywords : [],
+          confidence: typeof cached.confidence === "number" ? cached.confidence : 0,
+        });
+        return;
+      }
+    } catch { /* ignore */ }
 
     let cancelled = false;
     const handle = setTimeout(async () => {
@@ -241,14 +212,17 @@ export function useCollegeFilter() {
         setInterestMap(data);
         // Persist to the shared profile so other surfaces can use it and
         // we don't re-fetch on the next mount.
-        const current = getCachedJson<ProfileShape>(PROFILE_STORAGE_KEY) ?? {};
-        setItemAndNotify(
-          PROFILE_STORAGE_KEY,
-          JSON.stringify({
-            ...current,
-            interest_map: { ...data, interest, generatedAt: Date.now() },
-          }),
-        );
+        try {
+          const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+          const current = raw ? JSON.parse(raw) : {};
+          setItemAndNotify(
+            PROFILE_STORAGE_KEY,
+            JSON.stringify({
+              ...current,
+              interest_map: { ...data, interest, generatedAt: Date.now() },
+            }),
+          );
+        } catch { /* ignore write errors */ }
       } catch { /* network error — fall back to base matcher */ }
     }, 600);
 
@@ -275,9 +249,12 @@ export function useCollegeFilter() {
       key === "intendedInterests" ||
       key === "activeInterests"
     ) {
-      const current = getCachedJson<ProfileShape>(PROFILE_STORAGE_KEY) ?? {};
-      const next = { ...current, [key]: value };
-      setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(next));
+      try {
+        const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+        const current = raw ? JSON.parse(raw) : {};
+        const next = { ...current, [key]: value };
+        setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(next));
+      } catch { /* ignore write errors */ }
     }
   };
 
@@ -301,23 +278,27 @@ export function useCollegeFilter() {
     let rigor: "low" | "medium" | "high" | undefined;
     let apScores: readonly { score: 1 | 2 | 3 | 4 | 5 }[] | undefined;
     let distinguishedEC = false;
-    const p = getCachedJson<ProfileShape>("admitedge-profile");
-    if (p) {
-      if (typeof p.ecBand === "string" && p.ecBand) ecBand = p.ecBand;
-      if (p.rigor === "low" || p.rigor === "medium" || p.rigor === "high") rigor = p.rigor;
-      if (Array.isArray(p.apScores)) {
-        apScores = p.apScores.filter((a: unknown): a is { score: 1 | 2 | 3 | 4 | 5 } =>
-          typeof a === "object" && a !== null && "score" in a &&
-          typeof (a as { score: unknown }).score === "number" &&
-          (a as { score: number }).score >= 1 && (a as { score: number }).score <= 5,
-        );
+    try {
+      const rawProfile = localStorage.getItem("admitedge-profile");
+      if (rawProfile) {
+        const p = JSON.parse(rawProfile);
+        if (typeof p?.ecBand === "string" && p.ecBand) ecBand = p.ecBand;
+        if (p?.rigor === "low" || p?.rigor === "medium" || p?.rigor === "high") rigor = p.rigor;
+        if (Array.isArray(p?.apScores)) {
+          apScores = p.apScores
+            .filter((a: unknown): a is { score: 1 | 2 | 3 | 4 | 5 } =>
+              typeof a === "object" && a !== null && "score" in a &&
+              typeof (a as { score: unknown }).score === "number" &&
+              (a as { score: number }).score >= 1 && (a as { score: number }).score <= 5,
+            );
+        }
+        distinguishedEC =
+          p?.firstAuthorPublication === true ||
+          p?.nationalCompetitionPlacement === true ||
+          p?.founderWithUsers === true ||
+          p?.selectiveProgram === true;
       }
-      distinguishedEC =
-        p.firstAuthorPublication === true ||
-        p.nationalCompetitionPlacement === true ||
-        p.founderWithUsers === true ||
-        p.selectiveProgram === true;
-    }
+    } catch { /* ignore */ }
 
     // Major is now a *preference*, not a hard filter. Non-matching schools
     // stay in the list so users can discover unexpected fits — we just
@@ -387,12 +368,15 @@ export function useCollegeFilter() {
       // Score each active major by aggregate fit across pinned schools.
       // We read pinned colleges from the same source useCollegePins reads.
       let pinnedNames: string[] = [];
-      const pins = getCachedJson<{ name?: string }[]>("admitedge-pinned-colleges");
-      if (Array.isArray(pins)) {
-        pinnedNames = pins
-          .map((p) => p?.name)
-          .filter((n): n is string => typeof n === "string" && n.length > 0);
-      }
+      try {
+        const rawPins = localStorage.getItem("admitedge-pinned-colleges");
+        const arr = rawPins ? JSON.parse(rawPins) : [];
+        if (Array.isArray(arr)) {
+          pinnedNames = arr
+            .map((p: { name?: string }) => p?.name)
+            .filter((n): n is string => typeof n === "string" && n.length > 0);
+        }
+      } catch { /* ignore */ }
 
       let bestMajor = filters.activeMajors[0];
       let bestSum = -Infinity;
@@ -414,18 +398,21 @@ export function useCollegeFilter() {
 
     const primaryInterest = filters.activeInterests[0] ?? undefined;
 
-    const current = getCachedJson<ProfileShape>(PROFILE_STORAGE_KEY) ?? {};
-    const next: Record<string, unknown> = { ...current };
-    if (primaryMajor !== undefined) next.intendedMajor = primaryMajor;
-    if (primaryInterest !== undefined) next.intendedInterest = primaryInterest;
-    // Skip write if nothing actually changed (keeps useEffect from
-    // dispatching a sync event for no reason).
-    if (
-      next.intendedMajor !== current.intendedMajor ||
-      next.intendedInterest !== current.intendedInterest
-    ) {
-      setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(next));
-    }
+    try {
+      const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+      const current = raw ? JSON.parse(raw) : {};
+      const next: Record<string, unknown> = { ...current };
+      if (primaryMajor !== undefined) next.intendedMajor = primaryMajor;
+      if (primaryInterest !== undefined) next.intendedInterest = primaryInterest;
+      // Skip write if nothing actually changed (keeps useEffect from
+      // dispatching a sync event for no reason).
+      if (
+        next.intendedMajor !== current.intendedMajor ||
+        next.intendedInterest !== current.intendedInterest
+      ) {
+        setItemAndNotify(PROFILE_STORAGE_KEY, JSON.stringify(next));
+      }
+    } catch { /* ignore */ }
   }, [filters.activeMajors, filters.activeInterests]);
 
   const sortedBy = (

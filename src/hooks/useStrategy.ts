@@ -9,13 +9,6 @@ import type {
 import { STRATEGY_CACHE_KEY, STRATEGY_CACHE_VERSION } from "@/lib/strategy-types";
 import { readStrategyProfile } from "@/lib/strategy-profile";
 import { runStrategyAnalysis } from "@/lib/strategy-engine";
-import {
-  getCachedJson,
-  setJson,
-  getLocalCache,
-  setLocalCache,
-  type CloudKey,
-} from "@/lib/cloud-storage";
 
 // ── Content-hash cache ─────────────────────────────────────────────────────
 // Same pattern as useGrading: hash the input StrategyProfile so regenerating
@@ -62,19 +55,20 @@ function cacheKey(profile: StrategyProfile): string {
 }
 
 function readCached(profile: StrategyProfile): StrategyResult | null {
-  const raw = getLocalCache(cacheKey(profile));
-  if (!raw) return null;
   try {
-    return JSON.parse(raw) as StrategyResult;
+    const raw = localStorage.getItem(cacheKey(profile));
+    return raw ? (JSON.parse(raw) as StrategyResult) : null;
   } catch {
     return null;
   }
 }
 
 function writeCached(profile: StrategyProfile, result: StrategyResult): void {
-  // Content-hashed cache key — legitimately device-local (regenerating the
-  // narrative on identical inputs is wasteful but never wrong).
-  setLocalCache(cacheKey(profile), JSON.stringify(result));
+  try {
+    localStorage.setItem(cacheKey(profile), JSON.stringify(result));
+  } catch {
+    // Quota or disabled — silently degrade.
+  }
 }
 
 // ── Stable "last result" persistence ────────────────────────────────────────
@@ -83,15 +77,23 @@ function writeCached(profile: StrategyProfile, result: StrategyResult): void {
 // (GPA recalculation, essay timestamp, etc.) the hash misses and the user
 // sees an empty page. This stable key always holds the most recent result
 // regardless of profile changes, so the user never loses their strategy.
-// Cloud-synced via cloud-storage so it follows the user across devices.
-const LAST_RESULT_KEY: CloudKey = "admitedge-strategy-last-result";
+const LAST_RESULT_KEY = "admitedge-strategy-last-result";
 
 function readLastResult(): StrategyResult | null {
-  return getCachedJson<StrategyResult>(LAST_RESULT_KEY);
+  try {
+    const raw = localStorage.getItem(LAST_RESULT_KEY);
+    return raw ? (JSON.parse(raw) as StrategyResult) : null;
+  } catch {
+    return null;
+  }
 }
 
 function writeLastResult(result: StrategyResult): void {
-  setJson<StrategyResult>(LAST_RESULT_KEY, result);
+  try {
+    localStorage.setItem(LAST_RESULT_KEY, JSON.stringify(result));
+  } catch {
+    // Quota or disabled — silently degrade.
+  }
 }
 
 // ── Hook ────────────────────────────────────────────────────────────────────

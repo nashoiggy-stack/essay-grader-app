@@ -61,17 +61,7 @@ export default function ChancesPage() {
 
             {result && (
               <ScrollReveal delay={0.15}>
-                <ChanceResultDisplay
-                  result={result}
-                  collegeName={college.name}
-                  college={college}
-                  applicationPlan={inputs.applicationPlan}
-                  userStats={{
-                    gpaWeighted: parseFloat(inputs.gpaW) || null,
-                    sat: parseInt(inputs.sat, 10) || null,
-                    act: parseInt(inputs.act, 10) || null,
-                  }}
-                />
+                <ChanceResultDisplay result={result} collegeName={college.name} />
               </ScrollReveal>
             )}
           </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AuthProvider } from "./AuthProvider";
 import { AuthGate } from "./AuthGate";
 import { NavBarWrapper } from "./NavBarWrapper";
-import { CloudStorageBoundary } from "./CloudStorageBoundary";
+import { ProfileSync } from "./ProfileSync";
 import { SaveIndicator } from "./SaveIndicator";
 import { WebGLShader } from "./ui/web-gl-shader";
 import { useBackground } from "./BackgroundProvider";
@@ -56,7 +56,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     <AuthProvider>
       <AuthGate>
         <PersistentBackground />
-        <CloudStorageBoundary />
+        <ProfileSync />
         <NavBarWrapper />
         <div id="main-content">{children}</div>
         <Footer />

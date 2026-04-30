@@ -6,7 +6,6 @@ import { Search, X, Bookmark, Plus, AlertCircle } from "lucide-react";
 import { COLLEGES } from "@/data/colleges";
 import type { College, PinnedCollege } from "@/lib/college-types";
 import { PINNED_COLLEGES_KEY } from "@/lib/college-types";
-import { getCachedJson, type CloudKey } from "@/lib/cloud-storage";
 
 interface CompareSelectorProps {
   readonly selected: readonly College[];
@@ -16,9 +15,14 @@ interface CompareSelectorProps {
 }
 
 function readPinnedNames(): string[] {
-  const parsed = getCachedJson<PinnedCollege[]>(PINNED_COLLEGES_KEY as CloudKey);
-  if (!Array.isArray(parsed)) return [];
-  return parsed.map((p) => p.name);
+  try {
+    const raw = localStorage.getItem(PINNED_COLLEGES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as PinnedCollege[];
+    return parsed.map((p) => p.name);
+  } catch {
+    return [];
+  }
 }
 
 /**

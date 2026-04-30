@@ -37,10 +37,8 @@ export default function ProfilePage() {
     );
   }
 
-  // Defensive: useProfile normalizes on load, but guard here against any
-  // path that hydrates state without normalizing.
-  const satComposite = profile.sat ? computeSATComposite(profile.sat) : null;
-  const actComposite = profile.act ? computeACTComposite(profile.act) : null;
+  const satComposite = computeSATComposite(profile.sat);
+  const actComposite = computeACTComposite(profile.act);
 
   // Completeness: 6 sections, each 0/1
   const sections = [
@@ -363,7 +361,7 @@ export default function ProfilePage() {
                   max="800"
                   step="10"
                   placeholder="e.g. 720"
-                  value={profile.sat?.readingWriting ?? ""}
+                  value={profile.sat.readingWriting}
                   onChange={(e) => updateSAT("readingWriting", e.target.value)}
                   className={inputClass}
                 />
@@ -376,7 +374,7 @@ export default function ProfilePage() {
                   max="800"
                   step="10"
                   placeholder="e.g. 780"
-                  value={profile.sat?.math ?? ""}
+                  value={profile.sat.math}
                   onChange={(e) => updateSAT("math", e.target.value)}
                   className={inputClass}
                 />
@@ -404,7 +402,7 @@ export default function ProfilePage() {
                   min="1"
                   max="36"
                   placeholder="e.g. 34"
-                  value={profile.act?.english ?? ""}
+                  value={profile.act.english}
                   onChange={(e) => updateACT("english", e.target.value)}
                   className={inputClass}
                 />
@@ -416,7 +414,7 @@ export default function ProfilePage() {
                   min="1"
                   max="36"
                   placeholder="e.g. 33"
-                  value={profile.act?.math ?? ""}
+                  value={profile.act.math}
                   onChange={(e) => updateACT("math", e.target.value)}
                   className={inputClass}
                 />
@@ -428,7 +426,7 @@ export default function ProfilePage() {
                   min="1"
                   max="36"
                   placeholder="e.g. 35"
-                  value={profile.act?.reading ?? ""}
+                  value={profile.act.reading}
                   onChange={(e) => updateACT("reading", e.target.value)}
                   className={inputClass}
                 />
@@ -440,7 +438,7 @@ export default function ProfilePage() {
                   min="1"
                   max="36"
                   placeholder="e.g. 32"
-                  value={profile.act?.science ?? ""}
+                  value={profile.act.science}
                   onChange={(e) => updateACT("science", e.target.value)}
                   className={inputClass}
                 />
