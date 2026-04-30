@@ -1,30 +1,29 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { PinnedCollege, ApplicationPlan } from "@/lib/college-types";
 import { PINNED_COLLEGES_KEY } from "@/lib/college-types";
+import {
+  getCachedJson,
+  setJson,
+  type CloudKey,
+} from "@/lib/cloud-storage";
 
-function readPinned(): PinnedCollege[] {
-  try {
-    const raw = localStorage.getItem(PINNED_COLLEGES_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (p): p is PinnedCollege =>
-        typeof p?.name === "string" && typeof p?.pinnedAt === "number",
-    );
-  } catch {
-    return [];
-  }
+const PINS_KEY: CloudKey = PINNED_COLLEGES_KEY as CloudKey;
+
+function isPinnedColleges(v: unknown): v is PinnedCollege[] {
+  if (!Array.isArray(v)) return false;
+  return v.every(
+    (p) =>
+      p !== null &&
+      typeof p === "object" &&
+      typeof (p as { name: unknown }).name === "string" &&
+      typeof (p as { pinnedAt: unknown }).pinnedAt === "number",
+  );
 }
 
-function writePinned(list: PinnedCollege[]): void {
-  try {
-    localStorage.setItem(PINNED_COLLEGES_KEY, JSON.stringify(list));
-  } catch {
-    // Quota or disabled — silently degrade.
-  }
+function readPinned(): PinnedCollege[] {
+  return getCachedJson<PinnedCollege[]>(PINS_KEY, isPinnedColleges) ?? [];
 }
 
 export interface UseCollegePinsReturn {
@@ -40,21 +39,42 @@ export function useCollegePins(): UseCollegePinsReturn {
   const [pinned, setPinned] = useState<PinnedCollege[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Initial load + cross-tab sync
+  // Initial load + cross-component / cross-tab sync.
   useEffect(() => {
     setPinned(readPinned());
     setLoaded(true);
 
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === PINNED_COLLEGES_KEY) setPinned(readPinned());
+    const refresh = () => setPinned(readPinned());
+
+    // Same-tab updates from other components (cloud-storage emits this on
+    // every write).
+    const onChange = (e: Event) => {
+      const ce = e as CustomEvent<{ key?: string }>;
+      if (ce.detail?.key === PINS_KEY) refresh();
     };
+
+    // Cross-tab StorageEvent (browsers fire this when localStorage changes
+    // in another tab; covers users editing pins in two tabs at once).
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === PINS_KEY) refresh();
+    };
+
+    // Cloud reconcile completed (focus / first sign-in) — re-read.
+    const onReconciled = () => refresh();
+
+    window.addEventListener("cloud-storage-changed", onChange);
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    window.addEventListener("cloud-storage-reconciled", onReconciled);
+    return () => {
+      window.removeEventListener("cloud-storage-changed", onChange);
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("cloud-storage-reconciled", onReconciled);
+    };
   }, []);
 
-  // Persist on change
+  // Persist on change. cloud-storage.ts handles localStorage cache + Supabase.
   useEffect(() => {
-    if (loaded) writePinned(pinned);
+    if (loaded) setJson<PinnedCollege[]>(PINS_KEY, pinned);
   }, [pinned, loaded]);
 
   const isPinned = useCallback(

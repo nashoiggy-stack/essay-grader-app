@@ -25,6 +25,7 @@ import {
   type SchoolColor,
 } from "@/components/CompareVisuals";
 import { CampusTab, CultureTab } from "@/components/QualitativeCompare";
+import { getCachedJson } from "@/lib/cloud-storage";
 import type { College, Classification, Tier3 } from "@/lib/college-types";
 import {
   compareColleges,
@@ -45,9 +46,16 @@ function readProfileForFit(): {
   essayV: number | null;
 } | null {
   try {
-    const raw = localStorage.getItem("admitedge-profile");
-    if (!raw) return null;
-    const p = JSON.parse(raw);
+    type ProfileShape = {
+      gpaUW?: string;
+      gpaW?: string;
+      sat?: { readingWriting?: string; math?: string };
+      act?: { english?: string; math?: string; reading?: string };
+      essayCommonApp?: string;
+      essayVspice?: string;
+    };
+    const p = getCachedJson<ProfileShape>("admitedge-profile");
+    if (!p) return null;
     const gpaUW = p.gpaUW ? parseFloat(p.gpaUW) : null;
     const gpaW = p.gpaW ? parseFloat(p.gpaW) : null;
     const sat =

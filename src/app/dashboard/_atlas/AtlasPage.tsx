@@ -12,10 +12,11 @@ import {
 } from "./icons";
 import type { ActionItem, ShortlistEntry, ToolStatus } from "./types";
 import "../dashboard-atlas.css";
+import { getCachedRaw, setRaw, type CloudKey } from "@/lib/cloud-storage";
 
 type Layout = "atlas" | "orbital" | "list";
 
-const LAYOUT_STORAGE_KEY = "admitedge-profile-layout";
+const LAYOUT_STORAGE_KEY: CloudKey = "admitedge-profile-layout";
 
 const TIER_META: Record<ShortlistEntry["tier"], { label: string; note: string }> = {
   unlikely: { label: "Unlikely", note: "<5% chance" },
@@ -41,19 +42,15 @@ export function AtlasPage() {
   const [focusToolId, setFocusToolId] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
-      if (saved === "atlas" || saved === "orbital" || saved === "list") {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setLayout(saved);
-      }
-    } catch {
-      // ignore
+    const saved = getCachedRaw(LAYOUT_STORAGE_KEY);
+    if (saved === "atlas" || saved === "orbital" || saved === "list") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLayout(saved);
     }
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem(LAYOUT_STORAGE_KEY, layout); } catch { /* ignore */ }
+    setRaw(LAYOUT_STORAGE_KEY, layout);
   }, [layout]);
 
   if (!data.loaded) {
