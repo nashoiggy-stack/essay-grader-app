@@ -9,6 +9,7 @@ import {
   IconClipboard,
   IconResume,
   IconSchool,
+  IconListGrade,
   IconChart,
   IconCompare,
   IconCompass,
@@ -32,14 +33,15 @@ interface ToolEntry {
 // 8 sections = basicInfo/education/awards/communityService/athletics/activities/summerExperience/skills (Resume)
 // 100+ schools = ~111 entries in src/data/colleges.ts
 const TOOLS: readonly ToolEntry[] = [
-  { id: "essay",            name: "Essay Grader",   desc: "AI grading on 7 criteria + VSPICE rubric.", href: "/",                  stat: "7+V", statLabel: "Criteria" },
-  { id: "gpa",              name: "GPA Calculator", desc: "Weighted, unweighted, with course rigor.",  href: "/gpa" },
-  { id: "extracurriculars", name: "EC Evaluator",   desc: "Conversational tier-rated activity review.", href: "/extracurriculars", stat: "5",   statLabel: "Bands" },
-  { id: "resume",           name: "Resume Helper",  desc: "Common-App-format activities and resume.",   href: "/resume",            stat: "8",   statLabel: "Sections" },
-  { id: "colleges",         name: "College List",   desc: "5-tier list filtered by your real profile.", href: "/colleges",          stat: "100+", statLabel: "Schools" },
-  { id: "chances",          name: "Chances",        desc: "Admit estimates with location map.",        href: "/chances",           stat: "5",   statLabel: "Bands" },
-  { id: "compare",          name: "Compare",        desc: "Schools side-by-side across key dimensions.", href: "/compare" },
-  { id: "strategy",         name: "Strategy",       desc: "AI consultant that builds your game plan.",  href: "/strategy" },
+  { id: "essay",            name: "Essay Grader",   desc: "AI grading on 7 criteria + VSPICE rubric.",   href: "/",                  stat: "7+V", statLabel: "Criteria" },
+  { id: "gpa",              name: "GPA Calculator", desc: "Weighted, unweighted, with course rigor.",     href: "/gpa" },
+  { id: "extracurriculars", name: "EC Evaluator",   desc: "Conversational tier-rated activity review.",   href: "/extracurriculars", stat: "5",   statLabel: "Bands" },
+  { id: "resume",           name: "Resume Helper",  desc: "Common-App-format activities and resume.",     href: "/resume",            stat: "8",   statLabel: "Sections" },
+  { id: "colleges",         name: "Colleges",       desc: "Browse 100+ schools and pin your candidates.",  href: "/colleges",          stat: "100+", statLabel: "Schools" },
+  { id: "list",             name: "Your List",      desc: "Letter grade on tier balance, ED leverage, and major fit.", href: "/list",              stat: "A–F", statLabel: "Grade" },
+  { id: "chances",          name: "Chances",        desc: "Admit estimates with location map.",           href: "/chances",           stat: "5",   statLabel: "Bands" },
+  { id: "compare",          name: "Compare",        desc: "Schools side-by-side across key dimensions.",  href: "/compare" },
+  { id: "strategy",         name: "Strategy",       desc: "AI consultant that builds your game plan.",    href: "/strategy" },
 ];
 
 const TOOL_ICON_MAP: Record<ToolIconKey, (p: { size?: number }) => React.JSX.Element> = {
@@ -48,6 +50,7 @@ const TOOL_ICON_MAP: Record<ToolIconKey, (p: { size?: number }) => React.JSX.Ele
   extracurriculars: IconClipboard,
   resume: IconResume,
   colleges: IconSchool,
+  list: IconListGrade,
   chances: IconChart,
   compare: IconCompare,
   strategy: IconCompass,
@@ -61,8 +64,8 @@ const STEPS = [
   },
   {
     num: "02",
-    title: "Run the eight tools",
-    desc: "Grade essays, model GPA, evaluate ECs, build a resume, generate a college list, calculate chances, compare schools, and get a strategy.",
+    title: "Run the nine tools",
+    desc: "Grade essays, model GPA, evaluate ECs, build a resume, browse colleges, grade your list, calculate chances, compare schools, and get a strategy.",
   },
   {
     num: "03",
@@ -157,7 +160,7 @@ function Tools() {
           <div>
             <div className="lpx-eyebrow">The toolkit</div>
             <h2 className="lpx-section-title">
-              Eight tools.
+              Nine tools.
               <br />
               <em>One shared brain.</em>
             </h2>
@@ -259,14 +262,15 @@ function Foot() {
               </span>
             </div>
             <p className="lpx-foot-blurb">
-              Eight integrated college admissions tools. Sourced from the
+              Nine integrated college admissions tools. Sourced from the
               Common Data Set. Made for students who want to know, not guess.
             </p>
           </div>
           <div className="lpx-foot-col">
             <h4>Product</h4>
             <Link href="/">Essay Grader</Link>
-            <Link href="/colleges">College List</Link>
+            <Link href="/colleges">Colleges</Link>
+            <Link href="/list">Your List</Link>
             <Link href="/chances">Chances</Link>
             <Link href="/strategy">Strategy</Link>
             <Link href="/compare">Compare</Link>
