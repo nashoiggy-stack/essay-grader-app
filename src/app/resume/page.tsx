@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ResumePreview } from "@/components/ResumePreview";
-import { EditorialAtmosphere } from "@/components/editorial/EditorialAtmosphere";
-import { AtlasHero } from "@/components/editorial/AtlasHero";
 import { ResumeSectionCard, type FieldSchema } from "@/components/ResumeSectionCard";
 import { ActivitiesHelperPanel } from "@/components/ActivitiesHelperPanel";
 import { useResume } from "@/hooks/useResume";
@@ -120,35 +118,46 @@ export default function ResumePage() {
 
   return (
     <AuroraBackground>
-      <EditorialAtmosphere />
-      <main className="editorial-luxury mx-auto max-w-6xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] print:py-0 print:max-w-none print:px-0">
-        <div className="print:hidden">
-          <AtlasHero
-            eyebrow="Resume helper"
-            title="Your record,"
-            accent="set."
-            lede="A clean, admissions-ready resume. Autofills from your GPA calculator, EC evaluator, and profile. Edit anything."
-          />
-          <div className="flex items-center justify-end gap-2 -mt-6 mb-8">
-            <button
-              onClick={r.saveNow}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
-                r.saveFlash
-                  ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                  : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
-              }`}
-            >
-              <Save className="w-3.5 h-3.5" />
-              {r.saveFlash ? "Saved" : "Save"}
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
-            >
-              <DownloadIcon className="w-3.5 h-3.5" />
-              Print / PDF
-            </button>
+      <main className="mx-auto max-w-6xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] print:py-0 print:max-w-none print:px-0">
+        {/* Header */}
+        <div className="mb-10 print:hidden">
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
+              <FileText className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-zinc-300">
+                Resume Helper
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={r.saveNow}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
+                  r.saveFlash
+                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                    : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
+                }`}
+              >
+                <Save className="w-3.5 h-3.5" />
+                {r.saveFlash ? "Saved" : "Save"}
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
+              >
+                <DownloadIcon className="w-3.5 h-3.5" />
+                Print / PDF
+              </button>
+            </div>
           </div>
+          <h1
+            className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[0.95] mb-4"
+            style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)" }}
+          >
+            Build your college resume.
+          </h1>
+          <p className="max-w-xl text-lg text-zinc-400 leading-relaxed">
+            A clean, admissions-ready resume. Autofills from your GPA calculator, EC evaluator, and profile. Edit anything.
+          </p>
         </div>
 
         {/* Mode switcher */}
