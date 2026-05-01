@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { EditorialAtmosphere } from "@/components/editorial/EditorialSystem";
 import { EssayInput } from "@/components/EssayInput";
 import { ScoreOverview } from "@/components/ScoreOverview";
 import { TabNavigation, type TabId } from "@/components/TabNavigation";
@@ -119,7 +120,8 @@ export default function Home() {
         currentEssayText={essay.essayText}
       />
 
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
+      <EditorialAtmosphere />
+      <main className="editorial-luxury mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
 
         {/* ── Hero with Scroll Animation ─────────────────────────── */}
         <ContainerScroll

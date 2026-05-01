@@ -4,7 +4,6 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Compass,
   Sparkles,
   AlertCircle,
   RefreshCw,
@@ -25,6 +24,7 @@ import {
 } from "lucide-react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { EditorialAtmosphere, EditorialMasthead } from "@/components/editorial/EditorialSystem";
 import {
   StrategyCard,
   type StrategyStrength,
@@ -182,27 +182,14 @@ export default function StrategyPage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
-        {/* ── Header ─────────────────────────────────────────────── */}
-        <motion.div
-          className="mb-8 text-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] border border-white/[0.08] px-3 py-1 mb-4">
-            <Compass className="w-3.5 h-3.5 text-blue-300" />
-            <span className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-medium">
-              Strategy Engine
-            </span>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="text-gradient">Your Strategic Briefing</span>
-          </h1>
-          <p className="mt-3 text-zinc-400 max-w-xl mx-auto text-sm">
-            A live decision tool — not a static report. Pick a dream school, review your gaps, and check off action items as you improve.
-          </p>
-        </motion.div>
+      <EditorialAtmosphere />
+      <main className="editorial-luxury mx-auto max-w-[1100px] px-[clamp(20px,4vw,48px)] py-[clamp(48px,8vw,96px)] pb-32 font-[family-name:var(--font-geist-sans)]">
+        <EditorialMasthead
+          eyebrow="Application playbook"
+          title="Your strategy,"
+          accent="charted."
+          lede="A measured plan across the cycle: where to spend your ED leverage, which gaps to close first, and how to phase your effort so the strongest applications land first."
+        />
 
         {/* ── Empty state (no pinned schools) ────────────────────── */}
         {isEmpty ? (

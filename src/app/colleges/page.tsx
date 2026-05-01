@@ -12,6 +12,7 @@ import { useCollegeFilter } from "@/hooks/useCollegeFilter";
 import { useCollegePins } from "@/hooks/useCollegePins";
 import { useCollegeListKeyboard } from "@/hooks/useCollegeListKeyboard";
 import type { ClassifiedCollege } from "@/lib/college-types";
+import { EditorialAtmosphere, EditorialMasthead } from "@/components/editorial/EditorialSystem";
 
 const COLLEGE_SEARCH_INPUT_ID = "colleges-search-input";
 
@@ -77,42 +78,29 @@ export default function CollegesPage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
-        {/* ── Masthead ─────────────────────────────────────────────────── */}
-        <motion.header
-          className="mb-10 sm:mb-12"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-        >
-          <div className="flex items-baseline justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-medium">
-                Browse · Pin · Build your list
-              </p>
-              <h1 className="font-[family-name:var(--font-display)] mt-2 text-[clamp(2.75rem,6vw,4.5rem)] leading-[0.95] tracking-tight text-zinc-100">
-                Colleges
-              </h1>
-            </div>
-            <button
-              onClick={() => setShowGuide(!showGuide)}
-              className="text-[12px] text-zinc-400 hover:text-zinc-100 inline-flex items-center gap-1.5 transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" />
-              </svg>
-              {showGuide ? "Hide tiers" : "What do these tiers mean?"}
-            </button>
-          </div>
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-400">
-            Sortable by chance, acceptance rate, or major fit. Pin schools to
-            assemble your list, then head to{" "}
-            <Link href="/list" className="text-zinc-200 underline decoration-white/15 underline-offset-2 hover:text-white">
+      <EditorialAtmosphere />
+      <main className="editorial-luxury mx-auto max-w-[1320px] px-[clamp(20px,4vw,48px)] py-[clamp(48px,8vw,96px)] pb-32 font-[family-name:var(--font-geist-sans)]">
+        <EditorialMasthead
+          eyebrow="The full database"
+          title="Colleges,"
+          accent="filtered to fit."
+          lede="Search, filter, and pin from over 1,400 institutions. Each row carries the same chance read used everywhere else in your dossier."
+        />
+        <div className="flex items-baseline justify-between -mt-8 mb-8 gap-4 flex-wrap">
+          <p className="text-[14px] text-[var(--ink-60)] font-light max-w-xl">
+            Sortable by chance, acceptance rate, or major fit. Pin schools to assemble your list, then head to{" "}
+            <Link href="/list" className="text-[var(--ink-100)] underline decoration-[var(--bg-rule-strong)] underline-offset-2 hover:text-[var(--accent-strong)]">
               your graded list
             </Link>{" "}
             for the second-opinion read.
           </p>
-        </motion.header>
+          <button
+            onClick={() => setShowGuide(!showGuide)}
+            className="ed-chip"
+          >
+            {showGuide ? "Hide tiers" : "What do tiers mean?"}
+          </button>
+        </div>
 
         {/* Always-visible disclaimer — kept editorial, methodology one click away. */}
         <div className="mb-8 border-y border-amber-500/[0.18] py-3">

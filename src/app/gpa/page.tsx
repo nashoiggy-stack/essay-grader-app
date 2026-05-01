@@ -6,6 +6,7 @@ import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { TranscriptUpload } from "@/components/TranscriptUpload";
 import { useBackground } from "@/components/BackgroundProvider";
+import { EditorialAtmosphere } from "@/components/editorial/EditorialSystem";
 
 export default function GPAPage() {
   const [iframeKey, setIframeKey] = useState(0);
@@ -24,6 +25,8 @@ export default function GPAPage() {
 
   return (
     <AuroraBackground>
+      <EditorialAtmosphere />
+      <div className="editorial-luxury">
       <ContainerScroll
         titleComponent={
           <div className="mb-4">
@@ -126,6 +129,7 @@ export default function GPAPage() {
           title="GPA Calculator"
         />
       </motion.div>
+      </div>
     </AuroraBackground>
   );
 }

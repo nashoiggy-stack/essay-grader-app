@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { EditorialAtmosphere, EditorialMasthead } from "@/components/editorial/EditorialSystem";
 import { CompareSelector } from "@/components/CompareSelector";
 import { DemographicsCard, generateDemographicInsights, type DemoInsight } from "@/components/DemographicsChart";
 import {
@@ -177,21 +178,14 @@ export default function ComparePage() {
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-6xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
-        {/* Header */}
-        <motion.div
-          className="mb-8 text-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="text-gradient">College Comparison</span>
-          </h1>
-          <p className="mt-3 text-zinc-400 max-w-lg mx-auto text-sm">
-            Select 2–4 schools. Compare admissions, academics, campus, outcomes, and fit — side by side.
-          </p>
-        </motion.div>
+      <EditorialAtmosphere />
+      <main className="editorial-luxury mx-auto max-w-[1320px] px-[clamp(20px,4vw,48px)] py-[clamp(48px,8vw,96px)] pb-32 font-[family-name:var(--font-geist-sans)]">
+        <EditorialMasthead
+          eyebrow="Side by side"
+          title="Two schools,"
+          accent="set in type."
+          lede="Pick 2–4 schools. The spread compares admissions, academics, campus, outcomes, and fit — laid out across columns so the contrasts read first."
+        />
 
         {/* Selector */}
         <ScrollReveal delay={0.08}>
