@@ -1,34 +1,27 @@
 "use client";
 
-import { motion } from "motion/react";
 import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ChanceForm } from "@/components/ChanceForm";
 import { ChanceResultDisplay } from "@/components/ChanceResult";
 import { CollegeMap } from "@/components/ui/college-map";
 import { useChanceCalculator } from "@/hooks/useChanceCalculator";
+import { EditorialAtmosphere } from "@/components/editorial/EditorialAtmosphere";
+import { AtlasHero } from "@/components/editorial/AtlasHero";
 
 export default function ChancesPage() {
   const { inputs, updateInput, resetInputs, college, result, colleges } = useChanceCalculator();
 
   return (
     <AuroraBackground>
-      <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
-        {/* Header */}
-        <motion.div
-          className="mb-10 text-center"
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="text-gradient">Chance Calculator</span>
-          </h1>
-          <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
-            Estimate your admission chances at any school in our database.
-            Enter your profile and select a college.
-          </p>
-        </motion.div>
+      <EditorialAtmosphere />
+      <main className="editorial-luxury mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
+        <AtlasHero
+          eyebrow="Single school"
+          title="Your odds,"
+          accent="weighed."
+          lede="Estimate your admission chances at any school in our database. Enter your profile, pick a college, and see the chance model lay out the math."
+        />
 
         {/* Always-visible disclaimer per final calibration spec. */}
         <div className="mb-8 rounded-xl bg-amber-500/[0.04] border border-amber-500/[0.15] px-4 py-3">
