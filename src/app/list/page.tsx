@@ -209,7 +209,7 @@ export default function ListPage() {
         {isEmpty ? (
           <EmptyState />
         ) : (
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-10 sm:space-y-12">
             <ScrollReveal delay={0.05}>
               <GradeMasthead grade={grade} />
             </ScrollReveal>
@@ -246,82 +246,92 @@ export default function ListPage() {
 
 function EmptyState() {
   return (
-    <div className="border border-border-hair rounded-3xl bg-bg-surface px-8 sm:px-12 py-14 sm:py-20">
+    <div className="border border-border-hair rounded-md bg-bg-surface px-6 sm:px-8 py-10 sm:py-12">
       <p className={EYEBROW}>No schools pinned</p>
-      <h2 className={`${SERIF} mt-3 text-3xl sm:text-4xl text-text-primary leading-tight`}>
+      <h2 className="mt-3 text-xl sm:text-2xl font-semibold tracking-[-0.018em] text-text-primary leading-tight">
         Start by pinning a few schools.
       </h2>
-      <p className="mt-3 max-w-md text-[14px] text-text-secondary leading-relaxed">
+      <p className="mt-3 max-w-[60ch] text-[14px] text-text-secondary leading-relaxed">
         We grade the list on tier balance, count, ED leverage, financial mix,
         geographic diversity, and major fit. Aim for 8–12 schools across reach,
         target, likely, and safety.
       </p>
       <Link
         href="/colleges"
-        className="mt-7 inline-flex items-center gap-2 text-[14px] font-medium text-text-primary hover:text-white transition-colors"
+        className="mt-6 inline-flex items-center gap-2 rounded-sm bg-accent text-white px-4 py-2 text-[13px] font-medium transition-[background-color] duration-150 hover:bg-accent-strong"
       >
-        Browse colleges <ArrowRight className="w-4 h-4" />
+        Browse colleges <ArrowRight className="w-3.5 h-3.5" />
       </Link>
     </div>
   );
 }
 
-// ── Hero: oversized letter + tabular numerics ─────────────────────────────
+// ── Grade summary — restrained stat readout, not a masthead.
+//    Reads like the reference tables on /gpa rather than the editorial
+//    oversized letter that was carrying over from the previous redesign. ─
 
 function GradeMasthead({ grade }: { grade: GradeResult }) {
   const tone = LETTER_TONE[grade.letter];
   return (
     <section aria-labelledby="grade-masthead">
-      <p className={EYEBROW} id="grade-masthead">
-        Official grade
-      </p>
-
-      <div className="mt-3 grid grid-cols-1 md:grid-cols-12 gap-y-8 md:gap-x-8">
-        {/* The letter — masthead-scale, display serif, single tone */}
-        <div className="md:col-span-7 flex items-end gap-4 sm:gap-6">
-          <span
-            aria-label={`Grade: ${grade.letter}`}
-            className={`${SERIF} ${tone} leading-none text-[clamp(7rem,18vw,13rem)] tracking-[-0.04em]`}
-          >
-            {grade.letter}
-          </span>
-          <div className="pb-2 sm:pb-4">
-            <div className={`${MONO} text-3xl sm:text-4xl text-text-primary leading-none`}>
-              {grade.officialScore.toFixed(1)}
-              <span className="text-text-faint"> / 100</span>
-            </div>
-            <div className="mt-3 space-y-1 text-[12px] text-text-muted">
-              <div className="flex items-baseline gap-3">
-                <span className="w-16 text-text-faint">Balance</span>
-                <span className={`${MONO} text-text-secondary w-14`}>
-                  {grade.balanceScore.toFixed(1)}
-                </span>
-                <span className="text-text-faint">/ 100</span>
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-x-10 gap-y-8 pt-6 border-t border-border-hair">
+        {/* Stat block — letter sits in the 4xl/5xl range like the rest of
+            the app's hero numbers, not the 13rem masthead clamp. */}
+        <div>
+          <p className={EYEBROW} id="grade-masthead">Official grade</p>
+          <div className="mt-3 flex items-baseline gap-5">
+            <span
+              aria-label={`Grade: ${grade.letter}`}
+              className={`font-semibold ${tone} leading-none text-[clamp(3.5rem,8vw,5.5rem)] tracking-[-0.025em]`}
+            >
+              {grade.letter}
+            </span>
+            <div>
+              <div className={`${MONO} text-2xl text-text-primary leading-none`}>
+                {grade.officialScore.toFixed(1)}
+                <span className="text-text-faint"> / 100</span>
               </div>
-              <div className="flex items-baseline gap-3">
-                <span className="w-16 text-text-faint">Major</span>
-                <span className={`${MONO} text-text-secondary w-14`}>
-                  {grade.majorScore.toFixed(1)}
-                </span>
-                <span className="text-text-faint">/ 100</span>
-              </div>
+              <p className="mt-1 text-[12px] text-text-muted">
+                Balance + major fit, averaged.
+              </p>
             </div>
           </div>
+
+          {/* Sub-scores as a dense two-row table, not a masthead column */}
+          <table className={`${MONO} mt-6 w-full max-w-sm text-[13px]`}>
+            <tbody className="divide-y divide-border-hair">
+              <tr>
+                <td className="py-2 text-text-secondary font-sans">Balance</td>
+                <td className="py-2 text-right tabular-nums text-text-primary">
+                  {grade.balanceScore.toFixed(1)}
+                  <span className="text-text-faint"> / 100</span>
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 text-text-secondary font-sans">Major fit</td>
+                <td className="py-2 text-right tabular-nums text-text-primary">
+                  {grade.majorScore.toFixed(1)}
+                  <span className="text-text-faint"> / 100</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        {/* Why this grade — numbered editorial reasons */}
-        <div className="md:col-span-5">
+        {/* Why this grade — bullet list with mono ordinals; same visual
+            register as the breakdown rows below, no editorial drama. */}
+        <div>
           <p className={EYEBROW}>Why this grade</p>
-          <ol className="mt-4 space-y-4">
+          <ul className="mt-3 divide-y divide-border-hair">
             {grade.reasons.slice(0, 5).map((r, i) => (
-              <li key={i} className={`grid grid-cols-[2.25rem_1fr] gap-2 pt-3 ${HAIRLINE}`}>
-                <span className={`${MONO} text-[11px] text-text-muted mt-0.5`}>
+              <li key={i} className="grid grid-cols-[2rem_1fr] gap-3 py-3">
+                <span className={`${MONO} text-[12px] text-text-faint pt-0.5`}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="text-[13px] text-text-secondary leading-relaxed">{r}</span>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </div>
     </section>
@@ -379,19 +389,21 @@ function BreakdownColumn({
   const totalOut = rows.reduce((s, r) => s + r.out, 0);
   return (
     <div>
-      <div className="flex items-baseline justify-between pb-3 mb-1 border-b border-border-strong">
-        <h3 className={`${SERIF} text-2xl text-text-primary leading-none`}>{title}</h3>
-        <div className={`${MONO} text-[14px] text-text-secondary`}>
+      <div className="flex items-baseline justify-between pb-3 mb-2 border-b border-border-hair">
+        <h3 className="text-[15px] font-semibold tracking-[-0.012em] text-text-primary leading-none">
+          {title}
+        </h3>
+        <div className={`${MONO} text-[13px] text-text-primary`}>
           {total.toFixed(1)}
           <span className="text-text-faint"> / {totalOut}</span>
         </div>
       </div>
-      <p className="text-[10px] uppercase tracking-[0.18em] text-text-faint mb-5">{weight}</p>
+      <p className="text-[11px] uppercase tracking-[0.08em] text-text-faint mb-4 font-medium">{weight}</p>
       <div className="divide-y divide-border-hair">
         {rows.map((r, i) => {
           const pct = Math.max(0, Math.min(100, (r.score / r.out) * 100));
           return (
-            <div key={i} className="grid grid-cols-[1fr_auto] gap-x-4 py-4">
+            <div key={i} className="grid grid-cols-[1fr_auto] gap-x-4 py-3">
               <div className="min-w-0">
                 <div className="text-[13px] text-text-primary">{r.label}</div>
                 <p className="mt-1 text-[12px] text-text-muted leading-relaxed max-w-[55ch]">
@@ -403,10 +415,12 @@ function BreakdownColumn({
                   {r.score.toFixed(1)}
                   <span className="text-text-faint"> / {r.out}</span>
                 </div>
-                {/* Thin meter — deliberately minimal */}
-                <div className="mt-2 h-px w-24 bg-bg-surface overflow-hidden">
+                {/* Thin meter — uses border-strong as the fill so it reads
+                    in both light and dark modes (the previous bg-zinc-200
+                    fill was invisible on the light surface). */}
+                <div className="mt-2 h-px w-24 bg-border-hair overflow-hidden">
                   <div
-                    className="h-full bg-zinc-200/70"
+                    className="h-full bg-border-strong"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -525,12 +539,12 @@ function RecommendationsSection({
       return (
         <section>
           <p className={EYEBROW}>Engine suggestions</p>
-          <p className={`${SERIF} mt-3 text-2xl sm:text-3xl text-text-primary max-w-2xl leading-tight`}>
+          <p className="mt-3 text-lg sm:text-xl font-semibold tracking-[-0.018em] text-text-primary max-w-[60ch] leading-tight">
             Your list is solid.
           </p>
-          <p className="mt-3 max-w-md text-[13px] text-text-secondary leading-relaxed">
+          <p className="mt-2 max-w-[60ch] text-[13px] text-text-secondary leading-relaxed">
             No clear improvements to suggest right now. The breakdown above
-            shows what's driving your score — refine those if you want a
+            shows what&apos;s driving your score — refine those if you want a
             higher grade.
           </p>
         </section>
@@ -554,7 +568,7 @@ function RecommendationsSection({
         </p>
         <span className="text-[11px] text-text-faint">{mode}</span>
       </div>
-      <ol className="divide-y divide-white/[0.06] border-y border-border-hair">
+      <ol className="divide-y divide-border-hair border-y border-border-hair">
         {recommendations.map((rec, i) => (
           <RecommendationRow
             key={`${rec.kind}-${rec.college.name}-${rec.replaces ?? ""}`}
@@ -592,7 +606,7 @@ function RecommendationRow({
       </span>
       <div className="min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap">
-          <h3 className={`${SERIF} text-xl sm:text-2xl text-text-primary leading-tight`}>
+          <h3 className="text-[15px] sm:text-base font-semibold tracking-[-0.012em] text-text-primary leading-tight">
             {rec.college.name}
           </h3>
           {rec.kind === "swap" && rec.replaces && (
@@ -606,17 +620,17 @@ function RecommendationRow({
         </p>
       </div>
       <div className="text-right">
-        <div className={`${MONO} text-[12px] text-text-muted`}>
+        <div className={`${MONO} text-[13px] text-text-primary`}>
           +{rec.gradeDelta.toFixed(1)}
         </div>
-        <div className="text-[10px] uppercase tracking-[0.16em] text-text-faint">
+        <div className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium">
           grade
         </div>
       </div>
       <button
         type="button"
         onClick={apply}
-        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-text-primary hover:text-white transition-colors"
+        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-accent-text hover:text-accent-strong transition-colors"
       >
         {rec.kind === "swap" ? (
           <>
