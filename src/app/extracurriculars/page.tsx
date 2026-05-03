@@ -12,7 +12,7 @@ export default function ExtracurricularsPage() {
 
   return (
     <>
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-5xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <div className="flex items-start justify-between gap-4 mb-6">

@@ -706,9 +706,10 @@ body::after {
   border-radius: var(--radius, 1rem);
 }
 
-/* Display headline — solid white, let the display font do the work */
+/* Display headline — was a true gradient, now resolves to the active
+   theme's text-primary so it reads correctly in both light and dark. */
 .text-gradient {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Prevent iOS Safari from auto-zooming on input focus.

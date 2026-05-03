@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function MethodologyPage() {
   return (
     <>
-      <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] text-text-primary">
+      <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)] text-text-primary">
         <header className="mb-10">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             <span className="text-gradient">How AdmitEdge Calculates Your Chances</span>

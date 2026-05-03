@@ -117,7 +117,7 @@ export default function ResumePage() {
 
   return (
     <>
-      <main className="mx-auto max-w-6xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] print:py-0 print:max-w-none print:px-0">
+      <main className="mx-auto max-w-6xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)] print:py-0 print:max-w-none print:px-0">
         {/* Header */}
         <div className="mb-10 print:hidden">
           <div className="flex items-start justify-between gap-4 mb-6">
