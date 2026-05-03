@@ -54,11 +54,11 @@ export function AnimatedScore({ value, max, label, sub, delay = 0 }: AnimatedSco
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-bold font-mono text-white">{display}</span>
-          <span className="text-[11px] text-zinc-500 tabular-nums">/{max}</span>
+          <span className="text-[11px] text-text-muted tabular-nums">/{max}</span>
         </div>
       </div>
-      <p className="mt-2 text-xs font-medium text-zinc-300">{label}</p>
-      <p className="text-[11px] text-zinc-500">{sub}</p>
+      <p className="mt-2 text-xs font-medium text-text-secondary">{label}</p>
+      <p className="text-[11px] text-text-muted">{sub}</p>
     </div>
   );
 }

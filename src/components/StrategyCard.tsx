@@ -38,7 +38,7 @@ const STRENGTH_STYLES: Record<
     dot: "bg-zinc-500",
     ring: "ring-zinc-500/30",
     label: "",
-    text: "text-zinc-400",
+    text: "text-text-secondary",
   },
 };
 
@@ -79,8 +79,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     <div
       className={`rounded-2xl border overflow-hidden transition-[background-color,border-color] duration-200 ${
         emphasize
-          ? "bg-blue-500/[0.04] border-blue-500/20 hover:border-blue-500/30"
-          : "bg-[#0f0f1c] border-white/[0.06] hover:border-white/[0.12]"
+          ? "bg-blue-500/[0.04] border-accent-line hover:border-accent-line"
+          : "bg-[#0f0f1c] border-border-hair hover:border-white/[0.12]"
       }`}
     >
       <button
@@ -92,15 +92,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         <div
           className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
             emphasize
-              ? "bg-blue-500/15 text-blue-300"
-              : "bg-white/[0.04] text-zinc-400 group-hover:text-zinc-200"
+              ? "bg-accent-soft text-accent-text"
+              : "bg-bg-surface text-text-secondary group-hover:text-text-primary"
           }`}
         >
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-[13px] font-semibold text-zinc-100 uppercase tracking-[0.08em]">
+            <h3 className="text-[13px] font-semibold text-text-primary uppercase tracking-[0.08em]">
               {title}
             </h3>
             {strength !== "neutral" && (
@@ -113,12 +113,12 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             )}
           </div>
           {headline && (
-            <p className="mt-0.5 text-xs text-zinc-400 truncate">{headline}</p>
+            <p className="mt-0.5 text-xs text-text-secondary truncate">{headline}</p>
           )}
         </div>
         {rightSlot && <div className="shrink-0 mr-2">{rightSlot}</div>}
         <ChevronDown
-          className={`w-4 h-4 text-zinc-500 shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+          className={`w-4 h-4 text-text-muted shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
             expanded ? "" : "-rotate-90"
           }`}
         />
@@ -135,7 +135,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 pt-1 border-t border-white/[0.04]">
+            <div className="px-5 pb-5 pt-1 border-t border-border-hair">
               {children}
             </div>
           </motion.div>

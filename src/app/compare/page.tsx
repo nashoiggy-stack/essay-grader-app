@@ -14,7 +14,6 @@ import {
   Crown,
   ChevronDown,
 } from "lucide-react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CompareSelector } from "@/components/CompareSelector";
 import { DemographicsCard, generateDemographicInsights, type DemoInsight } from "@/components/DemographicsChart";
@@ -104,11 +103,11 @@ const TIER3_COLOR: Record<Tier3 | string, string> = {
 
 const FIT_COLORS: Record<Classification, { text: string; bg: string; ring: string }> = {
   safety: { text: "text-emerald-300", bg: "bg-emerald-500/10", ring: "ring-emerald-500/25" },
-  likely: { text: "text-blue-300", bg: "bg-blue-500/10", ring: "ring-blue-500/25" },
+  likely: { text: "text-accent-text", bg: "bg-accent-soft", ring: "ring-blue-500/25" },
   target: { text: "text-amber-300", bg: "bg-amber-500/10", ring: "ring-amber-500/25" },
   reach: { text: "text-orange-300", bg: "bg-orange-500/10", ring: "ring-orange-500/25" },
   unlikely: { text: "text-red-300", bg: "bg-red-500/10", ring: "ring-red-500/25" },
-  insufficient: { text: "text-zinc-400", bg: "bg-zinc-500/5", ring: "ring-zinc-500/15" },
+  insufficient: { text: "text-text-secondary", bg: "bg-zinc-500/5", ring: "ring-zinc-500/15" },
 };
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -176,7 +175,7 @@ export default function ComparePage() {
   const visibleTabs = TABS.filter((t) => t.key !== "fit" || profileData != null);
 
   return (
-    <AuroraBackground>
+    <>
       <main className="mx-auto max-w-6xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
@@ -188,7 +187,7 @@ export default function ComparePage() {
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
             <span className="text-gradient">College Comparison</span>
           </h1>
-          <p className="mt-3 text-zinc-400 max-w-lg mx-auto text-sm">
+          <p className="mt-3 text-text-secondary max-w-lg mx-auto text-sm">
             Select 2–4 schools. Compare admissions, academics, campus, outcomes, and fit — side by side.
           </p>
         </motion.div>
@@ -221,7 +220,7 @@ export default function ComparePage() {
               <button
                 type="button"
                 onClick={() => setConfirmed(false)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-white/[0.08] transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface border border-border-strong px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-white/[0.08] transition-colors"
               >
                 Edit Selection
               </button>
@@ -276,7 +275,7 @@ export default function ComparePage() {
                       className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-[color,background-color] duration-200 shrink-0 ${
                         isActive
                           ? "text-white bg-white/[0.08]"
-                          : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
+                          : "text-text-muted hover:text-text-secondary hover:bg-bg-surface"
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -326,8 +325,8 @@ export default function ComparePage() {
 
         {/* Placeholder — shown when no comparison is active */}
         {!comparison && (
-          <div className="mt-8 rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-12 text-center">
-            <p className="text-zinc-500">
+          <div className="mt-8 rounded-2xl bg-[#0f0f1c] border border-border-hair p-12 text-center">
+            <p className="text-text-muted">
               {selected.length === 0
                 ? "Search for schools above — or import your pinned list from the College List Builder."
                 : selected.length === 1
@@ -337,7 +336,7 @@ export default function ComparePage() {
           </div>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }
 
@@ -347,7 +346,7 @@ function InsightsBar({ insights }: { insights: readonly ComparisonInsight[] }) {
   return (
     <div className="rounded-2xl bg-gradient-to-br from-blue-500/[0.06] to-blue-500/[0.02] border border-blue-500/15 p-5">
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-blue-300" />
+        <Sparkles className="w-4 h-4 text-accent-text" />
         <h3 className="text-[12px] font-semibold uppercase tracking-[0.12em] text-blue-200">
           Decision Insights
         </h3>
@@ -368,11 +367,11 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.08] hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-bg-surface ring-1 ring-white/[0.08] hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
       >
         <Crown className="w-3 h-3 text-amber-300" />
-        <span className="text-zinc-400">{insight.label}:</span>
-        <span className="text-zinc-100 font-semibold">{insight.collegeName}</span>
+        <span className="text-text-secondary">{insight.label}:</span>
+        <span className="text-text-primary font-semibold">{insight.collegeName}</span>
       </button>
       <AnimatePresence>
         {open && (
@@ -381,9 +380,9 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 top-full mt-1.5 w-60 z-10 rounded-lg bg-[#0c0c1a] border border-white/[0.1] p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+            className="absolute left-0 top-full mt-1.5 w-60 z-10 rounded-lg bg-[#0c0c1a] border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
           >
-            <p className="text-[11px] text-zinc-300 leading-relaxed">
+            <p className="text-[11px] text-text-secondary leading-relaxed">
               {insight.detail}
             </p>
           </motion.div>
@@ -405,7 +404,7 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
             key={f.college.name}
             className={`rounded-xl ${colors.bg} ring-1 ${colors.ring} p-3`}
           >
-            <p className="text-[12px] text-zinc-300 font-medium truncate">
+            <p className="text-[12px] text-text-secondary font-medium truncate">
               {f.college.name}
             </p>
             <div className="flex items-center gap-2 mt-1">
@@ -414,7 +413,7 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
               >
                 {f.fitLabel}
               </span>
-              <span className="text-[10px] font-mono tabular-nums text-zinc-500">
+              <span className="text-[10px] font-mono tabular-nums text-text-muted">
                 {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
               </span>
             </div>
@@ -436,8 +435,8 @@ function ComparisonGrid({
 }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-8 text-center">
-        <p className="text-sm text-zinc-500">No data available for this section.</p>
+      <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-8 text-center">
+        <p className="text-sm text-text-muted">No data available for this section.</p>
       </div>
     );
   }
@@ -462,18 +461,18 @@ function ComparisonRow({
   const hasBest = row.values.some((v) => v.isBest);
 
   return (
-    <div className="rounded-xl bg-[#0f0f1c] border border-white/[0.05] overflow-hidden hover:border-white/[0.1] transition-[border-color] duration-200">
+    <div className="rounded-xl bg-[#0f0f1c] border border-border-hair overflow-hidden hover:border-border-strong transition-[border-color] duration-200">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="w-full px-4 py-3 text-left"
       >
         <div className="flex items-center gap-3 mb-2">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500 font-semibold">
+          <p className="text-[11px] uppercase tracking-[0.12em] text-text-muted font-semibold">
             {row.label}
           </p>
           <ChevronDown
-            className={`w-3 h-3 text-zinc-600 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+            className={`w-3 h-3 text-text-faint transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
               expanded ? "" : "-rotate-90"
             }`}
           />
@@ -506,8 +505,8 @@ function ComparisonRow({
             }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-3 border-t border-white/[0.04] pt-2">
-              <p className="text-[11px] text-zinc-500 leading-relaxed">
+            <div className="px-4 pb-3 border-t border-border-hair pt-2">
+              <p className="text-[11px] text-text-muted leading-relaxed">
                 {getFieldContext(row.field)}
               </p>
             </div>
@@ -540,13 +539,13 @@ function ValueCell({ value, isBest }: { value: string; isBest: boolean }) {
         ) : (
           <span
             className={`text-[13px] leading-snug ${
-              isBest ? "text-zinc-100 font-semibold" : "text-zinc-300"
+              isBest ? "text-text-primary font-semibold" : "text-text-secondary"
             }`}
           >
             {value === "Yes" ? (
               <span className="text-emerald-300 font-semibold">Yes</span>
             ) : value === "No" ? (
-              <span className="text-zinc-500">No</span>
+              <span className="text-text-muted">No</span>
             ) : (
               value
             )}
@@ -567,10 +566,10 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
         return (
           <div
             key={f.college.name}
-            className="rounded-xl bg-[#0f0f1c] border border-white/[0.05] p-5"
+            className="rounded-xl bg-[#0f0f1c] border border-border-hair p-5"
           >
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h4 className="text-[15px] font-semibold text-zinc-100">
+              <h4 className="text-[15px] font-semibold text-text-primary">
                 {f.college.name}
               </h4>
               <div className="flex items-center gap-2 shrink-0">
@@ -579,17 +578,17 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
                 >
                   {f.fitLabel}
                 </span>
-                <span className="text-sm font-mono tabular-nums text-zinc-400">
+                <span className="text-sm font-mono tabular-nums text-text-secondary">
                   {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
                 </span>
                 {f.classification !== "insufficient" && (
-                  <span className="text-[10px] font-mono tabular-nums text-zinc-500">
+                  <span className="text-[10px] font-mono tabular-nums text-text-muted">
                     ({f.chance.low}–{f.chance.high}%)
                   </span>
                 )}
               </div>
             </div>
-            <p className="text-[13px] text-zinc-400 leading-relaxed">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
               {f.reason}
             </p>
           </div>
@@ -667,11 +666,11 @@ function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
           {insights.map((ins, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] ring-1 ring-white/[0.08] text-zinc-300"
+              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-bg-surface ring-1 ring-white/[0.08] text-text-secondary"
             >
               <Crown className="w-3 h-3 text-amber-300" />
-              <span className="text-zinc-400">{ins.label}:</span>
-              <span className="font-semibold text-zinc-100">{ins.collegeName}</span>
+              <span className="text-text-secondary">{ins.label}:</span>
+              <span className="font-semibold text-text-primary">{ins.collegeName}</span>
             </span>
           ))}
         </div>
@@ -889,13 +888,13 @@ function CostTab({ colleges }: { colleges: readonly College[] }) {
                 value={c.strongFinancialAid ? "Yes" : "No"}
                 label="Meets full need"
                 isBest={c.strongFinancialAid === true}
-                color={c.strongFinancialAid ? "text-emerald-300" : "text-zinc-500"}
+                color={c.strongFinancialAid ? "text-emerald-300" : "text-text-muted"}
               />
               <MetricCard
                 value={c.strongMeritAid ? "Yes" : "No"}
                 label="Merit scholarships"
                 isBest={c.strongMeritAid === true}
-                color={c.strongMeritAid ? "text-emerald-300" : "text-zinc-500"}
+                color={c.strongMeritAid ? "text-emerald-300" : "text-text-muted"}
               />
             </div>
           ))}

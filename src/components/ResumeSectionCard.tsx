@@ -49,7 +49,7 @@ interface ResumeSectionCardProps<T extends Entry> {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -92,20 +92,20 @@ export function ResumeSectionCard<T extends Entry>({
   }, [entries]);
 
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] overflow-hidden">
+    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair overflow-hidden">
       {/* Section header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border-hair">
         <button
           onClick={() => setCollapsed((v) => !v)}
           className="flex items-center gap-2 text-left flex-1 min-w-0"
         >
           <ChevronDown
-            className={`w-4 h-4 text-zinc-500 shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+            className={`w-4 h-4 text-text-muted shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
               collapsed ? "-rotate-90" : ""
             }`}
           />
-          <h3 className="text-sm font-semibold text-zinc-200">{title}</h3>
-          <span className="text-[11px] text-zinc-500 font-mono tabular-nums">
+          <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
+          <span className="text-[11px] text-text-muted font-mono tabular-nums">
             {entries.length}
           </span>
         </button>
@@ -117,7 +117,7 @@ export function ResumeSectionCard<T extends Entry>({
               onAdd();
               setCollapsed(false);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 px-3 py-1.5 text-xs font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/25 text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add
@@ -144,7 +144,7 @@ export function ResumeSectionCard<T extends Entry>({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
-                  className="text-[12px] text-zinc-600 italic text-center py-4"
+                  className="text-[12px] text-text-faint italic text-center py-4"
                 >
                   {emptyLabel ?? "No entries yet. Click Add to get started."}
                 </motion.p>
@@ -172,7 +172,7 @@ export function ResumeSectionCard<T extends Entry>({
                       transform: { duration: 0.22, ease: [0.23, 1, 0.32, 1] },
                       default: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
                     }}
-                    className="rounded-xl bg-white/[0.02] border border-white/[0.05] overflow-hidden"
+                    className="rounded-xl bg-white/[0.02] border border-border-hair overflow-hidden"
                   >
                     {/* Entry header */}
                     <div className="flex items-center justify-between gap-2 px-3 py-2.5">
@@ -181,15 +181,15 @@ export function ResumeSectionCard<T extends Entry>({
                         className="flex items-center gap-2 flex-1 min-w-0 text-left"
                       >
                         <ChevronDown
-                          className={`w-3.5 h-3.5 text-zinc-600 shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+                          className={`w-3.5 h-3.5 text-text-faint shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
                             isOpen ? "" : "-rotate-90"
                           }`}
                         />
-                        <span className="text-[13px] text-zinc-300 truncate">
+                        <span className="text-[13px] text-text-secondary truncate">
                           {entryTitle}
                         </span>
                         {entry.source && (
-                          <span className="text-[9px] uppercase tracking-wider text-blue-400/70 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5 shrink-0">
+                          <span className="text-[9px] uppercase tracking-wider text-accent-text/70 bg-accent-soft border border-accent-line rounded-full px-2 py-0.5 shrink-0">
                             {entry.source}
                           </span>
                         )}
@@ -199,7 +199,7 @@ export function ResumeSectionCard<T extends Entry>({
                           onClick={() => onMove(entry.id, "up")}
                           disabled={idx === 0}
                           aria-label="Move up"
-                          className="p-1 rounded hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-300 disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
+                          className="p-1 rounded hover:bg-white/[0.08] text-text-muted hover:text-text-secondary disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
                         </button>
@@ -207,14 +207,14 @@ export function ResumeSectionCard<T extends Entry>({
                           onClick={() => onMove(entry.id, "down")}
                           disabled={idx === entries.length - 1}
                           aria-label="Move down"
-                          className="p-1 rounded hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-300 disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
+                          className="p-1 rounded hover:bg-white/[0.08] text-text-muted hover:text-text-secondary disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => onRemove(entry.id)}
                           aria-label="Delete entry"
-                          className="p-1 rounded hover:bg-red-500/15 text-zinc-500 hover:text-red-300 transition-[background-color,color] duration-200"
+                          className="p-1 rounded hover:bg-red-500/15 text-text-muted hover:text-red-300 transition-[background-color,color] duration-200"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -234,7 +234,7 @@ export function ResumeSectionCard<T extends Entry>({
                           }}
                           className="overflow-hidden"
                         >
-                          <div className="px-3 pb-3 pt-1 space-y-3 border-t border-white/[0.04]">
+                          <div className="px-3 pb-3 pt-1 space-y-3 border-t border-border-hair">
                             {fields.map((f) => {
                               const value = entry[f.key] ?? "";
                               const improveKey = `${entry.id}:${f.key}`;
@@ -253,7 +253,7 @@ export function ResumeSectionCard<T extends Entry>({
                                       }
                                       className="w-4 h-4 rounded border-white/20 bg-white/[0.03] accent-blue-500"
                                     />
-                                    <span className="text-xs text-zinc-300">{f.label}</span>
+                                    <span className="text-xs text-text-secondary">{f.label}</span>
                                   </label>
                                 );
                               }
@@ -261,14 +261,14 @@ export function ResumeSectionCard<T extends Entry>({
                                 return (
                                   <div key={f.key}>
                                     <div className="flex items-center justify-between mb-1">
-                                      <label className="block text-[11px] font-medium text-zinc-400">
+                                      <label className="block text-[11px] font-medium text-text-secondary">
                                         {f.label}
                                       </label>
                                       {f.improvable && onImprove && (
                                         <button
                                           onClick={() => onImprove(entry.id, f.key, String(value))}
                                           disabled={isImproving || !String(value).trim()}
-                                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-300 hover:text-blue-200 disabled:opacity-40 disabled:cursor-not-allowed transition-[color] duration-200"
+                                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent-text hover:text-blue-200 disabled:opacity-40 disabled:cursor-not-allowed transition-[color] duration-200"
                                         >
                                           <Sparkles className="w-3 h-3" />
                                           {isImproving ? "Improving..." : "Improve"}
@@ -289,7 +289,7 @@ export function ResumeSectionCard<T extends Entry>({
                               }
                               return (
                                 <div key={f.key}>
-                                  <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                                  <label className="block text-[11px] font-medium text-text-secondary mb-1">
                                     {f.label}
                                   </label>
                                   <input
@@ -307,8 +307,8 @@ export function ResumeSectionCard<T extends Entry>({
 
                             {/* Move to another section */}
                             {currentSection && onRecategorize && (
-                              <div className="pt-2 border-t border-white/[0.04]">
-                                <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                              <div className="pt-2 border-t border-border-hair">
+                                <label className="block text-[11px] font-medium text-text-secondary mb-1">
                                   Move to section
                                 </label>
                                 <select

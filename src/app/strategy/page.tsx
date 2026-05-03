@@ -23,7 +23,6 @@ import {
   AlertTriangle,
   GraduationCap,
 } from "lucide-react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import {
   StrategyCard,
@@ -181,7 +180,7 @@ export default function StrategyPage() {
   const isEmpty = !profile || !profile.hasPinnedSchools;
 
   return (
-    <AuroraBackground>
+    <>
       <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
         {/* ── Header ─────────────────────────────────────────────── */}
         <motion.div
@@ -190,16 +189,16 @@ export default function StrategyPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] border border-white/[0.08] px-3 py-1 mb-4">
-            <Compass className="w-3.5 h-3.5 text-blue-300" />
-            <span className="text-[11px] uppercase tracking-[0.15em] text-zinc-400 font-medium">
+          <div className="inline-flex items-center gap-2 rounded-full bg-bg-surface border border-border-strong px-3 py-1 mb-4">
+            <Compass className="w-3.5 h-3.5 text-accent-text" />
+            <span className="text-[11px] uppercase tracking-[0.15em] text-text-secondary font-medium">
               Strategy Engine
             </span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
             <span className="text-gradient">Your Strategic Briefing</span>
           </h1>
-          <p className="mt-3 text-zinc-400 max-w-xl mx-auto text-sm">
+          <p className="mt-3 text-text-secondary max-w-xl mx-auto text-sm">
             A live decision tool — not a static report. Pick a dream school, review your gaps, and check off action items as you improve.
           </p>
         </motion.div>
@@ -392,7 +391,7 @@ export default function StrategyPage() {
           </>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }
 
@@ -407,7 +406,7 @@ function SnapshotBody({
 }) {
   return (
     <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
+      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
         {result.profileSummary.body}
       </p>
 
@@ -451,11 +450,11 @@ function SnapshotBody({
       </div>
 
       {/* Competitiveness sub-section */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
-        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1">
+      <div className="rounded-xl bg-white/[0.02] border border-border-hair p-4">
+        <p className="text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-1">
           Competitiveness Positioning
         </p>
-        <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
+        <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
           {result.competitiveness.body}
         </p>
       </div>
@@ -490,7 +489,7 @@ function DreamSchoolBody({
   if (!ds && !dreamSchool) {
     return (
       <div className="pt-3">
-        <p className="text-[13px] text-zinc-400 leading-relaxed">
+        <p className="text-[13px] text-text-secondary leading-relaxed">
           Pick a dream school using the selector above to get a dedicated early-application recommendation with specific reasoning for that school.
         </p>
       </div>
@@ -500,8 +499,8 @@ function DreamSchoolBody({
   if (!ds && dreamSchool) {
     return (
       <div className="pt-3">
-        <p className="text-[13px] text-zinc-400 leading-relaxed mb-2">
-          You selected <span className="text-zinc-200 font-semibold">{dreamSchool}</span>, but this strategy was generated before that. Click <span className="text-zinc-200 font-semibold">Re-run</span> above to get the dedicated recommendation block.
+        <p className="text-[13px] text-text-secondary leading-relaxed mb-2">
+          You selected <span className="text-text-primary font-semibold">{dreamSchool}</span>, but this strategy was generated before that. Click <span className="text-text-primary font-semibold">Re-run</span> above to get the dedicated recommendation block.
         </p>
       </div>
     );
@@ -527,10 +526,10 @@ function DreamSchoolBody({
 
       {/* Reasoning */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1.5">
+        <p className="text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-1.5">
           Reasoning
         </p>
-        <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
+        <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
           {ds.reasoning}
         </p>
       </div>
@@ -543,7 +542,7 @@ function DreamSchoolBody({
             type="button"
             onClick={() => setLeversOpen((v) => !v)}
             aria-expanded={leversOpen}
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-blue-300 hover:text-blue-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-blue-200 transition-colors"
           >
             <Zap className="w-3.5 h-3.5" />
             What would change this recommendation?
@@ -561,9 +560,9 @@ function DreamSchoolBody({
                   {leverLines.map((lever, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed"
+                      className="flex items-start gap-2 text-[13px] text-text-secondary leading-relaxed"
                     >
-                      <span className="text-blue-300 mt-0.5 shrink-0">→</span>
+                      <span className="text-accent-text mt-0.5 shrink-0">→</span>
                       <span>{lever}</span>
                     </li>
                   ))}
@@ -626,7 +625,7 @@ function ActionVerdictBlock({
       className={`rounded-xl ${s.bg} ring-1 ${s.ring} p-4 flex items-center gap-3`}
     >
       <div
-        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-white/[0.04]`}
+        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-bg-surface`}
       >
         <Icon className={`w-5 h-5 ${s.text}`} strokeWidth={2} />
       </div>
@@ -636,7 +635,7 @@ function ActionVerdictBlock({
         >
           {s.eyebrow}
         </p>
-        <p className="text-[14px] text-zinc-100 font-semibold leading-snug">
+        <p className="text-[14px] text-text-primary font-semibold leading-snug">
           {label}
         </p>
       </div>
@@ -661,7 +660,7 @@ function ActionPlanCard({ result }: { result: StrategyResult }) {
       emphasize
       rightSlot={
         bullets.length > 0 ? (
-          <span className="inline-flex items-center text-[11px] font-mono tabular-nums text-blue-300">
+          <span className="inline-flex items-center text-[11px] font-mono tabular-nums text-accent-text">
             {completedCount}/{bullets.length}
           </span>
         ) : null
@@ -669,7 +668,7 @@ function ActionPlanCard({ result }: { result: StrategyResult }) {
     >
       <div className="space-y-4 pt-3">
         {result.actionPlan.body && (
-          <p className="text-[13px] text-zinc-400 leading-relaxed whitespace-pre-line">
+          <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
             {result.actionPlan.body}
           </p>
         )}
@@ -689,7 +688,7 @@ function SpikeBody({
   const [improveOpen, setImproveOpen] = useState(false);
   return (
     <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
+      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
         {result.spikeAnalysis.body}
       </p>
 
@@ -698,7 +697,7 @@ function SpikeBody({
         {analysis.spike.signals.map((s, i) => (
           <span
             key={i}
-            className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-white/[0.04] text-zinc-400"
+            className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-bg-surface text-text-secondary"
           >
             {s}
           </span>
@@ -711,7 +710,7 @@ function SpikeBody({
           type="button"
           onClick={() => setImproveOpen((v) => !v)}
           aria-expanded={improveOpen}
-          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-blue-300 hover:text-blue-200 transition-colors"
+          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-blue-200 transition-colors"
         >
           <Zap className="w-3.5 h-3.5" />
           How to sharpen this spike
@@ -725,23 +724,23 @@ function SpikeBody({
               transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
               className="overflow-hidden"
             >
-              <ul className="mt-3 space-y-2 text-[13px] text-zinc-300 leading-relaxed">
+              <ul className="mt-3 space-y-2 text-[13px] text-text-secondary leading-relaxed">
                 <li className="flex gap-2">
-                  <span className="text-blue-300 shrink-0">→</span>
+                  <span className="text-accent-text shrink-0">→</span>
                   <span>
                     Convert your strongest Tier-3 activity into a Tier-2 move via measurable
                     impact (numbers, growth, outcomes) — depth beats breadth.
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-300 shrink-0">→</span>
+                  <span className="text-accent-text shrink-0">→</span>
                   <span>
                     Thread your top 3 activities around one theme. A &quot;why&quot; statement
                     that connects them makes the spike legible to readers in 10 seconds.
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-300 shrink-0">→</span>
+                  <span className="text-accent-text shrink-0">→</span>
                   <span>
                     Add one external validation signal — a published piece, a selective
                     program acceptance, or a regional-level win within the spike category.
@@ -768,7 +767,7 @@ function GapsBody({
   return (
     <div className="space-y-3 pt-3">
       {result.weaknessDiagnosis.body && (
-        <p className="text-[13px] text-zinc-400 leading-relaxed whitespace-pre-line">
+        <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
           {result.weaknessDiagnosis.body}
         </p>
       )}
@@ -792,11 +791,11 @@ const CLASSIFICATION_COLORS: Record<Classification, string> = {
 
 const CLASSIFICATION_TEXT: Record<Classification, string> = {
   safety: "text-emerald-300",
-  likely: "text-blue-300",
+  likely: "text-accent-text",
   target: "text-amber-300",
   reach: "text-orange-300",
   unlikely: "text-red-300",
-  insufficient: "text-zinc-400",
+  insufficient: "text-text-secondary",
 };
 
 function SchoolListBody({
@@ -817,14 +816,14 @@ function SchoolListBody({
   ];
   return (
     <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
+      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
         {result.schoolListStrategy.body}
       </p>
 
       {/* Distribution bar — segments proportional to count */}
       {total > 0 && (
         <div>
-          <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
+          <div className="flex h-2 rounded-full overflow-hidden bg-bg-surface">
             {order.map((cat) => {
               const n = counts[cat];
               if (n === 0) return null;
@@ -853,8 +852,8 @@ function SchoolListBody({
                   onClick={() => setSelected((s) => (s === cat ? null : cat))}
                   className={`rounded-lg px-2 py-2 text-center transition-[background-color,border-color] duration-200 border ${
                     active
-                      ? "bg-white/[0.06] border-white/[0.16]"
-                      : "bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.04]"
+                      ? "bg-bg-surface border-white/[0.16]"
+                      : "bg-white/[0.02] border-border-hair hover:bg-bg-surface"
                   }`}
                 >
                   <p
@@ -862,7 +861,7 @@ function SchoolListBody({
                   >
                     {n}
                   </p>
-                  <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-500 mt-0.5">
+                  <p className="text-[9px] uppercase tracking-[0.12em] text-text-muted mt-0.5">
                     {cat}
                   </p>
                 </button>
@@ -880,7 +879,7 @@ function SchoolListBody({
                 transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
                 className="overflow-hidden mt-3"
               >
-                <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-2">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-2">
                   {counts[selected]} {selected} school{counts[selected] === 1 ? "" : "s"}
                 </p>
                 <SchoolsInClassificationNote classification={selected} />
@@ -925,7 +924,7 @@ function SchoolsInClassificationNote({
   }, []);
   void classification;
   return (
-    <p className="text-[12px] text-zinc-400 leading-relaxed">
+    <p className="text-[12px] text-text-secondary leading-relaxed">
       Pinned schools: {names.length > 0 ? names.join(", ") : "—"}
     </p>
   );
@@ -934,7 +933,7 @@ function SchoolsInClassificationNote({
 function ApplicationStrategyBody({ result }: { result: StrategyResult }) {
   return (
     <div className="space-y-3 pt-3">
-      <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
+      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
         {result.applicationStrategy.body}
       </p>
       {result.applicationStrategy.bullets &&
@@ -943,9 +942,9 @@ function ApplicationStrategyBody({ result }: { result: StrategyResult }) {
             {result.applicationStrategy.bullets.map((b, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed"
+                className="flex items-start gap-2 text-[13px] text-text-secondary leading-relaxed"
               >
-                <span className="text-zinc-500 mt-0.5 shrink-0">→</span>
+                <span className="text-text-muted mt-0.5 shrink-0">→</span>
                 <span>{b}</span>
               </li>
             ))}
@@ -982,7 +981,7 @@ function StatChip({
         onClick={() => setOpen((v) => !v)}
         className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full ring-1 ${toneClass} hover:brightness-125 transition-[filter] duration-200`}
       >
-        <span className="text-zinc-500">{label}</span>
+        <span className="text-text-muted">{label}</span>
         <span className="font-semibold">{value}</span>
         <HelpCircle className="w-3 h-3 opacity-70" />
       </button>
@@ -993,9 +992,9 @@ function StatChip({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 top-full mt-2 w-72 z-10 rounded-lg bg-[#0c0c1a] border border-white/[0.1] p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+            className="absolute left-0 top-full mt-2 w-72 z-10 rounded-lg bg-[#0c0c1a] border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
           >
-            <p className="text-[11px] text-zinc-300 leading-relaxed">{tooltip}</p>
+            <p className="text-[11px] text-text-secondary leading-relaxed">{tooltip}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1020,7 +1019,7 @@ function GenerateBar({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
       <div className="text-center sm:text-left">
         {generatedAt && (
-          <p className="text-[11px] text-zinc-500">
+          <p className="text-[11px] text-text-muted">
             Last updated {new Date(generatedAt).toLocaleString()}
           </p>
         )}
@@ -1065,15 +1064,15 @@ function FooterBar({
   loading: boolean;
 }) {
   return (
-    <div className="mt-6 rounded-2xl bg-[#0c0c1a]/60 border border-white/[0.05] p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p className="text-[11px] text-zinc-500">
+    <div className="mt-6 rounded-2xl bg-bg-surface border border-border-hair p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p className="text-[11px] text-text-muted">
         Last updated {new Date(generatedAt).toLocaleString()} · Re-run after improvements to see how the briefing changes.
       </p>
       <button
         type="button"
         onClick={onRerun}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface hover:bg-white/[0.08] text-text-primary px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40"
       >
         <RefreshCw className="w-3.5 h-3.5" />
         Re-run strategy
@@ -1084,14 +1083,14 @@ function FooterBar({
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-10 text-center">
-      <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-5">
-        <Bookmark className="w-6 h-6 text-blue-300" />
+    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-10 text-center">
+      <div className="w-14 h-14 mx-auto rounded-2xl bg-accent-soft border border-accent-line flex items-center justify-center mb-5">
+        <Bookmark className="w-6 h-6 text-accent-text" />
       </div>
-      <h2 className="text-xl font-semibold text-zinc-100 mb-2">
+      <h2 className="text-xl font-semibold text-text-primary mb-2">
         Pin your target schools first
       </h2>
-      <p className="text-sm text-zinc-400 max-w-md mx-auto leading-relaxed mb-6">
+      <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed mb-6">
         The Strategy Engine analyzes <em>your</em> pinned college list — not a generic database.
         Head to the College List Builder, find the schools you&apos;re actually considering, and
         pin them with the bookmark icon.
@@ -1133,12 +1132,12 @@ function MissingDataBanner({ items }: { items: readonly MissingDataItem[] }) {
                   aria-label={`${item.impact} impact`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-zinc-200 font-medium">{item.label}</p>
-                  <p className="text-zinc-500 text-xs">{item.unlockDescription}</p>
+                  <p className="text-text-primary font-medium">{item.label}</p>
+                  <p className="text-text-muted text-xs">{item.unlockDescription}</p>
                 </div>
                 <Link
                   href={item.ctaHref}
-                  className="text-xs text-blue-300 hover:text-blue-200 font-semibold whitespace-nowrap shrink-0 mt-0.5"
+                  className="text-xs text-accent-text hover:text-blue-200 font-semibold whitespace-nowrap shrink-0 mt-0.5"
                 >
                   Open →
                 </Link>
@@ -1153,9 +1152,9 @@ function MissingDataBanner({ items }: { items: readonly MissingDataItem[] }) {
 
 function PreGenerationHint({ hasDreamSchool }: { hasDreamSchool: boolean }) {
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-8 text-center">
-      <p className="text-sm text-zinc-400 max-w-md mx-auto leading-relaxed">
-        Click <span className="text-zinc-200 font-semibold">Generate Strategy</span> to run the
+    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-8 text-center">
+      <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
+        Click <span className="text-text-primary font-semibold">Generate Strategy</span> to run the
         analyzers and produce your consultant briefing.
         {hasDreamSchool
           ? " You'll get a dedicated recommendation block for your dream school."
@@ -1188,25 +1187,25 @@ function MajorRecommendationsBody({
 
   return (
     <div className="space-y-5 pt-3">
-      <p className="text-[13px] text-zinc-400 leading-relaxed">
+      <p className="text-[13px] text-text-secondary leading-relaxed">
         Picks tailored to{" "}
-        <span className="text-zinc-200">
+        <span className="text-text-primary">
           {recs.intendedMajor || recs.intendedInterest}
         </span>
         {recs.intendedMajor && recs.intendedInterest && (
           <>
             {" "}(plus your interest in{" "}
-            <span className="text-zinc-200">{recs.intendedInterest}</span>)
+            <span className="text-text-primary">{recs.intendedInterest}</span>)
           </>
         )}
         .
       </p>
 
       {totalPinned === 0 && recs.toConsider.length === 0 && (
-        <div className="rounded-xl bg-[#0c0c1a]/60 border border-white/[0.06] p-4">
-          <p className="text-[13px] text-zinc-400 leading-relaxed">
+        <div className="rounded-xl bg-bg-surface border border-border-hair p-4">
+          <p className="text-[13px] text-text-secondary leading-relaxed">
             None of your pinned schools stand out for{" "}
-            <span className="text-zinc-200">
+            <span className="text-text-primary">
               {recs.intendedMajor || recs.intendedInterest}
             </span>
             , and we didn&apos;t find strong alternatives in the full list. Try a
@@ -1217,7 +1216,7 @@ function MajorRecommendationsBody({
 
       {totalPinned > 0 && (
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-secondary mb-3">
             From your pinned list
           </h4>
           <div className="space-y-4">
@@ -1230,7 +1229,7 @@ function MajorRecommendationsBody({
 
       {recs.toConsider.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-secondary mb-3">
             Consider adding
           </h4>
           <div className="space-y-2">
@@ -1257,7 +1256,7 @@ function MajorRecommendationsBody({
           );
           onMajorSaved();
         }}
-        className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="text-[11px] text-text-muted hover:text-text-secondary transition-colors"
       >
         Change major / interest
       </button>
@@ -1282,12 +1281,12 @@ function RankedPinnedDisclosure({
   const buttonLabel = hasQuery ? "See all pins ranked" : "Pinned schools by classification";
 
   return (
-    <div className="border-t border-white/[0.04] pt-3">
+    <div className="border-t border-border-hair pt-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-zinc-300 hover:text-zinc-100 transition-colors"
+        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-text-secondary hover:text-text-primary transition-colors"
       >
         {buttonLabel}
         <ChevronDown
@@ -1303,9 +1302,9 @@ function RankedPinnedDisclosure({
             transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
-            <div className="mt-3 rounded-xl border border-white/[0.04] divide-y divide-white/[0.04]">
+            <div className="mt-3 rounded-xl border border-border-hair divide-y divide-border-hair">
               {/* Header row */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold">
                 <span>School</span>
                 <span className="w-16 text-right">Tier</span>
                 <span className="w-12 text-right">Chance</span>
@@ -1327,9 +1326,9 @@ function RankedPinnedRow({ item }: { item: ClassifiedCollege }) {
   return (
     <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 items-baseline">
       <div className="min-w-0">
-        <p className="text-[13px] text-zinc-200 font-semibold truncate">{item.college.name}</p>
+        <p className="text-[13px] text-text-primary font-semibold truncate">{item.college.name}</p>
         {reason && (
-          <p className="text-[11px] text-zinc-500 leading-snug truncate">{reason}</p>
+          <p className="text-[11px] text-text-muted leading-snug truncate">{reason}</p>
         )}
       </div>
       <span
@@ -1337,10 +1336,10 @@ function RankedPinnedRow({ item }: { item: ClassifiedCollege }) {
       >
         {item.classification}
       </span>
-      <span className="w-12 text-right text-[12px] font-mono tabular-nums text-zinc-300">
+      <span className="w-12 text-right text-[12px] font-mono tabular-nums text-text-secondary">
         {item.classification === "insufficient" ? "—" : `${item.chance.mid}%`}
       </span>
-      <span className="w-16 text-right text-[12px] font-mono tabular-nums text-zinc-300">
+      <span className="w-16 text-right text-[12px] font-mono tabular-nums text-text-secondary">
         {item.majorFitScore != null ? item.majorFitScore : "—"}
       </span>
     </div>
@@ -1362,7 +1361,7 @@ function RecTierRow({
         <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${color} w-16 shrink-0 pt-1`}>
           {label}
         </span>
-        <p className="text-[12px] text-zinc-600 italic pt-1">
+        <p className="text-[12px] text-text-faint italic pt-1">
           None pinned in this tier &mdash; add one.
         </p>
       </div>
@@ -1388,13 +1387,13 @@ function RecCard({ item }: { item: ClassifiedCollege }) {
   const matchLabel = match === "strong"
     ? { text: "Strong fit",    color: "text-emerald-400" }
     : match === "decent"
-    ? { text: "Adjacent fit",  color: "text-zinc-500" }
+    ? { text: "Adjacent fit",  color: "text-text-muted" }
     : null;
   return (
-    <div className="rounded-lg bg-[#0c0c1a]/60 border border-white/[0.04] px-3 py-2 hover:border-white/[0.12] transition-colors">
+    <div className="rounded-lg bg-bg-surface border border-border-hair px-3 py-2 hover:border-white/[0.12] transition-colors">
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-[13px] font-semibold text-zinc-200 truncate">{c.name}</p>
-        <span className="text-[11px] font-mono tabular-nums text-zinc-500 shrink-0">
+        <p className="text-[13px] font-semibold text-text-primary truncate">{c.name}</p>
+        <span className="text-[11px] font-mono tabular-nums text-text-muted shrink-0">
           {c.acceptanceRate}%
         </span>
       </div>
@@ -1402,7 +1401,7 @@ function RecCard({ item }: { item: ClassifiedCollege }) {
           generic "Strong fit" label. Falls back to the label when no
           rationale fragments could be assembled. */}
       {item.matchReason ? (
-        <p className="text-[11px] mt-0.5 text-zinc-400 leading-snug">
+        <p className="text-[11px] mt-0.5 text-text-secondary leading-snug">
           {item.matchReason}
         </p>
       ) : (
@@ -1450,7 +1449,7 @@ function DeadlinesCard({
     >
       <div className="pt-3">
         {!hasAny ? (
-          <p className="text-[13px] text-zinc-400 leading-relaxed">
+          <p className="text-[13px] text-text-secondary leading-relaxed">
             No deadlines in your pinned list. Set application plans on your pinned
             schools to see them here.
           </p>
@@ -1469,20 +1468,20 @@ function DeadlinesCard({
 function DeadlineRow({ entry }: { entry: DeadlineEntry }) {
   const colorClass =
     entry.isRolling
-      ? "text-zinc-500"
+      ? "text-text-muted"
       : entry.daysAway <= 14
       ? "text-red-400"
       : entry.daysAway <= 30
       ? "text-amber-400"
-      : "text-zinc-400";
+      : "text-text-secondary";
 
   return (
-    <li className="flex items-baseline justify-between gap-3 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2">
+    <li className="flex items-baseline justify-between gap-3 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-2">
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] text-zinc-200 font-semibold truncate">
+        <p className="text-[13px] text-text-primary font-semibold truncate">
           {entry.schoolName}
         </p>
-        <p className="text-[11px] text-zinc-500">
+        <p className="text-[11px] text-text-muted">
           {APPLICATION_PLAN_LABELS[entry.plan]}
         </p>
       </div>
@@ -1535,7 +1534,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
 
   return (
     <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-zinc-400 leading-relaxed">
+      <p className="text-[13px] text-text-secondary leading-relaxed">
         Tell us what you want to study and we&apos;ll surface the schools in your
         pinned list (and a few outside it) that are strong in that area. This
         doesn&apos;t narrow your list elsewhere &mdash; it only adds this one
@@ -1544,13 +1543,13 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-text-secondary mb-1">
             Major
           </label>
           <MajorSelect value={major} onChange={setMajor} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-text-secondary mb-1">
             Specific interest (optional)
           </label>
           <input
@@ -1558,7 +1557,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
             placeholder="e.g. sustainability, quant trading"
             value={interest}
             onChange={(e) => setInterest(e.target.value)}
-            className="w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none"
+            className="w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none"
           />
         </div>
       </div>
@@ -1567,7 +1566,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
         type="button"
         onClick={save}
         disabled={!canSave}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-white/[0.04] disabled:text-zinc-600 text-blue-200 px-4 py-2 text-xs font-semibold transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/30 disabled:bg-bg-surface disabled:text-text-faint text-blue-200 px-4 py-2 text-xs font-semibold transition-colors"
       >
         Save and show picks
         <ArrowRight className="w-3.5 h-3.5" />

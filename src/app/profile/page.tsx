@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { useProfile } from "@/hooks/useProfile";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
@@ -11,12 +10,12 @@ import { MajorSelect } from "@/components/MajorSelect";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
-const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
 function SourceBadge({ source }: { source: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] text-blue-400/70 bg-blue-500/10 border border-blue-500/20 rounded-full px-2 py-0.5">
+    <span className="inline-flex items-center gap-1 text-[10px] text-accent-text/70 bg-accent-soft border border-accent-line rounded-full px-2 py-0.5">
       <span className="w-1 h-1 rounded-full bg-blue-400" />
       {source}
     </span>
@@ -29,11 +28,11 @@ export default function ProfilePage() {
 
   if (!loaded) {
     return (
-      <AuroraBackground>
+      <>
         <div className="min-h-dvh flex items-center justify-center">
           <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
         </div>
-      </AuroraBackground>
+      </>
     );
   }
 
@@ -69,31 +68,31 @@ export default function ProfilePage() {
       : "Start with the basics — GPA and a test score unlock the most tools.";
 
   return (
-    <AuroraBackground>
+    <>
       <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             <span className="text-gradient">Your Profile</span>
           </h1>
-          <p className="text-zinc-400 max-w-xl text-lg leading-relaxed">
+          <p className="text-text-secondary max-w-xl text-lg leading-relaxed">
             Your scores and stats auto-fill from the tools you&apos;ve used. Edit anything here — it will be used across all tools.
           </p>
         </div>
 
         {/* Completeness Meter */}
         <ScrollReveal delay={0.03}>
-          <div className="mb-8 rounded-2xl bg-[#0f0f1c] border border-white/[0.08] p-5 sm:p-6">
+          <div className="mb-8 rounded-2xl bg-[#0f0f1c] border border-border-strong p-5 sm:p-6">
             <div className="flex items-baseline justify-between mb-3">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500 font-medium mb-1">Profile completeness</p>
-                <p className="text-sm text-zinc-200">{completeMessage}</p>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted font-medium mb-1">Profile completeness</p>
+                <p className="text-sm text-text-primary">{completeMessage}</p>
               </div>
               <p className="font-mono tabular-nums text-2xl font-semibold text-white leading-none">
-                {completed}<span className="text-zinc-600">/{total}</span>
+                {completed}<span className="text-text-faint">/{total}</span>
               </p>
             </div>
-            <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
+            <div className="h-1.5 rounded-full bg-bg-surface overflow-hidden">
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400"
                 initial={{ width: 0 }}
@@ -114,8 +113,8 @@ export default function ProfilePage() {
                   }}
                   className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
                     s.done
-                      ? "bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/25"
-                      : "bg-white/[0.03] text-zinc-600 ring-1 ring-white/[0.05]"
+                      ? "bg-accent-soft text-accent-text ring-1 ring-blue-500/25"
+                      : "bg-white/[0.03] text-text-faint ring-1 ring-white/[0.05]"
                   }`}
                 >
                   {s.done ? "✓ " : ""}{s.key}
@@ -130,7 +129,7 @@ export default function ProfilePage() {
           <div className="flex justify-end mb-6">
             <button
               onClick={resetToComputed}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 border border-white/[0.06] rounded-lg px-3 py-1.5 hover:bg-white/[0.04] transition-[background-color,color] duration-200"
+              className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary border border-border-hair rounded-lg px-3 py-1.5 hover:bg-bg-surface transition-[background-color,color] duration-200"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.87"/></svg>
               Reset to calculated values
@@ -142,8 +141,8 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.08}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Basic Info</h2>
-              <span className="text-[10px] text-zinc-500">Used in Resume Helper</span>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Basic Info</h2>
+              <span className="text-[10px] text-text-muted">Used in Resume Helper</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -217,10 +216,10 @@ export default function ProfilePage() {
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">
+                <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">
                   Academic Interests
                 </h2>
-                <p className="text-[10px] text-zinc-600 mt-0.5">
+                <p className="text-[10px] text-text-faint mt-0.5">
                   Used to badge strong-fit schools, surface major-tailored picks, and tune chance estimates.
                 </p>
               </div>
@@ -237,7 +236,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label className={labelClass}>
-                  Specific interest <span className="text-zinc-600">(optional)</span>
+                  Specific interest <span className="text-text-faint">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -246,7 +245,7 @@ export default function ProfilePage() {
                   onChange={(e) => updateField("intendedInterest", e.target.value)}
                   className={inputClass}
                 />
-                <p className="mt-1.5 text-[10px] text-zinc-500">
+                <p className="mt-1.5 text-[10px] text-text-muted">
                   A niche or theme inside your major. Helps the matcher find adjacent-fit schools.
                 </p>
               </div>
@@ -258,7 +257,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.1}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">GPA</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">GPA</h2>
               {computed?.gpaUW && <SourceBadge source="GPA Calculator" />}
             </div>
 
@@ -326,7 +325,7 @@ export default function ProfilePage() {
                 <option value="limited">Limited offerings (a few APs)</option>
                 <option value="none">School doesn&rsquo;t offer AP/IB</option>
               </select>
-              <p className="mt-1 text-[10px] text-zinc-500 leading-relaxed">
+              <p className="mt-1 text-[10px] text-text-muted leading-relaxed">
                 The chance model uses this to interpret your coursework. &lsquo;None&rsquo;
                 waives the rigor signal entirely (no penalty for not having APs).
               </p>
@@ -347,9 +346,9 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.15}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">SAT</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">SAT</h2>
               {satComposite !== null && (
-                <span className="text-sm font-mono text-zinc-300">
+                <span className="text-sm font-mono text-text-secondary">
                   Composite: <span className="text-white font-bold">{satComposite}</span>
                 </span>
               )}
@@ -389,9 +388,9 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.2}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">ACT</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">ACT</h2>
               {actComposite !== null && (
-                <span className="text-sm font-mono text-zinc-300">
+                <span className="text-sm font-mono text-text-secondary">
                   Composite: <span className="text-white font-bold">{actComposite}</span>
                 </span>
               )}
@@ -453,7 +452,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.25}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Essay Scores</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Essay Scores</h2>
               {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -490,7 +489,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.3}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">Extracurriculars</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Extracurriculars</h2>
               {computed?.ecBand && <SourceBadge source="EC Evaluator" />}
             </div>
             <div>
@@ -507,7 +506,7 @@ export default function ProfilePage() {
                 <option value="strong">Strong — clear theme + impact</option>
                 <option value="exceptional">Exceptional — national/major impact</option>
               </select>
-              <p className="mt-1.5 text-[10px] text-zinc-500">
+              <p className="mt-1.5 text-[10px] text-text-muted">
                 Auto-fills from EC Evaluator. You can also set this manually.
               </p>
             </div>
@@ -516,11 +515,11 @@ export default function ProfilePage() {
                 in the chance model and unlocks the holistic-elite distinguished
                 maxed multiplier (3.5×). Check only what's true; these are
                 tier-defining signals (not "I led a club"). */}
-            <div className="mt-5 pt-5 border-t border-white/[0.06]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-400 mb-2">
+            <div className="mt-5 pt-5 border-t border-border-hair">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary mb-2">
                 Distinguished signals
               </div>
-              <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
+              <p className="text-[11px] text-text-muted mb-3 leading-relaxed">
                 Tier-defining accomplishments only. Each box, when checked, promotes your EC band to
                 &ldquo;exceptional&rdquo; and unlocks the holistic-elite distinguished-maxed multiplier
                 (top schools).
@@ -554,8 +553,8 @@ export default function ProfilePage() {
         {/* Summary Card */}
         <ScrollReveal delay={0.35}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
-            <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider mb-4">Auto-Fill Summary</h2>
-            <p className="text-xs text-zinc-500 mb-4">
+            <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-4">Auto-Fill Summary</h2>
+            <p className="text-xs text-text-muted mb-4">
               These values auto-fill into the College List Builder and Chance Calculator.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -580,7 +579,7 @@ export default function ProfilePage() {
           </div>
         </ScrollReveal>
       </main>
-    </AuroraBackground>
+    </>
   );
 }
 
@@ -612,10 +611,10 @@ function AdvancedCourseworkSection({
   if (available === "none") {
     return (
       <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
-        <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider mb-2">
+        <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-2">
           Advanced Coursework
         </h2>
-        <p className="text-[12px] text-zinc-500 leading-relaxed">
+        <p className="text-[12px] text-text-muted leading-relaxed">
           You marked your school as not offering AP/IB. The chance model
           waives the rigor requirement — no penalty for not having scores.
         </p>
@@ -627,10 +626,10 @@ function AdvancedCourseworkSection({
     <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">
             Advanced Coursework
           </h2>
-          <p className="text-[10px] text-zinc-600 mt-0.5">
+          <p className="text-[10px] text-text-faint mt-0.5">
             AP / IB-HL / IB-SL courses with scores. DE excluded. The chance
             model derives a 6-tier rigor signal from these.
           </p>
@@ -638,7 +637,7 @@ function AdvancedCourseworkSection({
         {!expanded && (
           <button
             onClick={() => setExpanded(true)}
-            className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-accent-text hover:text-accent-text transition-colors"
           >
             <Plus className="w-3.5 h-3.5" /> Add
           </button>
@@ -652,33 +651,33 @@ function AdvancedCourseworkSection({
               {rows.map((row, i) => {
                 const tone =
                   row.score == null
-                    ? "text-zinc-500"
+                    ? "text-text-muted"
                     : row.type === "AP"
                       ? row.score >= 4
                         ? "text-emerald-400"
                         : row.score === 3
                           ? "text-amber-400"
-                          : "text-zinc-500"
+                          : "text-text-muted"
                       : row.score >= 6
                         ? "text-emerald-400"
                         : row.score >= 4
                           ? "text-amber-400"
-                          : "text-zinc-500";
+                          : "text-text-muted";
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5"
+                    className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-1.5"
                   >
-                    <span className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 w-16">
+                    <span className="text-[10px] uppercase tracking-[0.12em] text-text-muted w-16">
                       {row.type}
                     </span>
-                    <span className="flex-1 text-xs text-zinc-300 truncate">{row.name}</span>
+                    <span className="flex-1 text-xs text-text-secondary truncate">{row.name}</span>
                     <span className={`text-xs font-bold ${tone}`}>
                       {row.score == null ? "in progress" : row.score}
                     </span>
                     <button
                       onClick={() => removeRow(i)}
-                      className="text-zinc-600 hover:text-red-400 transition-colors p-0.5"
+                      className="text-text-faint hover:text-red-400 transition-colors p-0.5"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -728,7 +727,7 @@ function AdvancedCourseworkSection({
               Add
             </button>
           </div>
-          <p className="mt-2 text-[10px] text-zinc-600 leading-relaxed">
+          <p className="mt-2 text-[10px] text-text-faint leading-relaxed">
             Score optional — leave blank for in-progress courses.
           </p>
         </>
@@ -747,12 +746,12 @@ function FlagCheckbox({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-start gap-3 cursor-pointer text-[12px] text-zinc-300 hover:text-zinc-100 transition-colors">
+    <label className="flex items-start gap-3 cursor-pointer text-[12px] text-text-secondary hover:text-text-primary transition-colors">
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/[0.04] text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0"
+        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-bg-surface text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0"
       />
       <span className="leading-snug">{label}</span>
     </label>
@@ -763,8 +762,8 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   const isEmpty = value === "—";
   return (
     <div className="text-center">
-      <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1">{label}</p>
-      <p className={`text-lg font-bold font-mono ${isEmpty ? "text-zinc-700" : "text-zinc-200"}`}>{value}</p>
+      <p className="text-[10px] text-text-faint uppercase tracking-wider mb-1">{label}</p>
+      <p className={`text-lg font-bold font-mono ${isEmpty ? "text-zinc-700" : "text-text-primary"}`}>{value}</p>
     </div>
   );
 }
@@ -784,7 +783,7 @@ function GpaScaleNote() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="mt-0.5 text-blue-400 shrink-0"
+        className="mt-0.5 text-accent-text shrink-0"
         aria-hidden="true"
       >
         <rect x="4" y="2" width="16" height="20" rx="2" />
@@ -802,7 +801,7 @@ function GpaScaleNote() {
         </p>
         <a
           href="/gpa"
-          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-300 hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-text hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
         >
           Open GPA Calculator
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

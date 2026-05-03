@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { AuroraBackground } from "@/components/AuroraBackground";
-
 export const metadata: Metadata = {
   title: "Methodology",
   description:
@@ -9,13 +7,13 @@ export const metadata: Metadata = {
 
 export default function MethodologyPage() {
   return (
-    <AuroraBackground>
-      <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] text-zinc-200">
+    <>
+      <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] text-text-primary">
         <header className="mb-10">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             <span className="text-gradient">How AdmitEdge Calculates Your Chances</span>
           </h1>
-          <p className="text-zinc-400 text-base leading-relaxed max-w-2xl">
+          <p className="text-text-secondary text-base leading-relaxed max-w-2xl">
             AdmitEdge uses a multi-input chance model that combines Academic Index for stats, an
             LLM-classified extracurricular tier, essay quality (when graded), application plan leverage,
             and school-specific selectivity caps. Multipliers are calibrated against published research.
@@ -28,12 +26,12 @@ export default function MethodologyPage() {
             score. This is the same formula Ivy League schools use internally for admissions
             evaluation.
           </p>
-          <pre className="mt-3 rounded-lg bg-[#0a0a14]/70 border border-white/[0.06] px-4 py-3 text-[12px] font-mono text-zinc-300 overflow-x-auto">
+          <pre className="mt-3 rounded-lg bg-[#0a0a14]/70 border border-border-hair px-4 py-3 text-[12px] font-mono text-text-secondary overflow-x-auto">
 {`weightedGPAComponent = (weightedGPA / 5.0) × 80
 testComponent        = ((bestSAT − 400) / 1200) × 80
 AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
           </pre>
-          <p className="mt-3 text-[13px] text-zinc-400">
+          <p className="mt-3 text-[13px] text-text-secondary">
             Source: Hernandez, <em>A is for Admission</em> (1997), modernized post-2021 SAT II
             discontinuation by Top Tier Admissions. ACT scores are converted to SAT equivalents using
             the College Board / ACT joint concordance table.
@@ -56,7 +54,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
               ["< 200", "Below p25", "0.2×", "0.5×"],
             ]}
           />
-          <p className="mt-3 text-[13px] text-zinc-400">
+          <p className="mt-3 text-[13px] text-text-secondary">
             Our top-quartile multiplier of 3.0× is conservative-side defensible against this empirical
             anchor.
           </p>
@@ -117,7 +115,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             scores predict outcomes ~4× stronger than GPA at Ivy-Plus colleges, with continuous
             gradient through top deciles (not a step function past threshold).
           </p>
-          <p className="mt-3 text-[13px] text-zinc-400">
+          <p className="mt-3 text-[13px] text-text-secondary">
             Source: Friedman, Sacerdote, Vegelius, Yagan (2025), NBER Working Paper 33570.
           </p>
         </Section>
@@ -133,7 +131,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
 
         <Section heading="What our model doesn't capture">
           <p>Honest about limitations. Estimates may be inaccurate for:</p>
-          <ul className="mt-2 list-disc pl-5 space-y-1 text-[14px] text-zinc-400 leading-relaxed">
+          <ul className="mt-2 list-disc pl-5 space-y-1 text-[14px] text-text-secondary leading-relaxed">
             <li>State residency (e.g. Florida residents at UF show lower than reality)</li>
             <li>Program-specific admit rates (Penn M&amp;T, Cornell colleges, Berkeley EECS)</li>
             <li>Demonstrated interest beyond yield-protection flagging</li>
@@ -141,17 +139,17 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             <li>Geographic / institutional priorities</li>
             <li>Test-optional vs test-required nuance per school</li>
           </ul>
-          <p className="mt-3 text-[13px] text-zinc-400">
+          <p className="mt-3 text-[13px] text-text-secondary">
             Use our chance estimate as a strategic framework, not a prediction. Your essays,
             recommendations, and specific application context matter as much as the numbers.
           </p>
         </Section>
 
         <Section heading="Sources">
-          <ul className="list-disc pl-5 space-y-1.5 text-[13px] text-zinc-300 leading-relaxed">
+          <ul className="list-disc pl-5 space-y-1.5 text-[13px] text-text-secondary leading-relaxed">
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-blue-300"
+                className="underline decoration-blue-500/40 hover:text-accent-text"
                 href="http://humcap.uchicago.edu/RePEc/hka/wpaper/Arcidiacono_Kinsler_Ransom_2019_recruit-to-reject.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -161,7 +159,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             </li>
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-blue-300"
+                className="underline decoration-blue-500/40 hover:text-accent-text"
                 href="https://web.stanford.edu/~jdlevin/Papers/EarlyAdmissions.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -171,7 +169,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             </li>
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-blue-300"
+                className="underline decoration-blue-500/40 hover:text-accent-text"
                 href="https://www.nber.org/papers/w33570"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -181,7 +179,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             </li>
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-blue-300"
+                className="underline decoration-blue-500/40 hover:text-accent-text"
                 href="https://opportunityinsights.org/paper/collegeadmissions/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -194,47 +192,47 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
           </ul>
         </Section>
 
-        <p className="mt-12 text-[12px] text-zinc-600 leading-relaxed">
+        <p className="mt-12 text-[12px] text-text-faint leading-relaxed">
           Have a correction or a peer-reviewed source we should cite? Reach out — we update this page
           as new empirical research lands.
         </p>
       </main>
-    </AuroraBackground>
+    </>
   );
 }
 
 function Section({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <section className="mb-10 sm:mb-12">
-      <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100 mb-3">
+      <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary mb-3">
         {heading}
       </h2>
-      <div className="text-[14px] text-zinc-300 leading-relaxed space-y-2">{children}</div>
+      <div className="text-[14px] text-text-secondary leading-relaxed space-y-2">{children}</div>
     </section>
   );
 }
 
 function Table({ headers, rows }: { headers: readonly string[]; rows: readonly (readonly string[])[] }) {
   return (
-    <div className="mt-3 overflow-x-auto rounded-lg border border-white/[0.06]">
+    <div className="mt-3 overflow-x-auto rounded-lg border border-border-hair">
       <table className="w-full text-[13px]">
         <thead className="bg-white/[0.03]">
           <tr>
             {headers.map((h, i) => (
               <th
                 key={i}
-                className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-400"
+                className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-text-secondary"
               >
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.04]">
+        <tbody className="divide-y divide-border-hair">
           {rows.map((row, i) => (
             <tr key={i} className="hover:bg-white/[0.02]">
               {row.map((cell, j) => (
-                <td key={j} className="px-3 py-2 text-zinc-300 font-mono tabular-nums">
+                <td key={j} className="px-3 py-2 text-text-secondary font-mono tabular-nums">
                   {cell}
                 </td>
               ))}

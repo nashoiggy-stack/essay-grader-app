@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { EssayInput } from "@/components/EssayInput";
@@ -107,7 +106,7 @@ export default function Home() {
   };
 
   return (
-    <AuroraBackground>
+    <>
       {/* Essay History Sidebar */}
       <EssayHistorySidebar
         essays={history.essays}
@@ -128,7 +127,7 @@ export default function Home() {
               <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1] mb-5">
                 <span className="text-gradient">{APP_CONFIG.title}</span>
               </h1>
-              <p className="text-zinc-400 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
+              <p className="text-text-secondary max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
                 {APP_CONFIG.subtitle}
               </p>
             </div>
@@ -137,7 +136,7 @@ export default function Home() {
           {/* Rubric overview inside the 3D card */}
           <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
             <div>
-              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
+              <h3 className="text-xs font-bold text-accent-text uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
               <div className="space-y-2">
                 {[
                   { name: "Authenticity", desc: "Your real voice — not a formal essay voice" },
@@ -151,16 +150,16 @@ export default function Home() {
                   <div key={c.name} className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                     <div>
-                      <span className="text-xs text-zinc-300 font-semibold">{c.name}</span>
-                      <span className="text-[10px] text-zinc-600 ml-1.5">{c.desc}</span>
+                      <span className="text-xs text-text-secondary font-semibold">{c.name}</span>
+                      <span className="text-[10px] text-text-faint ml-1.5">{c.desc}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="border-t border-white/[0.06] pt-3">
-              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
+            <div className="border-t border-border-hair pt-3">
+              <h3 className="text-xs font-bold text-accent-text uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
                   { name: "Vulnerability", desc: "Real fear or doubt, handled with maturity" },
@@ -173,8 +172,8 @@ export default function Home() {
                   <div key={c.name} className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                     <div>
-                      <span className="text-[11px] text-zinc-300 font-semibold">{c.name}</span>
-                      <p className="text-[9px] text-zinc-600">{c.desc}</p>
+                      <span className="text-[11px] text-text-secondary font-semibold">{c.name}</span>
+                      <p className="text-[9px] text-text-faint">{c.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -220,7 +219,7 @@ export default function Home() {
               {/* Divider + Save button */}
               <div className="flex items-center gap-4">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                <span className="text-xs text-zinc-500 uppercase tracking-widest">Results</span>
+                <span className="text-xs text-text-muted uppercase tracking-widest">Results</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
                 <motion.button
                   onClick={handleSave}
@@ -229,7 +228,7 @@ export default function Home() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                     saveFlash
                       ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                      : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
+                      : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06]"
                   }`}
                 >
                   {saveFlash ? (
@@ -248,7 +247,7 @@ export default function Home() {
                   onClick={handleExport}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 bg-[#0c0c1a]/90 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06] transition-[background-color,color,box-shadow] duration-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary bg-bg-inset hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06] transition-[background-color,color,box-shadow] duration-200"
                   title="Download grade report as Markdown"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -269,8 +268,8 @@ export default function Home() {
               <ScrollReveal delay={0.15}>
                 <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
                 <div className="glass rounded-2xl p-6 sm:p-8">
-                  <h3 className="text-lg font-bold text-zinc-200 mb-1">Inline Suggestions</h3>
-                  <p className="text-sm text-zinc-500 mb-5">
+                  <h3 className="text-lg font-bold text-text-primary mb-1">Inline Suggestions</h3>
+                  <p className="text-sm text-text-muted mb-5">
                     Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
                   </p>
                   <InlineEditor
@@ -335,7 +334,7 @@ export default function Home() {
               {/* Footer */}
               <ScrollReveal delay={0.1}>
                 <div className="text-center py-8">
-                  <p className="text-xs text-zinc-600">
+                  <p className="text-xs text-text-faint">
                     Scores are AI-generated estimates, not official admissions feedback.
                     Use as a revision tool alongside your counselor.
                   </p>
@@ -345,6 +344,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </main>
-    </AuroraBackground>
+    </>
   );
 }

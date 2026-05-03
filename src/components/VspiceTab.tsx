@@ -84,7 +84,7 @@ export const VspiceTab: React.FC<VspiceTabProps> = ({ scores, bonuses, pitfalls 
         <VspiceRow key={name} name={name} score={c.score} feedback={c.feedback} index={i} />
       ))}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 pt-6 border-t border-white/[0.06]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 pt-6 border-t border-border-hair">
         <SignalList
           title="Bonus Signals"
           items={bonusItems}
@@ -121,12 +121,12 @@ const VspiceRow: React.FC<VspiceRowProps> = ({ name, score, feedback, index }) =
       transition={{ delay: index * 0.08 }}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-semibold text-zinc-200">{name}</span>
+        <span className="text-sm font-semibold text-text-primary">{name}</span>
         <div className="flex items-center gap-1.5">
           {[1, 2, 3, 4].map((level) => (
             <motion.div
               key={level}
-              className={`w-8 h-2.5 rounded-full ${level <= score ? bg : "bg-white/[0.05]"}`}
+              className={`w-8 h-2.5 rounded-full ${level <= score ? bg : "bg-bg-surface"}`}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ delay: index * 0.08 + level * 0.1, duration: 0.4 }}
@@ -136,7 +136,7 @@ const VspiceRow: React.FC<VspiceRowProps> = ({ name, score, feedback, index }) =
           <span className={`ml-2 text-sm font-bold font-mono ${text}`}>{score}/4</span>
         </div>
       </div>
-      <p className="mt-1 text-sm text-zinc-400 leading-relaxed">{feedback}</p>
+      <p className="mt-1 text-sm text-text-secondary leading-relaxed">{feedback}</p>
     </motion.div>
   );
 };
@@ -198,7 +198,7 @@ const SignalList: React.FC<SignalListProps> = ({ title, items, color, totalLabel
       {items.length > 0 ? (
         <ul className="space-y-2">
           {items.map((item, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-sm text-zinc-400">
+            <li key={i} className="flex items-start gap-2.5 text-sm text-text-secondary">
               <span
                 data-keep-color
                 className={`shrink-0 inline-flex items-center justify-center min-w-[2.25rem] h-5 px-1.5 rounded-md text-[10px] font-bold font-mono border ${c.pillBg} ${c.pillBorder} ${c.pillText} mt-0.5`}
@@ -211,7 +211,7 @@ const SignalList: React.FC<SignalListProps> = ({ title, items, color, totalLabel
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-zinc-600">None detected</p>
+        <p className="text-sm text-text-faint">None detected</p>
       )}
     </div>
   );

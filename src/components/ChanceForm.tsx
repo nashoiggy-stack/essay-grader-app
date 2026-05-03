@@ -18,9 +18,9 @@ interface ChanceFormProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
-const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
+const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
 export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpdate, onReset }) => {
   // Read advancedCoursework / advancedCourseworkAvailable from the saved
@@ -79,13 +79,13 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
   return (
   <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
     <div className="flex items-center justify-between mb-2">
-      <h3 className="text-lg font-bold text-zinc-200">Your Profile</h3>
-      <button onClick={onReset} className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+      <h3 className="text-lg font-bold text-text-primary">Your Profile</h3>
+      <button onClick={onReset} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
         Reset
       </button>
     </div>
     {(inputs.gpaUW || inputs.essayCommonApp) && (
-      <p className="text-xs text-blue-400/70 mb-4">
+      <p className="text-xs text-accent-text/70 mb-4">
         {inputs.gpaUW ? "GPA auto-filled from GPA Calculator. " : ""}
         {inputs.essayCommonApp ? "Essay scores auto-filled from Essay Grader." : ""}
       </p>
@@ -120,9 +120,9 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           return (
             <div className="col-span-2 sm:col-span-3">
               <label className={labelClass}>Application Plan</label>
-              <div className="inline-flex items-center gap-2 rounded-lg bg-white/[0.04] border border-white/[0.06] px-3 py-2 text-sm text-zinc-300">
+              <div className="inline-flex items-center gap-2 rounded-lg bg-bg-surface border border-border-hair px-3 py-2 text-sm text-text-secondary">
                 <span>{APPLICATION_PLAN_LABELS[only.type]}</span>
-                <span className="text-[10px] uppercase tracking-wider text-zinc-600">
+                <span className="text-[10px] uppercase tracking-wider text-text-faint">
                   only option
                 </span>
               </div>
@@ -146,7 +146,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
               ))}
             </select>
             {bindingNote && (
-              <p className="mt-1 text-[10px] text-zinc-600">
+              <p className="mt-1 text-[10px] text-text-faint">
                 Binding plans require you to attend if admitted.
               </p>
             )}
@@ -205,7 +205,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         <input type="number" min="1" max="36" placeholder="e.g. 30"
           className={inputClass} value={inputs.actScience}
           onChange={(e) => onUpdate("actScience", e.target.value)} />
-        <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
+        <p className="text-[10px] text-text-faint mt-1">Not included in composite</p>
       </div>
 
       {/* Course rigor moved to /profile.advancedCoursework. The dropdown was
@@ -218,7 +218,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           onChange={(v) => onUpdate("major", v)}
           ariaLabel="Intended major for chance calculation"
         />
-        <p className="mt-1 text-[10px] text-zinc-500">
+        <p className="mt-1 text-[10px] text-text-muted">
           Synced with your college list &amp; strategy.
         </p>
       </div>
@@ -233,7 +233,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           <option value="strong">Strong — clear theme + impact</option>
           <option value="exceptional">Exceptional — national/major impact</option>
         </select>
-        <p className="mt-1 text-[10px] text-zinc-500">Auto-fills from EC Evaluator.</p>
+        <p className="mt-1 text-[10px] text-text-muted">Auto-fills from EC Evaluator.</p>
       </div>
       <div>
         <label className={labelClass}>Common App Score (0-100)</label>
@@ -253,11 +253,11 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         Editing happens in /profile so there's exactly one source of truth.
         The chance model reads advancedCoursework[] directly from the saved
         profile via useChanceCalculator. */}
-    <div className="mt-5 pt-5 border-t border-white/[0.06]">
+    <div className="mt-5 pt-5 border-t border-border-hair">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
-          <h4 className="text-sm font-semibold text-zinc-300">Advanced Coursework</h4>
-          <p className="text-[10px] text-zinc-600 mt-0.5">
+          <h4 className="text-sm font-semibold text-text-secondary">Advanced Coursework</h4>
+          <p className="text-[10px] text-text-faint mt-0.5">
             {profileAvailability === "none"
               ? "Marked as no AP/IB available — rigor signal waived."
               : profileCoursework.length === 0
@@ -267,7 +267,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         </div>
         <a
           href="/profile"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-zinc-300 hover:bg-white/[0.06] hover:text-white transition-colors"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border-strong bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-text-secondary hover:bg-bg-surface hover:text-white transition-colors"
         >
           {profileCoursework.length === 0 ? "Add in profile" : "Edit in profile"}
         </a>
@@ -278,27 +278,27 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           {profileCoursework.map((row, i) => {
             const tone =
               row.score == null
-                ? "text-zinc-500"
+                ? "text-text-muted"
                 : row.type === "AP"
                   ? row.score >= 4
                     ? "text-emerald-400"
                     : row.score === 3
                       ? "text-amber-400"
-                      : "text-zinc-500"
+                      : "text-text-muted"
                   : row.score >= 6
                     ? "text-emerald-400"
                     : row.score >= 4
                       ? "text-amber-400"
-                      : "text-zinc-500";
+                      : "text-text-muted";
             return (
               <div
                 key={i}
-                className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5"
+                className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-1.5"
               >
-                <span className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 w-12 shrink-0">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-text-muted w-12 shrink-0">
                   {row.type}
                 </span>
-                <span className="flex-1 text-xs text-zinc-300 truncate">{row.name}</span>
+                <span className="flex-1 text-xs text-text-secondary truncate">{row.name}</span>
                 <span className={`text-xs font-bold ${tone}`}>
                   {row.score == null ? "—" : row.score}
                 </span>
@@ -327,7 +327,7 @@ function GpaScaleNote() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="mt-0.5 text-blue-400 shrink-0"
+        className="mt-0.5 text-accent-text shrink-0"
         aria-hidden="true"
       >
         <rect x="4" y="2" width="16" height="20" rx="2" />
@@ -345,7 +345,7 @@ function GpaScaleNote() {
         </p>
         <a
           href="/gpa"
-          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-300 hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-text hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
         >
           Open GPA Calculator
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

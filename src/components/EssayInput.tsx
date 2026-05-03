@@ -50,7 +50,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
     <Card3D className="glass rounded-2xl p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 gap-2">
-        <label className="text-sm font-medium text-zinc-300">Your essay</label>
+        <label className="text-sm font-medium text-text-secondary">Your essay</label>
         <div className="flex items-center gap-2">
           {essayText && (
             <motion.button
@@ -60,7 +60,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
               className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ring-1 transition-[background-color,color,box-shadow] duration-200 ${
                 copied
                   ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
-                  : "bg-[#0c0c1a]/90 text-zinc-400 ring-white/[0.06] hover:text-zinc-200 hover:bg-white/[0.05]"
+                  : "bg-bg-inset text-text-secondary ring-white/[0.06] hover:text-text-primary hover:bg-bg-surface"
               }`}
               title="Copy essay to clipboard"
             >
@@ -101,7 +101,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
+        className="w-full rounded-xl bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
@@ -111,7 +111,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
       {/* Drop zone */}
       <motion.div
         className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer ${
-          dragging ? "border-blue-500 bg-blue-500/10" : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
+          dragging ? "border-blue-500 bg-accent-soft" : "border-border-strong hover:border-white/[0.15] hover:bg-white/[0.02]"
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
@@ -127,11 +127,11 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           className="hidden"
           onChange={onFileChange}
         />
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-text-secondary">
           {file ? (
-            <><span className="font-medium text-blue-400">{file.name}</span> selected</>
+            <><span className="font-medium text-accent-text">{file.name}</span> selected</>
           ) : (
-            <><span className="font-medium text-blue-400">Click to upload</span> or drag & drop PDF / Word doc</>
+            <><span className="font-medium text-accent-text">Click to upload</span> or drag & drop PDF / Word doc</>
           )}
         </p>
       </motion.div>
@@ -158,7 +158,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
         </motion.button>
         <button
           onClick={onClear}
-          className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-[border-color,box-shadow,background-color,color] duration-200"
+          className="rounded-xl px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-[border-color,box-shadow,background-color,color] duration-200"
         >
           Clear
         </button>
@@ -173,8 +173,8 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="mt-5 glass rounded-xl p-5 overflow-hidden animate-pulse-glow"
           >
-            <p className="text-sm text-blue-300 font-medium">{LOADING_TEXT}</p>
-            <div className="mt-3 h-1 w-full rounded-full bg-white/[0.05] overflow-hidden">
+            <p className="text-sm text-accent-text font-medium">{LOADING_TEXT}</p>
+            <div className="mt-3 h-1 w-full rounded-full bg-bg-surface overflow-hidden">
               <div className="h-full bg-blue-500/50 rounded-full shimmer w-full" />
             </div>
           </motion.div>

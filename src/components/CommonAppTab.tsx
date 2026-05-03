@@ -44,12 +44,12 @@ const ScoreRow: React.FC<ScoreRowProps> = ({ name, score, max, feedback, index }
       transition={{ delay: index * 0.08 }}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-semibold text-zinc-200">{name}</span>
+        <span className="text-sm font-semibold text-text-primary">{name}</span>
         <span className={`text-lg font-bold font-mono ${text}`}>
-          {score}<span className="text-xs text-zinc-500">/{max}</span>
+          {score}<span className="text-xs text-text-muted">/{max}</span>
         </span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-white/[0.05] overflow-hidden">
+      <div className="h-1.5 w-full rounded-full bg-bg-surface overflow-hidden">
         <motion.div
           className={`h-full rounded-full ${bg}`}
           initial={{ width: 0 }}
@@ -58,7 +58,7 @@ const ScoreRow: React.FC<ScoreRowProps> = ({ name, score, max, feedback, index }
           style={{ boxShadow: `0 0 8px ${glow}` }}
         />
       </div>
-      <p className="mt-2 text-sm text-zinc-400 leading-relaxed">{feedback}</p>
+      <p className="mt-2 text-sm text-text-secondary leading-relaxed">{feedback}</p>
     </motion.div>
   );
 };

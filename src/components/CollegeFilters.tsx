@@ -15,9 +15,9 @@ interface CollegeFiltersProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
-const labelClass = "block text-xs font-medium text-zinc-400 mb-1";
+const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
 export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
   filters, onUpdate, onReset, resultCount,
@@ -77,8 +77,8 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
   return (
   <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
     <div className="flex items-center justify-between mb-5">
-      <h3 className="text-lg font-bold text-zinc-200">Filters</h3>
-      <button onClick={onReset} className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">
+      <h3 className="text-lg font-bold text-text-primary">Filters</h3>
+      <button onClick={onReset} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
         Reset all
       </button>
     </div>
@@ -114,7 +114,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
         <input type="number" min="1" max="36" placeholder="e.g. 30"
           className={inputClass} value={filters.actScience}
           onChange={(e) => onUpdate("actScience", e.target.value)} />
-        <p className="text-[10px] text-zinc-600 mt-1">Not included in composite</p>
+        <p className="text-[10px] text-text-faint mt-1">Not included in composite</p>
       </div>
       {/* Majors — multi-select chip pattern. Selected majors render as chips
           below the dropdown. Click a chip to toggle active/inactive (saved
@@ -143,7 +143,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
                   className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5 ring-1 transition-[background-color,color] duration-200 ${
                     active
                       ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
-                      : "bg-transparent ring-white/[0.12] text-zinc-400"
+                      : "bg-transparent ring-white/[0.12] text-text-secondary"
                   }`}
                 >
                   <button
@@ -168,7 +168,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
             })}
           </div>
         )}
-        <p className="text-[10px] text-zinc-600 mt-1.5">
+        <p className="text-[10px] text-text-faint mt-1.5">
           {filters.activeMajors.length > 0
             ? `Filtering on: ${filters.activeMajors.join(", ")} · click a chip to toggle, × to remove`
             : filters.intendedMajors.length > 0
@@ -205,7 +205,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
             onClick={addInterest}
             disabled={!pendingInterest.trim() || filters.intendedInterests.length >= MAX_INTERESTS}
             aria-label="Add interest"
-            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-white/[0.04] disabled:text-zinc-600 text-blue-200 px-3 text-xs font-semibold transition-colors"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-accent-soft hover:bg-blue-500/30 disabled:bg-bg-surface disabled:text-text-faint text-blue-200 px-3 text-xs font-semibold transition-colors"
           >
             Add
           </button>
@@ -220,7 +220,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
                   className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5 ring-1 transition-[background-color,color] duration-200 ${
                     active
                       ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
-                      : "bg-transparent ring-white/[0.12] text-zinc-400"
+                      : "bg-transparent ring-white/[0.12] text-text-secondary"
                   }`}
                 >
                   <button
@@ -245,7 +245,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
             })}
           </div>
         )}
-        <p className="text-[10px] text-zinc-600 mt-1.5">
+        <p className="text-[10px] text-text-faint mt-1.5">
           {filters.activeInterests.length > 0
             ? `Filtering on: ${filters.activeInterests.join(", ")}`
             : filters.intendedInterests.length > 0
@@ -334,9 +334,9 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
       </div>
     </div>
 
-    <div className="mt-4 pt-4 border-t border-white/[0.06]">
-      <p className="text-sm text-zinc-500">
-        <span className="text-blue-400 font-semibold">{resultCount}</span> schools match your filters
+    <div className="mt-4 pt-4 border-t border-border-hair">
+      <p className="text-sm text-text-muted">
+        <span className="text-accent-text font-semibold">{resultCount}</span> schools match your filters
       </p>
     </div>
   </div>

@@ -120,45 +120,45 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
           disabled={status === "uploading"}
         />
         <div className="flex items-center gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/70">
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-bg-surface border border-white/10 flex items-center justify-center text-white/70">
             {statusIcon}
           </div>
           <div className="flex-1 min-w-0">
             {status === "idle" && (
               <>
                 <p className="text-sm font-semibold text-white mb-0.5">Upload your transcript(s)</p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-text-muted">
                   PDF or image — upload one or more files and we'll merge them automatically
                 </p>
               </>
             )}
             {status === "uploading" && (
               <>
-                <p className="text-sm font-semibold text-blue-300 mb-0.5 truncate">
+                <p className="text-sm font-semibold text-accent-text mb-0.5 truncate">
                   {fileNames.length === 1 ? fileNames[0] : `${fileNames.length} files: ${fileNames.join(", ")}`}
                 </p>
-                <p className="text-xs text-zinc-400">{message}</p>
+                <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
             {status === "success" && (
               <>
                 <p className="text-sm font-semibold text-emerald-300 mb-0.5">Transcript read successfully</p>
-                <p className="text-xs text-zinc-400">{message}</p>
+                <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
             {status === "error" && (
               <>
                 <p className="text-sm font-semibold text-red-300 mb-0.5">Couldn't read transcript</p>
-                <p className="text-xs text-zinc-400">{message}</p>
+                <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
           </div>
           {status === "idle" && (
-            <FileText className="flex-shrink-0 w-5 h-5 text-zinc-600" strokeWidth={1.5} />
+            <FileText className="flex-shrink-0 w-5 h-5 text-text-faint" strokeWidth={1.5} />
           )}
         </div>
       </div>
-      <p className="mt-2 text-[11px] text-zinc-600 text-center">
+      <p className="mt-2 text-[11px] text-text-faint text-center">
         Experimental — review the extracted grades and edit if needed.
       </p>
     </div>

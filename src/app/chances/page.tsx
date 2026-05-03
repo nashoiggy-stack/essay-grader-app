@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ChanceForm } from "@/components/ChanceForm";
 import { ChanceResultDisplay } from "@/components/ChanceResult";
@@ -12,7 +11,7 @@ export default function ChancesPage() {
   const { inputs, updateInput, resetInputs, college, result, colleges } = useChanceCalculator();
 
   return (
-    <AuroraBackground>
+    <>
       <main className="mx-auto max-w-3xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
@@ -24,7 +23,7 @@ export default function ChancesPage() {
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
             <span className="text-gradient">Chance Calculator</span>
           </h1>
-          <p className="mt-4 text-zinc-400 max-w-xl mx-auto">
+          <p className="mt-4 text-text-secondary max-w-xl mx-auto">
             Estimate your admission chances at any school in our database.
             Enter your profile and select a college.
           </p>
@@ -79,10 +78,10 @@ export default function ChancesPage() {
 
         {!college && (
           <div className="mt-8 glass rounded-2xl p-12 ring-1 ring-white/[0.06] text-center">
-            <p className="text-zinc-500">Select a college above to see your estimated chances</p>
+            <p className="text-text-muted">Select a college above to see your estimated chances</p>
           </div>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }

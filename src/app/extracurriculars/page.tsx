@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ECActivityList } from "@/components/ECActivityList";
 import { ECConversationPanel } from "@/components/ECConversation";
@@ -12,13 +11,13 @@ export default function ExtracurricularsPage() {
   const ec = useECEvaluator();
 
   return (
-    <AuroraBackground>
+    <>
       <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-zinc-300">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-text-secondary">
                 Extracurriculars
               </span>
             </div>
@@ -30,7 +29,7 @@ export default function ExtracurricularsPage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   ec.saveFlash
                     ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
+                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06]"
                 }`}
               >
                 {ec.saveFlash ? (
@@ -50,7 +49,7 @@ export default function ExtracurricularsPage() {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tighter leading-[0.95] mb-4">
             <span className="text-gradient">Activity Evaluator</span>
           </h1>
-          <p className="max-w-xl text-lg text-zinc-400 leading-relaxed">
+          <p className="max-w-xl text-lg text-text-secondary leading-relaxed">
             Describe your extracurriculars in your own words. I&apos;ll ask questions to understand
             your involvement, then evaluate each activity and your overall profile.
           </p>
@@ -88,7 +87,7 @@ export default function ExtracurricularsPage() {
               ) : (
                 <div className="flex items-center justify-center h-full min-h-[350px]">
                   <div className="text-center">
-                    <p className="text-zinc-500 text-sm mb-4">
+                    <p className="text-text-muted text-sm mb-4">
                       {ec.conversations.length === 0
                         ? "Start by adding your first activity"
                         : "Select an activity to continue, or add a new one"}
@@ -150,13 +149,13 @@ export default function ExtracurricularsPage() {
           <div className="mt-8 text-center">
             <button
               onClick={ec.resetAll}
-              className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+              className="text-xs text-text-faint hover:text-text-secondary transition-colors"
             >
               Reset all activities
             </button>
           </div>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }

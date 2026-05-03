@@ -38,14 +38,14 @@ const SORT_OPTIONS: readonly { key: SortKey; label: string }[] = [
 
 const GROUPS: { key: Classification; label: string; color: string }[] = [
   { key: "safety", label: "Safety", color: "text-emerald-400" },
-  { key: "likely", label: "Likely", color: "text-blue-400" },
+  { key: "likely", label: "Likely", color: "text-accent-text" },
   { key: "target", label: "Target", color: "text-amber-400" },
   { key: "reach", label: "Reach", color: "text-orange-400" },
   { key: "unlikely", label: "Unlikely", color: "text-red-500" },
   // 6th tier: when the model has no GPA + no test signal it returns
   // "insufficient" rather than guessing a tier (Finding 4.9). No color
   // coding — the card itself surfaces the prompt to complete the profile.
-  { key: "insufficient", label: "Insufficient Data", color: "text-zinc-400" },
+  { key: "insufficient", label: "Insufficient Data", color: "text-text-secondary" },
 ];
 
 export const CollegeResults: React.FC<CollegeResultsProps> = ({
@@ -128,8 +128,8 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
   if (results.length === 0) {
     return (
       <div className="glass rounded-2xl p-12 ring-1 ring-white/[0.06] text-center">
-        <p className="text-zinc-500 text-lg mb-2">No schools match your filters</p>
-        <p className="text-zinc-600 text-sm">Try broadening your criteria — remove a filter or widen the acceptance rate range.</p>
+        <p className="text-text-muted text-lg mb-2">No schools match your filters</p>
+        <p className="text-text-faint text-sm">Try broadening your criteria — remove a filter or widen the acceptance rate range.</p>
       </div>
     );
   }
@@ -145,15 +145,15 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
           className="flex items-center justify-between gap-3 rounded-xl bg-blue-500/5 border border-blue-500/15 px-4 py-3"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <Bookmark className="w-4 h-4 text-blue-300 shrink-0" fill="currentColor" />
-            <p className="text-sm text-zinc-200">
+            <Bookmark className="w-4 h-4 text-accent-text shrink-0" fill="currentColor" />
+            <p className="text-sm text-text-primary">
               <span className="font-semibold text-blue-200">{pinnedCount}</span>
-              <span className="text-zinc-400"> school{pinnedCount === 1 ? "" : "s"} pinned to your list</span>
+              <span className="text-text-secondary"> school{pinnedCount === 1 ? "" : "s"} pinned to your list</span>
             </p>
           </div>
           <Link
             href="/strategy"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-200 px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/25 text-blue-200 px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
           >
             View Strategy
             <ArrowRight className="w-3.5 h-3.5" />
@@ -163,7 +163,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
 
       {/* Sort controls */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-zinc-500">Sort by:</span>
+        <span className="text-xs text-text-muted">Sort by:</span>
         {SORT_OPTIONS
           // Hide Major Match until the user has picked a major/interest;
           // otherwise the sort has no effect and the chip is misleading.
@@ -174,8 +174,8 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
               onClick={() => setSort(key)}
               className={`text-xs px-3 py-1 rounded-lg transition-[background-color,color,box-shadow] duration-200 ${
                 sort === key
-                  ? "bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30"
-                  : "bg-[#0c0c1a]/90 text-zinc-500 hover:text-zinc-300"
+                  ? "bg-accent-soft text-accent-text ring-1 ring-blue-500/30"
+                  : "bg-bg-inset text-text-muted hover:text-text-secondary"
               }`}
             >
               {label}
@@ -187,7 +187,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
             onClick={onShowGuide}
             aria-label="How are admission chances calculated? Open the full legend."
             title="How are admission chances calculated?"
-            className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+            className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-text-muted hover:text-accent-text hover:bg-accent-soft transition-colors"
           >
             <HelpCircle className="w-3.5 h-3.5" />
           </button>
@@ -203,8 +203,8 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
               <h3 className={`text-sm font-bold uppercase tracking-wider ${group.color}`}>
                 {group.label}
               </h3>
-              <span className="text-xs text-zinc-600">({group.items.length})</span>
-              <div className="flex-1 h-px bg-[#0c0c1a]/90" />
+              <span className="text-xs text-text-faint">({group.items.length})</span>
+              <div className="flex-1 h-px bg-bg-inset" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {group.items.map((item, i) => {

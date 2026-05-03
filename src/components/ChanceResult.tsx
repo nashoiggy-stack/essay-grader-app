@@ -9,11 +9,11 @@ import { BreakdownPanel } from "./BreakdownPanel";
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
 const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string; glow: string }> = {
   safety:       { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
-  likely:       { bg: "bg-blue-500/10",    text: "text-blue-400",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
+  likely:       { bg: "bg-accent-soft",    text: "text-accent-text",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
   target:       { bg: "bg-amber-500/10",   text: "text-amber-400",   bar: "bg-amber-500",   glow: "shadow-amber-500/20" },
   reach:        { bg: "bg-orange-500/10",  text: "text-orange-400",  bar: "bg-orange-500",  glow: "shadow-orange-500/20" },
   unlikely:     { bg: "bg-red-500/10",     text: "text-red-500",     bar: "bg-red-500",     glow: "shadow-red-500/20" },
-  insufficient: { bg: "bg-zinc-500/5",     text: "text-zinc-400",    bar: "bg-zinc-500",    glow: "shadow-zinc-500/15" },
+  insufficient: { bg: "bg-zinc-500/5",     text: "text-text-secondary",    bar: "bg-zinc-500",    glow: "shadow-zinc-500/15" },
 };
 
 interface ChanceResultProps {
@@ -103,7 +103,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
     >
       {/* Tier + percentage display */}
       <div className="text-center">
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">
+        <p className="text-xs text-text-muted uppercase tracking-widest mb-2">
           Your chances at {collegeName}
         </p>
         <motion.div
@@ -118,14 +118,14 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.15em] ${style.text}`}>
             {tierUpper}
             {showMultiple && (
-              <span className="ml-1 text-zinc-400 font-normal normal-case tracking-normal">
+              <span className="ml-1 text-text-secondary font-normal normal-case tracking-normal">
                 ({result.multiple.toFixed(1)}× typical)
               </span>
             )}
           </span>
         </motion.div>
         {result.confidence !== "high" && result.classification !== "insufficient" && (
-          <p className="mt-2 text-xs text-zinc-600">
+          <p className="mt-2 text-xs text-text-faint">
             {result.confidence === "low" ? "Low confidence — add GPA and test scores for a better estimate" : "Add more data for a more reliable estimate"}
           </p>
         )}
@@ -137,7 +137,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           tier label even at extreme values. */}
       {result.classification !== "insufficient" && (
         <div>
-          <div className="grid text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5"
+          <div className="grid text-[10px] text-text-faint uppercase tracking-wider mb-1.5"
                style={{ gridTemplateColumns: SEGMENT_TEMPLATE }}>
             <span className="text-left">Unlikely</span>
             <span className="text-center">Reach</span>
@@ -145,7 +145,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
             <span className="text-center">Likely</span>
             <span className="text-right">Safety</span>
           </div>
-          <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
+          <div className="h-2 rounded-full bg-bg-surface overflow-hidden">
             <motion.div
               className={`h-full rounded-full ${style.bar}`}
               initial={{ width: 0 }}
@@ -157,31 +157,31 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
       )}
 
       {/* Headline narrative */}
-      <div className="rounded-xl bg-[#12121f] border border-white/[0.08] p-5">
-        <p className="text-[15px] text-zinc-100 leading-relaxed font-medium">
+      <div className="rounded-xl bg-[#12121f] border border-border-strong p-5">
+        <p className="text-[15px] text-text-primary leading-relaxed font-medium">
           {headline}
         </p>
-        <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-start gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 shrink-0 mt-[2px]">
+        <div className="mt-3 pt-3 border-t border-border-hair flex items-start gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-text shrink-0 mt-[2px]">
             <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
-          <p className="text-[13px] text-zinc-400 leading-relaxed">
-            <span className="text-zinc-300 font-medium">Next step:</span> {nextStep}
+          <p className="text-[13px] text-text-secondary leading-relaxed">
+            <span className="text-text-secondary font-medium">Next step:</span> {nextStep}
           </p>
         </div>
       </div>
 
       {/* Multiplier breakdown + what-ifs (collapsible) */}
       {result.breakdown && (
-        <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
+        <details className="group rounded-xl bg-bg-surface border border-border-hair overflow-hidden">
           <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
-            <span className="text-xs text-zinc-500 font-medium">See the breakdown</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180">
+            <span className="text-xs text-text-muted font-medium">See the breakdown</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-faint transition-transform duration-300 group-open:rotate-180">
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </summary>
           <div className="px-4 pb-4 pt-1 space-y-4">
-            <p className="text-[12px] text-zinc-500 leading-relaxed">{result.explanation}</p>
+            <p className="text-[12px] text-text-muted leading-relaxed">{result.explanation}</p>
             <BreakdownPanel breakdown={result.breakdown} whatIfs={result.whatIfs} />
           </div>
         </details>
@@ -194,13 +194,13 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           {result.strengths.length > 0 ? (
             <ul className="space-y-1.5">
               {result.strengths.map((s, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
                   <span className="text-emerald-400 mt-0.5 shrink-0">+</span>{s}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-zinc-600">No notable strengths identified yet</p>
+            <p className="text-xs text-text-faint">No notable strengths identified yet</p>
           )}
         </div>
         <div>
@@ -208,26 +208,26 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           {result.weaknesses.length > 0 ? (
             <ul className="space-y-1.5">
               {result.weaknesses.map((w, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
                   <span className="text-red-400 mt-0.5 shrink-0">!</span>{w}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-zinc-600">No major weaknesses identified</p>
+            <p className="text-xs text-text-faint">No major weaknesses identified</p>
           )}
         </div>
       </div>
 
       {/* Missing data hints — neutral CTAs, not weaknesses */}
       {result.missingDataHints && result.missingDataHints.length > 0 && (
-        <ul className="rounded-lg bg-zinc-500/5 border border-white/[0.06] p-3 space-y-1.5">
+        <ul className="rounded-lg bg-zinc-500/5 border border-border-hair p-3 space-y-1.5">
           {result.missingDataHints.map((hint, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-              <span className="text-zinc-500 mt-0.5 shrink-0">+</span>
+            <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
+              <span className="text-text-muted mt-0.5 shrink-0">+</span>
               <a
                 href={hint.href}
-                className="hover:text-zinc-200 underline decoration-zinc-700 underline-offset-2"
+                className="hover:text-text-primary underline decoration-zinc-700 underline-offset-2"
               >
                 {hint.label}
               </a>

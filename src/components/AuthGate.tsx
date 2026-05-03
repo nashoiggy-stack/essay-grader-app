@@ -305,7 +305,7 @@ function LoginScreen() {
                   </div>
                 </BlurFade>
                 <BlurFade delay={0.2}>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-text-secondary">
                     {mode === "signin" ? "Sign in to continue" : "Create your account"}
                   </p>
                 </BlurFade>
@@ -321,7 +321,7 @@ function LoginScreen() {
                   </div>
                 </BlurFade>
                 <BlurFade delay={0.1}>
-                  <p className="text-sm text-zinc-400">{email}</p>
+                  <p className="text-sm text-text-secondary">{email}</p>
                 </BlurFade>
               </motion.div>
             )}
@@ -392,7 +392,7 @@ function LoginScreen() {
               <BlurFade delay={0.4} className="w-full">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-xs text-zinc-600">or</span>
+                  <span className="text-xs text-text-faint">or</span>
                   <div className="flex-1 h-px bg-white/10" />
                 </div>
               </BlurFade>
@@ -407,12 +407,12 @@ function LoginScreen() {
               </BlurFade>
 
               <BlurFade delay={0.6}>
-                <p className="text-sm text-zinc-500 text-center">
+                <p className="text-sm text-text-muted text-center">
                   {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
                   <button
                     type="button"
                     onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setSuccessMsg(""); }}
-                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    className="text-accent-text hover:text-accent-text font-medium transition-colors"
                   >
                     {mode === "signin" ? "Create one" : "Sign in"}
                   </button>

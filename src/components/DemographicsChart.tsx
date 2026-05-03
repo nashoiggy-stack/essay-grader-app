@@ -86,16 +86,16 @@ function DonutChart({
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         {hoveredSlice ? (
           <div className="text-center">
-            <p className="text-[15px] font-bold text-zinc-100 tabular-nums">
+            <p className="text-[15px] font-bold text-text-primary tabular-nums">
               {hoveredSlice.value}%
             </p>
-            <p className="text-[9px] text-zinc-400 uppercase tracking-wider leading-tight max-w-[60px]">
+            <p className="text-[9px] text-text-secondary uppercase tracking-wider leading-tight max-w-[60px]">
               {hoveredSlice.label}
             </p>
           </div>
         ) : (
           <div className="text-center">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
+            <p className="text-[10px] text-text-muted uppercase tracking-wider">
               Breakdown
             </p>
           </div>
@@ -118,8 +118,8 @@ function Legend({ items }: { items: { label: string; value: number; color: strin
               className="w-2 h-2 rounded-full shrink-0"
               style={{ backgroundColor: it.color }}
             />
-            <span className="text-[10px] text-zinc-400 truncate">{it.label}</span>
-            <span className="text-[10px] text-zinc-300 font-mono tabular-nums ml-auto shrink-0">
+            <span className="text-[10px] text-text-secondary truncate">{it.label}</span>
+            <span className="text-[10px] text-text-secondary font-mono tabular-nums ml-auto shrink-0">
               {it.value}%
             </span>
           </div>
@@ -137,10 +137,10 @@ function GenderBar({ gender }: { gender: GenderBreakdown }) {
 
   return (
     <div>
-      <p className="text-[9px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1.5">
+      <p className="text-[9px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-1.5">
         Gender Ratio
       </p>
-      <div className="flex h-2 rounded-full overflow-hidden bg-white/[0.04]">
+      <div className="flex h-2 rounded-full overflow-hidden bg-bg-surface">
         <div
           className="h-full transition-[width] duration-300"
           style={{ width: `${male}%`, backgroundColor: GENDER_COLORS.male }}
@@ -151,7 +151,7 @@ function GenderBar({ gender }: { gender: GenderBreakdown }) {
         />
       </div>
       <div className="flex justify-between mt-1">
-        <span className="text-[10px] text-blue-300 font-mono tabular-nums">{male}% Male</span>
+        <span className="text-[10px] text-accent-text font-mono tabular-nums">{male}% Male</span>
         <span className="text-[10px] text-pink-300 font-mono tabular-nums">{female}% Female</span>
       </div>
     </div>
@@ -187,12 +187,12 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
   }));
 
   return (
-    <div className="rounded-xl bg-[#0f0f1c] border border-white/[0.06] p-4 space-y-4">
+    <div className="rounded-xl bg-[#0f0f1c] border border-border-hair p-4 space-y-4">
       {/* Header */}
       <div>
-        <p className="text-[13px] font-semibold text-zinc-100 truncate">{college.name}</p>
+        <p className="text-[13px] font-semibold text-text-primary truncate">{college.name}</p>
         {college.undergradPopulation && (
-          <p className="text-[10px] text-zinc-500 mt-0.5">
+          <p className="text-[10px] text-text-muted mt-0.5">
             {college.undergradPopulation.toLocaleString()} undergrads
           </p>
         )}
@@ -205,8 +205,8 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
           <Legend items={legendItems} />
         </div>
       ) : (
-        <div className="flex items-center justify-center h-[130px] rounded-lg bg-white/[0.02] border border-white/[0.04]">
-          <p className="text-[11px] text-zinc-500">Detailed breakdown not available</p>
+        <div className="flex items-center justify-center h-[130px] rounded-lg bg-white/[0.02] border border-border-hair">
+          <p className="text-[11px] text-text-muted">Detailed breakdown not available</p>
         </div>
       )}
 
@@ -214,7 +214,7 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
       {hasGender && <GenderBar gender={gender!} />}
 
       {/* Supporting metrics */}
-      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/[0.04]">
+      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border-hair">
         {college.percentInternational != null && (
           <MetricChip label="International" value={`${college.percentInternational}%`} />
         )}
@@ -232,8 +232,8 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
 function MetricChip({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white/[0.03] px-2.5 py-1.5">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-zinc-500">{label}</p>
-      <p className="text-[12px] font-semibold text-zinc-200 mt-0.5">{value}</p>
+      <p className="text-[9px] uppercase tracking-[0.1em] text-text-muted">{label}</p>
+      <p className="text-[12px] font-semibold text-text-primary mt-0.5">{value}</p>
     </div>
   );
 }

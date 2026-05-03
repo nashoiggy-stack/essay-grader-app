@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { ResumePreview } from "@/components/ResumePreview";
 import { ResumeSectionCard, type FieldSchema } from "@/components/ResumeSectionCard";
@@ -11,7 +10,7 @@ import { useResume } from "@/hooks/useResume";
 import { Download, Save, FileText, Wand2, Eye, EyeOff, RotateCcw, Download as DownloadIcon } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Section field schemas ────────────────────────────────────────────────────
 
@@ -108,23 +107,23 @@ export default function ResumePage() {
 
   if (!r.loaded) {
     return (
-      <AuroraBackground>
+      <>
         <div className="min-h-[60dvh] flex items-center justify-center">
           <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
         </div>
-      </AuroraBackground>
+      </>
     );
   }
 
   return (
-    <AuroraBackground>
+    <>
       <main className="mx-auto max-w-6xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)] print:py-0 print:max-w-none print:px-0">
         {/* Header */}
         <div className="mb-10 print:hidden">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
-              <FileText className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-zinc-300">
+              <FileText className="w-3.5 h-3.5 text-text-secondary" />
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-text-secondary">
                 Resume Helper
               </span>
             </div>
@@ -134,7 +133,7 @@ export default function ResumePage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   r.saveFlash
                     ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
+                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06]"
                 }`}
               >
                 <Save className="w-3.5 h-3.5" />
@@ -142,7 +141,7 @@ export default function ResumePage() {
               </button>
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
               >
                 <DownloadIcon className="w-3.5 h-3.5" />
                 Print / PDF
@@ -155,19 +154,19 @@ export default function ResumePage() {
           >
             Build your college resume.
           </h1>
-          <p className="max-w-xl text-lg text-zinc-400 leading-relaxed">
+          <p className="max-w-xl text-lg text-text-secondary leading-relaxed">
             A clean, admissions-ready resume. Autofills from your GPA calculator, EC evaluator, and profile. Edit anything.
           </p>
         </div>
 
         {/* Mode switcher */}
-        <div className="mb-6 inline-flex rounded-full bg-[#0c0c1a]/90 ring-1 ring-white/[0.06] p-1 print:hidden">
+        <div className="mb-6 inline-flex rounded-full bg-bg-inset ring-1 ring-white/[0.06] p-1 print:hidden">
           <button
             onClick={() => setMode("resume")}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
               mode === "resume"
                 ? "bg-white/[0.08] text-white"
-                : "text-zinc-500 hover:text-zinc-300"
+                : "text-text-muted hover:text-text-secondary"
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -178,7 +177,7 @@ export default function ResumePage() {
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
               mode === "activities"
                 ? "bg-white/[0.08] text-white"
-                : "text-zinc-500 hover:text-zinc-300"
+                : "text-text-muted hover:text-text-secondary"
             }`}
           >
             <Wand2 className="w-3.5 h-3.5" />
@@ -193,9 +192,9 @@ export default function ResumePage() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mb-4 rounded-xl border border-blue-500/20 bg-blue-500/5 p-3 print:hidden"
+              className="mb-4 rounded-xl border border-accent-line bg-blue-500/5 p-3 print:hidden"
             >
-              <p className="text-[12px] text-blue-300">{r.importFlash}</p>
+              <p className="text-[12px] text-accent-text">{r.importFlash}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -206,11 +205,11 @@ export default function ResumePage() {
             {/* Editor column */}
             <div className="space-y-5 print:hidden">
               {/* Basic info */}
-              <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5">
-                <h3 className="text-sm font-semibold text-zinc-200 mb-3">Header</h3>
+              <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-5">
+                <h3 className="text-sm font-semibold text-text-primary mb-3">Header</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Name</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Name</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -220,7 +219,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Email</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Email</label>
                     <input
                       type="email"
                       className={inputClass}
@@ -230,7 +229,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Phone</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Phone</label>
                     <input
                       type="tel"
                       className={inputClass}
@@ -240,7 +239,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Address (optional)</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Address (optional)</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -250,7 +249,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">School</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">School</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -260,7 +259,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Graduation year</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Graduation year</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -312,7 +311,7 @@ export default function ResumePage() {
                 extraHeaderAction={
                   <button
                     onClick={r.importFromECs}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 px-3 py-1.5 text-xs font-semibold ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-3 py-1.5 text-xs font-semibold ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Import from EC Evaluator
@@ -366,11 +365,11 @@ export default function ResumePage() {
               />
 
               {/* Skills */}
-              <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5">
-                <h3 className="text-sm font-semibold text-zinc-200 mb-3">Skills</h3>
+              <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-5">
+                <h3 className="text-sm font-semibold text-text-primary mb-3">Skills</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Languages</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Languages</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -380,7 +379,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Technical</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Technical</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -390,7 +389,7 @@ export default function ResumePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">Other</label>
+                    <label className="block text-[11px] font-medium text-text-secondary mb-1">Other</label>
                     <input
                       type="text"
                       className={inputClass}
@@ -406,7 +405,7 @@ export default function ResumePage() {
               <div className="flex justify-end">
                 <button
                   onClick={r.resetResume}
-                  className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 border border-white/[0.06] rounded-lg px-3 py-1.5 hover:bg-white/[0.04] transition-[background-color,color] duration-200"
+                  className="inline-flex items-center gap-1.5 text-[11px] text-text-muted hover:text-text-secondary border border-border-hair rounded-lg px-3 py-1.5 hover:bg-bg-surface transition-[background-color,color] duration-200"
                 >
                   <RotateCcw className="w-3 h-3" />
                   Reset to autofilled
@@ -417,10 +416,10 @@ export default function ResumePage() {
             {/* Preview column */}
             <div className={`${showPreview ? "block" : "hidden"} lg:sticky lg:top-24 lg:self-start print:block print:static`}>
               <div className="flex items-center justify-between mb-3 print:hidden">
-                <p className="text-[11px] uppercase tracking-[0.15em] text-zinc-500 font-medium">Live preview</p>
+                <p className="text-[11px] uppercase tracking-[0.15em] text-text-muted font-medium">Live preview</p>
                 <button
                   onClick={() => setShowPreview((v) => !v)}
-                  className="inline-flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 transition-[color] duration-200 lg:hidden"
+                  className="inline-flex items-center gap-1.5 text-[11px] text-text-muted hover:text-text-secondary transition-[color] duration-200 lg:hidden"
                 >
                   {showPreview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   {showPreview ? "Hide" : "Show"}
@@ -433,7 +432,7 @@ export default function ResumePage() {
             {!showPreview && (
               <button
                 onClick={() => setShowPreview(true)}
-                className="lg:hidden inline-flex items-center gap-1.5 justify-center w-full rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 px-4 py-3 text-sm font-semibold ring-1 ring-white/[0.06] transition-[background-color,color] duration-200 print:hidden"
+                className="lg:hidden inline-flex items-center gap-1.5 justify-center w-full rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-4 py-3 text-sm font-semibold ring-1 ring-white/[0.06] transition-[background-color,color] duration-200 print:hidden"
               >
                 <Eye className="w-4 h-4" />
                 Show preview
@@ -443,7 +442,7 @@ export default function ResumePage() {
         ) : (
           // ── Mode 2: Activities Helper ───────────────────────────────
           <ScrollReveal delay={0.05}>
-            <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-6 sm:p-8 max-w-2xl">
+            <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-6 sm:p-8 max-w-2xl">
               <ActivitiesHelperPanel
                 activities={r.resume.activities}
                 onApply={r.replaceActivity}
@@ -452,6 +451,6 @@ export default function ResumePage() {
           </ScrollReveal>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }

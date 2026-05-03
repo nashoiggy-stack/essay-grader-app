@@ -18,7 +18,7 @@ import { COLLEGES } from "@/data/colleges";
 //   Slot 3 = violet  (unique, doesn't clash with the above)
 
 export const SCHOOL_COLORS = [
-  { name: "blue",    bar: "from-blue-500 to-blue-400",    bg: "bg-blue-500/8",    border: "border-blue-500/25",  text: "text-blue-300",    dot: "bg-blue-400",    hex: "#60a5fa" },
+  { name: "blue",    bar: "from-blue-500 to-blue-400",    bg: "bg-blue-500/8",    border: "border-blue-500/25",  text: "text-accent-text",    dot: "bg-blue-400",    hex: "#60a5fa" },
   { name: "emerald", bar: "from-emerald-500 to-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/25", text: "text-emerald-300", dot: "bg-emerald-400", hex: "#34d399" },
   { name: "amber",   bar: "from-amber-500 to-amber-400",  bg: "bg-amber-500/8",   border: "border-amber-500/25", text: "text-amber-300",   dot: "bg-amber-400",   hex: "#fbbf24" },
   { name: "violet",  bar: "from-violet-500 to-violet-400", bg: "bg-violet-500/8",  border: "border-violet-500/25", text: "text-violet-300",  dot: "bg-violet-400",  hex: "#a78bfa" },
@@ -67,9 +67,9 @@ const RANK_COLORS = {
 
 const RANK_TEXT = {
   best: "text-emerald-200",
-  mid: "text-zinc-200",
-  worst: "text-zinc-300",
-  neutral: "text-zinc-300",
+  mid: "text-text-primary",
+  worst: "text-text-secondary",
+  neutral: "text-text-secondary",
 } as const;
 
 function normalizeEntries(
@@ -149,11 +149,11 @@ export function MetricBar({
               {schoolColor && (
                 <span className={`w-2 h-2 rounded-full ${schoolColor.dot} shrink-0`} />
               )}
-              <span className="text-[10px] text-zinc-400 truncate font-medium">
+              <span className="text-[10px] text-text-secondary truncate font-medium">
                 {shortName(entry.name)}
               </span>
             </div>
-            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-white/[0.05] transition-colors duration-150">
+            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-bg-surface transition-colors duration-150">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
@@ -164,7 +164,7 @@ export function MetricBar({
               />
               <div className="absolute inset-0 flex items-center justify-between px-2.5">
                 <span className={`text-[12px] font-mono tabular-nums font-bold ${
-                  schoolColor ? "text-white" : "text-zinc-200"
+                  schoolColor ? "text-white" : "text-text-primary"
                 }`}>
                   {entry.value > 0 ? format(entry.value) : "—"}
                 </span>
@@ -219,11 +219,11 @@ export function RangeBar({
               {schoolColor && (
                 <span className={`w-2 h-2 rounded-full ${schoolColor.dot} shrink-0`} />
               )}
-              <span className="text-[10px] text-zinc-400 truncate font-medium">
+              <span className="text-[10px] text-text-secondary truncate font-medium">
                 {shortName(entry.name)}
               </span>
             </div>
-            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-white/[0.05] transition-colors duration-150">
+            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-bg-surface transition-colors duration-150">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${widthPct}%` }}
@@ -262,14 +262,14 @@ export function MetricCard({
   label,
   context,
   isBest = false,
-  color = "text-zinc-100",
+  color = "text-text-primary",
 }: MetricCardProps) {
   return (
     <div
       className={`rounded-xl p-3.5 transition-all duration-200 ${
         isBest
           ? "bg-emerald-500/[0.05] border border-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.06)]"
-          : "bg-white/[0.02] border border-white/[0.04]"
+          : "bg-white/[0.02] border border-border-hair"
       }`}
     >
       <div className="flex items-start justify-between gap-1">
@@ -278,11 +278,11 @@ export function MetricCard({
         </p>
         {isBest && <Crown className="w-3 h-3 text-amber-300/70 shrink-0 mt-1" />}
       </div>
-      <p className="text-[10px] text-zinc-500 mt-1.5 uppercase tracking-[0.1em] leading-snug">
+      <p className="text-[10px] text-text-muted mt-1.5 uppercase tracking-[0.1em] leading-snug">
         {label}
       </p>
       {context && (
-        <p className="text-[10px] text-zinc-600 mt-1 leading-relaxed">{context}</p>
+        <p className="text-[10px] text-text-faint mt-1 leading-relaxed">{context}</p>
       )}
     </div>
   );
@@ -302,17 +302,17 @@ export function CompareSection({
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] overflow-hidden">
+    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.02] transition-colors"
       >
-        <h3 className="text-[12px] font-bold text-zinc-200 uppercase tracking-[0.12em]">
+        <h3 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.12em]">
           {title}
         </h3>
         <ChevronDown
-          className={`w-4 h-4 text-zinc-500 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+          className={`w-4 h-4 text-text-muted transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
             expanded ? "" : "-rotate-90"
           }`}
         />
@@ -329,7 +329,7 @@ export function CompareSection({
             }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 space-y-4 border-t border-white/[0.04] pt-4">
+            <div className="px-5 pb-5 space-y-4 border-t border-border-hair pt-4">
               {children}
             </div>
           </motion.div>
@@ -355,7 +355,7 @@ export function CompareRow({
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <p className="text-[11px] uppercase tracking-[0.1em] text-zinc-500 font-semibold">
+        <p className="text-[11px] uppercase tracking-[0.1em] text-text-muted font-semibold">
           {label}
         </p>
         {context && (
@@ -363,7 +363,7 @@ export function CompareRow({
             <button
               type="button"
               onClick={() => setShowContext((v) => !v)}
-              className="text-zinc-600 hover:text-zinc-400 transition-colors"
+              className="text-text-faint hover:text-text-secondary transition-colors"
               aria-label="Why this matters"
             >
               <Info className="w-3 h-3" />
@@ -375,9 +375,9 @@ export function CompareRow({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
-                  className="absolute left-0 top-full mt-1 w-56 z-10 rounded-lg bg-[#0a0a14] border border-white/[0.1] p-2.5 shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
+                  className="absolute left-0 top-full mt-1 w-56 z-10 rounded-lg bg-[#0a0a14] border border-border-strong p-2.5 shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
                 >
-                  <p className="text-[10px] text-zinc-300 leading-relaxed">{context}</p>
+                  <p className="text-[10px] text-text-secondary leading-relaxed">{context}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -400,20 +400,20 @@ export function TagRow({
     <div className="space-y-2">
       {colleges.map((c) => (
         <div key={c.name} className="flex items-start gap-2">
-          <span className="text-[10px] text-zinc-500 w-16 sm:w-24 truncate shrink-0 text-right mt-0.5 font-medium">
+          <span className="text-[10px] text-text-muted w-16 sm:w-24 truncate shrink-0 text-right mt-0.5 font-medium">
             {shortName(c.name)}
           </span>
           <div className="flex flex-wrap gap-1">
             {c.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] ring-1 ring-white/[0.06] text-zinc-300"
+                className="text-[10px] px-2 py-0.5 rounded-full bg-bg-surface ring-1 ring-white/[0.06] text-text-secondary"
               >
                 {tag}
               </span>
             ))}
             {c.tags.length === 0 && (
-              <span className="text-[10px] text-zinc-600">—</span>
+              <span className="text-[10px] text-text-faint">—</span>
             )}
           </div>
         </div>

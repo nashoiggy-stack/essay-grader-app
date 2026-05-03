@@ -29,7 +29,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <nav role="tablist" aria-label="Essay results sections" className="flex border-b border-white/[0.06] overflow-x-auto">
+    <nav role="tablist" aria-label="Essay results sections" className="flex border-b border-border-hair overflow-x-auto">
       {TABS.map((tab, i) => {
         const isActive = activeTab === tab.id;
         return (
@@ -44,7 +44,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
             className={`relative px-5 py-3.5 text-sm font-medium transition-[color] duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-inset ${
-              isActive ? "text-blue-400" : "text-zinc-500 hover:text-zinc-300"
+              isActive ? "text-accent-text" : "text-text-muted hover:text-text-secondary"
             }`}
           >
             {tab.label}
