@@ -438,7 +438,7 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
           {counts.total} pinned
         </span>
       </div>
-      <div className="grid grid-cols-6 gap-1.5">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
         {TIER_KEYS.map((tier) => {
           const n = counts[tier];
           const pct = n / denom;
