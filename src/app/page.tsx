@@ -1,267 +1,141 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion } from "motion/react";
 import { ArrowRight, User } from "lucide-react";
-// LandingMiddle + LandingFooter are below the fold and cost no first-paint
-// time to defer. Lazy-loading them shrinks the initial JS payload so the
-// hero can paint and become interactive faster.
+
+// Editorial middle (steps + tools + FAQ) and footer come from LandingExtras.
+// Lazy-loaded to keep the hero's first paint fast.
 const LandingMiddle = dynamic(
   () => import("@/components/landing/LandingExtras").then((m) => ({ default: m.LandingMiddle })),
-  { ssr: false, loading: () => <div style={{ minHeight: "60vh" }} /> }
+  { ssr: false, loading: () => <div style={{ minHeight: "60vh" }} /> },
 );
 const LandingFooter = dynamic(
   () => import("@/components/landing/LandingExtras").then((m) => ({ default: m.LandingFooter })),
-  { ssr: false, loading: () => null }
+  { ssr: false, loading: () => null },
 );
 
-const ShaderLines = dynamic(
-  () => import("@/components/ui/shader-lines").then((m) => ({ default: m.ShaderLines })),
-  { ssr: false }
-);
+const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
 
 export default function LandingPage() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-
-  // UNDO [shader-delay]: revert `0` back to `500` if the shader flashes
-  // on first paint on slow devices.
-  const [shaderReady, setShaderReady] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setShaderReady(true), 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // ── Hero scroll choreography ──────────────────────────────────
-  // Hero text + shader fade out as the user scrolls past the first
-  // sticky viewport into the editorial middle.
-  const { scrollYProgress: heroProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const smoothHero = useSpring(heroProgress, {
-    stiffness: 120,
-    damping: 28,
-    restDelta: 0.001,
-  });
-  // Pronounced fade: hero holds for the first ~30% of scroll then ramps
-  // out hard with strong scale-up and blur. Sticky section is also taller
-  // so the user must scroll a real distance to push past it.
-  const heroOpacity = useTransform(smoothHero, [0, 0.3, 0.85], [1, 1, 0]);
-  const heroScale = useTransform(smoothHero, [0, 0.3, 0.85], [1, 1.02, 1.25]);
-  const heroBlur = useTransform(smoothHero, [0, 0.3, 0.85], [0, 0, 24]);
-  const heroBlurFilter = useTransform(heroBlur, (v) => `blur(${v}px)`);
-  const heroGridOpacity = useTransform(smoothHero, [0, 0.3, 0.85], [0.4, 0.4, 0]);
-
-  // ── CTA scroll choreography ───────────────────────────────────
-  // Mirror of the hero: the CTA section fades and scales IN as the user
-  // arrives, using the same easing so both transitions feel consistent.
-  // Offset starts before the section is fully on-screen so the fade-in
-  // happens as the user is still scrolling the editorial content.
-  const { scrollYProgress: ctaProgress } = useScroll({
-    target: ctaRef,
-    offset: ["start end", "end end"],
-  });
-  const smoothCta = useSpring(ctaProgress, {
-    stiffness: 120,
-    damping: 28,
-    restDelta: 0.001,
-  });
-  // Mirror of the hero choreography: stays invisible while the user is in
-  // the editorial middle, then fades in hard once they cross into the CTA
-  // sticky and ramps fully in by the time the section is locked.
-  const ctaOpacity = useTransform(smoothCta, [0.15, 0.7, 1], [0, 1, 1]);
-  const ctaScale = useTransform(smoothCta, [0.15, 0.7, 1], [0.78, 1, 1]);
-  const ctaBlur = useTransform(smoothCta, [0.15, 0.7, 1], [24, 0, 0]);
-  const ctaBlurFilter = useTransform(ctaBlur, (v) => `blur(${v}px)`);
-  const ctaPointerEvents = useTransform(ctaOpacity, (v) => (v > 0.5 ? "auto" : "none"));
-  const ctaGridOpacity = useTransform(smoothCta, [0.15, 0.7, 1], [0, 0.4, 0.4]);
-
-  const landingTokens: React.CSSProperties = {
-    // Lock dark theme tokens for the landing page regardless of picker.
-    ["--bg-base" as string]: "#0a0a14",
-    ["--bg-surface" as string]: "#0f0f1a",
-    ["--text-primary" as string]: "#e4e4e7",
-    ["--text-muted" as string]: "#a1a1aa",
-    ["--border-token" as string]: "rgba(255, 255, 255, 0.08)",
-  };
-
   return (
     <>
-      {/* ── Page 1 / Hero (sticky, fades out on scroll) ───────── */}
-      <div
-        ref={heroRef}
+      {/* ── Hero — Linear-derived calm density.
+          Single screen height, no sticky scroll choreography, no shader,
+          no aurora gradient. Headline + standfirst + two CTAs. The
+          fluid clamp() on the headline is the *only* place fluid type
+          appears in the app — see design-system/MASTER.md page archetype 1. */}
+      <section
         data-landing-page=""
-        className="bg-zinc-950"
-        style={{ height: "420vh", ...landingTokens }}
+        className="min-h-[88svh] flex items-center px-4 sm:px-6 pt-20 pb-16"
       >
-        <div
-          className="relative w-full bg-zinc-950 text-white"
-          style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}
-        >
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              opacity: heroGridOpacity,
-              backgroundSize: "60px 60px",
-              backgroundImage:
-                "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
-              maskImage: "radial-gradient(ellipse at center, black 0%, transparent 70%)",
-              WebkitMaskImage: "radial-gradient(ellipse at center, black 0%, transparent 70%)",
-            }}
-          />
-
-          {shaderReady && (
-            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: heroOpacity }}>
-              <ShaderLines />
-            </motion.div>
-          )}
-
-          <motion.div
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
-            style={{ opacity: heroOpacity, scale: heroScale, filter: heroBlurFilter }}
+        <div className="mx-auto max-w-[1180px] w-full">
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.36, ease: EASE_EXPO }}
+            className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-6"
           >
-            <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-300 mb-4 sm:mb-6 font-semibold">
-              College Prep Suite
-            </p>
-            <h1
-              className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
+            College admissions, with the math behind it
+          </motion.p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.48, ease: EASE_EXPO, delay: 0.04 }}
+            className="text-text-primary font-semibold tracking-[-0.025em] leading-[1.04] max-w-[18ch]"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 4.75rem)" }}
+          >
+            Your edge in college admissions.
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.48, ease: EASE_EXPO, delay: 0.1 }}
+            className="mt-5 max-w-[58ch] text-[16px] sm:text-[17px] leading-relaxed text-text-secondary"
+          >
+            Nine integrated tools — essay grading, GPA, extracurriculars,
+            resume, list grading, chances, comparison, strategy — running off
+            one shared profile. Every recommendation is sourced from the
+            Common Data Set.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.36, ease: EASE_EXPO, delay: 0.18 }}
+            className="mt-9 flex flex-wrap gap-3"
+          >
+            <Link
+              href="/dashboard"
+              className="group inline-flex items-center gap-2 rounded-sm bg-accent text-white px-5 py-2.5 text-[14px] font-medium transition-[background-color,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-accent-strong active:translate-y-[0.5px]"
             >
-              Your edge in
-            </h1>
-            <h1
-              className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[1] italic"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
+              Open dashboard
+              <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              href="/profile"
+              className="inline-flex items-center gap-2 rounded-sm border border-border-strong bg-transparent text-text-primary px-5 py-2.5 text-[14px] font-medium transition-[background-color] duration-150 hover:bg-bg-elevated"
             >
-              college admissions.
-            </h1>
-            <p className="text-xs text-zinc-500 text-center mt-2">
-              Early access — actively in development
-            </p>
+              <User className="w-4 h-4" />
+              Build your profile
+            </Link>
           </motion.div>
 
-          {/* Scroll hint — fades out alongside the rest of the hero */}
-          <motion.div
-            style={{ opacity: heroOpacity }}
-            className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
-            aria-hidden="true"
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.32 }}
+            className="mt-6 text-[12px] text-text-faint"
           >
-            <span className="text-[12px] sm:text-[13px] uppercase tracking-[0.45em] text-white font-semibold">
-              Scroll
-            </span>
-            <div className="relative w-[2px] h-14 sm:h-16 rounded-full overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/60 to-white/40" />
-              <motion.div
-                initial={{ y: "-100%" }}
-                animate={{ y: "100%" }}
-                transition={{
-                  duration: 1.8,
-                  repeat: Infinity,
-                  ease: [0.23, 1, 0.32, 1],
-                  repeatDelay: 0.25,
-                }}
-                className="absolute left-0 right-0 h-6 bg-gradient-to-b from-transparent via-white to-transparent"
-              />
-            </div>
-          </motion.div>
+            Early access — actively in development.
+          </motion.p>
         </div>
-      </div>
+      </section>
 
-      {/* ── Page 2 / Editorial middle (normal scroll) ─────────── */}
+      {/* Editorial middle — steps, tools grid, FAQ. */}
       <LandingMiddle />
 
-      {/* ── Page 3 / CTA (sticky, fades in on scroll) ─────────── */}
-      <div
-        ref={ctaRef}
-        data-landing-page=""
-        className="bg-zinc-950"
-        style={{ height: "280vh", ...landingTokens }}
-      >
-        <div
-          className="relative w-full bg-zinc-950 text-white"
-          style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}
-        >
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              opacity: ctaGridOpacity,
-              backgroundSize: "60px 60px",
-              backgroundImage:
-                "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
-              maskImage: "radial-gradient(ellipse at center, black 0%, transparent 70%)",
-              WebkitMaskImage: "radial-gradient(ellipse at center, black 0%, transparent 70%)",
-            }}
-          />
-
-          {shaderReady && (
-            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: ctaOpacity }}>
-              <ShaderLines />
-            </motion.div>
-          )}
-
-          <motion.div
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
-            style={{
-              opacity: ctaOpacity,
-              scale: ctaScale,
-              filter: ctaBlurFilter,
-              pointerEvents: ctaPointerEvents,
-            }}
-          >
-            <h2
-              className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
-            >
-              Start building
-            </h2>
-            <h2
-              className="font-[family-name:var(--font-display)] tracking-tight mb-4 sm:mb-6 text-white leading-[1] italic"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
-            >
-              your profile.
-            </h2>
-            <p className="text-zinc-300 text-sm sm:text-lg md:text-xl mb-8 sm:mb-12 max-w-xl mx-auto font-light leading-relaxed px-2">
-              Grade your essays, calculate your GPA, evaluate your extracurriculars, and find your
-              best-fit schools — all in one place.
+      {/* CTA — flat card with restrained accent-line border. No sticky
+          fade-in choreography, no radial shaders. */}
+      <section data-landing-page="" className="px-4 sm:px-6 pb-16 sm:pb-24">
+        <div className="mx-auto max-w-[1180px] w-full">
+          <div className="rounded-md border border-accent-line bg-accent-soft px-6 sm:px-12 py-12 sm:py-16">
+            <p className="text-xs font-medium uppercase tracking-[0.08em] text-accent-text mb-4">
+              Ready when you are
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
+            <h2
+              className="text-text-primary font-semibold tracking-[-0.025em] leading-[1.04] max-w-[16ch]"
+              style={{ fontSize: "clamp(2rem, 4.4vw, 3.25rem)" }}
+            >
+              Start building your profile.
+            </h2>
+            <p className="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-text-secondary">
+              The same profile feeds every tool. Drop in your transcript,
+              scores, activities, and goals — fill it in once, work everywhere.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/dashboard"
-                scroll
-                onClick={() => {
-                  // Belt-and-suspenders: Next 16's scroll restoration
-                  // sometimes preserves the landing page's scroll Y on
-                  // a SPA navigation, dropping the user at the bottom
-                  // of /dashboard. Force the top after the next paint.
-                  if (typeof window !== "undefined") {
-                    requestAnimationFrame(() => window.scrollTo(0, 0));
-                  }
-                }}
-                className="group inline-flex items-center gap-3 rounded-full bg-white pl-6 sm:pl-8 pr-1.5 py-1.5 text-sm font-semibold text-zinc-950 transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:scale-[1.02] hover:bg-zinc-100 active:scale-[0.97]"
+                className="group inline-flex items-center gap-2 rounded-sm bg-accent text-white px-5 py-2.5 text-[14px] font-medium transition-[background-color] duration-150 hover:bg-accent-strong"
               >
                 Dashboard
-                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-950/10 transition-[transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
-                  <ArrowRight className="w-4 h-4" />
-                </span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href="/profile"
-                className="group inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 pl-6 sm:pl-8 pr-1.5 py-1.5 text-sm font-semibold text-white transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/10 hover:border-white/15"
+                className="inline-flex items-center gap-2 rounded-sm border border-border-strong bg-bg-base text-text-primary px-5 py-2.5 text-[14px] font-medium transition-[background-color] duration-150 hover:bg-bg-elevated"
               >
+                <User className="w-4 h-4" />
                 My Profile
-                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 transition-[transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
-                  <User className="w-4 h-4" />
-                </span>
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Footer (after CTA finishes) ───────────────────────── */}
       <LandingFooter />
     </>
   );
