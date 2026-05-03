@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { COLLEGES } from "@/data/colleges";
-import type { ChanceInputs, ChanceResult, Classification } from "@/lib/college-types";
+import type { ChanceInputs, ChanceResult, Classification, ECBandInput } from "@/lib/college-types";
 import { EMPTY_CHANCE_INPUTS } from "@/lib/college-types";
 import { computeAdmissionChance, computeWhatIfs } from "@/lib/admissions";
 import { computeApAcademicSupport } from "@/lib/ap-scores";
 import { bandFromEvaluation } from "@/lib/extracurricular-types";
 import { setItemAndNotify } from "@/lib/sync-event";
+import { getCachedJson } from "@/lib/cloud-storage";
 
 const TIER_LABELS: Record<Classification, string> = {
   safety: "Safety",
@@ -27,70 +28,78 @@ export function useChanceCalculator() {
   // This works even when useProfile isn't mounted (e.g. user is on /chances).
   const fillFromSources = useCallback(() => {
     try {
-      const raw = localStorage.getItem("admitedge-profile");
-      const p = raw ? JSON.parse(raw) : {};
+      type ProfileShape = {
+        essayCommonApp?: string;
+        essayVspice?: string;
+        ecBand?: ECBandInput;
+        gpaUW?: string;
+        gpaW?: string;
+        rigor?: "low" | "medium" | "high";
+        sat?: { readingWriting?: string; math?: string };
+        act?: { english?: string; math?: string; reading?: string; science?: string };
+        apScores?: ChanceInputs["apScores"];
+        intendedMajor?: string;
+      };
+      const p = getCachedJson<ProfileShape>("admitedge-profile") ?? {};
 
       // Direct reads from source tools (fresher than profile)
       let essayCA = p.essayCommonApp || "";
       let essayV = p.essayVspice || "";
-      try {
-        const er = localStorage.getItem("essay-grader-result");
-        if (er) {
-          const e = JSON.parse(er);
-          if (e?.rawScore != null) essayCA = String(e.rawScore);
-          if (e?.vspiceComposite != null) essayV = String(e.vspiceComposite);
-        }
-      } catch { /* ignore */ }
+      const e = getCachedJson<{ rawScore?: number; vspiceComposite?: number }>(
+        "essay-grader-result",
+      );
+      if (e) {
+        if (e.rawScore != null) essayCA = String(e.rawScore);
+        if (e.vspiceComposite != null) essayV = String(e.vspiceComposite);
+      }
 
-      let ecBand = p.ecBand || "";
-      try {
-        const ecr = localStorage.getItem("ec-evaluator-result");
-        if (ecr) {
-          const e = JSON.parse(ecr);
-          // Derive from readiness score to match what the EC evaluator UI shows
-          if (Array.isArray(e?.activities) && e.activities.length > 0) {
-            ecBand = bandFromEvaluation({
-              activities: e.activities,
-              spikes: Array.isArray(e.spikes) ? e.spikes : [],
-            });
-          } else if (e?.band) {
-            ecBand = e.band;
-          }
+      let ecBand: ECBandInput = p.ecBand ?? "";
+      const ecr = getCachedJson<{ activities?: unknown[]; spikes?: unknown[]; band?: string }>(
+        "ec-evaluator-result",
+      );
+      if (ecr) {
+        if (Array.isArray(ecr.activities) && ecr.activities.length > 0) {
+          ecBand = bandFromEvaluation({
+            activities: ecr.activities as Parameters<typeof bandFromEvaluation>[0]["activities"],
+            spikes: (Array.isArray(ecr.spikes) ? ecr.spikes : []) as Parameters<
+              typeof bandFromEvaluation
+            >[0]["spikes"],
+          }) as ECBandInput;
+        } else if (ecr.band) {
+          ecBand = ecr.band as ECBandInput;
         }
-      } catch { /* ignore */ }
+      }
 
       let gpaUW = p.gpaUW || "";
       let gpaW = p.gpaW || "";
       let rigor: "low" | "medium" | "high" = p.rigor || "medium";
-      try {
-        const gr = localStorage.getItem("gpa-calc-v1");
-        if (gr) {
-          const state = JSON.parse(gr);
-          if (state?.years?.length) {
-            const COL_UW: Record<string, number> = {
-              "A+":4,"A":4,"A−":3.7,"B+":3.3,"B":3,"B−":2.7,"C+":2.3,"C":2,"C−":1.7,"D+":1,"D":1,"F":0,
-            };
-            const COL_BONUS: Record<string, number> = { CP:0, Honors:0.5, DE:1, HDE:1, AP:1 };
-            let uw = 0, w = 0, tc = 0;
-            for (const year of state.years) {
-              for (const row of year.rows) {
-                if (!row.grade || row.nonCore) continue;
-                const cr = parseFloat(row.credits) || 1;
-                const base = COL_UW[row.grade] ?? 0;
-                uw += base * cr;
-                w += (row.grade === "F" ? 0 : base + (COL_BONUS[row.level] ?? 0)) * cr;
-                tc += cr;
-              }
-            }
-            if (tc > 0) {
-              const cw = w / tc;
-              gpaUW = (uw / tc).toFixed(2);
-              gpaW = cw.toFixed(2);
-              rigor = cw >= 4.4 ? "high" : cw >= 4.0 ? "medium" : "low";
-            }
+      const state = getCachedJson<{ years?: { rows?: { grade?: string; credits?: string; level?: string; nonCore?: boolean }[] }[] }>(
+        "gpa-calc-v1",
+      );
+      if (state?.years?.length) {
+        const COL_UW: Record<string, number> = {
+          "A+": 4, "A": 4, "A−": 3.7, "B+": 3.3, "B": 3, "B−": 2.7,
+          "C+": 2.3, "C": 2, "C−": 1.7, "D+": 1, "D": 1, "F": 0,
+        };
+        const COL_BONUS: Record<string, number> = { CP: 0, Honors: 0.5, DE: 1, HDE: 1, AP: 1 };
+        let uw = 0, w = 0, tc = 0;
+        for (const year of state.years) {
+          for (const row of year.rows ?? []) {
+            if (!row.grade || row.nonCore) continue;
+            const cr = parseFloat(row.credits ?? "1") || 1;
+            const base = COL_UW[row.grade] ?? 0;
+            uw += base * cr;
+            w += (row.grade === "F" ? 0 : base + (COL_BONUS[row.level ?? "CP"] ?? 0)) * cr;
+            tc += cr;
           }
         }
-      } catch { /* ignore */ }
+        if (tc > 0) {
+          const cw = w / tc;
+          gpaUW = (uw / tc).toFixed(2);
+          gpaW = cw.toFixed(2);
+          rigor = cw >= 4.4 ? "high" : cw >= 4.0 ? "medium" : "low";
+        }
+      }
 
       setInputs((prev) => ({
         ...prev,
@@ -119,16 +128,18 @@ export function useChanceCalculator() {
     }
   }, []);
 
-  // Initial load + re-fill when any source updates
+  // Initial load + re-fill when any source updates (legacy + new events)
   useEffect(() => {
     fillFromSources();
 
     const onUpdated = () => fillFromSources();
     window.addEventListener("profile-source-updated", onUpdated);
-    window.addEventListener("cloud-sync-loaded", onUpdated);
+    window.addEventListener("cloud-storage-changed", onUpdated);
+    window.addEventListener("cloud-storage-reconciled", onUpdated);
     return () => {
       window.removeEventListener("profile-source-updated", onUpdated);
-      window.removeEventListener("cloud-sync-loaded", onUpdated);
+      window.removeEventListener("cloud-storage-changed", onUpdated);
+      window.removeEventListener("cloud-storage-reconciled", onUpdated);
     };
   }, [fillFromSources]);
 
@@ -137,14 +148,11 @@ export function useChanceCalculator() {
     // Major is shared with the college list + strategy page. Writing it
     // back to the profile keeps all three surfaces in sync.
     if (key === "major") {
-      try {
-        const raw = localStorage.getItem("admitedge-profile");
-        const current = raw ? JSON.parse(raw) : {};
-        setItemAndNotify(
-          "admitedge-profile",
-          JSON.stringify({ ...current, intendedMajor: value }),
-        );
-      } catch { /* ignore write errors */ }
+      const current = getCachedJson<Record<string, unknown>>("admitedge-profile") ?? {};
+      setItemAndNotify(
+        "admitedge-profile",
+        JSON.stringify({ ...current, intendedMajor: value }),
+      );
     }
   };
 
@@ -187,22 +195,32 @@ export function useChanceCalculator() {
     let advancedCoursework: import("@/lib/profile-types").AdvancedCourseworkRow[] | undefined;
     let advancedCourseworkAvailable: "all" | "limited" | "none" | undefined;
     let essayScores: import("@/lib/profile-types").EssayScoreRecord[] | undefined;
-    try {
-      const rawProfile = typeof window !== "undefined" ? localStorage.getItem("admitedge-profile") : null;
-      if (rawProfile) {
-        const p = JSON.parse(rawProfile);
-        distinguishedEC =
-          p?.firstAuthorPublication === true ||
-          p?.nationalCompetitionPlacement === true ||
-          p?.founderWithUsers === true ||
-          p?.selectiveProgram === true;
-        if (Array.isArray(p?.advancedCoursework)) advancedCoursework = p.advancedCoursework;
-        if (p?.advancedCourseworkAvailable === "all" || p?.advancedCourseworkAvailable === "limited" || p?.advancedCourseworkAvailable === "none") {
-          advancedCourseworkAvailable = p.advancedCourseworkAvailable;
-        }
-        if (Array.isArray(p?.essayScores)) essayScores = p.essayScores;
+    type ProfileSlice = {
+      firstAuthorPublication?: boolean;
+      nationalCompetitionPlacement?: boolean;
+      founderWithUsers?: boolean;
+      selectiveProgram?: boolean;
+      advancedCoursework?: import("@/lib/profile-types").AdvancedCourseworkRow[];
+      advancedCourseworkAvailable?: "all" | "limited" | "none";
+      essayScores?: import("@/lib/profile-types").EssayScoreRecord[];
+    };
+    const p = getCachedJson<ProfileSlice>("admitedge-profile");
+    if (p) {
+      distinguishedEC =
+        p.firstAuthorPublication === true ||
+        p.nationalCompetitionPlacement === true ||
+        p.founderWithUsers === true ||
+        p.selectiveProgram === true;
+      if (Array.isArray(p.advancedCoursework)) advancedCoursework = p.advancedCoursework;
+      if (
+        p.advancedCourseworkAvailable === "all" ||
+        p.advancedCourseworkAvailable === "limited" ||
+        p.advancedCourseworkAvailable === "none"
+      ) {
+        advancedCourseworkAvailable = p.advancedCourseworkAvailable;
       }
-    } catch { /* ignore */ }
+      if (Array.isArray(p.essayScores)) essayScores = p.essayScores;
+    }
 
     // Synthesize an essayScores entry from the form's Common App + VSPICE
     // inputs when /profile hasn't surfaced graded essays yet. Auto-filled by
@@ -245,6 +263,7 @@ export function useChanceCalculator() {
 
     const strengths: string[] = [];
     const weaknesses: string[] = [];
+    const missingDataHints: { label: string; href: string }[] = [];
 
     // The chance model's `reason` already strings together the headline
     // GPA + test + plan signals deterministically — split into sentence
@@ -275,7 +294,9 @@ export function useChanceCalculator() {
     if (r.usedFallback === "ed") weaknesses.push("ED estimate based on overall trends, not school-specific data");
     if (r.usedFallback === "ea") weaknesses.push("EA estimate based on overall trends, not school-specific data");
     if (r.yieldProtectedNote) weaknesses.push("This school may consider demonstrated interest");
-    if (r.stale) weaknesses.push("Data for this school may be stale (older than 2 academic cycles)");
+    // r.stale is no longer surfaced to users — most schools lack CDS sync,
+    // so this fired as an unactionable yellow warning on the majority. The
+    // flag still flows through the chance model's confidence calculation.
 
     // ── EC band display (matches multiplier from chance model) ──
     const EC_BAND_LABELS: Record<string, { label: string; positive: boolean }> = {
@@ -291,8 +312,20 @@ export function useChanceCalculator() {
     }
 
     // ── Course rigor display ──
-    if (inputs.rigor === "high") strengths.push("Strong course rigor signals academic readiness");
-    else if (inputs.rigor === "low") weaknesses.push("Consider taking more challenging courses");
+    // Rigor is auto-derived from gpa-calc weighted GPA. Without AP exam
+    // scores the signal is unreliable — a strong UW GPA in CP/Honors classes
+    // would otherwise read as "low rigor". Treat absence of AP data as
+    // unknown rigor: surface a missing-data CTA, not a weakness.
+    if (inputs.apScores.length === 0) {
+      missingDataHints.push({
+        label: "Add AP/IB scores for a sharper estimate",
+        href: "/profile#ap-scores",
+      });
+    } else if (inputs.rigor === "high") {
+      strengths.push("Strong course rigor signals academic readiness");
+    } else if (inputs.rigor === "low") {
+      weaknesses.push("Consider taking more challenging courses");
+    }
 
     // ── Test-required penalty surfaces as a weakness note ──
     if (sat === null && act === null && college.testPolicy === "required") {
@@ -346,6 +379,7 @@ export function useChanceCalculator() {
       explanation,
       strengths,
       weaknesses,
+      missingDataHints,
       confidence: r.confidence,
       breakdown: r.breakdown,
       whatIfs,

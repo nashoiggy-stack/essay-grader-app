@@ -96,8 +96,8 @@ export interface College {
   readonly avgGPACDS?: number;                    // CDS-reported average HS GPA of enrolled freshmen (CDS C12)
   // Trailing year of the source CDS academic year (e.g. "2024-2025" → 2025).
   // Populated for CDS-sourced schools by the merge in src/data/colleges.ts.
-  // Used by the chance model to surface "data may be stale" when undefined
-  // or older than 2 academic cycles.
+  // Internal-only: feeds the chance model's confidence calculation
+  // (hasCds in admissions.ts). Not surfaced as a user-facing flag.
   readonly dataYear?: number;
 
   // ── Hook fields (W2) ──────────────────────────────────────────────────────
@@ -352,7 +352,10 @@ export interface ClassifiedCollege {
   // school-specific rate. Surfaces a "based on overall trends" badge.
   readonly usedFallback?: "ed" | "ea" | null;
   // Set when the school's data is older than 2 academic cycles (or missing).
-  // Drives the "data may be stale" note.
+  // Internal-only: still emitted by computeAdmissionChance and threaded
+  // through ClassifiedCollege so confidence-band logic can read it. The
+  // user-facing "data may be stale" pill was removed (fired on most schools
+  // and gave users no actionable signal).
   readonly stale?: boolean;
   // Set when the recruited-athlete pathway fired. The chance/range represent
   // the published 70-85% band, and the note overrides normal stat-band
@@ -409,6 +412,10 @@ export interface ChanceResult {
   readonly explanation: string;
   readonly strengths: string[];
   readonly weaknesses: string[];
+  // Neutral CTAs for inputs the user hasn't provided yet (e.g. AP scores).
+  // Surfaced as a separate UI section so absence of data isn't styled as a
+  // weakness/penalty. Each entry is { label, href }.
+  readonly missingDataHints?: readonly { label: string; href: string }[];
   readonly confidence: ConfidenceTier;
   readonly breakdown?: import("./admissions").ChanceBreakdown;
   readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];

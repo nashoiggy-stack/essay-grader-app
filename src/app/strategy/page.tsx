@@ -54,6 +54,7 @@ import type { Classification, ClassifiedCollege } from "@/lib/college-types";
 import { MajorSelect } from "@/components/MajorSelect";
 import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
 import { setItemAndNotify } from "@/lib/sync-event";
+import { getCachedJson } from "@/lib/cloud-storage";
 
 // ── Helpers: deterministic strength derivation ─────────────────────────────
 
@@ -916,18 +917,11 @@ function SchoolsInClassificationNote({
   classification: Classification;
 }) {
   const names = useMemo(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const pins = JSON.parse(
-        localStorage.getItem("admitedge-pinned-colleges") ?? "[]",
-      );
-      if (!Array.isArray(pins)) return [];
-      // We don't have classifications cached here — just return the names.
-      // The user can cross-reference with the classification tile counts.
-      return pins.map((p: { name?: string }) => p?.name).filter(Boolean);
-    } catch {
-      return [];
-    }
+    const pins = getCachedJson<{ name?: string }[]>("admitedge-pinned-colleges");
+    if (!Array.isArray(pins)) return [];
+    // We don't have classifications cached here — just return the names.
+    // The user can cross-reference with the classification tile counts.
+    return pins.map((p) => p?.name).filter((n): n is string => typeof n === "string");
   }, []);
   void classification;
   return (
@@ -1256,15 +1250,12 @@ function MajorRecommendationsBody({
         type="button"
         onClick={() => {
           // Let the user change their preference without leaving the page.
-          try {
-            const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
-            const current = raw ? JSON.parse(raw) : {};
-            setItemAndNotify(
-              PROFILE_STORAGE_KEY,
-              JSON.stringify({ ...current, intendedMajor: "", intendedInterest: "" }),
-            );
-            onMajorSaved();
-          } catch { /* ignore */ }
+          const current = getCachedJson<Record<string, unknown>>(PROFILE_STORAGE_KEY) ?? {};
+          setItemAndNotify(
+            PROFILE_STORAGE_KEY,
+            JSON.stringify({ ...current, intendedMajor: "", intendedInterest: "" }),
+          );
+          onMajorSaved();
         }}
         className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
       >
@@ -1527,8 +1518,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
 
   const save = () => {
     try {
-      const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
-      const current = raw ? JSON.parse(raw) : {};
+      const current = getCachedJson<Record<string, unknown>>(PROFILE_STORAGE_KEY) ?? {};
       setItemAndNotify(
         PROFILE_STORAGE_KEY,
         JSON.stringify({

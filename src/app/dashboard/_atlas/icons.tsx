@@ -123,12 +123,24 @@ export const IconCompass = (p: SimpleIconProps) => (
   </Icon>
 );
 
+// Graded list — three rows with a small badge mark at the top-right to
+// signal "graded" / "ranked", paired with /list.
+export const IconListGrade = (p: SimpleIconProps) => (
+  <Icon {...p}>
+    <line x1="4" y1="7" x2="14" y2="7" />
+    <line x1="4" y1="12" x2="16" y2="12" />
+    <line x1="4" y1="17" x2="13" y2="17" />
+    <circle cx="18" cy="6" r="2.5" fill="currentColor" stroke="none" />
+  </Icon>
+);
+
 export type ToolIconKey =
   | "essay"
   | "gpa"
   | "extracurriculars"
   | "resume"
   | "colleges"
+  | "list"
   | "chances"
   | "compare"
   | "strategy";
@@ -141,6 +153,7 @@ export const TOOL_ICON: Record<ToolIconKey, ToolIconComponent> = {
   extracurriculars: IconClipboard,
   resume: IconResume,
   colleges: IconSchool,
+  list: IconListGrade,
   chances: IconChart,
   compare: IconCompare,
   strategy: IconCompass,

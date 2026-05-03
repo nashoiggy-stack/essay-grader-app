@@ -24,35 +24,23 @@ import { PINNED_COLLEGES_KEY } from "./college-types";
 import { PROFILE_STORAGE_KEY } from "./profile-types";
 import { COLLEGES } from "@/data/colleges";
 import { classifyCollege } from "./admissions";
-
-function safeParseJSON<T>(raw: string | null): T | null {
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
+import { getCachedJson, getCachedRaw, type CloudKey } from "./cloud-storage";
 
 function readUserProfile(): UserProfile | null {
-  if (typeof window === "undefined") return null;
-  return safeParseJSON<UserProfile>(localStorage.getItem(PROFILE_STORAGE_KEY));
+  return getCachedJson<UserProfile>(PROFILE_STORAGE_KEY as CloudKey);
 }
 
 function readEcEvaluation(): ProfileEvaluation | null {
-  if (typeof window === "undefined") return null;
-  return safeParseJSON<ProfileEvaluation>(localStorage.getItem("ec-evaluator-result"));
+  return getCachedJson<ProfileEvaluation>("ec-evaluator-result");
 }
 
 function readEssayHistory(): readonly SavedEssay[] {
-  if (typeof window === "undefined") return [];
-  const parsed = safeParseJSON<SavedEssay[]>(localStorage.getItem("essay-grader-history"));
+  const parsed = getCachedJson<SavedEssay[]>("essay-grader-history");
   return Array.isArray(parsed) ? parsed : [];
 }
 
 function readPinnedCollegeList(): readonly PinnedCollege[] {
-  if (typeof window === "undefined") return [];
-  const parsed = safeParseJSON<PinnedCollege[]>(localStorage.getItem(PINNED_COLLEGES_KEY));
+  const parsed = getCachedJson<PinnedCollege[]>(PINNED_COLLEGES_KEY as CloudKey);
   if (!Array.isArray(parsed)) return [];
   return parsed.filter(
     (p): p is PinnedCollege =>
@@ -205,19 +193,17 @@ function buildPinnedSchools(
 // ── Public reader ───────────────────────────────────────────────────────────
 
 function readDreamSchool(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(DREAM_SCHOOL_KEY);
-    if (!raw) return null;
-    const trimmed = raw.trim();
-    // Accept both a plain string and a JSON-quoted string for backward compat.
-    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+  const raw = getCachedRaw(DREAM_SCHOOL_KEY as CloudKey);
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    try {
       return JSON.parse(trimmed) as string;
+    } catch {
+      return null;
     }
-    return trimmed.length > 0 ? trimmed : null;
-  } catch {
-    return null;
   }
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export function readStrategyProfile(): StrategyProfile {
