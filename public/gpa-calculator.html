@@ -87,12 +87,12 @@
 
     .badge {
       display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(59,130,246,.1);
-      border: 1px solid rgba(59,130,246,.28);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);
       border-radius: 100px;
       padding: .3rem .9rem;
       font-size: .72rem; font-weight: 600;
-      color: #93c5fd;
+      color: var(--accent-1);
       text-transform: uppercase; letter-spacing: .09em;
       margin-bottom: 1.4rem;
     }
@@ -228,7 +228,7 @@
       margin-left: auto;
     }
     .btn-add-year svg { width: 13px; height: 13px; }
-    .btn-add-year:hover { border-color: rgba(59,130,246,.45); color: #93c5fd; background: rgba(59,130,246,.07); }
+    .btn-add-year:hover { border-color: color-mix(in oklch, var(--accent-1), transparent 60%); color: var(--accent-1); background: color-mix(in oklch, var(--accent-1), transparent 88%); }
     .btn-add-year:disabled { opacity: .3; cursor: not-allowed; }
     .btn-add-year:disabled:hover { border-color: rgba(255,255,255,.15); color: var(--subtle); background: transparent; }
 
@@ -267,13 +267,13 @@
       display: grid; place-items: center;
     }
     .core-toggle.is-core {
-      background: rgba(59,130,246,.12);
-      border: 1px solid rgba(59,130,246,.28);
-      color: #93c5fd;
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);
+      color: var(--accent-1);
     }
     .core-toggle.is-core:hover {
-      background: rgba(59,130,246,.22);
-      border-color: rgba(59,130,246,.45);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border-color: color-mix(in oklch, var(--accent-1), transparent 60%);
     }
     .core-toggle.is-hs {
       background: rgba(234,179,8,.1);
@@ -310,14 +310,14 @@
     input[type="password"]:hover { border-color: rgba(255,255,255,.15); background: rgba(2,6,23,.7); }
     input[type="text"]:focus,
     input[type="email"]:focus,
-    input[type="password"]:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.13); background: rgba(2,6,23,.75); }
+    input[type="password"]:focus { border-color: color-mix(in oklch, var(--accent-1), transparent 60%); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent-1), transparent 88%); background: rgba(2,6,23,.75); }
     select {
       cursor: pointer; -webkit-appearance: none; appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23475569'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem;
     }
     select:hover { border-color: rgba(255,255,255,.15); background-color: rgba(2,6,23,.7); }
-    select:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.13); background-color: rgba(2,6,23,.75); }
+    select:focus { border-color: color-mix(in oklch, var(--accent-1), transparent 60%); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent-1), transparent 88%); background-color: rgba(2,6,23,.75); }
     select option { background: #06060f; color: #f1f5f9; }
     select.unset  { color: var(--subtle); }
 
@@ -345,10 +345,10 @@
     }
     .btn svg { width: 14px; height: 14px; }
 
-    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 0 22px rgba(59,130,246,.28); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(59,130,246,.48), 0 6px 20px rgba(0,0,0,.35); }
-    .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary { background: var(--accent-1); color: #fff; border: 1px solid var(--accent-1); box-shadow: none; border-radius: 4px; }
+    .btn-primary:hover { filter: brightness(1.08); transform: none; }
+    .btn-primary:active { transform: translateY(0.5px); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
     .btn-secondary { background: rgba(255,255,255,.05); color: var(--muted); border: 1px solid rgba(255,255,255,.08); }
     .btn-secondary:hover { background: rgba(255,255,255,.09); color: var(--text); border-color: rgba(255,255,255,.14); }
@@ -371,11 +371,11 @@
     details { margin-top: 1.3rem; }
     summary {
       cursor: pointer; list-style: none;
-      font-size: .82rem; font-weight: 600; color: #60a5fa;
+      font-size: .82rem; font-weight: 600; color: var(--accent-1);
       user-select: none; display: inline-flex; align-items: center; gap: .4rem;
       transition: color .15s;
     }
-    summary:hover { color: #93c5fd; }
+    summary:hover { color: var(--accent-1); }
     summary::-webkit-details-marker { display: none; }
     .chev { width: 13px; height: 13px; transition: transform .2s ease; flex-shrink: 0; }
     details[open] summary .chev { transform: rotate(90deg); }
@@ -508,15 +508,15 @@
       border: 1px solid rgba(255,255,255,.09);
       border-radius: 24px;
       padding: 2.4rem 2rem 2rem;
-      box-shadow: 0 0 80px rgba(59,130,246,.15), 0 32px 80px rgba(0,0,0,.65);
+      box-shadow: 0 0 80px color-mix(in oklch, var(--accent-1), transparent 88%), 0 32px 80px rgba(0,0,0,.65);
     }
 
     .auth-header { text-align: center; margin-bottom: 1.8rem; }
     .auth-badge {
       display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.28);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%); border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);
       border-radius: 100px; padding: .28rem .85rem;
-      font-size: .7rem; font-weight: 600; color: #93c5fd;
+      font-size: .7rem; font-weight: 600; color: var(--accent-1);
       text-transform: uppercase; letter-spacing: .09em;
       margin-bottom: 1.1rem;
     }
@@ -544,11 +544,11 @@
 
     .auth-toggle { text-align: center; font-size: .83rem; color: var(--muted); }
     .auth-toggle-btn {
-      background: none; border: none; color: #93c5fd; font-weight: 600;
+      background: none; border: none; color: var(--accent-1); font-weight: 600;
       cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .83rem;
       padding: 0; margin-left: .25rem; transition: color .15s;
     }
-    .auth-toggle-btn:hover { color: #bfdbfe; text-decoration: underline; }
+    .auth-toggle-btn:hover { color: var(--accent-1); text-decoration: underline; }
 
     /* ── User bar ── */
     #user-bar {
@@ -664,7 +664,7 @@
       <span></span>
     </div>
 
-    <div style="margin-bottom:1rem;padding:.55rem .85rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:10px;font-size:.76rem;color:#93c5fd;line-height:1.55;">
+    <div style="margin-bottom:1rem;padding:.55rem .85rem;background:color-mix(in oklch, var(--accent-1), transparent 88%);border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);border-radius:10px;font-size:.76rem;color: var(--accent-1);line-height:1.55;">
       <strong>*Counts for:</strong> Click the <strong>ALL</strong> button on a class to change it to <strong>HS</strong>. Classes set to <strong>ALL</strong> count toward both your High School and College GPA. Classes set to <strong>HS</strong> count only toward your High School GPA (e.g. PE, electives that colleges don't consider).
     </div>
 
