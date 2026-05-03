@@ -33,7 +33,7 @@ interface ToolEntry {
 // 8 sections = basicInfo/education/awards/communityService/athletics/activities/summerExperience/skills (Resume)
 // 100+ schools = ~111 entries in src/data/colleges.ts
 const TOOLS: readonly ToolEntry[] = [
-  { id: "essay",            name: "Essay Grader",   desc: "AI grading on 7 criteria + VSPICE rubric.",   href: "/",                  stat: "7+V", statLabel: "Criteria" },
+  { id: "essay",            name: "Essay Grader",   desc: "AI grading on 7 criteria + VSPICE rubric.",   href: "/essay",             stat: "7+V", statLabel: "Criteria" },
   { id: "gpa",              name: "GPA Calculator", desc: "Weighted, unweighted, with course rigor.",     href: "/gpa" },
   { id: "extracurriculars", name: "EC Evaluator",   desc: "Conversational tier-rated activity review.",   href: "/extracurriculars", stat: "5",   statLabel: "Bands" },
   { id: "resume",           name: "Resume Helper",  desc: "Common-App-format activities and resume.",     href: "/resume",            stat: "8",   statLabel: "Sections" },
@@ -268,7 +268,7 @@ function Foot() {
           </div>
           <div className="lpx-foot-col">
             <h4>Product</h4>
-            <Link href="/">Essay Grader</Link>
+            <Link href="/essay">Essay Grader</Link>
             <Link href="/colleges">Colleges</Link>
             <Link href="/list">Your List</Link>
             <Link href="/chances">Chances</Link>
