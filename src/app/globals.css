@@ -17,93 +17,90 @@
 
 :root,
 :root.dark {
-  /* ── DARK theme — cosmic depth ────────────────────────────── */
-  --bg-base: #06060f;
-  --bg-surface: #0f0f1a;
-  --bg-elevated: #15152a;
-  --text-primary: #e4e4e7;
-  --text-secondary: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --border-token: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --accent: #60a5fa;
-  --accent-strong: #3b82f6;
-  --accent-soft: rgba(99, 102, 241, 0.18);
-  --accent-glow: rgba(99, 102, 241, 0.35);
-  --violet-soft: rgba(168, 85, 247, 0.14);
-  --cyan-soft: rgba(56, 189, 248, 0.12);
-  --noise-opacity: 0.025;
+  /* ── DARK theme — Linear-derived ────────────────────────────
+     OKLCH-tinted neutrals carry a faint cool tint toward the brand
+     hue (264, deep indigo). See design-system/MASTER.md. */
+  --bg-base: oklch(13% 0.012 250);
+  --bg-surface: oklch(16% 0.013 250);
+  --bg-elevated: oklch(19% 0.014 250);
+  --bg-inset: oklch(11% 0.011 250);
+  --text-primary: oklch(96% 0.005 250);
+  --text-secondary: oklch(76% 0.008 250);
+  --text-muted: oklch(58% 0.008 250);
+  --text-faint: oklch(42% 0.008 250);
+  --border-token: oklch(96% 0.005 250 / 0.08);
+  --border-hair: oklch(96% 0.005 250 / 0.08);
+  --border-strong: oklch(96% 0.005 250 / 0.18);
+  --accent: oklch(64% 0.18 264);
+  --accent-strong: oklch(58% 0.18 264);
+  --accent-soft: oklch(64% 0.18 264 / 0.12);
+  --accent-line: oklch(64% 0.18 264 / 0.32);
+  --accent-text: oklch(82% 0.10 264);
+  --accent-glow: oklch(64% 0.18 264 / 0.30);
+  /* Legacy aliases retained for compatibility — point at neutral tints */
+  --violet-soft: oklch(96% 0.005 250 / 0.06);
+  --cyan-soft: oklch(96% 0.005 250 / 0.04);
+  --noise-opacity: 0;
 
-  /* Atmospheric gradient mesh — visible when no shader overlay */
-  --bg-atmosphere:
-    radial-gradient(1100px 600px at 18% -8%, rgba(99, 102, 241, 0.20), transparent 60%),
-    radial-gradient(900px 600px at 110% 12%, rgba(168, 85, 247, 0.14), transparent 65%),
-    radial-gradient(800px 500px at 50% 110%, rgba(56, 189, 248, 0.10), transparent 60%);
+  /* No decorative gradient mesh — Linear-derived runs on flat surfaces. */
+  --bg-atmosphere: none;
 
-  /* Card chrome */
-  --card-bg: rgba(15, 15, 26, 0.70);
-  --card-border: rgba(255, 255, 255, 0.07);
-  --card-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 -1px 0 rgba(0, 0, 0, 0.30) inset,
-    0 30px 60px -20px rgba(0, 0, 0, 0.55),
-    0 8px 24px -8px rgba(0, 0, 0, 0.35);
-  --card-bezel-bg: rgba(255, 255, 255, 0.025);
-  --card-bezel-border: rgba(255, 255, 255, 0.05);
+  /* Card chrome — hairline borders, no shadows. */
+  --card-bg: var(--bg-surface);
+  --card-border: var(--border-hair);
+  --card-shadow: none;
+  --card-bezel-bg: transparent;
+  --card-bezel-border: transparent;
 
   /* Legacy aliases */
   --background: var(--bg-base);
   --foreground: var(--text-primary);
 
-  /* Easing tokens — Emil Kowalski */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Easing tokens */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
   /* Duration tokens */
-  --duration-press: 160ms;
-  --duration-fast: 125ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
+  --duration-press: 150ms;
+  --duration-fast: 150ms;
+  --duration-normal: 240ms;
+  --duration-slow: 360ms;
 }
 
-/* ── LIGHT theme — editorial luxury ──────────────────────────── */
-/* A warm, refined light palette with subtle blue/violet/amber highlights.
-   Not a generic Apple clone — opinionated, layered, gradient-rich. */
+/* ── LIGHT theme — Linear-derived (default) ───────────────────
+   See design-system/MASTER.md. Warm-cool off-white surfaces with a
+   faint cool tint toward the brand hue (264). No gradient mesh, no
+   shadows. Light is the default — daytime essay-writing. */
 :root.light {
-  --bg-base: #fbfaf7;          /* warm off-white (paper feel) */
-  --bg-surface: #ffffff;
-  --bg-elevated: #ffffff;
-  --text-primary: #1a1b25;     /* deep ink, not pure black */
-  --text-secondary: #2d2f3a;
-  --text-muted: #61627a;       /* soft warm gray */
-  --border-token: rgba(28, 30, 60, 0.08);
-  --border-strong: rgba(28, 30, 60, 0.14);
-  --accent: #4f46e5;           /* indigo — richer than basic blue */
-  --accent-strong: #4338ca;
-  --accent-soft: rgba(79, 70, 229, 0.10);
-  --accent-glow: rgba(79, 70, 229, 0.18);
-  --violet-soft: rgba(168, 85, 247, 0.08);
-  --cyan-soft: rgba(56, 189, 248, 0.07);
-  --noise-opacity: 0.012;       /* paper grain */
+  --bg-base: oklch(99% 0.003 250);
+  --bg-surface: oklch(97% 0.004 250);
+  --bg-elevated: oklch(95% 0.005 250);
+  --bg-inset: oklch(93% 0.006 250);
+  --text-primary: oklch(18% 0.01 250);
+  --text-secondary: oklch(40% 0.01 250);
+  --text-muted: oklch(58% 0.008 250);
+  --text-faint: oklch(72% 0.006 250);
+  --border-token: oklch(18% 0.01 250 / 0.08);
+  --border-hair: oklch(18% 0.01 250 / 0.08);
+  --border-strong: oklch(18% 0.01 250 / 0.16);
+  --accent: oklch(48% 0.16 264);
+  --accent-strong: oklch(40% 0.16 264);
+  --accent-soft: oklch(48% 0.16 264 / 0.08);
+  --accent-line: oklch(48% 0.16 264 / 0.24);
+  --accent-text: oklch(36% 0.12 264);
+  --accent-glow: oklch(48% 0.16 264 / 0.16);
+  --violet-soft: oklch(18% 0.01 250 / 0.04);
+  --cyan-soft: oklch(18% 0.01 250 / 0.03);
+  --noise-opacity: 0;
 
-  /* Atmospheric gradient mesh — soft warm light w/ brand color highlights */
-  --bg-atmosphere:
-    radial-gradient(1200px 700px at 12% -10%, rgba(79, 70, 229, 0.10), transparent 55%),
-    radial-gradient(1000px 700px at 105% 8%, rgba(236, 72, 153, 0.06), transparent 60%),
-    radial-gradient(900px 600px at 50% 110%, rgba(56, 189, 248, 0.07), transparent 60%),
-    radial-gradient(700px 500px at 88% 58%, rgba(251, 191, 36, 0.04), transparent 65%);
+  --bg-atmosphere: none;
 
-  /* Card chrome — frosted white with soft layered shadows */
-  --card-bg: rgba(255, 255, 255, 0.78);
-  --card-border: rgba(28, 30, 60, 0.07);
-  --card-shadow:
-    0 1px 0 rgba(255, 255, 255, 1) inset,
-    0 -1px 0 rgba(28, 30, 60, 0.04) inset,
-    0 24px 48px -16px rgba(28, 30, 60, 0.10),
-    0 6px 16px -6px rgba(28, 30, 60, 0.06);
-  --card-bezel-bg: rgba(28, 30, 60, 0.025);
-  --card-bezel-border: rgba(28, 30, 60, 0.05);
+  --card-bg: var(--bg-surface);
+  --card-border: var(--border-hair);
+  --card-shadow: none;
+  --card-bezel-bg: transparent;
+  --card-bezel-border: transparent;
 
   --background: var(--bg-base);
   --foreground: var(--text-primary);
@@ -258,15 +255,15 @@ p {
    The landing page is fully opted-out so its hero typography (much larger
    sizes, custom font weights) is preserved exactly as designed. */
 :where(h1, h2) {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
   line-height: 1.08;
 }
 :where(h3) {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.018em;
 }
 
 /* Forced consistent sizes on feature-page headings.
