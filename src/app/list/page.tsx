@@ -4,7 +4,6 @@ import { useMemo, useDeferredValue } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Plus, ArrowRight, Bookmark, RefreshCw, X } from "lucide-react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeCard } from "@/components/CollegeCard";
 import { useCollegePins } from "@/hooks/useCollegePins";
@@ -65,11 +64,11 @@ const TIER_KEYS = ["safety", "likely", "target", "reach", "unlikely", "insuffici
 type TierKey = (typeof TIER_KEYS)[number];
 
 const TIER_DOT: Record<TierKey, string> = {
-  safety: "bg-emerald-400",
-  likely: "bg-blue-400",
-  target: "bg-amber-400",
-  reach: "bg-orange-400",
-  unlikely: "bg-red-400",
+  safety: "bg-emerald-500",
+  likely: "bg-blue-500",
+  target: "bg-amber-500",
+  reach: "bg-orange-500",
+  unlikely: "bg-red-500",
   insufficient: "bg-zinc-500",
 };
 const TIER_LABEL: Record<TierKey, string> = {
@@ -84,24 +83,27 @@ const TIER_LABEL: Record<TierKey, string> = {
 // Letter colors are restrained — letter is large enough that any tone reads
 // as decorative if pushed. We pull a single hairline tone per band.
 const LETTER_TONE: Record<Letter, string> = {
-  "A+": "text-emerald-200",
-  "A":  "text-emerald-200",
-  "A-": "text-emerald-200",
-  "B+": "text-zinc-100",
-  "B":  "text-zinc-100",
-  "B-": "text-zinc-100",
-  "C+": "text-amber-200",
-  "C":  "text-amber-200",
-  "C-": "text-amber-200",
-  "D":  "text-orange-200",
-  "F":  "text-red-200",
+  "A+": "text-emerald-600 dark:text-emerald-300",
+  "A":  "text-emerald-600 dark:text-emerald-300",
+  "A-": "text-emerald-600 dark:text-emerald-300",
+  "B+": "text-text-primary",
+  "B":  "text-text-primary",
+  "B-": "text-text-primary",
+  "C+": "text-amber-600 dark:text-amber-300",
+  "C":  "text-amber-600 dark:text-amber-300",
+  "C-": "text-amber-600 dark:text-amber-300",
+  "D":  "text-orange-600 dark:text-orange-300",
+  "F":  "text-red-600 dark:text-red-300",
 };
 
-// ── Reusable typographic tokens (editorial chrome) ─────────────────────────
+// ── Reusable typographic tokens (Linear-derived chrome) ───────────────────
+// SERIF is a misnomer — kept for compat with this file's existing usage.
+// In Linear-derived there is no display serif; headlines are heavy weights
+// of the body sans with tight tracking. See design-system/MASTER.md.
 
-const EYEBROW = "text-[10px] uppercase tracking-[0.22em] text-zinc-500 font-medium";
-const HAIRLINE = "border-t border-white/[0.06]";
-const SERIF = "font-[family-name:var(--font-display)]";
+const EYEBROW = "text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted";
+const HAIRLINE = "border-t border-border-hair";
+const SERIF = "font-[family-name:var(--font-geist-sans)] font-semibold tracking-[-0.022em]";
 const MONO = "font-[family-name:var(--font-geist-mono)] tabular-nums";
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -174,38 +176,35 @@ export default function ListPage() {
 
   if (!loaded || !profileLoaded) {
     return (
-      <AuroraBackground>
-        <div className="min-h-dvh flex items-center justify-center">
-          <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
-        </div>
-      </AuroraBackground>
+      <div className="min-h-dvh flex items-center justify-center bg-bg-base">
+        <div className="h-5 w-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+      </div>
     );
   }
 
   const isEmpty = pinned.length === 0;
 
   return (
-    <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
-        {/* ── Masthead ─────────────────────────────────────────────────── */}
-        <motion.header
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-          className="mb-12 sm:mb-16"
+    <main className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+      {/* ── Masthead ─────────────────────────────────────────────────── */}
+      <motion.header
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-10 sm:mb-12"
+      >
+        <p className={EYEBROW}>Your application cycle</p>
+        <h1
+          className={`${SERIF} mt-3 text-[2rem] sm:text-[2.5rem] leading-[1.04] text-text-primary`}
         >
-          <p className={EYEBROW}>Your application cycle</p>
-          <h1
-            className={`${SERIF} mt-2 text-[clamp(2.75rem,6vw,4.5rem)] leading-[0.95] tracking-tight text-zinc-100`}
-          >
-            The list, graded.
-          </h1>
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-400">
-            A second-opinion read on tier balance, ED leverage, financial mix,
-            geographic spread, and major fit — calibrated against the same
-            chance model that powers the rest of AdmitEdge.
-          </p>
-        </motion.header>
+          The list, graded.
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
+          A second-opinion read on tier balance, ED leverage, financial mix,
+          geographic spread, and major fit — calibrated against the same
+          chance model that powers the rest of AdmitEdge.
+        </p>
+      </motion.header>
 
         {isEmpty ? (
           <EmptyState />
@@ -239,8 +238,7 @@ export default function ListPage() {
             </ScrollReveal>
           </div>
         )}
-      </main>
-    </AuroraBackground>
+    </main>
   );
 }
 
@@ -248,19 +246,19 @@ export default function ListPage() {
 
 function EmptyState() {
   return (
-    <div className="border border-white/[0.06] rounded-3xl bg-[#0a0a14]/40 px-8 sm:px-12 py-14 sm:py-20">
+    <div className="border border-border-hair rounded-3xl bg-bg-surface px-8 sm:px-12 py-14 sm:py-20">
       <p className={EYEBROW}>No schools pinned</p>
-      <h2 className={`${SERIF} mt-3 text-3xl sm:text-4xl text-zinc-100 leading-tight`}>
+      <h2 className={`${SERIF} mt-3 text-3xl sm:text-4xl text-text-primary leading-tight`}>
         Start by pinning a few schools.
       </h2>
-      <p className="mt-3 max-w-md text-[14px] text-zinc-400 leading-relaxed">
+      <p className="mt-3 max-w-md text-[14px] text-text-secondary leading-relaxed">
         We grade the list on tier balance, count, ED leverage, financial mix,
         geographic diversity, and major fit. Aim for 8–12 schools across reach,
         target, likely, and safety.
       </p>
       <Link
         href="/colleges"
-        className="mt-7 inline-flex items-center gap-2 text-[14px] font-medium text-zinc-100 hover:text-white transition-colors"
+        className="mt-7 inline-flex items-center gap-2 text-[14px] font-medium text-text-primary hover:text-white transition-colors"
       >
         Browse colleges <ArrowRight className="w-4 h-4" />
       </Link>
@@ -288,24 +286,24 @@ function GradeMasthead({ grade }: { grade: GradeResult }) {
             {grade.letter}
           </span>
           <div className="pb-2 sm:pb-4">
-            <div className={`${MONO} text-3xl sm:text-4xl text-zinc-200 leading-none`}>
+            <div className={`${MONO} text-3xl sm:text-4xl text-text-primary leading-none`}>
               {grade.officialScore.toFixed(1)}
-              <span className="text-zinc-600"> / 100</span>
+              <span className="text-text-faint"> / 100</span>
             </div>
-            <div className="mt-3 space-y-1 text-[12px] text-zinc-500">
+            <div className="mt-3 space-y-1 text-[12px] text-text-muted">
               <div className="flex items-baseline gap-3">
-                <span className="w-16 text-zinc-600">Balance</span>
-                <span className={`${MONO} text-zinc-300 w-14`}>
+                <span className="w-16 text-text-faint">Balance</span>
+                <span className={`${MONO} text-text-secondary w-14`}>
                   {grade.balanceScore.toFixed(1)}
                 </span>
-                <span className="text-zinc-600">/ 100</span>
+                <span className="text-text-faint">/ 100</span>
               </div>
               <div className="flex items-baseline gap-3">
-                <span className="w-16 text-zinc-600">Major</span>
-                <span className={`${MONO} text-zinc-300 w-14`}>
+                <span className="w-16 text-text-faint">Major</span>
+                <span className={`${MONO} text-text-secondary w-14`}>
                   {grade.majorScore.toFixed(1)}
                 </span>
-                <span className="text-zinc-600">/ 100</span>
+                <span className="text-text-faint">/ 100</span>
               </div>
             </div>
           </div>
@@ -317,10 +315,10 @@ function GradeMasthead({ grade }: { grade: GradeResult }) {
           <ol className="mt-4 space-y-4">
             {grade.reasons.slice(0, 5).map((r, i) => (
               <li key={i} className={`grid grid-cols-[2.25rem_1fr] gap-2 pt-3 ${HAIRLINE}`}>
-                <span className={`${MONO} text-[11px] text-zinc-500 mt-0.5`}>
+                <span className={`${MONO} text-[11px] text-text-muted mt-0.5`}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="text-[13px] text-zinc-300 leading-relaxed">{r}</span>
+                <span className="text-[13px] text-text-secondary leading-relaxed">{r}</span>
               </li>
             ))}
           </ol>
@@ -358,7 +356,7 @@ function Breakdown({ grade }: { grade: GradeResult }) {
         <p className={EYEBROW} id="grade-breakdown">
           Breakdown
         </p>
-        <p className="text-[11px] text-zinc-600 max-w-[20ch] text-right">
+        <p className="text-[11px] text-text-faint max-w-[20ch] text-right">
           balance + major / 2 = official
         </p>
       </div>
@@ -381,32 +379,32 @@ function BreakdownColumn({
   const totalOut = rows.reduce((s, r) => s + r.out, 0);
   return (
     <div>
-      <div className="flex items-baseline justify-between pb-3 mb-1 border-b border-white/[0.08]">
-        <h3 className={`${SERIF} text-2xl text-zinc-100 leading-none`}>{title}</h3>
-        <div className={`${MONO} text-[14px] text-zinc-300`}>
+      <div className="flex items-baseline justify-between pb-3 mb-1 border-b border-border-strong">
+        <h3 className={`${SERIF} text-2xl text-text-primary leading-none`}>{title}</h3>
+        <div className={`${MONO} text-[14px] text-text-secondary`}>
           {total.toFixed(1)}
-          <span className="text-zinc-600"> / {totalOut}</span>
+          <span className="text-text-faint"> / {totalOut}</span>
         </div>
       </div>
-      <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-5">{weight}</p>
-      <div className="divide-y divide-white/[0.04]">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-text-faint mb-5">{weight}</p>
+      <div className="divide-y divide-border-hair">
         {rows.map((r, i) => {
           const pct = Math.max(0, Math.min(100, (r.score / r.out) * 100));
           return (
             <div key={i} className="grid grid-cols-[1fr_auto] gap-x-4 py-4">
               <div className="min-w-0">
-                <div className="text-[13px] text-zinc-200">{r.label}</div>
-                <p className="mt-1 text-[12px] text-zinc-500 leading-relaxed max-w-[55ch]">
+                <div className="text-[13px] text-text-primary">{r.label}</div>
+                <p className="mt-1 text-[12px] text-text-muted leading-relaxed max-w-[55ch]">
                   {r.note}
                 </p>
               </div>
               <div className="text-right">
-                <div className={`${MONO} text-[13px] text-zinc-200`}>
+                <div className={`${MONO} text-[13px] text-text-primary`}>
                   {r.score.toFixed(1)}
-                  <span className="text-zinc-600"> / {r.out}</span>
+                  <span className="text-text-faint"> / {r.out}</span>
                 </div>
                 {/* Thin meter — deliberately minimal */}
-                <div className="mt-2 h-px w-24 bg-white/[0.05] overflow-hidden">
+                <div className="mt-2 h-px w-24 bg-bg-surface overflow-hidden">
                   <div
                     className="h-full bg-zinc-200/70"
                     style={{ width: `${pct}%` }}
@@ -434,7 +432,7 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
         <p className={EYEBROW} id="tier-strip">
           Tier distribution
         </p>
-        <span className={`${MONO} text-[11px] text-zinc-500`}>
+        <span className={`${MONO} text-[11px] text-text-muted`}>
           {counts.total} pinned
         </span>
       </div>
@@ -445,10 +443,10 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
           return (
             <div key={tier} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between">
-                <span className="text-[11px] text-zinc-400">{TIER_LABEL[tier]}</span>
-                <span className={`${MONO} text-[11px] text-zinc-300`}>{n}</span>
+                <span className="text-[11px] text-text-secondary">{TIER_LABEL[tier]}</span>
+                <span className={`${MONO} text-[11px] text-text-secondary`}>{n}</span>
               </div>
-              <div className="h-px bg-white/[0.06]">
+              <div className="h-px bg-bg-surface">
                 <div
                   className={`h-full ${TIER_DOT[tier]}`}
                   style={{ width: `${pct * 100}%`, minWidth: n > 0 ? "12%" : 0 }}
@@ -459,7 +457,7 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
         })}
       </div>
       {/* Subtle reminder of segmenting — no big legend */}
-      <p className="mt-4 text-[11px] text-zinc-600">
+      <p className="mt-4 text-[11px] text-text-faint">
         Ideal target: ~30% reach · 30% target · 25% likely · 15% safety.
       </p>
       {/* Hide unused segments mention */}
@@ -488,13 +486,13 @@ function PinnedSection({
           <p className={EYEBROW} id="pinned-heading">
             Your pinned schools
           </p>
-          <span className={`${MONO} text-[11px] text-zinc-500`}>
+          <span className={`${MONO} text-[11px] text-text-muted`}>
             ·  {sorted.length}
           </span>
         </div>
         <Link
           href="/colleges"
-          className="text-[12px] text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1 transition-colors"
+          className="text-[12px] text-text-secondary hover:text-text-primary inline-flex items-center gap-1 transition-colors"
         >
           Browse more <ArrowRight className="w-3 h-3" />
         </Link>
@@ -527,10 +525,10 @@ function RecommendationsSection({
       return (
         <section>
           <p className={EYEBROW}>Engine suggestions</p>
-          <p className={`${SERIF} mt-3 text-2xl sm:text-3xl text-zinc-100 max-w-2xl leading-tight`}>
+          <p className={`${SERIF} mt-3 text-2xl sm:text-3xl text-text-primary max-w-2xl leading-tight`}>
             Your list is solid.
           </p>
-          <p className="mt-3 max-w-md text-[13px] text-zinc-400 leading-relaxed">
+          <p className="mt-3 max-w-md text-[13px] text-text-secondary leading-relaxed">
             No clear improvements to suggest right now. The breakdown above
             shows what's driving your score — refine those if you want a
             higher grade.
@@ -554,9 +552,9 @@ function RecommendationsSection({
         <p className={EYEBROW} id="recs-heading">
           Engine suggestions
         </p>
-        <span className="text-[11px] text-zinc-600">{mode}</span>
+        <span className="text-[11px] text-text-faint">{mode}</span>
       </div>
-      <ol className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
+      <ol className="divide-y divide-white/[0.06] border-y border-border-hair">
         {recommendations.map((rec, i) => (
           <RecommendationRow
             key={`${rec.kind}-${rec.college.name}-${rec.replaces ?? ""}`}
@@ -589,36 +587,36 @@ function RecommendationRow({
       transition={{ delay: index * 0.04, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       className="grid grid-cols-[3rem_1fr_auto] sm:grid-cols-[3rem_1fr_auto_auto] gap-4 sm:gap-6 py-5 items-baseline"
     >
-      <span className={`${MONO} text-[12px] text-zinc-600`}>
+      <span className={`${MONO} text-[12px] text-text-faint`}>
         {String(index + 1).padStart(2, "0")}
       </span>
       <div className="min-w-0">
         <div className="flex items-baseline gap-2 flex-wrap">
-          <h3 className={`${SERIF} text-xl sm:text-2xl text-zinc-100 leading-tight`}>
+          <h3 className={`${SERIF} text-xl sm:text-2xl text-text-primary leading-tight`}>
             {rec.college.name}
           </h3>
           {rec.kind === "swap" && rec.replaces && (
-            <span className="text-[11px] text-zinc-500 inline-flex items-center gap-1">
+            <span className="text-[11px] text-text-muted inline-flex items-center gap-1">
               <X className="w-3 h-3" /> {rec.replaces}
             </span>
           )}
         </div>
-        <p className="mt-1.5 text-[13px] text-zinc-400 leading-relaxed max-w-[70ch]">
+        <p className="mt-1.5 text-[13px] text-text-secondary leading-relaxed max-w-[70ch]">
           {rec.rationale}
         </p>
       </div>
       <div className="text-right">
-        <div className={`${MONO} text-[12px] text-zinc-500`}>
+        <div className={`${MONO} text-[12px] text-text-muted`}>
           +{rec.gradeDelta.toFixed(1)}
         </div>
-        <div className="text-[10px] uppercase tracking-[0.16em] text-zinc-600">
+        <div className="text-[10px] uppercase tracking-[0.16em] text-text-faint">
           grade
         </div>
       </div>
       <button
         type="button"
         onClick={apply}
-        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-100 hover:text-white transition-colors"
+        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-text-primary hover:text-white transition-colors"
       >
         {rec.kind === "swap" ? (
           <>
@@ -634,7 +632,7 @@ function RecommendationRow({
       <button
         type="button"
         onClick={apply}
-        className="sm:hidden col-span-3 mt-2 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium text-zinc-100 border border-white/[0.08] rounded-full py-2 hover:bg-white/[0.04] transition-colors"
+        className="sm:hidden col-span-3 mt-2 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium text-text-primary border border-border-strong rounded-full py-2 hover:bg-white/[0.04] transition-colors"
       >
         {rec.kind === "swap" ? (
           <>
