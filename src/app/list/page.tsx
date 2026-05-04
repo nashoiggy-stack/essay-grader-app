@@ -83,17 +83,17 @@ const TIER_LABEL: Record<TierKey, string> = {
 // Letter colors are restrained — letter is large enough that any tone reads
 // as decorative if pushed. We pull a single hairline tone per band.
 const LETTER_TONE: Record<Letter, string> = {
-  "A+": "text-emerald-600 dark:text-emerald-300",
-  "A":  "text-emerald-600 dark:text-emerald-300",
-  "A-": "text-emerald-600 dark:text-emerald-300",
+  "A+": "text-tier-safety-fg",
+  "A":  "text-tier-safety-fg",
+  "A-": "text-tier-safety-fg",
   "B+": "text-text-primary",
   "B":  "text-text-primary",
   "B-": "text-text-primary",
-  "C+": "text-amber-600 dark:text-amber-300",
-  "C":  "text-amber-600 dark:text-amber-300",
-  "C-": "text-amber-600 dark:text-amber-300",
-  "D":  "text-orange-600 dark:text-orange-300",
-  "F":  "text-red-600 dark:text-red-300",
+  "C+": "text-tier-target-fg",
+  "C":  "text-tier-target-fg",
+  "C-": "text-tier-target-fg",
+  "D":  "text-tier-reach-fg",
+  "F":  "text-tier-unlikely-fg",
 };
 
 // ── Reusable typographic tokens (Linear-derived chrome) ───────────────────

@@ -10,13 +10,13 @@ import { BreakdownPanel } from "./BreakdownPanel";
 import { getCachedJson } from "@/lib/cloud-storage";
 
 const CLASS_COLORS = {
-  unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
-  reach: { bg: "bg-orange-500/10", border: "border-orange-500/20", text: "text-orange-400", label: "Reach", ring: "ring-orange-500/25" },
-  target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target", ring: "ring-amber-500/25" },
-  likely: { bg: "bg-accent-soft", border: "border-accent-line", text: "text-accent-text", label: "Likely", ring: "ring-accent-line" },
-  safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety", ring: "ring-emerald-500/25" },
+  unlikely:     { bg: "bg-tier-unlikely-soft",     border: "border-tier-unlikely-fg/30",     text: "text-tier-unlikely-fg",     label: "Unlikely",          ring: "ring-tier-unlikely-fg/30" },
+  reach:        { bg: "bg-tier-reach-soft",        border: "border-tier-reach-fg/30",        text: "text-tier-reach-fg",        label: "Reach",             ring: "ring-tier-reach-fg/30" },
+  target:       { bg: "bg-tier-target-soft",       border: "border-tier-target-fg/30",       text: "text-tier-target-fg",       label: "Target",            ring: "ring-tier-target-fg/30" },
+  likely:       { bg: "bg-tier-likely-soft",       border: "border-tier-likely-fg/30",       text: "text-tier-likely-fg",       label: "Likely",            ring: "ring-tier-likely-fg/30" },
+  safety:       { bg: "bg-tier-safety-soft",       border: "border-tier-safety-fg/30",       text: "text-tier-safety-fg",       label: "Safety",            ring: "ring-tier-safety-fg/30" },
   // Insufficient data: deliberately muted, no semantic color, no tier promise.
-  insufficient: { bg: "bg-zinc-500/5", border: "border-zinc-500/10", text: "text-text-secondary", label: "Insufficient Data", ring: "ring-zinc-500/15" },
+  insufficient: { bg: "bg-tier-insufficient-soft", border: "border-border-hair",             text: "text-text-secondary",       label: "Insufficient Data", ring: "ring-border-hair" },
 } as const;
 
 // Low-confidence muted variant — overrides tier color so the card visually
@@ -92,12 +92,12 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ delay: index * 0.04, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -2 }}
       data-college-card-index={flatIndex ?? undefined}
-      className={`group rounded-md bg-bg-surface border border-border-hair p-5 sm:p-6 hover:bg-bg-elevated hover:border-border-strong  transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+      className={`group rounded-md bg-bg-surface border border-border-hair p-5 sm:p-6 hover:bg-bg-elevated hover:border-border-strong  transition-[background-color,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         focused ? "ring-2 ring-accent-line" : ""
       }`}
     >
@@ -133,7 +133,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               }}
               aria-label={isPinned ? `Unpin ${c.name}` : `Pin ${c.name} to your list`}
               aria-pressed={isPinned}
-              className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center transition-[background-color,color] duration-200 ${
+              className={`mt-0.5 w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-[background-color,color] duration-200 ${
                 isPinned
                   ? "bg-accent-soft text-accent-text hover:bg-accent-soft"
                   : "bg-bg-surface text-text-muted hover:bg-bg-elevated hover:text-text-secondary"
@@ -203,7 +203,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       {(isLowConf || yieldProtectedNote || usedFallback || recruitedAthletePathway) && (
         <div className="mt-4 flex flex-wrap gap-1.5">
           {recruitedAthletePathway && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-tier-safety-soft text-tier-safety-fg ring-1 ring-tier-safety-fg/30">
               Recruited athlete pathway
             </span>
           )}
@@ -288,9 +288,9 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
 // the inline expansion below.
 
 const PILL_TONE = {
-  strong: { bg: "bg-emerald-500/10", text: "text-emerald-400", ring: "ring-emerald-500/25", bar: "bg-emerald-400" },
-  decent: { bg: "bg-amber-500/10", text: "text-amber-400", ring: "ring-amber-500/25", bar: "bg-amber-400" },
-  none:   { bg: "bg-bg-surface", text: "text-text-muted", ring: "border-border-hair", bar: "bg-zinc-600" },
+  strong: { bg: "bg-tier-safety-soft", text: "text-tier-safety-fg", ring: "ring-tier-safety-fg/30", bar: "bg-tier-safety-fg" },
+  decent: { bg: "bg-tier-target-soft", text: "text-tier-target-fg", ring: "ring-tier-target-fg/30", bar: "bg-tier-target-fg" },
+  none:   { bg: "bg-bg-inset",         text: "text-text-muted",      ring: "border-border-hair",     bar: "bg-text-faint" },
 } as const;
 
 function MajorFitFlag({ item }: { item: ClassifiedCollege }) {

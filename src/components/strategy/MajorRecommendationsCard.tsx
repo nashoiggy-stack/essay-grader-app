@@ -62,8 +62,8 @@ export function MajorRecommendationsBody({
             From your pinned list
           </h4>
           <div className="space-y-4">
-            <RecTierRow label="Safety" color="text-emerald-400" items={recs.fromPinned.safeties} />
-            <RecTierRow label="Target" color="text-amber-400" items={recs.fromPinned.targets} />
+            <RecTierRow label="Safety" color="text-tier-safety-fg" items={recs.fromPinned.safeties} />
+            <RecTierRow label="Target" color="text-tier-target-fg" items={recs.fromPinned.targets} />
             <RecTierRow label="Reach" color="text-orange-400" items={recs.fromPinned.reaches} />
           </div>
         </div>
@@ -227,7 +227,7 @@ function RecCard({ item }: { item: ClassifiedCollege }) {
   const match = item.majorMatch ?? "none";
   const matchLabel =
     match === "strong"
-      ? { text: "Strong fit", color: "text-emerald-400" }
+      ? { text: "Strong fit", color: "text-tier-safety-fg" }
       : match === "decent"
         ? { text: "Adjacent fit", color: "text-text-muted" }
         : null;

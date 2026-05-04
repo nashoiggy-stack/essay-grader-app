@@ -61,9 +61,9 @@ function DeadlineRow({ entry }: { entry: DeadlineEntry }) {
   const colorClass = entry.isRolling
     ? "text-text-muted"
     : entry.daysAway <= 14
-      ? "text-red-400"
+      ? "text-tier-unlikely-fg"
       : entry.daysAway <= 30
-        ? "text-amber-400"
+        ? "text-tier-target-fg"
         : "text-text-secondary";
 
   return (

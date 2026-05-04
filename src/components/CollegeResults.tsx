@@ -37,11 +37,11 @@ const SORT_OPTIONS: readonly { key: SortKey; label: string }[] = [
 ];
 
 const GROUPS: { key: Classification; label: string; color: string }[] = [
-  { key: "safety", label: "Safety", color: "text-emerald-400" },
-  { key: "likely", label: "Likely", color: "text-accent-text" },
-  { key: "target", label: "Target", color: "text-amber-400" },
-  { key: "reach", label: "Reach", color: "text-orange-400" },
-  { key: "unlikely", label: "Unlikely", color: "text-red-500" },
+  { key: "safety",       label: "Safety",            color: "text-tier-safety-fg" },
+  { key: "likely",       label: "Likely",            color: "text-tier-likely-fg" },
+  { key: "target",       label: "Target",            color: "text-tier-target-fg" },
+  { key: "reach",        label: "Reach",             color: "text-tier-reach-fg" },
+  { key: "unlikely",     label: "Unlikely",          color: "text-tier-unlikely-fg" },
   // 6th tier: when the model has no GPA + no test signal it returns
   // "insufficient" rather than guessing a tier (Finding 4.9). No color
   // coding — the card itself surfaces the prompt to complete the profile.
@@ -142,7 +142,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-          className="flex items-center justify-between gap-3 rounded-xl bg-accent-soft border border-blue-500/15 px-4 py-3"
+          className="flex items-center justify-between gap-3 rounded-md bg-accent-soft border border-accent-line px-4 py-3"
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <Bookmark className="w-4 h-4 text-accent-text shrink-0" fill="currentColor" />
@@ -153,7 +153,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
           </div>
           <Link
             href="/strategy"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-sm bg-accent-soft hover:bg-bg-elevated text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
           >
             View Strategy
             <ArrowRight className="w-3.5 h-3.5" />

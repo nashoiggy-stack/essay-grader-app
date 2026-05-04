@@ -124,14 +124,14 @@ export function EmptyState() {
 // ── Missing-data banner ────────────────────────────────────────────────────
 
 const MISSING_IMPACT_DOT: Record<MissingDataItem["impact"], string> = {
-  high: "bg-red-400",
-  medium: "bg-amber-400",
+  high: "bg-tier-unlikely-fg",
+  medium: "bg-tier-target-fg",
   low: "bg-zinc-500",
 };
 
 export function MissingDataBanner({ items }: { readonly items: readonly MissingDataItem[] }) {
   return (
-    <div className="rounded-xl bg-amber-500/[0.04] border border-amber-500/15 p-4 mb-4">
+    <div className="rounded-md bg-tier-target-soft border border-tier-target-fg/30 p-4 mb-4">
       <div className="flex items-start gap-3">
         <AlertCircle className="w-4 h-4 text-tier-target-fg shrink-0 mt-0.5" />
         <div className="min-w-0 flex-1">
