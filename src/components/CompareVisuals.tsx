@@ -26,11 +26,39 @@ export const SCHOOL_COLORS = [
 
 export type SchoolColor = (typeof SCHOOL_COLORS)[number];
 
-/** Map school name → assigned color index. Built from the selection order. */
+/**
+ * Map school name → assigned color. Stable across selection reorders by
+ * hashing the name (djb2-XOR) so "the blue school" stays blue when the
+ * user reorders, removes, or re-adds slots. Same school name always
+ * resolves to the same color regardless of which slot it's in.
+ *
+ * Collisions inside one comparison (4 selected, 4 colors, hash collision)
+ * are resolved by walking forward in SCHOOL_COLORS until an unused slot
+ * is found — preserves the "stable per name" property for the schools
+ * that hash uniquely while keeping all 4 visually distinct.
+ */
 export function buildSchoolColorMap(names: readonly string[]): Map<string, SchoolColor> {
   const map = new Map<string, SchoolColor>();
-  names.forEach((name, i) => map.set(name, SCHOOL_COLORS[i % SCHOOL_COLORS.length]));
+  const used = new Set<number>();
+
+  for (const name of names) {
+    let idx = djb2Hash(name) % SCHOOL_COLORS.length;
+    while (used.has(idx)) {
+      idx = (idx + 1) % SCHOOL_COLORS.length;
+      if (used.size >= SCHOOL_COLORS.length) break; // saturated; let it overlap
+    }
+    used.add(idx);
+    map.set(name, SCHOOL_COLORS[idx]);
+  }
   return map;
+}
+
+function djb2Hash(s: string): number {
+  let hash = 5381;
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) + hash) ^ s.charCodeAt(i);
+  }
+  return hash >>> 0;
 }
 
 // React context so all nested components can access school colors without prop drilling
