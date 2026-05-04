@@ -798,3 +798,105 @@ MajorRecommendationsCard,DeadlinesCard,Chrome,helpers}.tsx`,
   exit fade (`exit={{ opacity: 0 }}`) means a flash of empty
   while the new tree mounts. Acceptable; flagged for completeness.
 
+---
+
+## `/compare`
+
+Files swept: `src/app/compare/page.tsx`,
+`src/components/CompareSelector.tsx`,
+`src/components/CompareVisuals.tsx`,
+`src/components/QualitativeCompare.tsx`.
+
+### BLOCK
+
+- [RESOLVED in bdf7c90 / `compare/page.tsx:108`, `:126`] CRITIQUE
+  BLOCK: "Tier signaling is color-only at small sizes."
+  `TIER3_GLYPH` and `FIT_GLYPH` are now defined and rendered next
+  to tier text (`:444`, `:606`, `:652`). Color is no longer the
+  only signal.
+- [RESOLVED] CRITIQUE BLOCK: "Dark-only palette — hardcoded
+  `#06060f`, `text-emerald-300`, etc. throughout. Cannot render
+  in light mode." `grep "#06060f"` on `compare/page.tsx` /
+  `CompareVisuals.tsx` / `QualitativeCompare.tsx` → no matches.
+  Most `text-emerald-300` etc. usages were swept (commit
+  `bb7ef81` then `e961630` then `886203f`). **However a handful of
+  raw ramps remain — see WARN below; not enough to keep this as
+  a BLOCK.**
+- [RESOLVED in current `compare/page.tsx:295`] CRITIQUE BLOCK:
+  "Sticky tab nav clips on mobile (8 tabs at 375px with no scroll
+  affordance)." The tab strip now uses
+  `overflow-x-auto pb-2 scrollbar-none -mr-4 pr-4` — horizontal
+  scroll wired with negative margins so the affordance is visible
+  on touch.
+- [RESOLVED in 02209af] CRITIQUE BLOCK: "`QualitativeCompare`
+  uses `repeat(N, 1fr)` instead of the `auto-fit minmax()`
+  pattern." `QualitativeCompare.tsx:208` defines
+  `QUAL_GRID_TEMPLATE = "repeat(auto-fit, minmax(min(100%, 140px),
+  1fr))"` and uses it at `:229, :321, :362`. Same pattern repeats
+  across `compare/page.tsx:560, 777, 828, 862, 894, 974`.
+
+### WARN
+
+- [RESOLVED in 886203f / `CompareVisuals.tsx:22-23` plus name-hash
+  logic in `CompareSelector` / page] CRITIQUE WARN: "Color-by-
+  selection-order means the 'blue school' changes when slots are
+  reordered. Use stable hash on `c.name`." `886203f` "stable
+  per-school color via name hash, not slot order" — verified.
+- [OPEN] **CompareSelector remove `X` is still hover-only +
+  focus.** `CompareSelector.tsx:118`: `opacity-0
+  group-hover:opacity-100 focus:opacity-100`. The focus-fallback
+  is the partial fix from CRITIQUE systemic #5, but on touch
+  devices there's no hover and the user can't tab to the X without
+  first reaching the slot via screen-reader nav. Make the X
+  always-visible with a softer styling instead of hidden.
+- [NEW WARN] **`CompareVisuals.tsx:22-23` `schoolColors[]`
+  catalog still uses raw Tailwind ramps**:
+  ```
+  { name: "emerald", bar: "from-emerald-500 to-emerald-400",
+    bg: "bg-emerald-500/8", border: "border-emerald-500/25",
+    text: "text-emerald-300", dot: "bg-emerald-400",
+    hex: "#34d399" }
+  ```
+  Six color rows like this. The hash → color mapping is now
+  stable (`886203f`), but the colors themselves are still off-system
+  and dark-only — `text-emerald-300` / `text-amber-300` /
+  `text-rose-300` are the saturated 300-band tones that fail
+  4.5:1 in light mode. Define a `--school-palette-{0..5}` token
+  family in OKLCH that maintains chroma across light/dark.
+- [NEW WARN] **Crown icons stayed amber-300.**
+  `CompareVisuals.tsx:199, 268, 307`: `<Crown className="w-3 h-3
+  text-amber-300/80" />` (with one variant at `text-amber-300/70`).
+  Commit `88f0d76` migrated *strategy* tier signals but did not
+  touch CompareVisuals — verified via `git log --stat 88f0d76`
+  which lists only `compare/page.tsx` for the compare surface,
+  not CompareVisuals. Migrate to `text-tier-target-fg` (or define
+  a `--accent-warm` token if "best in slot" should not be
+  tier-coded).
+- [NEW WARN] **`compare/page.tsx:987` strong-merit-aid color uses
+  `text-emerald-300`**, the same dark-only ramp the rest of the
+  sweep dropped. Same fix.
+- [NEW WARN] **`CompareSelector.tsx:148-150` warning chip is
+  raw amber dark-only.** `bg-amber-500/[0.06] border
+  border-amber-500/20` + `text-amber-300`. In light mode the bg
+  + border are invisible and the text is unreadable. Use the
+  same mode-aware amber pattern as the `/chances` and
+  `/colleges` "Estimates only" disclaimers (which already ship
+  light + dark tones).
+- [NEW WARN] **`CompareVisuals.tsx:299` "best of slot" card uses
+  `bg-emerald-500/[0.05] border border-emerald-500/20
+  shadow-[0_0_12px_rgba(16,185,129,0.06)]`.** Three problems:
+  raw emerald ramp (dark-only), hardcoded RGB shadow color, and
+  a `box-shadow` glow on what MASTER.md says should be a
+  hairline-only system. Replace with
+  `bg-tier-safety-soft border border-tier-safety-fg/30` and drop
+  the shadow.
+
+### INFO
+
+- [NEW INFO] Sticky tab nav at `compare/page.tsx:291` uses
+  `bg-bg-base/90 backdrop-blur-md`. MASTER.md allows backdrop-blur
+  "where the blur is functional" — for a sticky overlay over
+  scrolling content this is functional. OK; flagged so reviewers
+  don't mistake it for the banned decorative backdrop-blur.
+
+
