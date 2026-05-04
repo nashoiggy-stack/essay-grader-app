@@ -593,3 +593,119 @@ again on `/gpa`).
   silently overwrites them. Mild — typed values would be re-typeable
   — but echoes the /resume autofill-reset concern.
 
+---
+
+## `/dashboard`
+
+Files swept: `src/app/dashboard/page.tsx`,
+`src/app/dashboard/_atlas/AtlasPage.tsx`,
+`src/app/dashboard/dashboard-atlas.css`,
+`src/app/dashboard/_atlas/use-atlas-data.ts`,
+`src/app/dashboard/_atlas/icons.tsx`.
+
+### BLOCK
+
+- [PARTIALLY-RESOLVED] CRITIQUE BLOCK: "Parallel design system…
+  imports its own `--ae-*` tokens, uses Young Serif display,
+  `clamp()` for app-UI type, `border-radius: 16px` on cards." Three
+  of the four are addressed:
+  - `--ae-*` namespace is now a thin alias layer to global tokens
+    (`dashboard-atlas.css:25`: `--ae-accent: var(--accent)`,
+    `:13-23`: `--ink-bg: var(--bg-base)`, etc.). RESOLVED for the
+    "parallel" complaint.
+  - Young Serif gone — `.ae-name` at `:80` uses `var(--ae-sans)`
+    (Geist). RESOLVED.
+  - 16px radii gone — current radii are `8px` (`:108`, `:181`)
+    and `999px` for pills. **Still off-spec**: MASTER.md says
+    cards default to `--radius` (6px), modals to `--radius-md`
+    (8px). 8px is acceptable but violates the cards-are-6px
+    convention. Mild WARN, kept under BLOCK because this is part
+    of CRITIQUE #10.
+  - **Fluid type still in place** — `.ae-name` uses `clamp(38px,
+    5.4vw, 68px)` (`:81`), `.ae-tagline` uses `clamp(15px, 1.2vw,
+    17px)` (`:89`), `.ae-section-title` uses `clamp(24px, 2.4vw,
+    32px)` (`:160`), `.ae-stat-value` is fixed but `.ae-stat-big
+    .ae-stat-value` switches to 56px… all fluid. MASTER.md
+    §Typography: "App UI does not use fluid type. Fluid (`clamp`)
+    is reserved for **only** the landing page hero + cinematic
+    CTA." Convert to fixed-rem scale.
+- [RESOLVED in 358c8f1 / `AtlasPage.tsx:175-180`] CRITIQUE BLOCK:
+  "First-load experience is wrong-footed — empty users see a
+  7-stat grid filled with `—` and a `0%` readiness bar. Should
+  show one CTA above the fold instead." `EmptyHero` (`:218-242`)
+  now renders a single "Pin your first school" CTA when
+  `isEmpty` is true.
+- [OPEN] **`LayoutTweaks` lacks `aria-pressed`.** CRITIQUE BLOCK
+  said the layout-toggle buttons "expose no `aria-pressed`" —
+  still true. `AtlasPage.tsx:104-115`: each `<button
+  className={'ae-tweak-btn ${layout === opt ? "is-active" : ""}'}>`
+  toggles the active class but offers no `aria-pressed={layout
+  === opt}`. AT users hear two indistinguishable buttons.
+  One-line fix.
+- [NEW BLOCK] **Undefined `--ae-hue` CSS variable breaks fills
+  silently.** `dashboard-atlas.css:143`:
+  `background: linear-gradient(90deg, var(--ae-accent),
+  oklch(0.78 0.16 var(--ae-hue)));`
+  Also `:529` and `:530` for tier-likely / tier-safety labels.
+  `--ae-hue` is **never defined** anywhere in the codebase
+  (`grep -r "--ae-hue:"` → no matches). When a CSS custom
+  property is undefined inside `oklch(...)`, the entire `oklch()`
+  argument is invalid, and the parent declaration falls back to
+  initial / inherited value. Net result: the readiness-stat bar
+  fill, the likely-tier label, and the safety-tier label all
+  render with no color (the default `currentColor` for label,
+  empty for background). Either define `--ae-hue: 264` near the
+  other `--ae-*` aliases (`:6`), or replace the undefined-hue
+  formulas with concrete `--tier-likely-fg` / `--tier-safety-fg`
+  tokens.
+- [NEW BLOCK] **Stat bar track is `rgba(255,255,255,0.06)`.**
+  `dashboard-atlas.css:139`: `background: rgba(255,255,255,0.06);`
+  Hardcoded white-on-alpha — invisible in light mode (white at
+  6% on white = no contrast). Replace with `var(--bg-inset)` or
+  the same hairline approach used everywhere else.
+
+### WARN
+
+- [RESOLVED in ee1c051] CRITIQUE WARN: "Three layout modes is
+  feature creep. Atlas + List cover the use case; Orbital is
+  decorative." Verified — `AtlasPage.tsx:18` declares
+  `type Layout = "atlas" | "list"`. `LayoutTweaks` (`:102-117`)
+  iterates `["atlas", "list"] as const`. Persisted "orbital"
+  preference is migrated to "atlas" at `:50-54`.
+- [OPEN] **Shortlist duplicates /list and /colleges with no
+  clear job.** CRITIQUE flagged this as redundant. Verified
+  `Shortlist` is rendered at `AtlasPage.tsx:93` whenever
+  `data.shortlist.length > 0`. The component (`:520`) shows pinned
+  schools grouped by tier — exactly what `/list` already does
+  with more depth. Either compress to a one-line summary
+  ("8 schools pinned · view list →") or remove and link out.
+- [NEW WARN] **Stat-bar fill is a gradient.**
+  `dashboard-atlas.css:143`: `linear-gradient(90deg,
+  var(--ae-accent), oklch(0.78 0.16 var(--ae-hue)))`. Even after
+  fixing `--ae-hue`, this is a decorative gradient on what is
+  otherwise a "calm, engineered" page — pick a flat
+  `var(--accent)` instead.
+- [NEW WARN] **Card radii are 8px, not 6px.**
+  `dashboard-atlas.css:108` (`.ae-header-grid`) and `:181`
+  (`.ae-atlas-body`) use `border-radius: 8px`. MASTER.md says
+  cards = `--radius` (6px); 8px is reserved for modals. One-line
+  swap.
+
+### INFO
+
+- [RESOLVED in c01fbd3 / `AtlasPage.tsx:131`] CRITIQUE INFO:
+  "Header eyebrow says 'Application atlas' but page is `/dashboard`."
+  Eyebrow is now just "Dashboard" — verified.
+- [RESOLVED via Orbital removal] CRITIQUE INFO: "Orbital
+  description says 'Eight tools, one orbit' but `tools` array has
+  nine." No longer relevant — Orbital mode dropped.
+- [NEW INFO] **CSS comment lies about Young Serif.**
+  `dashboard-atlas.css:3`: "Fonts reuse the project tokens: Geist
+  (sans/mono) + Young Serif (display)." Young Serif is no longer
+  referenced anywhere in this stylesheet (commit verified Geist-only).
+  Delete the stale comment to avoid future-reader confusion.
+- [NEW INFO] `LAYOUT_STORAGE_KEY` migration code (`AtlasPage.tsx:50-54`)
+  runs `setLayout("atlas")` for any saved "orbital" preference.
+  Once enough time has passed since Orbital was removed, drop the
+  migration to keep this hook leaner. Acceptable now.
+
