@@ -257,7 +257,125 @@ Files swept: `src/app/list/page.tsx`, `src/components/CollegeCard.tsx`,
   import statement at `:6` (`import { Plus, ArrowRight, Bookmark,
   RefreshCw, X }`).
 - [NEW INFO] Empty-state CTA bg uses `var(--accent-fg)` for text
-  color (`list/page.tsx:261`). Verify `--accent-fg` is defined in
-  `globals.css` — if not, falls back to the inherited color and
-  the button text might be near-invisible on `var(--accent)`.
+  color (`list/page.tsx:261`). Verified — `--accent-fg` is defined
+  in `globals.css:43` (light) and `:117` (dark) as `oklch(99% 0
+  0)`. Not a real bug; leave as-is.
+
+---
+
+## `/chances`
+
+Files swept: `src/app/chances/page.tsx`, `src/components/ChanceForm.tsx`,
+`src/components/ChanceResult.tsx`, `src/components/BreakdownPanel.tsx`,
+`src/components/MajorSelect.tsx`.
+
+### BLOCK
+
+- [PARTIALLY-RESOLVED] CRITIQUE flagged tier colors as raw Tailwind
+  ramps. Verified at `ChanceResult.tsx:10-17`:
+  `safety/target/reach/unlikely/insufficient` are now on
+  `bg-tier-*-soft` / `text-tier-*-fg` / `bar: bg-tier-*-fg`
+  tokens. **However `likely` was not migrated** (`:12`):
+  `{ bg: "bg-accent-soft", text: "text-accent-text", bar:
+  "bg-blue-500", glow: "shadow-blue-500/20" }`. Two distinct
+  problems: (1) `--accent` is the brand indigo, not the
+  `--tier-likely-*` family (different token, different hue);
+  (2) `bar: bg-blue-500` and `glow: shadow-blue-500/20` are still
+  raw Tailwind ramps, the only `glow` value in the whole map. Pick
+  `bg-tier-likely-soft / text-tier-likely-fg / bg-tier-likely-fg`
+  to match the other five rows; drop the `glow` key entirely.
+- [OPEN] CRITIQUE flagged "duplicate amber disclaimers (top +
+  result)". Both still render. Top disclaimer at
+  `chances/page.tsx:33-47` ("Estimates only…") and bottom
+  disclaimer at `ChanceResult.tsx:240-246` ("This is an estimate
+  based on general admissions patterns…"). The two say almost the
+  same thing in different tones. Keep one — preferably the top
+  one, which is more substantive and links to `/methodology`.
+- [RESOLVED in 343ff95] CRITIQUE WARN about light-mode contrast on
+  the top "Estimates only" disclaimer. Verified at
+  `chances/page.tsx:33-47`: it now ships separate light + dark
+  amber tones (`bg-amber-500/[0.06] dark:bg-amber-500/[0.04]`,
+  `text-amber-900/85 dark:text-amber-200/80`). Reads in both modes.
+- [NEW BLOCK] **Hardcoded `bg-[#12121f]` headline card.**
+  `ChanceResult.tsx:160` wraps the headline narrative in
+  `<div className="rounded-xl bg-[#12121f] border border-border-strong
+  p-5">`. Dark-only hex literal sitting inside a card that already
+  has `bg-bg-surface`. In light mode this is a near-black block
+  inside a white card — the most visually broken part of the page.
+  Replace with `bg-bg-inset` or `bg-bg-surface-2`.
+- [NEW BLOCK] **Bottom disclaimer is dark-only.**
+  `ChanceResult.tsx:240-246`: `bg-amber-500/5 border
+  border-amber-500/10 ... text-amber-400/70`. Even after deduping
+  with the top one (above), this block has no light-mode tones —
+  text-amber-400 on amber-500/5 in light mode reads as washed-out
+  yellow on near-white at way under 4.5:1.
+- [NEW BLOCK] **Score-bar track is invisible in light mode.**
+  `ChanceResult.tsx:148`: `<div className="h-2 rounded-full
+  bg-bg-surface overflow-hidden">` — but the parent card at `:102`
+  is *also* `bg-bg-surface`. Same color on same color = no track,
+  the bar appears to float. Use `bg-bg-inset` for the track.
+
+### WARN
+
+- [OPEN] **`ChanceForm` mixes required + optional with identical
+  visual weight.** CRITIQUE flagged "(optional)" lives inside the
+  label string. Still true at `ChanceForm.tsx:192` ("SAT
+  (optional)"), `:198` ("ACT Composite (optional)"), `:204`
+  ("ACT Science (optional)"), `:239` ("Common App Score (0-100)"
+  — silent about optional even though it's optional). No required-*
+  marker either. Adopt one rule: required inputs get a red asterisk
+  + `aria-required`, optional inputs lose the inline `(optional)`
+  in favor of a muted "Optional" suffix in `<small>`.
+- [OPEN] **Strengths/Weaknesses use raw `text-emerald-400` /
+  `text-red-400`.** CRITIQUE called this out as "polluting the
+  semantic-color contract" because emerald/red are tier colors,
+  not generic positive/negative signals. Still true at
+  `ChanceResult.tsx:193, 198, 207, 212`. Either reuse
+  `--tier-safety-fg` (green-tier) for strengths and
+  `--tier-unlikely-fg` (red-tier) for weaknesses (they happen to
+  be the same hues anyway, this is not a tier collision because
+  these are not tier classifications), or define dedicated
+  `--positive-fg / --negative-fg` tokens.
+- [NEW WARN] **`GpaScaleNote` and the auto-fill banner use raw
+  blue ramps.** `ChanceForm.tsx:320` declares `bg-blue-500/[0.05]
+  border border-blue-500/[0.18]`. CRITIQUE systemic #9 codemodded
+  most of these to `bg-accent-soft / border-accent-line` — this
+  one was missed.
+- [NEW WARN] **`text-rose-400` for over-scale GPA warnings**
+  (`ChanceForm.tsx:174, 186`). Same family — should use a
+  semantic-error token, not a Tailwind ramp.
+- [NEW WARN] **Bouncy spring on the tier-percentage badge.**
+  `ChanceResult.tsx:109-112`: `transition={{ type: "spring",
+  stiffness: 200, damping: 15 }}`. MASTER.md anti-patterns:
+  "No bouncy or elastic motion easings." A `damping: 15` spring at
+  `stiffness: 200` overshoots visibly. Replace with `transition={{
+  duration: 0.24, ease: [0.16, 1, 0.3, 1] }}` per MASTER §Motion.
+- [NEW WARN] **Coursework score colors use raw ramps.**
+  `ChanceForm.tsx:284-291` — `text-emerald-400` for AP≥4 / IB≥6,
+  `text-amber-400` for AP=3 / IB 4-5. Decorative use of tier-named
+  colors. Define dedicated coursework-quality tokens or reuse the
+  `--tier-*` system explicitly.
+- [NEW WARN] **Typo: empty `focus:` class.** `ChanceForm.tsx:21`
+  — `inputClass` has `focus:border-blue-500/50 focus:
+  focus:ring-accent-line` — there's a bare `focus:` with no rule
+  attached, which Tailwind silently drops. Also `focus:border-blue-500/50`
+  conflicts with the focus-state token contract in MASTER.md
+  (focus border should become `var(--accent)`, not raw blue-500).
+- [NEW WARN] **Missing-data hints panel uses `bg-zinc-500/5`.**
+  `ChanceResult.tsx:224` — should use a token (`bg-bg-inset` or
+  `bg-bg-surface-2`).
+
+### INFO
+
+- [OPEN] CRITIQUE noted "(optional)" inside label strings is easy
+  to miss — covered above as WARN #1. Marking INFO as
+  acknowledged but not addressed.
+- [NEW INFO] `details > summary` hover at `ChanceResult.tsx:177`
+  — `hover:bg-bg-surface` on a `bg-bg-surface` parent yields no
+  visible hover state. Use `hover:bg-bg-surface-2`.
+- [NEW INFO] The `<details>` "See the breakdown" element at
+  `ChanceResult.tsx:176-188` has no `aria-expanded` (browser-native
+  on `<details>` so screen readers do announce it correctly), but
+  the chevron rotation transition is on `transform` — good. No
+  action; flagged for completeness.
 
