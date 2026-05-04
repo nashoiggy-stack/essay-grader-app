@@ -3,19 +3,22 @@
    Scoped to .lpx-root so styles can't bleed into the rest of the app. ── */
 
 .lpx-root {
-  /* Local tokens. The landing hero locks dark via inline styles, so these
-     are dark-mode values; the bar nav inherits the active theme normally. */
-  --lpx-bg: #06060f;
-  --lpx-surface: rgba(255, 255, 255, 0.025);
-  --lpx-line: rgba(255, 255, 255, 0.07);
-  --lpx-line-hi: rgba(255, 255, 255, 0.16);
-  --lpx-text: #e9e9ee;
-  --lpx-text-2: #b9b9c4;
-  --lpx-text-mute: #7d7d8c;
-  --lpx-text-faint: #5b5b68;
-  --lpx-accent: oklch(64% 0.18 264);
-  --lpx-accent-soft: oklch(64% 0.18 264 / 0.10);
-  --lpx-accent-line: oklch(64% 0.18 264 / 0.32);
+  /* Local tokens alias the global theme tokens so the editorial middle +
+     footer follow light / dark / monochrome with the rest of the app.
+     The cinematic hero between them is still locked dark via inline
+     styles in page.tsx — that's deliberate. The middle and footer are
+     theme-aware so users in light mode aren't dropped into a dark slab. */
+  --lpx-bg: var(--bg-base);
+  --lpx-surface: var(--bg-surface);
+  --lpx-line: var(--border-hair);
+  --lpx-line-hi: var(--border-strong);
+  --lpx-text: var(--text-primary);
+  --lpx-text-2: var(--text-secondary);
+  --lpx-text-mute: var(--text-muted);
+  --lpx-text-faint: var(--text-faint);
+  --lpx-accent: var(--accent);
+  --lpx-accent-soft: var(--accent-soft);
+  --lpx-accent-line: var(--accent-line);
   --lpx-section-y: clamp(80px, 11vw, 140px);
   --lpx-pad-x: clamp(20px, 5vw, 64px);
 
@@ -273,7 +276,7 @@
 .lpx-btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 18px; border-radius: 4px;
-  background: var(--lpx-accent); color: white; font-weight: 500; font-size: 14px;
+  background: var(--lpx-accent); color: var(--accent-fg); font-weight: 500; font-size: 14px;
   border: 1px solid var(--lpx-accent);
   text-decoration: none;
   transition: filter .15s cubic-bezier(0.16,1,0.3,1);
@@ -281,7 +284,8 @@
 .lpx-btn-primary:hover { filter: brightness(1.08); }
 .lpx-btn-primary-arrow {
   width: 24px; height: 24px; border-radius: 4px;
-  background: rgba(255,255,255,0.14); color: white;
+  background: color-mix(in oklab, var(--accent-fg) 16%, transparent);
+  color: var(--accent-fg);
   display: grid; place-items: center;
 }
 .lpx-btn-ghost {
@@ -327,7 +331,7 @@
   background: var(--lpx-accent);
   display: grid; place-items: center;
   font-family: var(--lpx-sans); font-style: normal; font-weight: 600;
-  color: white; font-size: 14px;
+  color: var(--accent-fg); font-size: 14px;
 }
 .lpx-brand-text { font-size: 14.5px; }
 .lpx-brand-text em { font-family: var(--lpx-sans); font-style: normal; font-weight: 600; color: var(--lpx-accent); }
