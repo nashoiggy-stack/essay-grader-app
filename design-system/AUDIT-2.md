@@ -28,19 +28,19 @@ Out-of-scope dark surfaces (intentionally dark, contrast checks skipped):
 ## Surfaces audited
 
 - [x] `/` (landing)
-- [ ] `/list`
-- [ ] `/chances`
-- [ ] `/colleges`
-- [ ] `/profile`
-- [ ] `/dashboard`
-- [ ] `/strategy`
-- [ ] `/compare`
-- [ ] `/essay`
-- [ ] `/resume`
-- [ ] `/gpa`
-- [ ] `/extracurriculars`
-- [ ] `/methodology`
-- [ ] `/strategy/share/[token]`
+- [x] `/list`
+- [x] `/chances`
+- [x] `/colleges`
+- [x] `/profile`
+- [x] `/dashboard`
+- [x] `/strategy`
+- [x] `/compare`
+- [x] `/essay`
+- [x] `/resume`
+- [x] `/gpa`
+- [x] `/extracurriculars`
+- [x] `/methodology`
+- [x] `/strategy/share/[token]`
 
 ---
 
@@ -1366,3 +1366,171 @@ hard contract violations the dark theming doesn't excuse.
   hardcoding. `force-dynamic` ensures the server-side fetch isn't
   cached.
 
+---
+
+## Systemic findings — status of CRITIQUE.md TOP-10
+
+Each of CRITIQUE.md's "TOP 10 SYSTEMIC ISSUES" rolled up across
+all 14 surfaces, plus new systemic patterns surfaced by AUDIT-2.
+
+| # | CRITIQUE issue | Status | Notes |
+|---|----------------|--------|-------|
+| 1 | Glass + rounded-2xl + ring-shadow leftovers | **PARTIAL** | radii migrated everywhere; `bg-white/5 backdrop-blur-xl` chrome remains on `/extracurriculars`. `bg-white/5` decorative chip on `/resume` masthead. `backdrop-blur-sm` on `TranscriptUpload`. |
+| 2 | Tier semantic colors use raw Tailwind ramps | **OPEN** | Migration is half-finished. `/list` uses `bg-tier-*` at page level but `CollegeCard.CLASS_COLORS` and `BreakdownPanel` are still raw ramps. `/chances`: `likely` tier still raw. `/colleges`: TIERS legend + GROUPS headers raw. `/strategy`: Chrome / DeadlinesCard / MajorRecommendationsCard raw. `/compare`: `schoolColors[]` palette + Crown raw. |
+| 3 | Section eyebrows are `<p>`, not `<h2>` | **RESOLVED** | Verified across `/list`, `/chances`, `/profile`, `/strategy`, `/resume`, `/essay`, `/extracurriculars`, `/gpa`. |
+| 4 | `text-gradient` H1 wrapper | **RESOLVED** | `grep` shows `text-gradient` class only in `globals.css`; no TSX usages. |
+| 5 | Hover-only affordances | **PARTIAL** | `/list` pin button RESOLVED. `/compare` slot remove X added focus-fallback but still `opacity-0`. `/extracurriculars` activity row delete/disable still `opacity-0 group-hover:opacity-100`. |
+| 6 | Save state is invisible on every form page | **RESOLVED** | `<SaveIndicator>` mounted on `/profile` (`:89`), `/resume` (`:163`), `/essay` (`:130`), `/extracurriculars` (`:27`). |
+| 7 | Tab panel ARIA is half-wired | **OPEN** | `TabNavigation.tsx:39-41` still declares `aria-controls="tabpanel-${id}"` but no panel renders the matching `id`/`role="tabpanel"`. `aria-controls` points into the void on `/essay`. |
+| 8 | No section navigation on long form pages | **RESOLVED** | `<SectionNav>` on `/profile`, `/resume`, `/strategy`. |
+| 9 | Hardcoded `bg-blue-*` / `text-blue-*` instead of `--accent` | **OPEN** | `inputClass` in `/chances`, `/colleges`, `/profile`, `/resume` still has `focus:border-blue-500/50` (with the `focus:` typo). `/profile` SourceBadge dot, completeness gradient. `/essay` grade button (`bg-blue-600`) and dividers (`via-blue-500/30`). `ChanceForm.GpaScaleNote` blue ramp. Loading spinners (`border-blue-400`) on `/profile`, `/resume`. |
+| 10 | Dashboard is a parallel design system | **PARTIAL** | `--ae-*` namespace now aliases global tokens (RESOLVED). Young Serif gone (RESOLVED). 16px radii dropped to 8px (still off — should be 6px). **Fluid type still in place** for `.ae-name` / `.ae-tagline` / `.ae-section-title` (BLOCK per MASTER §Typography). Undefined `--ae-hue` breaks the readiness-bar fill silently (NEW BLOCK). `LayoutTweaks` still missing `aria-pressed` (CRITIQUE BLOCK still OPEN). |
+
+### NEW systemic findings AUDIT-2 surfaced
+
+These are patterns that don't appear in CRITIQUE.md but show up
+on multiple surfaces.
+
+#### S-A. Hardcoded `text-white` / `bg-white/N` on app pages
+
+Surfaces affected: `/profile` (completeness number `:130`, SAT
+`:366`, ACT `:412`), `/resume` (H1 `:187`, mode toggle active
+`:220`, mobile preview button `:499`, eyebrow chip `:157`),
+`/extracurriculars` (Add Activity `:104`, Evaluate CTA `:125`),
+`/gpa` (TranscriptUpload `:123, :129`).
+
+Light mode is the **default app theme** per MASTER.md. `text-white`
+on `--bg-surface` (oklch 97%) is invisible. This is a 6-page
+breakage that's worse than any single CRITIQUE finding because
+new users start on light mode and immediately see numbers and
+buttons disappearing. **Promote to BLOCK.**
+
+#### S-B. Hardcoded `bg-[#0a0a14]/70` and `bg-[#12121f]` hex literals
+
+Locations: `BreakdownPanel.tsx:45, 99` (used by `/list`,
+`/chances`, /colleges`), `ChanceResult.tsx:160`,
+`colleges/page.tsx:139`, `methodology/page.tsx:29`. Plus
+`bg-[#0c0c1a]/80` on `StrategyShareView.tsx:106` (intentional
+dark — out of scope).
+
+Same fix everywhere: replace with `bg-bg-inset` (or
+`bg-bg-surface-2`).
+
+#### S-C. Decorative gradient bars / dividers using raw blue ramps
+
+`/profile` completeness fill (`:136`), `/essay` results
+divider (`:227, :229`), `/extracurriculars` Evaluate divider
+(`:119, :135`). MASTER §Motion / §Borders implies hairline only.
+Replace with flat `bg-[var(--accent)]` (fills) or `border-t
+border-border-hair` (dividers).
+
+#### S-D. Same-color hover states (no visible delta)
+
+`/colleges` "View Strategy" link: `bg-accent-soft
+hover:bg-accent-soft`. `/colleges` "Add interest" button: same.
+`/chances` `<details>` hover: `hover:bg-bg-surface` on
+`bg-bg-surface` parent. `/methodology` table row hover:
+`hover:bg-bg-surface` over `thead.bg-bg-surface`. Define a
+`-strong` step (`--bg-surface-2` already exists) and use it for
+hovers.
+
+#### S-E. `inputClass` typo + raw blue focus ramp on every form page
+
+`/chances`, `/colleges`, `/profile`, `/resume` all share this
+exact string:
+```
+focus:border-blue-500/50 focus: focus:ring-accent-line
+focus:outline-none transition-[border-color,box-shadow]
+duration-200
+```
+- Bare `focus:` is dropped silently by Tailwind.
+- `focus:border-blue-500/50` should be
+  `focus:border-[var(--accent)]` per MASTER §Focus.
+
+Promote to a shared utility (`src/lib/form-classes.ts`) and fix
+once.
+
+#### S-F. AppShell wraps in `<div id="main-content">`, not `<main>`
+
+`AppShell.tsx:61`. The skip-link target is a `<div>`, every tool
+page (good) declares its own `<main>` so the landing route is
+the only page that would actually rely on the AppShell wrapper —
+and it gets a `<div>`. Rename to `<main>` on AppShell, drop the
+inner `<main>` from tool pages (or the other way around — but
+not both).
+
+#### S-G. Bouncy / overlong motion across the app
+
+`/chances` ChanceResult uses `type: "spring", stiffness: 200,
+damping: 15` (overshoot). `/essay` results fade is `0.5`s
+(MASTER baseline 240ms). Various card-mount filter blurs (CollegeCard,
+landing hero) use `filter: blur(...)` which is non-compositor.
+
+---
+
+## Recommended fix order
+
+The codemods at the top of CRITIQUE.md remain valid; ordering
+below is updated for what's actually OPEN now, ranked by
+leverage.
+
+1. **Define + apply OKLCH tier tokens at every signaling site
+   (CRITIQUE #2).** Remap `CollegeCard.CLASS_COLORS`,
+   `ChanceResult.TIER_STYLES.likely`, `colleges/page.TIERS`,
+   `CollegeResults.GROUPS`, `compare.schoolColors`,
+   `Strategy/Chrome/Deadlines/MajorRecs` raw ramps. Single
+   codemod.
+2. **Sweep `text-white` and dark-only `bg-white/N` from app
+   pages (NEW S-A).** `/profile`, `/resume`, `/extracurriculars`,
+   `/gpa`. Highest user-visible impact in light mode.
+3. **Replace `bg-[#0a0a14]/70` / `bg-[#12121f]` hex literals
+   with `bg-bg-inset` (NEW S-B).** Five files.
+4. **Promote `AppShell.tsx:61` `<div>` → `<main>` and reconcile
+   landmark ownership (NEW S-F).** Skip-link works correctly,
+   `/` route gets a real `<main>`.
+5. **Fix `LayoutTweaks` `aria-pressed` (`/dashboard`).** One
+   line per button.
+6. **Wrap each tab's content in `<div role="tabpanel"
+   id="tabpanel-${id}" aria-labelledby="tab-${id}">` on `/essay`
+   (CRITIQUE #7).** Five tab content components to update.
+7. **Resolve undefined `--ae-hue` on `/dashboard`.** Either
+   define `--ae-hue: 264` or replace formulas with concrete
+   tier tokens. Currently breaks readiness-bar + tier-likely +
+   tier-safety colors silently.
+8. **Convert `/dashboard` fluid type to fixed-rem scale
+   (CRITIQUE #10 remainder).** `.ae-name`, `.ae-tagline`,
+   `.ae-section-title`.
+9. **Sweep raw `bg-blue-*` / `text-blue-*` and the broken
+   `inputClass` typo (CRITIQUE #9 + NEW S-E).** Promote
+   `inputClass` to a shared utility.
+10. **Always-show hover-only affordances on `/compare` slot X
+    and `/extracurriculars` activity row actions (CRITIQUE #5).**
+11. **Migrate `/resume` H1 off `var(--font-display)` + locked
+    white + `clamp()` (NEW BLOCK).** Match the other tool-page
+    masthead pattern.
+12. **Drop the `/resume` mode-as-destination toggle.** Either
+    promote to a route or render Activities Helper as a side
+    panel.
+13. **Wire `aria-live="polite"` on `/extracurriculars` AI
+    response stream.**
+14. **postMessage-based iframe height sync on `/gpa`.** Drop
+    the hardcoded `height: 2400px`.
+15. **Drop the `<p>FAQ-style</p>` "Estimates only" disclaimer
+    duplication on `/chances`.** Keep one — the linked-to-methodology
+    one at the top.
+
+---
+
+## Counts
+
+Across all 14 surfaces, AUDIT-2 catalogues:
+
+- **CRITIQUE-derived findings statused**: 33 RESOLVED, 18 OPEN,
+  3 PARTIALLY-RESOLVED, 4 WONT-FIX.
+- **NEW findings**: 19 BLOCK, 31 WARN, 17 INFO.
+
+Of the OPEN systemic items, **5 resolve in a single codemod**
+(tier tokens, text-white sweep, hex literals, inputClass typo,
+hover-only affordances). The remaining work is per-surface
+detail (`/dashboard` `--ae-hue`, `/resume` H1, `/essay` tab
+panels).
