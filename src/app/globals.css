@@ -269,6 +269,25 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Always reserve a scrollbar gutter so the right edge doesn't flicker
+     when content height crosses the viewport threshold (e.g. when a modal
+     opens, a section reveals, or a route switch changes total height).
+     'stable' keeps the gutter present even when no scrollbar is needed,
+     which removes the visual jump and eliminates the right-edge strip
+     that was clashing with the cinematic hero in light mode. */
+  scrollbar-gutter: stable;
+}
+
+/* Landing page routes lock the html canvas to the cinematic dark so the
+   scrollbar gutter (which renders <html>'s background, not <main>'s)
+   matches the cinematic hero. Without this, light-mode users saw a
+   pale strip running down the right edge of the dark hero — the gutter
+   showing the light theme's --bg-base while the hero painted bg-zinc-950
+   on the content area. The :has() selector targets the html only when
+   a [data-landing-page] descendant is present (the cinematic hero +
+   CTA wrappers in src/app/page.tsx mark themselves with this attribute). */
+html:has([data-landing-page]) {
+  background: #0a0a14;
 }
 
 /* ── Mobile interaction baseline ────────────────────────────── */
