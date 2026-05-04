@@ -10,7 +10,7 @@ import { MajorSelect } from "@/components/MajorSelect";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
 function SourceBadge({ source }: { source: string }) {
@@ -73,7 +73,7 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            <span className="text-gradient">Your Profile</span>
+            Your Profile
           </h1>
           <p className="max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
             Your scores and stats auto-fill from the tools you&apos;ve used. Edit anything here — it will be used across all tools.
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
         {/* Completeness Meter */}
         <ScrollReveal delay={0.03}>
-          <div className="mb-8 rounded-2xl bg-[#0f0f1c] border border-border-strong p-5 sm:p-6">
+          <div className="mb-8 rounded-md bg-bg-surface border border-border-strong p-5 sm:p-6">
             <div className="flex items-baseline justify-between mb-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium mb-1">Profile completeness</p>
@@ -113,8 +113,8 @@ export default function ProfilePage() {
                   }}
                   className={`text-[10px] font-medium uppercase tracking-[0.08em] px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
                     s.done
-                      ? "bg-accent-soft text-accent-text ring-1 ring-blue-500/25"
-                      : "bg-white/[0.03] text-text-faint ring-1 ring-white/[0.05]"
+                      ? "bg-accent-soft text-accent-text ring-1 ring-accent-line"
+                      : "bg-white/[0.03] text-text-faint border border-border-hair"
                   }`}
                 >
                   {s.done ? "✓ " : ""}{s.key}
@@ -139,7 +139,7 @@ export default function ProfilePage() {
 
         {/* Basic Info — shared across resume + future tools */}
         <ScrollReveal delay={0.08}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Basic Info</h2>
               <span className="text-[10px] text-text-muted">Used in Resume Helper</span>
@@ -213,7 +213,7 @@ export default function ProfilePage() {
             Edits propagate to /colleges, /chances, and /strategy via
             useProfile's setItemAndNotify writes. */}
         <ScrollReveal delay={0.09}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
@@ -255,7 +255,7 @@ export default function ProfilePage() {
 
         {/* GPA Section */}
         <ScrollReveal delay={0.1}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">GPA</h2>
               {computed?.gpaUW && <SourceBadge source="GPA Calculator" />}
@@ -344,7 +344,7 @@ export default function ProfilePage() {
 
         {/* SAT Section */}
         <ScrollReveal delay={0.15}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">SAT</h2>
               {satComposite !== null && (
@@ -386,7 +386,7 @@ export default function ProfilePage() {
 
         {/* ACT Section */}
         <ScrollReveal delay={0.2}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">ACT</h2>
               {actComposite !== null && (
@@ -450,7 +450,7 @@ export default function ProfilePage() {
 
         {/* Essay Scores */}
         <ScrollReveal delay={0.25}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Essay Scores</h2>
               {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
@@ -487,7 +487,7 @@ export default function ProfilePage() {
 
         {/* Extracurriculars */}
         <ScrollReveal delay={0.3}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Extracurriculars</h2>
               {computed?.ecBand && <SourceBadge source="EC Evaluator" />}
@@ -552,7 +552,7 @@ export default function ProfilePage() {
 
         {/* Summary Card */}
         <ScrollReveal delay={0.35}>
-          <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
+          <div className="bg-bg-surface rounded-md p-6 border border-border-hair">
             <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em] mb-4">Auto-Fill Summary</h2>
             <p className="text-xs text-text-muted mb-4">
               These values auto-fill into the College List Builder and Chance Calculator.
@@ -610,7 +610,7 @@ function AdvancedCourseworkSection({
 
   if (available === "none") {
     return (
-      <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+      <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
         <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em] mb-2">
           Advanced Coursework
         </h2>
@@ -623,7 +623,7 @@ function AdvancedCourseworkSection({
   }
 
   return (
-    <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
+    <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
@@ -751,7 +751,7 @@ function FlagCheckbox({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-bg-surface text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0"
+        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-bg-surface text-accent-text focus:ring-blue-500/40 focus:ring-offset-0"
       />
       <span className="leading-snug">{label}</span>
     </label>
@@ -792,16 +792,16 @@ function GpaScaleNote() {
         <line x1="8" y1="14" x2="12" y2="14" />
       </svg>
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-semibold text-blue-200 leading-snug">
+        <p className="text-[12px] font-semibold text-accent-text leading-snug">
           Use the 5.0 normalized scale
         </p>
-        <p className="text-[11px] text-blue-200/70 mt-0.5 leading-relaxed">
+        <p className="text-[11px] text-accent-text/70 mt-0.5 leading-relaxed">
           If your school uses a different weighted scale (4.5, 6.0, 100-point, etc.),
           convert your GPA first.
         </p>
         <a
           href="/gpa"
-          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-text hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-text hover:text-accent-text underline decoration-accent-line underline-offset-2 transition-colors"
         >
           Open GPA Calculator
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

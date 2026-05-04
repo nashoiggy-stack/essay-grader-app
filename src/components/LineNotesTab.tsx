@@ -24,7 +24,7 @@ export const LineNotesTab: React.FC<LineNotesTabProps> = ({ suggestions }) => (
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.06 }}
-          className="glass rounded-xl p-4"
+          className="bg-bg-surface rounded-xl p-4"
         >
           <p className="text-sm text-text-muted italic border-l-2 border-accent-line pl-3 mb-2">
             &ldquo;{ls.line}&rdquo;

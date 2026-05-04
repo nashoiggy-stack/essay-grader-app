@@ -99,7 +99,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06] space-y-6"
+      className="bg-bg-surface rounded-md p-6 sm:p-8 border border-border-hair space-y-6"
     >
       {/* Tier + percentage display */}
       <div className="text-center">
@@ -110,7 +110,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
+          className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow}  border border-border-hair`}
         >
           <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
             {result.classification === "insufficient" ? "—" : `${result.chance.mid}%`}

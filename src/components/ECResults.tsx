@@ -31,7 +31,7 @@ const BAND_STYLES: Record<string, string> = {
 const BAND_CHART_COLORS: Record<string, { fill: string; bg: string; border: string; text: string }> = {
   limited:     { fill: "from-red-500/80 to-red-600/80",       bg: "bg-red-500/5",     border: "border-red-500/15",     text: "text-red-400" },
   developing:  { fill: "from-orange-500/80 to-orange-600/80", bg: "bg-orange-500/5",  border: "border-orange-500/15",  text: "text-orange-400" },
-  solid:       { fill: "from-blue-500/80 to-blue-600/80",     bg: "bg-blue-500/5",    border: "border-blue-500/15",    text: "text-accent-text" },
+  solid:       { fill: "from-blue-500/80 to-blue-600/80",     bg: "bg-accent-soft",    border: "border-blue-500/15",    text: "text-accent-text" },
   strong:      { fill: "from-green-500/80 to-emerald-500/80", bg: "bg-emerald-500/5", border: "border-emerald-500/15", text: "text-green-400" },
   exceptional: { fill: "from-amber-400/80 to-amber-500/80",   bg: "bg-amber-500/5",   border: "border-amber-500/15",   text: "text-amber-400" },
 };
@@ -83,7 +83,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8"
+        className="rounded-md border border-white/10 bg-white/5 backdrop-blur-xl p-8"
       >
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="min-w-0 flex-1">
@@ -117,7 +117,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
 
         {/* Segmented progress bar — bands visible */}
         <div className="mb-6">
-          <div className="relative h-2 rounded-full bg-bg-surface overflow-hidden ring-1 ring-white/[0.05]">
+          <div className="relative h-2 rounded-full bg-bg-surface overflow-hidden border border-border-hair">
             {/* Segment separators (hairlines) at band boundaries */}
             {BAND_ORDER.slice(1).map((band) => {
               const pct = BAND_RANGES[band].min;
@@ -202,7 +202,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
                     </div>
 
                     {/* Proportional range bar */}
-                    <div className="flex-1 relative h-6 rounded-md bg-white/[0.03] overflow-hidden ring-1 ring-white/[0.04]">
+                    <div className="flex-1 relative h-6 rounded-md bg-white/[0.03] overflow-hidden border border-border-hair">
                       {/* The band's segment, positioned proportionally across 0-100 */}
                       <motion.div
                         initial={{ scaleX: 0 }}
@@ -276,7 +276,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
         </div>
 
         {/* Recommendations */}
-        <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+        <div className="mt-8 rounded-md border border-white/10 bg-white/[0.03] p-6">
           <h4 className="text-xs uppercase tracking-[0.35em] text-text-secondary font-semibold mb-4">Recommendations</h4>
           <ul className="space-y-3">
             {result.recommendations.map((r, i) => (
@@ -303,7 +303,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`rounded-2xl border ${style.border} ${style.bg} p-6`}
+                className={`rounded-md border ${style.border} ${style.bg} p-6`}
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div>

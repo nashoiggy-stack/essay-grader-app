@@ -96,8 +96,8 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
   }[status];
 
   const statusBorder = {
-    idle: "border-white/10 hover:border-blue-400/40",
-    uploading: "border-blue-400/40",
+    idle: "border-white/10 hover:border-accent-line",
+    uploading: "border-accent-line",
     success: "border-emerald-400/40",
     error: "border-red-400/40",
   }[status];
@@ -108,7 +108,7 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => status !== "uploading" && inputRef.current?.click()}
-        className={`cursor-pointer rounded-2xl bg-white/[0.03] border ${statusBorder} p-6 transition-colors duration-200 backdrop-blur-sm`}
+        className={`cursor-pointer rounded-md bg-white/[0.03] border ${statusBorder} p-6 transition-colors duration-200 backdrop-blur-sm`}
       >
         <input
           ref={inputRef}

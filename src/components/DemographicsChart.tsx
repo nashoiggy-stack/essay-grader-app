@@ -187,7 +187,7 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
   }));
 
   return (
-    <div className="rounded-xl bg-[#0f0f1c] border border-border-hair p-4 space-y-4">
+    <div className="rounded-xl bg-bg-surface border border-border-hair p-4 space-y-4">
       {/* Header */}
       <div>
         <p className="text-[13px] font-semibold text-text-primary truncate">{college.name}</p>

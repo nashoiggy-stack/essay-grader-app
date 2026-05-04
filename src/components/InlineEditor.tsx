@@ -162,7 +162,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
-            <div className="rounded-2xl bg-[#0f0f1c] border border-border-strong p-5">
+            <div className="rounded-md bg-bg-surface border border-border-strong p-5">
               <p className="text-xs text-text-secondary font-medium mb-4">What do you want to improve?</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -170,7 +170,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                   const isOpen = openGroup === group.key;
                   const hasActive = group.categories.some((c) => c === activeFocus);
                   return (
-                    <div key={group.key} className="rounded-xl bg-bg-inset ring-1 ring-white/[0.05] overflow-hidden">
+                    <div key={group.key} className="rounded-xl bg-bg-inset border border-border-hair overflow-hidden">
                       <button
                         onClick={() => setOpenGroup(isOpen ? null : group.key)}
                         className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left transition-[background-color] duration-200 hover:bg-white/[0.03]"
@@ -210,7 +210,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                                   }}
                                   className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-[background-color,color] duration-200 ${
                                     activeFocus === cat
-                                      ? "bg-accent-soft text-accent-text ring-1 ring-blue-500/30"
+                                      ? "bg-accent-soft text-accent-text ring-1 ring-accent-line"
                                       : "bg-bg-surface text-text-secondary hover:bg-white/[0.08] hover:text-text-primary"
                                   }`}
                                 >
@@ -283,7 +283,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="rounded-xl bg-[#12121f] border border-border-strong p-5 shadow-xl"
+            className="rounded-xl bg-[#12121f] border border-border-strong p-5 "
           >
             <div className="flex items-center gap-2 mb-2">
               <span className={`w-2.5 h-2.5 rounded-full ${activeColors.dot}`} />

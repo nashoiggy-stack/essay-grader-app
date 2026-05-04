@@ -10,7 +10,7 @@ import { useResume } from "@/hooks/useResume";
 import { Download, Save, FileText, Wand2, Eye, EyeOff, RotateCcw, Download as DownloadIcon } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Section field schemas ────────────────────────────────────────────────────
 
@@ -133,7 +133,7 @@ export default function ResumePage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   r.saveFlash
                     ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06]"
+                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                 }`}
               >
                 <Save className="w-3.5 h-3.5" />
@@ -141,7 +141,7 @@ export default function ResumePage() {
               </button>
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair transition-[background-color,color] duration-200"
               >
                 <DownloadIcon className="w-3.5 h-3.5" />
                 Print / PDF
@@ -160,7 +160,7 @@ export default function ResumePage() {
         </div>
 
         {/* Mode switcher */}
-        <div className="mb-6 inline-flex rounded-full bg-bg-inset ring-1 ring-white/[0.06] p-1 print:hidden">
+        <div className="mb-6 inline-flex rounded-full bg-bg-inset border border-border-hair p-1 print:hidden">
           <button
             onClick={() => setMode("resume")}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
@@ -192,7 +192,7 @@ export default function ResumePage() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mb-4 rounded-xl border border-accent-line bg-blue-500/5 p-3 print:hidden"
+              className="mb-4 rounded-xl border border-accent-line bg-accent-soft p-3 print:hidden"
             >
               <p className="text-[12px] text-accent-text">{r.importFlash}</p>
             </motion.div>
@@ -205,7 +205,7 @@ export default function ResumePage() {
             {/* Editor column */}
             <div className="space-y-5 print:hidden">
               {/* Basic info */}
-              <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-5">
+              <div className="rounded-md bg-bg-surface border border-border-hair p-5">
                 <h3 className="text-sm font-semibold text-text-primary mb-3">Header</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
@@ -311,7 +311,7 @@ export default function ResumePage() {
                 extraHeaderAction={
                   <button
                     onClick={r.importFromECs}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-3 py-1.5 text-xs font-semibold ring-1 ring-white/[0.06] transition-[background-color,color] duration-200"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-3 py-1.5 text-xs font-semibold border border-border-hair transition-[background-color,color] duration-200"
                   >
                     <Download className="w-3.5 h-3.5" />
                     Import from EC Evaluator
@@ -365,7 +365,7 @@ export default function ResumePage() {
               />
 
               {/* Skills */}
-              <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-5">
+              <div className="rounded-md bg-bg-surface border border-border-hair p-5">
                 <h3 className="text-sm font-semibold text-text-primary mb-3">Skills</h3>
                 <div className="space-y-3">
                   <div>
@@ -432,7 +432,7 @@ export default function ResumePage() {
             {!showPreview && (
               <button
                 onClick={() => setShowPreview(true)}
-                className="lg:hidden inline-flex items-center gap-1.5 justify-center w-full rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-4 py-3 text-sm font-semibold ring-1 ring-white/[0.06] transition-[background-color,color] duration-200 print:hidden"
+                className="lg:hidden inline-flex items-center gap-1.5 justify-center w-full rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-4 py-3 text-sm font-semibold border border-border-hair transition-[background-color,color] duration-200 print:hidden"
               >
                 <Eye className="w-4 h-4" />
                 Show preview
@@ -442,7 +442,7 @@ export default function ResumePage() {
         ) : (
           // ── Mode 2: Activities Helper ───────────────────────────────
           <ScrollReveal delay={0.05}>
-            <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-6 sm:p-8 max-w-2xl">
+            <div className="rounded-md bg-bg-surface border border-border-hair p-6 sm:p-8 max-w-2xl">
               <ActivitiesHelperPanel
                 activities={r.resume.activities}
                 onApply={r.replaceActivity}

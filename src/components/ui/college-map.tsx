@@ -197,15 +197,15 @@ export function CollegeMap({ college, className }: CollegeMapProps) {
   }, [college.name, coords, loaded]);
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-white/[0.06] ${className ?? ""}`}>
+    <div className={`relative overflow-hidden rounded-md border border-white/[0.06] ${className ?? ""}`}>
       <div ref={containerRef} className="w-full h-full min-h-[250px]" />
       {loaded && (
-        <div className="absolute bottom-3 left-3 z-10 rounded-lg bg-[#06060f]/85 backdrop-blur-md ring-1 ring-white/[0.08] px-3 py-1.5 text-xs text-zinc-300">
+        <div className="absolute bottom-3 left-3 z-10 rounded-lg bg-bg-base/85 backdrop-blur-md border border-border-hair px-3 py-1.5 text-xs text-zinc-300">
           {college.name} &middot; {college.state}
         </div>
       )}
       {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#0c0c1a]">
+        <div className="absolute inset-0 flex items-center justify-center bg-bg-inset">
           <div className="flex gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-pulse" />
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-pulse [animation-delay:150ms]" />

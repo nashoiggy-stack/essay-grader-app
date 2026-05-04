@@ -64,11 +64,11 @@ export const SaveIndicator: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#0c0c1a]/95 border border-white/[0.08] px-3 py-1.5 text-xs text-zinc-300 shadow-lg shadow-black/40 backdrop-blur"
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#0c0c1a]/95 border border-white/[0.08] px-3 py-1.5 text-xs text-zinc-300 shadow-black/40 backdrop-blur"
           >
             {state === "saving" && (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-300" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-text" />
                 <span>Saving…</span>
               </>
             )}

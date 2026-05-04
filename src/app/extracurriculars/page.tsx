@@ -29,7 +29,7 @@ export default function ExtracurricularsPage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   ec.saveFlash
                     ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06]"
+                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                 }`}
               >
                 {ec.saveFlash ? (
@@ -47,7 +47,7 @@ export default function ExtracurricularsPage() {
             )}
           </div>
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            <span className="text-gradient">Activity Evaluator</span>
+            Activity Evaluator
           </h1>
           <p className="max-w-xl text-lg text-text-secondary leading-relaxed">
             Describe your extracurriculars in your own words. I&apos;ll ask questions to understand
@@ -59,7 +59,7 @@ export default function ExtracurricularsPage() {
         <ScrollReveal delay={0.1}>
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 mb-10">
             {/* Left: Activity List */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+            <div className="rounded-md border border-white/10 bg-white/5 backdrop-blur-xl p-5">
               <ECActivityList
                 conversations={ec.conversations}
                 activeConvId={ec.activeConvId}
@@ -72,7 +72,7 @@ export default function ExtracurricularsPage() {
             </div>
 
             {/* Right: Conversation */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+            <div className="rounded-md border border-white/10 bg-white/5 backdrop-blur-xl p-6">
               {ec.activeConversation ? (
                 <ECConversationPanel
                   conversation={ec.activeConversation}

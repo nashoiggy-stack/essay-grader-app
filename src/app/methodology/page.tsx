@@ -11,7 +11,7 @@ export default function MethodologyPage() {
       <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)] text-text-primary">
         <header className="mb-10">
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            <span className="text-gradient">How AdmitEdge Calculates Your Chances</span>
+            How AdmitEdge Calculates Your Chances
           </h1>
           <p className="text-text-secondary text-base leading-relaxed max-w-2xl">
             AdmitEdge uses a multi-input chance model that combines Academic Index for stats, an
@@ -149,7 +149,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
           <ul className="list-disc pl-5 space-y-1.5 text-[13px] text-text-secondary leading-relaxed">
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-accent-text"
+                className="underline decoration-accent-line hover:text-accent-text"
                 href="http://humcap.uchicago.edu/RePEc/hka/wpaper/Arcidiacono_Kinsler_Ransom_2019_recruit-to-reject.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -159,7 +159,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             </li>
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-accent-text"
+                className="underline decoration-accent-line hover:text-accent-text"
                 href="https://web.stanford.edu/~jdlevin/Papers/EarlyAdmissions.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -169,7 +169,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             </li>
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-accent-text"
+                className="underline decoration-accent-line hover:text-accent-text"
                 href="https://www.nber.org/papers/w33570"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -179,7 +179,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
             </li>
             <li>
               <a
-                className="underline decoration-blue-500/40 hover:text-accent-text"
+                className="underline decoration-accent-line hover:text-accent-text"
                 href="https://opportunityinsights.org/paper/collegeadmissions/"
                 target="_blank"
                 rel="noopener noreferrer"

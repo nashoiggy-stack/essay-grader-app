@@ -127,7 +127,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
 
   if (results.length === 0) {
     return (
-      <div className="glass rounded-2xl p-12 ring-1 ring-white/[0.06] text-center">
+      <div className="bg-bg-surface rounded-md p-12 border border-border-hair text-center">
         <p className="text-text-muted text-lg mb-2">No schools match your filters</p>
         <p className="text-text-faint text-sm">Try broadening your criteria — remove a filter or widen the acceptance rate range.</p>
       </div>
@@ -142,18 +142,18 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-          className="flex items-center justify-between gap-3 rounded-xl bg-blue-500/5 border border-blue-500/15 px-4 py-3"
+          className="flex items-center justify-between gap-3 rounded-xl bg-accent-soft border border-blue-500/15 px-4 py-3"
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <Bookmark className="w-4 h-4 text-accent-text shrink-0" fill="currentColor" />
             <p className="text-sm text-text-primary">
-              <span className="font-semibold text-blue-200">{pinnedCount}</span>
+              <span className="font-semibold text-accent-text">{pinnedCount}</span>
               <span className="text-text-secondary"> school{pinnedCount === 1 ? "" : "s"} pinned to your list</span>
             </p>
           </div>
           <Link
             href="/strategy"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/25 text-blue-200 px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/25 text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
           >
             View Strategy
             <ArrowRight className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
               onClick={() => setSort(key)}
               className={`text-xs px-3 py-1 rounded-lg transition-[background-color,color,box-shadow] duration-200 ${
                 sort === key
-                  ? "bg-accent-soft text-accent-text ring-1 ring-blue-500/30"
+                  ? "bg-accent-soft text-accent-text ring-1 ring-accent-line"
                   : "bg-bg-inset text-text-muted hover:text-text-secondary"
               }`}
             >

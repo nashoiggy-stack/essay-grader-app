@@ -77,10 +77,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
 
   return (
     <div
-      className={`rounded-2xl border overflow-hidden transition-[background-color,border-color] duration-200 ${
+      className={`rounded-md border overflow-hidden transition-[background-color,border-color] duration-200 ${
         emphasize
           ? "bg-blue-500/[0.04] border-accent-line hover:border-accent-line"
-          : "bg-[#0f0f1c] border-border-hair hover:border-white/[0.12]"
+          : "bg-bg-surface border-border-hair hover:border-white/[0.12]"
       }`}
     >
       <button

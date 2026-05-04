@@ -28,7 +28,7 @@ interface BulkResponse {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -201,7 +201,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
 
       {/* ── Bulk flow: main entry point ──────────────────────────── */}
       {hasActivities && (
-        <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-5 space-y-4">
+        <div className="rounded-md bg-bg-surface border border-border-hair p-5 space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold text-text-primary">
@@ -338,7 +338,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
 
       {/* ── Single-activity fallback ─────────────────────────────── */}
       {!hasActivities && (
-        <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-5 space-y-4">
+        <div className="rounded-md bg-bg-surface border border-border-hair p-5 space-y-4">
           <p className="text-[12px] text-text-muted">
             No activities in your resume yet. Add activities in Resume mode (or import from EC Evaluator), then come back here to generate Common App versions all at once.
           </p>

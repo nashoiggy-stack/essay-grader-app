@@ -47,7 +47,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
   };
 
   return (
-    <Card3D className="glass rounded-2xl p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
+    <Card3D className="bg-bg-surface rounded-md p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 gap-2">
         <label className="text-sm font-medium text-text-secondary">Your essay</label>
@@ -101,7 +101,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
+        className="w-full rounded-xl bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
@@ -171,7 +171,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-5 glass rounded-xl p-5 overflow-hidden animate-pulse-glow"
+            className="mt-5 bg-bg-surface rounded-xl p-5 overflow-hidden animate-pulse-glow"
           >
             <p className="text-sm text-accent-text font-medium">{LOADING_TEXT}</p>
             <div className="mt-3 h-1 w-full rounded-full bg-bg-surface overflow-hidden">

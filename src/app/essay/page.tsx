@@ -125,7 +125,7 @@ export default function Home() {
           titleComponent={
             <div className="mb-4">
               <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-                <span className="text-gradient">{APP_CONFIG.title}</span>
+                {APP_CONFIG.title}
               </h1>
               <p className="max-w-[60ch] mx-auto text-[15px] leading-relaxed text-text-secondary">
                 {APP_CONFIG.subtitle}
@@ -134,7 +134,7 @@ export default function Home() {
           }
         >
           {/* Rubric overview inside the 3D card */}
-          <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
+          <div className="h-full w-full bg-bg-base p-5 flex flex-col gap-4 overflow-hidden">
             <div>
               <h3 className="text-xs font-bold text-accent-text uppercase tracking-[0.08em] mb-3">Common App Criteria (1-100)</h3>
               <div className="space-y-2">
@@ -228,7 +228,7 @@ export default function Home() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                     saveFlash
                       ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                      : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06]"
+                      : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                   }`}
                 >
                   {saveFlash ? (
@@ -247,7 +247,7 @@ export default function Home() {
                   onClick={handleExport}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary bg-bg-inset hover:bg-accent-soft hover:text-accent-text ring-1 ring-white/[0.06] transition-[background-color,color,box-shadow] duration-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary bg-bg-inset hover:bg-accent-soft hover:text-accent-text border border-border-hair transition-[background-color,color,box-shadow] duration-200"
                   title="Download grade report as Markdown"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -266,8 +266,8 @@ export default function Home() {
 
               {/* ── Inline Editor / Suggestions ──────────────────────── */}
               <ScrollReveal delay={0.15}>
-                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
-                <div className="glass rounded-2xl p-6 sm:p-8">
+                <div className="" style={{ "--radius": "1rem" } as React.CSSProperties}>
+                <div className="bg-bg-surface rounded-md p-6 sm:p-8">
                   <h3 className="text-lg font-bold text-text-primary mb-1">Inline Suggestions</h3>
                   <p className="text-sm text-text-muted mb-5">
                     Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
@@ -293,8 +293,8 @@ export default function Home() {
 
               {/* Tabbed Content */}
               <ScrollReveal delay={0.2}>
-                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
-                <div className="glass rounded-2xl overflow-hidden">
+                <div className="" style={{ "--radius": "1rem" } as React.CSSProperties}>
+                <div className="bg-bg-surface rounded-md overflow-hidden">
                   <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
                   <div className="p-6 sm:p-8">

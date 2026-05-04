@@ -32,9 +32,9 @@ const SEVERITY_STYLES: Record<
   },
   low: {
     icon: Info,
-    text: "text-blue-300",
+    text: "text-accent-text",
     bg: "bg-blue-500/[0.05]",
-    ring: "ring-blue-500/25",
+    ring: "ring-accent-line",
     label: "Low",
   },
 };

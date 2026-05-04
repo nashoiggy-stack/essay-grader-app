@@ -21,7 +21,7 @@ export default function ChancesPage() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            <span className="text-gradient">Chance Calculator</span>
+            Chance Calculator
           </h1>
           <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             Estimate your admission chances at any school in our database.
@@ -77,7 +77,7 @@ export default function ChancesPage() {
         )}
 
         {!college && (
-          <div className="mt-8 glass rounded-2xl p-12 ring-1 ring-white/[0.06] text-center">
+          <div className="mt-8 bg-bg-surface rounded-md p-12 border border-border-hair text-center">
             <p className="text-text-muted">Select a college above to see your estimated chances</p>
           </div>
         )}

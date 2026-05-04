@@ -18,7 +18,7 @@ interface ChanceFormProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
@@ -77,7 +77,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
   }, []);
 
   return (
-  <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
+  <div className="bg-bg-surface rounded-md p-6 border border-border-hair">
     <div className="flex items-center justify-between mb-2">
       <h3 className="text-lg font-bold text-text-primary">Your Profile</h3>
       <button onClick={onReset} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
@@ -336,16 +336,16 @@ function GpaScaleNote() {
         <line x1="8" y1="14" x2="12" y2="14" />
       </svg>
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-semibold text-blue-200 leading-snug">
+        <p className="text-[12px] font-semibold text-accent-text leading-snug">
           Use the 5.0 normalized scale
         </p>
-        <p className="text-[11px] text-blue-200/70 mt-0.5 leading-relaxed">
+        <p className="text-[11px] text-accent-text/70 mt-0.5 leading-relaxed">
           If your school uses a different weighted scale (4.5, 6.0, 100-point, etc.),
           convert your GPA first.
         </p>
         <a
           href="/gpa"
-          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-text hover:text-blue-200 underline decoration-blue-500/40 underline-offset-2 transition-colors"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent-text hover:text-accent-text underline decoration-accent-line underline-offset-2 transition-colors"
         >
           Open GPA Calculator
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

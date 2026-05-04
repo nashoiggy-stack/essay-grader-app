@@ -51,9 +51,9 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
     <div ref={containerRef} className="relative">
       {dreamSchool ? (
         // Selected state — compact chip with clear button
-        <div className="rounded-2xl bg-gradient-to-br from-blue-500/[0.08] to-blue-500/[0.04] border border-blue-500/25 p-5 flex items-center gap-4">
+        <div className="rounded-md bg-gradient-to-br from-blue-500/[0.08] to-blue-500/[0.04] border border-accent-line p-5 flex items-center gap-4">
           <div className="w-11 h-11 rounded-xl bg-accent-soft flex items-center justify-center shrink-0">
-            <Star className="w-5 h-5 text-blue-200" fill="currentColor" strokeWidth={1.5} />
+            <Star className="w-5 h-5 text-accent-text" fill="currentColor" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] uppercase tracking-[0.08em] text-accent-text/80 font-semibold mb-0.5">
@@ -79,7 +79,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
       ) : (
         // Empty state — search input
         <div>
-          <div className="flex items-center gap-2 rounded-2xl bg-[#0f0f1c] border border-border-strong px-4 py-3.5 focus-within:border-accent-line focus-within:ring-1 focus-within:ring-blue-500/20 transition-[border-color,box-shadow] duration-200">
+          <div className="flex items-center gap-2 rounded-md bg-bg-surface border border-border-strong px-4 py-3.5 focus-within:border-accent-line focus-within:ring-1 focus-within:ring-blue-500/20 transition-[border-color,box-shadow] duration-200">
             <Star className="w-4 h-4 text-text-muted shrink-0" strokeWidth={1.5} />
             <input
               type="text"
@@ -109,7 +109,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#0c0c1a] border border-border-strong shadow-[0_24px_48px_rgba(0,0,0,0.5)] overflow-hidden z-20 max-h-[360px] overflow-y-auto"
+            className="absolute left-0 right-0 top-full mt-2 rounded-md bg-bg-inset border border-border-strong shadow-[0_24px_48px_rgba(0,0,0,0.5)] overflow-hidden z-20 max-h-[360px] overflow-y-auto"
           >
             {results.length === 0 ? (
               <div className="px-4 py-6 text-center">

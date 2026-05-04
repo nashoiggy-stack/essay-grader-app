@@ -45,7 +45,7 @@ export function Card3D({ children, className = "", glowColor = "rgba(99, 102, 24
         {/* Glow border on hover */}
         {isHovered && (
           <motion.div
-            className="absolute inset-0 rounded-2xl pointer-events-none"
+            className="absolute inset-0 rounded-md pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

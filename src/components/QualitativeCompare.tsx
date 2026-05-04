@@ -240,7 +240,7 @@ function QualRow({
                     : "cursor-default"
                 } ${
                   isExpanded
-                    ? "bg-white/[0.03] ring-1 ring-white/[0.08]"
+                    ? "bg-white/[0.03] border border-border-hair"
                     : ""
                 }`}
               >
@@ -334,7 +334,7 @@ export function CultureTab({ colleges }: { colleges: readonly College[] }) {
     <div className="space-y-4">
       <QualSection title="Culture & Atmosphere" fields={CULTURE_FIELDS} colleges={colleges} />
       {/* Vibe tags as pill cloud */}
-      <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] px-5 py-4">
+      <div className="rounded-md bg-bg-surface border border-white/[0.06] px-5 py-4">
         <p className="text-[12px] font-bold text-zinc-200 uppercase tracking-[0.08em] mb-3">
           Vibe Tags
         </p>
@@ -351,7 +351,7 @@ export function CultureTab({ colleges }: { colleges: readonly College[] }) {
                 {(c.vibeTags ?? []).map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] ring-1 ring-white/[0.06] text-zinc-300"
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] border border-border-hair text-zinc-300"
                   >
                     {tag}
                   </span>

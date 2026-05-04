@@ -57,7 +57,7 @@ const PERCENTILE_LABEL: Record<string, string> = {
 
 const CLASSIFICATION_TEXT: Record<Classification, string> = {
   safety: "text-emerald-300",
-  likely: "text-blue-300",
+  likely: "text-accent-text",
   target: "text-amber-300",
   reach: "text-orange-300",
   unlikely: "text-red-300",
@@ -104,7 +104,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
     <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
       {/* Banner */}
       <div className="mb-6 rounded-xl border border-white/[0.08] bg-[#0c0c1a]/80 p-4 flex items-start gap-3">
-        <Compass className="w-4 h-4 text-blue-300 shrink-0 mt-0.5" />
+        <Compass className="w-4 h-4 text-accent-text shrink-0 mt-0.5" />
         <div>
           <p className="text-sm text-zinc-200 font-semibold">
             Shared strategy briefing — snapshot from {capturedDate}.{" "}
@@ -189,7 +189,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                   <ul className="space-y-2">
                     {lines.map((lever, i) => (
                       <li key={i} className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed">
-                        <span className="text-blue-300 mt-0.5 shrink-0">→</span>
+                        <span className="text-accent-text mt-0.5 shrink-0">→</span>
                         <span>{lever}</span>
                       </li>
                     ))}

@@ -24,7 +24,7 @@ interface MajorSelectProps {
 }
 
 const DEFAULT_SELECT_CLASS =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none appearance-none cursor-pointer";
+  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none appearance-none cursor-pointer";
 
 export const MajorSelect: React.FC<MajorSelectProps> = ({
   value,

@@ -62,7 +62,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ resume }) => {
     summerExperience.length > 0;
 
   return (
-    <div className="resume-preview bg-white text-zinc-900 rounded-2xl p-8 sm:p-10 shadow-xl max-w-[780px] mx-auto font-sans">
+    <div className="resume-preview bg-white text-zinc-900 rounded-md p-8 sm:p-10 max-w-[780px] mx-auto font-sans">
       {/* Header */}
       <header className="mb-6 pb-4 border-b-2 border-zinc-900">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-[-0.012em] text-zinc-900 leading-none mb-2">

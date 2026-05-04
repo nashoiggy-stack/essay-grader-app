@@ -213,7 +213,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
 
           <div className="card-inner-content relative w-full h-full max-w-6xl mx-auto px-6 lg:px-12 flex flex-col justify-center z-10">
             <div className="text-center mb-10">
-              <p className="text-xs uppercase tracking-[0.4em] text-blue-300/60 font-semibold mb-3">AdmitEdge</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-accent-text/60 font-semibold mb-3">AdmitEdge</p>
               <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.012em] text-white mb-4">
                 Everything you need.
               </h2>
@@ -230,7 +230,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
                   <Link
                     key={feature.href}
                     href={feature.href}
-                    className="feature-grid-item feature-card-depth rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] group"
+                    className="feature-grid-item feature-card-depth rounded-md p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] group"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
@@ -238,7 +238,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-bold text-white">{feature.stat}</p>
-                        <p className="text-[9px] uppercase tracking-[0.08em] text-blue-200/40">{feature.statLabel}</p>
+                        <p className="text-[9px] uppercase tracking-[0.08em] text-accent-text/40">{feature.statLabel}</p>
                       </div>
                     </div>
                     <h3 className="text-sm font-semibold text-white mb-1.5">{feature.title}</h3>

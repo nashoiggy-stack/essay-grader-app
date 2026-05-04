@@ -196,7 +196,7 @@ export default function StrategyPage() {
             </span>
           </div>
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            <span className="text-gradient">Your Strategic Briefing</span>
+            Your Strategic Briefing
           </h1>
           <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             A live decision tool — not a static report. Pick a dream school, review your gaps, and check off action items as you improve.
@@ -542,7 +542,7 @@ function DreamSchoolBody({
             type="button"
             onClick={() => setLeversOpen((v) => !v)}
             aria-expanded={leversOpen}
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-blue-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-accent-text transition-colors"
           >
             <Zap className="w-3.5 h-3.5" />
             What would change this recommendation?
@@ -710,7 +710,7 @@ function SpikeBody({
           type="button"
           onClick={() => setImproveOpen((v) => !v)}
           aria-expanded={improveOpen}
-          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-blue-200 transition-colors"
+          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-accent-text transition-colors"
         >
           <Zap className="w-3.5 h-3.5" />
           How to sharpen this spike
@@ -992,7 +992,7 @@ function StatChip({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 top-full mt-2 w-72 z-10 rounded-lg bg-[#0c0c1a] border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+            className="absolute left-0 top-full mt-2 w-72 z-10 rounded-lg bg-bg-inset border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
           >
             <p className="text-[11px] text-text-secondary leading-relaxed">{tooltip}</p>
           </motion.div>
@@ -1064,7 +1064,7 @@ function FooterBar({
   loading: boolean;
 }) {
   return (
-    <div className="mt-6 rounded-2xl bg-bg-surface border border-border-hair p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div className="mt-6 rounded-md bg-bg-surface border border-border-hair p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
       <p className="text-[11px] text-text-muted">
         Last updated {new Date(generatedAt).toLocaleString()} · Re-run after improvements to see how the briefing changes.
       </p>
@@ -1083,8 +1083,8 @@ function FooterBar({
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-10 text-center">
-      <div className="w-14 h-14 mx-auto rounded-2xl bg-accent-soft border border-accent-line flex items-center justify-center mb-5">
+    <div className="rounded-md bg-bg-surface border border-border-hair p-10 text-center">
+      <div className="w-14 h-14 mx-auto rounded-md bg-accent-soft border border-accent-line flex items-center justify-center mb-5">
         <Bookmark className="w-6 h-6 text-accent-text" />
       </div>
       <h2 className="text-xl font-semibold text-text-primary mb-2">
@@ -1137,7 +1137,7 @@ function MissingDataBanner({ items }: { items: readonly MissingDataItem[] }) {
                 </div>
                 <Link
                   href={item.ctaHref}
-                  className="text-xs text-accent-text hover:text-blue-200 font-semibold whitespace-nowrap shrink-0 mt-0.5"
+                  className="text-xs text-accent-text hover:text-accent-text font-semibold whitespace-nowrap shrink-0 mt-0.5"
                 >
                   Open →
                 </Link>
@@ -1152,7 +1152,7 @@ function MissingDataBanner({ items }: { items: readonly MissingDataItem[] }) {
 
 function PreGenerationHint({ hasDreamSchool }: { hasDreamSchool: boolean }) {
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-8 text-center">
+    <div className="rounded-md bg-bg-surface border border-border-hair p-8 text-center">
       <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
         Click <span className="text-text-primary font-semibold">Generate Strategy</span> to run the
         analyzers and produce your consultant briefing.
@@ -1557,7 +1557,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
             placeholder="e.g. sustainability, quant trading"
             value={interest}
             onChange={(e) => setInterest(e.target.value)}
-            className="w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none"
+            className="w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none"
           />
         </div>
       </div>
@@ -1566,7 +1566,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
         type="button"
         onClick={save}
         disabled={!canSave}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/30 disabled:bg-bg-surface disabled:text-text-faint text-blue-200 px-4 py-2 text-xs font-semibold transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft disabled:bg-bg-surface disabled:text-text-faint text-accent-text px-4 py-2 text-xs font-semibold transition-colors"
       >
         Save and show picks
         <ArrowRight className="w-3.5 h-3.5" />

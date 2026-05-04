@@ -68,7 +68,7 @@ export const StrategyShareButton: React.FC<StrategyShareButtonProps> = ({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 z-20 rounded-xl bg-[#0c0c1a] border border-border-strong shadow-[0_16px_32px_rgba(0,0,0,0.4)] p-4">
+        <div className="absolute right-0 top-full mt-2 w-80 z-20 rounded-xl bg-bg-inset border border-border-strong shadow-[0_16px_32px_rgba(0,0,0,0.4)] p-4">
           <p className="text-[12px] font-semibold text-text-primary mb-2">
             Share your briefing
           </p>
@@ -83,7 +83,7 @@ export const StrategyShareButton: React.FC<StrategyShareButtonProps> = ({
                 type="button"
                 onClick={onGenerate}
                 disabled={loading || disabled}
-                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/30 disabled:bg-bg-surface disabled:text-text-faint text-blue-200 px-3 py-2 text-xs font-semibold transition-colors"
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft disabled:bg-bg-surface disabled:text-text-faint text-accent-text px-3 py-2 text-xs font-semibold transition-colors"
               >
                 {loading ? (
                   <>
@@ -106,13 +106,13 @@ export const StrategyShareButton: React.FC<StrategyShareButtonProps> = ({
                   readOnly
                   value={active.url}
                   onFocus={(e) => e.target.select()}
-                  className="flex-1 min-w-0 rounded-md bg-bg-surface border border-border-strong px-2 py-1.5 text-[11px] text-text-primary font-mono focus:outline-none focus:ring-1 focus:ring-blue-500/30"
+                  className="flex-1 min-w-0 rounded-md bg-bg-surface border border-border-strong px-2 py-1.5 text-[11px] text-text-primary font-mono focus:outline-none focus:ring-1 focus:ring-accent-line"
                 />
                 <button
                   type="button"
                   onClick={onCopy}
                   aria-label="Copy share link"
-                  className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-accent-soft hover:bg-blue-500/25 text-blue-200 transition-colors"
+                  className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-accent-soft hover:bg-blue-500/25 text-accent-text transition-colors"
                 >
                   {copied ? <Check className="w-3.5 h-3.5" /> : <LinkIcon className="w-3.5 h-3.5" />}
                 </button>

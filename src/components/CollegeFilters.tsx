@@ -15,7 +15,7 @@ interface CollegeFiltersProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
@@ -75,7 +75,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
   };
 
   return (
-  <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
+  <div className="bg-bg-surface rounded-md p-6 border border-border-hair">
     <div className="flex items-center justify-between mb-5">
       <h3 className="text-lg font-bold text-text-primary">Filters</h3>
       <button onClick={onReset} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
@@ -205,7 +205,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
             onClick={addInterest}
             disabled={!pendingInterest.trim() || filters.intendedInterests.length >= MAX_INTERESTS}
             aria-label="Add interest"
-            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-accent-soft hover:bg-blue-500/30 disabled:bg-bg-surface disabled:text-text-faint text-blue-200 px-3 text-xs font-semibold transition-colors"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-accent-soft hover:bg-accent-soft disabled:bg-bg-surface disabled:text-text-faint text-accent-text px-3 text-xs font-semibold transition-colors"
           >
             Add
           </button>

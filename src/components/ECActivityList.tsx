@@ -41,7 +41,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
       </div>
 
       {conversations.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+        <div className="rounded-md border border-dashed border-white/10 p-8 text-center">
           <p className="text-text-muted text-sm mb-3">No activities yet</p>
           <button
             onClick={onAdd}
@@ -134,7 +134,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                       onChange={(e) =>
                         onSetResumeCategory(conv.id, e.target.value as ResumeCategory)
                       }
-                      className="flex-1 min-w-0 text-[11px] bg-bg-inset border border-border-strong rounded-md px-2 py-1 text-text-secondary focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
+                      className="flex-1 min-w-0 text-[11px] bg-bg-inset border border-border-strong rounded-md px-2 py-1 text-text-secondary focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
                     >
                       {(Object.entries(RESUME_CATEGORY_LABELS) as [ResumeCategory, string][]).map(
                         ([key, label]) => (

@@ -18,7 +18,7 @@ import { COLLEGES } from "@/data/colleges";
 //   Slot 3 = violet  (unique, doesn't clash with the above)
 
 export const SCHOOL_COLORS = [
-  { name: "blue",    bar: "from-blue-500 to-blue-400",    bg: "bg-blue-500/8",    border: "border-blue-500/25",  text: "text-accent-text",    dot: "bg-blue-400",    hex: "#60a5fa" },
+  { name: "blue",    bar: "from-blue-500 to-blue-400",    bg: "bg-blue-500/8",    border: "border-accent-line",  text: "text-accent-text",    dot: "bg-blue-400",    hex: "#60a5fa" },
   { name: "emerald", bar: "from-emerald-500 to-emerald-400", bg: "bg-emerald-500/8", border: "border-emerald-500/25", text: "text-emerald-300", dot: "bg-emerald-400", hex: "#34d399" },
   { name: "amber",   bar: "from-amber-500 to-amber-400",  bg: "bg-amber-500/8",   border: "border-amber-500/25", text: "text-amber-300",   dot: "bg-amber-400",   hex: "#fbbf24" },
   { name: "violet",  bar: "from-violet-500 to-violet-400", bg: "bg-violet-500/8",  border: "border-violet-500/25", text: "text-violet-300",  dot: "bg-violet-400",  hex: "#a78bfa" },
@@ -302,7 +302,7 @@ export function CompareSection({
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair overflow-hidden">
+    <div className="rounded-md bg-bg-surface border border-border-hair overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -375,7 +375,7 @@ export function CompareRow({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
-                  className="absolute left-0 top-full mt-1 w-56 z-10 rounded-lg bg-[#0a0a14] border border-border-strong p-2.5 shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
+                  className="absolute left-0 top-full mt-1 w-56 z-10 rounded-lg bg-bg-base border border-border-strong p-2.5 shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
                 >
                   <p className="text-[10px] text-text-secondary leading-relaxed">{context}</p>
                 </motion.div>
@@ -407,7 +407,7 @@ export function TagRow({
             {c.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-bg-surface ring-1 ring-white/[0.06] text-text-secondary"
+                className="text-[10px] px-2 py-0.5 rounded-full bg-bg-surface border border-border-hair text-text-secondary"
               >
                 {tag}
               </span>

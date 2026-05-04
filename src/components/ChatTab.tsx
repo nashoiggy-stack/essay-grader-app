@@ -55,7 +55,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
           animate={{ opacity: 1, y: 0 }}
           className={`rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
             msg.role === "user"
-              ? "bg-accent-soft text-blue-200 ml-12"
+              ? "bg-accent-soft text-accent-text ml-12"
               : "bg-bg-inset border border-border-hair text-text-secondary mr-12"
           }`}
         >
@@ -75,7 +75,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({
     {/* Input */}
     <div className="flex gap-2">
       <textarea
-        className="flex-1 rounded-xl bg-bg-inset border border-border-hair p-3 text-sm text-text-primary placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
+        className="flex-1 rounded-xl bg-bg-inset border border-border-hair p-3 text-sm text-text-primary placeholder-zinc-600 resize-none focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow,background-color,color,opacity] duration-200"
         rows={2}
         placeholder="Ask anything about your essay..."
         value={input}

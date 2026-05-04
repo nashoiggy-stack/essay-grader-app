@@ -49,7 +49,7 @@ interface ResumeSectionCardProps<T extends Entry> {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ export function ResumeSectionCard<T extends Entry>({
   }, [entries]);
 
   return (
-    <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair overflow-hidden">
+    <div className="rounded-md bg-bg-surface border border-border-hair overflow-hidden">
       {/* Section header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border-hair">
         <button
@@ -268,7 +268,7 @@ export function ResumeSectionCard<T extends Entry>({
                                         <button
                                           onClick={() => onImprove(entry.id, f.key, String(value))}
                                           disabled={isImproving || !String(value).trim()}
-                                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent-text hover:text-blue-200 disabled:opacity-40 disabled:cursor-not-allowed transition-[color] duration-200"
+                                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent-text hover:text-accent-text disabled:opacity-40 disabled:cursor-not-allowed transition-[color] duration-200"
                                         >
                                           <Sparkles className="w-3 h-3" />
                                           {isImproving ? "Improving..." : "Improve"}

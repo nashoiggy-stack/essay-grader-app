@@ -103,7 +103,7 @@ const TIER3_COLOR: Record<Tier3 | string, string> = {
 
 const FIT_COLORS: Record<Classification, { text: string; bg: string; ring: string }> = {
   safety: { text: "text-emerald-300", bg: "bg-emerald-500/10", ring: "ring-emerald-500/25" },
-  likely: { text: "text-accent-text", bg: "bg-accent-soft", ring: "ring-blue-500/25" },
+  likely: { text: "text-accent-text", bg: "bg-accent-soft", ring: "ring-accent-line" },
   target: { text: "text-amber-300", bg: "bg-amber-500/10", ring: "ring-amber-500/25" },
   reach: { text: "text-orange-300", bg: "bg-orange-500/10", ring: "ring-orange-500/25" },
   unlikely: { text: "text-red-300", bg: "bg-red-500/10", ring: "ring-red-500/25" },
@@ -185,7 +185,7 @@ export default function ComparePage() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            <span className="text-gradient">College Comparison</span>
+            College Comparison
           </h1>
           <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             Select 2–4 schools. Compare admissions, academics, campus, outcomes, and fit — side by side.
@@ -263,7 +263,7 @@ export default function ComparePage() {
 
             {/* Tabs */}
             <ScrollReveal delay={0.14}>
-              <div className="sticky top-16 z-30 bg-[#06060f]/90 backdrop-blur-md -mx-4 px-4 py-2 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none rounded-b-xl">
+              <div className="sticky top-16 z-30 bg-bg-base/90 backdrop-blur-md -mx-4 px-4 py-2 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none rounded-b-xl">
                 {visibleTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.key;
@@ -325,7 +325,7 @@ export default function ComparePage() {
 
         {/* Placeholder — shown when no comparison is active */}
         {!comparison && (
-          <div className="mt-8 rounded-2xl bg-[#0f0f1c] border border-border-hair p-12 text-center">
+          <div className="mt-8 rounded-md bg-bg-surface border border-border-hair p-12 text-center">
             <p className="text-text-muted">
               {selected.length === 0
                 ? "Search for schools above — or import your pinned list from the College List Builder."
@@ -344,10 +344,10 @@ export default function ComparePage() {
 
 function InsightsBar({ insights }: { insights: readonly ComparisonInsight[] }) {
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-blue-500/[0.06] to-blue-500/[0.02] border border-blue-500/15 p-5">
+    <div className="rounded-md bg-gradient-to-br from-blue-500/[0.06] to-blue-500/[0.02] border border-blue-500/15 p-5">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-4 h-4 text-accent-text" />
-        <h3 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-blue-200">
+        <h3 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-accent-text">
           Decision Insights
         </h3>
       </div>
@@ -367,7 +367,7 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-bg-surface ring-1 ring-white/[0.08] hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-bg-surface border border-border-hair hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
       >
         <Crown className="w-3 h-3 text-amber-300" />
         <span className="text-text-secondary">{insight.label}:</span>
@@ -380,7 +380,7 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 top-full mt-1.5 w-60 z-10 rounded-lg bg-[#0c0c1a] border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+            className="absolute left-0 top-full mt-1.5 w-60 z-10 rounded-lg bg-bg-inset border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
           >
             <p className="text-[11px] text-text-secondary leading-relaxed">
               {insight.detail}
@@ -435,7 +435,7 @@ function ComparisonGrid({
 }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl bg-[#0f0f1c] border border-border-hair p-8 text-center">
+      <div className="rounded-md bg-bg-surface border border-border-hair p-8 text-center">
         <p className="text-sm text-text-muted">No data available for this section.</p>
       </div>
     );
@@ -461,7 +461,7 @@ function ComparisonRow({
   const hasBest = row.values.some((v) => v.isBest);
 
   return (
-    <div className="rounded-xl bg-[#0f0f1c] border border-border-hair overflow-hidden hover:border-border-strong transition-[border-color] duration-200">
+    <div className="rounded-xl bg-bg-surface border border-border-hair overflow-hidden hover:border-border-strong transition-[border-color] duration-200">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -566,7 +566,7 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
         return (
           <div
             key={f.college.name}
-            className="rounded-xl bg-[#0f0f1c] border border-border-hair p-5"
+            className="rounded-xl bg-bg-surface border border-border-hair p-5"
           >
             <div className="flex items-center justify-between gap-3 mb-2">
               <h4 className="text-[15px] font-semibold text-text-primary">
@@ -666,7 +666,7 @@ function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
           {insights.map((ins, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-bg-surface ring-1 ring-white/[0.08] text-text-secondary"
+              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-bg-surface border border-border-hair text-text-secondary"
             >
               <Crown className="w-3 h-3 text-amber-300" />
               <span className="text-text-secondary">{ins.label}:</span>
