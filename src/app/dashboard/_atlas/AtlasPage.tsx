@@ -15,7 +15,7 @@ import type { ActionItem, ShortlistEntry, ToolStatus } from "./types";
 import "../dashboard-atlas.css";
 import { getCachedRaw, setRaw, type CloudKey } from "@/lib/cloud-storage";
 
-type Layout = "atlas" | "orbital" | "list";
+type Layout = "atlas" | "list";
 
 const LAYOUT_STORAGE_KEY: CloudKey = "admitedge-profile-layout";
 
@@ -44,9 +44,13 @@ export function AtlasPage() {
 
   useEffect(() => {
     const saved = getCachedRaw(LAYOUT_STORAGE_KEY);
-    if (saved === "atlas" || saved === "orbital" || saved === "list") {
+    if (saved === "atlas" || saved === "list") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLayout(saved);
+    } else if (saved === "orbital") {
+      // Orbital mode was dropped; migrate any persisted preference to atlas.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLayout("atlas");
     }
   }, []);
 
@@ -81,16 +85,6 @@ export function AtlasPage() {
         {layout === "atlas" && (
           <AtlasLayout tools={data.tools} focused={focused} setFocusTool={setFocusToolId} />
         )}
-        {layout === "orbital" && (
-          <OrbitalLayout
-            tools={data.tools}
-            focused={focused}
-            setFocusTool={setFocusToolId}
-            studentInitials={studentInitials(data.studentName)}
-            gradYear={data.studentGradYear}
-            isEmpty={isEmpty}
-          />
-        )}
         {layout === "list" && (
           <ListLayout tools={data.tools} setFocusTool={setFocusToolId} />
         )}
@@ -108,7 +102,7 @@ export function AtlasPage() {
 function LayoutTweaks({ layout, onChange }: { layout: Layout; onChange: (l: Layout) => void }) {
   return (
     <div className="ae-tweaks" role="group" aria-label="Profile layout">
-      {(["atlas", "orbital", "list"] as const).map((opt) => (
+      {(["atlas", "list"] as const).map((opt) => (
         <button
           key={opt}
           type="button"
@@ -397,75 +391,11 @@ function ToolDetail({ tool }: { tool: ToolStatus }) {
   );
 }
 
-// ── Orbital layout ───────────────────────────────────────────────────
-interface OrbitalProps extends LadderProps {
-  readonly studentInitials: string;
-  readonly gradYear: string;
-  readonly isEmpty: boolean;
-}
-function OrbitalLayout({ tools, focused, setFocusTool, studentInitials, gradYear, isEmpty }: OrbitalProps) {
-  const N = tools.length;
-  const completeCount = useMemo(() => tools.filter((t) => t.state === "complete").length, [tools]);
-  return (
-    <section className="ae-orbital">
-      <div className="ae-atlas-head">
-        <div>
-          <div className="ae-section-eyebrow">Tools</div>
-          <h2 className="ae-section-title">Eight tools, one orbit</h2>
-          <p className="ae-section-desc">
-            Each node is a tool. Distance from the center reflects how much further it has to go — finished tools sit closest, untouched tools furthest. Click any node to see what&apos;s next.
-          </p>
-        </div>
-        <div className="ae-section-aside">{completeCount} of {N} complete</div>
-      </div>
-
-      <div className="ae-orbital-wrap">
-        <div className="ae-orbital-stage">
-          <div className="ae-orbit-rings" aria-hidden="true">
-            {[28, 38, 48].map((r) => (
-              <div key={r} className="ae-orbit-ring" style={{ width: `${r * 2}%`, height: `${r * 2}%` }} />
-            ))}
-          </div>
-
-          <div className="ae-orbit-center">
-            <div className="ae-orbit-center-eyebrow">YOU</div>
-            <div className="ae-orbit-center-name">{isEmpty ? "—" : studentInitials}</div>
-            <div className="ae-orbit-center-meta">{gradYear ? `Class of ${gradYear}` : "Add your info"}</div>
-          </div>
-
-          {tools.map((tool, i) => {
-            const angle = (i / N) * Math.PI * 2 - Math.PI / 2;
-            const baseR = tool.state === "complete" ? 24 : tool.state === "in-progress" ? 36 : 47;
-            const xPct = 50 + Math.cos(angle) * baseR;
-            const yPct = 50 + Math.sin(angle) * baseR;
-            const Ic = TOOL_ICON[tool.id];
-            const isActive = focused?.id === tool.id;
-            // Each node is a real Link so the click takes the user straight
-            // into the tool. Hover/focus also updates the detail panel
-            // beside the stage so the user gets an immediate preview.
-            return (
-              <Link
-                key={tool.id}
-                href={tool.href}
-                className={`ae-orbit-node ae-orbit-${tool.state} ${isActive ? "is-active" : ""}`}
-                style={{ left: `${xPct}%`, top: `${yPct}%` }}
-                onMouseEnter={() => setFocusTool(tool.id)}
-                onFocus={() => setFocusTool(tool.id)}
-              >
-                <div className="ae-orbit-node-icon"><Ic size={13} /></div>
-                <div className="ae-orbit-node-label">{tool.label}</div>
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="ae-orbital-detail">
-          {focused && <ToolDetail tool={focused} />}
-        </div>
-      </div>
-    </section>
-  );
-}
+// Orbital layout dropped per CRITIQUE.md item #10. Geometry encoded a
+// 3-bucket categorical (untouched / in-progress / complete) as radial
+// distance — implying continuous precision the data didn't have. Atlas
+// + List cover the use case; persisted "orbital" preferences are
+// migrated to "atlas" in the load effect above.
 
 // ── List layout ──────────────────────────────────────────────────────
 function ListLayout({ tools, setFocusTool }: { tools: readonly ToolStatus[]; setFocusTool: (id: string) => void }) {
