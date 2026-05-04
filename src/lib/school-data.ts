@@ -59,10 +59,21 @@ export interface SchoolDataRecord {
 
 type SchoolDataIndex = Record<string, Record<string, SchoolDataRecord>>;
 
-// Deferred import. Webpack/Next will inline the JSON at build time. The
-// double-cast through `unknown` is needed because TS infers tuple-typed
-// fields like admittedGPARange as `number[]` from JSON, which doesn't match
-// the readonly tuple shape on SchoolDataRecord.
+// Per-feeder-school history blending is GATED OFF on this branch. The
+// synthetic Scoir-format dataset that powers it lives on a separate
+// branch until real counselor data lands and the methodology page is
+// updated. Flip this flag and import the full JSON to re-enable; the
+// blend math + UI surfaces still work, the lookup just always returns
+// null right now so the chance model falls through to the national
+// CDS-grounded estimate.
+const SCHOOL_HISTORY_ENABLED = false;
+
+// Deferred import. Webpack/Next inlines the JSON at build time. While
+// SCHOOL_HISTORY_ENABLED is false the file is an empty {} so the bundle
+// doesn't carry the synthetic dataset. The double-cast through
+// `unknown` is needed because TS infers tuple-typed fields like
+// admittedGPARange as `number[]` from JSON, which doesn't match the
+// readonly tuple shape on SchoolDataRecord.
 import schoolDataRaw from "@/data/school-specific-data.json";
 const SCHOOL_DATA = schoolDataRaw as unknown as SchoolDataIndex;
 
@@ -80,6 +91,9 @@ export function getSchoolRecord(
   college: College,
   plan: ApplicationPlan,
 ): SchoolDataRecord | null {
+  // Kill-switch: ignore the dataset entirely. Tests that need to drive
+  // the blend path can still set TEST_OVERRIDE explicitly.
+  if (!SCHOOL_HISTORY_ENABLED && TEST_OVERRIDE == null) return null;
   const slug = toCollegeSlug(college.name);
   const source = TEST_OVERRIDE ?? SCHOOL_DATA;
   const byPlan = source[slug];
