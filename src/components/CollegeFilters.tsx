@@ -98,7 +98,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
       </div>
     </summary>
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 sm:px-6 pb-6 pt-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 sm:px-6 pb-6 pt-2">
       {/* Stats */}
       <div>
         <label className={labelClass}>Unweighted GPA (4.0)</label>

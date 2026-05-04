@@ -100,7 +100,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
   return (
     <div className="space-y-4">
       {/* Selected school slots */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <AnimatePresence mode="popLayout">
           {selected.map((c) => (
             <motion.div
