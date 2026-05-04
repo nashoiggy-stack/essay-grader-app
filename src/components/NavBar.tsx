@@ -128,7 +128,7 @@ export const NavBar: React.FC = () => {
                   <Link
                     href="/"
                     onClick={signOut}
-                    className="text-[12px] text-accent hover:text-accent-strong px-2 py-1 rounded-sm hover:bg-accent-soft transition-[color,background-color] duration-150 hidden sm:block whitespace-nowrap"
+                    className="text-[12px] text-[var(--accent)] hover:text-[var(--accent-strong)] px-2 py-1 rounded-sm hover:bg-accent-soft transition-[color,background-color] duration-150 hidden sm:block whitespace-nowrap"
                   >
                     Sign in
                   </Link>

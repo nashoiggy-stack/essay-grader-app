@@ -177,7 +177,7 @@ export default function ListPage() {
   if (!loaded || !profileLoaded) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-bg-base">
-        <div className="h-5 w-5 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        <div className="h-5 w-5 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -258,7 +258,7 @@ function EmptyState() {
       </p>
       <Link
         href="/colleges"
-        className="mt-6 inline-flex items-center gap-2 rounded-sm bg-accent text-white px-4 py-2 text-[13px] font-medium transition-[background-color] duration-150 hover:bg-accent-strong"
+        className="mt-6 inline-flex items-center gap-2 rounded-sm bg-[var(--accent)] text-white px-4 py-2 text-[13px] font-medium transition-[background-color] duration-150 hover:bg-[var(--accent-strong)]"
       >
         Browse colleges <ArrowRight className="w-3.5 h-3.5" />
       </Link>
@@ -426,7 +426,7 @@ function BreakdownColumn({
                     distinguishable from the track. */}
                 <div className="mt-2 h-1 w-24 rounded-sm bg-bg-inset overflow-hidden">
                   <div
-                    className="h-full rounded-sm bg-accent"
+                    className="h-full rounded-sm bg-[var(--accent)]"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -642,7 +642,7 @@ function RecommendationRow({
       <button
         type="button"
         onClick={apply}
-        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-accent-text hover:text-accent-strong transition-colors"
+        className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-accent-text hover:text-[var(--accent-strong)] transition-colors"
       >
         {rec.kind === "swap" ? (
           <>
