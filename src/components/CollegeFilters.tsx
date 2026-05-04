@@ -75,15 +75,30 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
   };
 
   return (
-  <div className="bg-bg-surface rounded-md p-6 border border-border-hair">
-    <div className="flex items-center justify-between mb-5">
-      <h3 className="text-lg font-bold text-text-primary">Filters</h3>
-      <button onClick={onReset} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
-        Reset all
-      </button>
-    </div>
+  <details className="bg-bg-surface rounded-md border border-border-hair group">
+    {/* Collapsed-by-default disclosure — was a 14-field always-open panel
+        that pushed the first card below the fold. The summary stays
+        visible (with a one-line "active filters" hint) so users can
+        always see what's filtered without expanding. */}
+    <summary className="flex items-center justify-between px-6 py-3 cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden">
+      <div className="flex items-center gap-3">
+        <h3 className="text-[14px] font-semibold tracking-[-0.012em] text-text-primary">Filters</h3>
+        <span className="text-[11px] text-text-faint group-open:hidden">click to expand</span>
+        <span className="text-[11px] text-text-faint hidden group-open:inline">click to collapse</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); onReset(); }}
+          className="text-[12px] text-text-muted hover:text-text-primary transition-colors"
+        >
+          Reset all
+        </button>
+        <span className="text-text-muted transition-transform duration-200 group-open:rotate-90">›</span>
+      </div>
+    </summary>
 
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 px-6 pb-6 pt-2">
       {/* Stats */}
       <div>
         <label className={labelClass}>Unweighted GPA (4.0)</label>
@@ -334,11 +349,11 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
       </div>
     </div>
 
-    <div className="mt-4 pt-4 border-t border-border-hair">
+    <div className="mx-6 mt-2 mb-6 pt-4 border-t border-border-hair">
       <p className="text-sm text-text-muted">
         <span className="text-accent-text font-semibold">{resultCount}</span> schools match your filters
       </p>
     </div>
-  </div>
+  </details>
   );
 };

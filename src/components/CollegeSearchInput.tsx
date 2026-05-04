@@ -43,9 +43,18 @@ export const CollegeSearchInput: React.FC<CollegeSearchInputProps> = ({
         type="search"
         value={local}
         onChange={(e) => setLocal(e.target.value)}
+        onKeyDown={(e) => {
+          // Escape clears the input. Native <input type=search> sometimes
+          // does this in WebKit, but never in Firefox/Chrome — wire it
+          // explicitly so the contract is the same everywhere.
+          if (e.key === "Escape" && local) {
+            e.preventDefault();
+            setLocal("");
+          }
+        }}
         placeholder="Search schools by name or alias…"
         aria-label="Search colleges"
-        className="w-full rounded-xl bg-bg-inset border border-border-hair pl-9 pr-9 py-2.5 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none"
+        className="w-full rounded-sm bg-bg-inset border border-border-hair pl-9 pr-9 py-2.5 text-sm text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none"
       />
       {local && (
         <button
