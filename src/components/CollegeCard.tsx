@@ -105,7 +105,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.ring}`}>
+            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.ring}`}>
               {colors.label}
             </span>
             {c.usNewsRank && (
@@ -151,7 +151,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               without faking precision. Muted color when confidence is low or
               the value comes from an ED/EA fallback. */}
           <div className="text-right">
-            <p className="text-[9px] text-text-faint uppercase tracking-[0.15em] mb-0.5">Chance</p>
+            <p className="text-[9px] text-text-faint uppercase tracking-[0.08em] mb-0.5">Chance</p>
             <p
               className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${chanceTextClass}`}
             >
@@ -339,7 +339,7 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
           className="w-3 h-3 shrink-0"
           strokeWidth={level === "strong" ? 2 : 1.75}
         />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em]">
           {pillLabel}
         </span>
       </span>
@@ -388,7 +388,7 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
 function MetaStat({ label, value, secondary }: { label: string; value: string; secondary?: string }) {
   return (
     <div>
-      <p className="text-[9px] text-text-faint uppercase tracking-[0.15em] mb-1">{label}</p>
+      <p className="text-[9px] text-text-faint uppercase tracking-[0.08em] mb-1">{label}</p>
       <p className="text-sm font-mono tabular-nums text-text-primary">{value}</p>
       {secondary && (
         <p className="text-[10px] font-mono tabular-nums text-text-muted mt-0.5">{secondary}</p>

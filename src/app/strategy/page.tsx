@@ -191,14 +191,14 @@ export default function StrategyPage() {
         >
           <div className="inline-flex items-center gap-2 rounded-full bg-bg-surface border border-border-strong px-3 py-1 mb-4">
             <Compass className="w-3.5 h-3.5 text-accent-text" />
-            <span className="text-[11px] uppercase tracking-[0.15em] text-text-secondary font-medium">
+            <span className="text-[11px] uppercase tracking-[0.08em] text-text-secondary font-medium">
               Strategy Engine
             </span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             <span className="text-gradient">Your Strategic Briefing</span>
           </h1>
-          <p className="mt-3 text-text-secondary max-w-xl mx-auto text-sm">
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             A live decision tool — not a static report. Pick a dream school, review your gaps, and check off action items as you improve.
           </p>
         </motion.div>
@@ -451,7 +451,7 @@ function SnapshotBody({
 
       {/* Competitiveness sub-section */}
       <div className="rounded-xl bg-white/[0.02] border border-border-hair p-4">
-        <p className="text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-1">
+        <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1">
           Competitiveness Positioning
         </p>
         <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
@@ -526,7 +526,7 @@ function DreamSchoolBody({
 
       {/* Reasoning */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-1.5">
+        <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1.5">
           Reasoning
         </p>
         <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
@@ -631,7 +631,7 @@ function ActionVerdictBlock({
       </div>
       <div className="min-w-0">
         <p
-          className={`text-[10px] uppercase tracking-[0.18em] font-bold ${s.text} mb-0.5`}
+          className={`text-[10px] uppercase tracking-[0.08em] font-bold ${s.text} mb-0.5`}
         >
           {s.eyebrow}
         </p>
@@ -861,7 +861,7 @@ function SchoolListBody({
                   >
                     {n}
                   </p>
-                  <p className="text-[9px] uppercase tracking-[0.12em] text-text-muted mt-0.5">
+                  <p className="text-[9px] uppercase tracking-[0.08em] text-text-muted mt-0.5">
                     {cat}
                   </p>
                 </button>
@@ -879,7 +879,7 @@ function SchoolListBody({
                 transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
                 className="overflow-hidden mt-3"
               >
-                <p className="text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-2">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-2">
                   {counts[selected]} {selected} school{counts[selected] === 1 ? "" : "s"}
                 </p>
                 <SchoolsInClassificationNote classification={selected} />
@@ -1216,7 +1216,7 @@ function MajorRecommendationsBody({
 
       {totalPinned > 0 && (
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-secondary mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-[0.08em] text-text-secondary mb-3">
             From your pinned list
           </h4>
           <div className="space-y-4">
@@ -1229,7 +1229,7 @@ function MajorRecommendationsBody({
 
       {recs.toConsider.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-text-secondary mb-3">
+          <h4 className="text-xs font-semibold uppercase tracking-[0.08em] text-text-secondary mb-3">
             Consider adding
           </h4>
           <div className="space-y-2">
@@ -1304,7 +1304,7 @@ function RankedPinnedDisclosure({
           >
             <div className="mt-3 rounded-xl border border-border-hair divide-y divide-border-hair">
               {/* Header row */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-text-muted font-semibold">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold">
                 <span>School</span>
                 <span className="w-16 text-right">Tier</span>
                 <span className="w-12 text-right">Chance</span>
@@ -1332,7 +1332,7 @@ function RankedPinnedRow({ item }: { item: ClassifiedCollege }) {
         )}
       </div>
       <span
-        className={`w-16 text-right text-[11px] font-semibold uppercase tracking-[0.1em] ${CLASSIFICATION_TEXT[item.classification]}`}
+        className={`w-16 text-right text-[11px] font-semibold uppercase tracking-[0.08em] ${CLASSIFICATION_TEXT[item.classification]}`}
       >
         {item.classification}
       </span>
@@ -1358,7 +1358,7 @@ function RecTierRow({
   if (items.length === 0) {
     return (
       <div className="flex items-start gap-3">
-        <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${color} w-16 shrink-0 pt-1`}>
+        <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${color} w-16 shrink-0 pt-1`}>
           {label}
         </span>
         <p className="text-[12px] text-text-faint italic pt-1">
@@ -1369,7 +1369,7 @@ function RecTierRow({
   }
   return (
     <div className="flex items-start gap-3">
-      <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${color} w-16 shrink-0 pt-2`}>
+      <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${color} w-16 shrink-0 pt-2`}>
         {label}
       </span>
       <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1498,7 +1498,7 @@ function DeadlineRow({ entry }: { entry: DeadlineEntry }) {
               year: "numeric",
             })}
           </p>
-          <p className={`text-[10px] uppercase tracking-[0.1em] font-semibold ${colorClass}`}>
+          <p className={`text-[10px] uppercase tracking-[0.08em] font-semibold ${colorClass}`}>
             {entry.daysAway < 0
               ? `${Math.abs(entry.daysAway)}d overdue`
               : entry.daysAway === 0

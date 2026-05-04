@@ -103,7 +103,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
     >
       {/* Tier + percentage display */}
       <div className="text-center">
-        <p className="text-xs text-text-muted uppercase tracking-widest mb-2">
+        <p className="text-xs text-text-muted uppercase tracking-[0.08em] mb-2">
           Your chances at {collegeName}
         </p>
         <motion.div
@@ -115,7 +115,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
             {result.classification === "insufficient" ? "—" : `${result.chance.mid}%`}
           </span>
-          <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.15em] ${style.text}`}>
+          <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.08em] ${style.text}`}>
             {tierUpper}
             {showMultiple && (
               <span className="ml-1 text-text-secondary font-normal normal-case tracking-normal">
@@ -137,7 +137,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           tier label even at extreme values. */}
       {result.classification !== "insufficient" && (
         <div>
-          <div className="grid text-[10px] text-text-faint uppercase tracking-wider mb-1.5"
+          <div className="grid text-[10px] text-text-faint uppercase tracking-[0.08em] mb-1.5"
                style={{ gridTemplateColumns: SEGMENT_TEMPLATE }}>
             <span className="text-left">Unlikely</span>
             <span className="text-center">Reach</span>

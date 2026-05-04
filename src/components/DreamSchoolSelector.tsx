@@ -56,7 +56,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
             <Star className="w-5 h-5 text-blue-200" fill="currentColor" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-accent-text/80 font-semibold mb-0.5">
+            <p className="text-[10px] uppercase tracking-[0.08em] text-accent-text/80 font-semibold mb-0.5">
               Your Dream School
             </p>
             <p className="text-base sm:text-lg font-semibold text-white truncate">

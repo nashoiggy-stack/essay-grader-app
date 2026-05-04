@@ -278,7 +278,7 @@ export function MetricCard({
         </p>
         {isBest && <Crown className="w-3 h-3 text-amber-300/70 shrink-0 mt-1" />}
       </div>
-      <p className="text-[10px] text-text-muted mt-1.5 uppercase tracking-[0.1em] leading-snug">
+      <p className="text-[10px] text-text-muted mt-1.5 uppercase tracking-[0.08em] leading-snug">
         {label}
       </p>
       {context && (
@@ -308,7 +308,7 @@ export function CompareSection({
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.02] transition-colors"
       >
-        <h3 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.12em]">
+        <h3 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.08em]">
           {title}
         </h3>
         <ChevronDown
@@ -355,7 +355,7 @@ export function CompareRow({
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <p className="text-[11px] uppercase tracking-[0.1em] text-text-muted font-semibold">
+        <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-semibold">
           {label}
         </p>
         {context && (

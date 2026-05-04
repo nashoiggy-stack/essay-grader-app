@@ -72,10 +72,10 @@ export default function ProfilePage() {
       <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <div className="mb-10 animate-fade-in">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             <span className="text-gradient">Your Profile</span>
           </h1>
-          <p className="text-text-secondary max-w-xl text-lg leading-relaxed">
+          <p className="max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
             Your scores and stats auto-fill from the tools you&apos;ve used. Edit anything here — it will be used across all tools.
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function ProfilePage() {
           <div className="mb-8 rounded-2xl bg-[#0f0f1c] border border-border-strong p-5 sm:p-6">
             <div className="flex items-baseline justify-between mb-3">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-text-muted font-medium mb-1">Profile completeness</p>
+                <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium mb-1">Profile completeness</p>
                 <p className="text-sm text-text-primary">{completeMessage}</p>
               </div>
               <p className="font-mono tabular-nums text-2xl font-semibold text-white leading-none">
@@ -111,7 +111,7 @@ export default function ProfilePage() {
                     delay: 0.4 + i * 0.05,
                     ease: [0.23, 1, 0.32, 1],
                   }}
-                  className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
+                  className={`text-[10px] font-medium uppercase tracking-[0.08em] px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
                     s.done
                       ? "bg-accent-soft text-accent-text ring-1 ring-blue-500/25"
                       : "bg-white/[0.03] text-text-faint ring-1 ring-white/[0.05]"
@@ -141,7 +141,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.08}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Basic Info</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Basic Info</h2>
               <span className="text-[10px] text-text-muted">Used in Resume Helper</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -216,7 +216,7 @@ export default function ProfilePage() {
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">
+                <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
                   Academic Interests
                 </h2>
                 <p className="text-[10px] text-text-faint mt-0.5">
@@ -257,7 +257,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.1}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">GPA</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">GPA</h2>
               {computed?.gpaUW && <SourceBadge source="GPA Calculator" />}
             </div>
 
@@ -346,7 +346,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.15}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">SAT</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">SAT</h2>
               {satComposite !== null && (
                 <span className="text-sm font-mono text-text-secondary">
                   Composite: <span className="text-white font-bold">{satComposite}</span>
@@ -388,7 +388,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.2}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">ACT</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">ACT</h2>
               {actComposite !== null && (
                 <span className="text-sm font-mono text-text-secondary">
                   Composite: <span className="text-white font-bold">{actComposite}</span>
@@ -452,7 +452,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.25}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Essay Scores</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Essay Scores</h2>
               {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -489,7 +489,7 @@ export default function ProfilePage() {
         <ScrollReveal delay={0.3}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Extracurriculars</h2>
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Extracurriculars</h2>
               {computed?.ecBand && <SourceBadge source="EC Evaluator" />}
             </div>
             <div>
@@ -516,7 +516,7 @@ export default function ProfilePage() {
                 maxed multiplier (3.5×). Check only what's true; these are
                 tier-defining signals (not "I led a club"). */}
             <div className="mt-5 pt-5 border-t border-border-hair">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary mb-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary mb-2">
                 Distinguished signals
               </div>
               <p className="text-[11px] text-text-muted mb-3 leading-relaxed">
@@ -553,7 +553,7 @@ export default function ProfilePage() {
         {/* Summary Card */}
         <ScrollReveal delay={0.35}>
           <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06]">
-            <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-4">Auto-Fill Summary</h2>
+            <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em] mb-4">Auto-Fill Summary</h2>
             <p className="text-xs text-text-muted mb-4">
               These values auto-fill into the College List Builder and Chance Calculator.
             </p>
@@ -611,7 +611,7 @@ function AdvancedCourseworkSection({
   if (available === "none") {
     return (
       <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
-        <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-2">
+        <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em] mb-2">
           Advanced Coursework
         </h2>
         <p className="text-[12px] text-text-muted leading-relaxed">
@@ -626,7 +626,7 @@ function AdvancedCourseworkSection({
     <div className="glass rounded-2xl p-6 ring-1 ring-white/[0.06] mb-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
             Advanced Coursework
           </h2>
           <p className="text-[10px] text-text-faint mt-0.5">
@@ -668,7 +668,7 @@ function AdvancedCourseworkSection({
                     key={i}
                     className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-1.5"
                   >
-                    <span className="text-[10px] uppercase tracking-[0.12em] text-text-muted w-16">
+                    <span className="text-[10px] uppercase tracking-[0.08em] text-text-muted w-16">
                       {row.type}
                     </span>
                     <span className="flex-1 text-xs text-text-secondary truncate">{row.name}</span>
@@ -762,7 +762,7 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   const isEmpty = value === "—";
   return (
     <div className="text-center">
-      <p className="text-[10px] text-text-faint uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-[10px] text-text-faint uppercase tracking-[0.08em] mb-1">{label}</p>
       <p className={`text-lg font-bold font-mono ${isEmpty ? "text-zinc-700" : "text-text-primary"}`}>{value}</p>
     </div>
   );

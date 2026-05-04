@@ -237,7 +237,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                 className="space-y-3 pt-2"
               >
                 <div className="flex items-center justify-between pb-2 border-b border-border-hair">
-                  <p className="text-[11px] uppercase tracking-[0.15em] text-text-muted font-medium">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium">
                     {Object.keys(bulkResults).length} generated
                   </p>
                   {unappliedCount > 0 && (
@@ -270,7 +270,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                     >
                       {/* Title */}
                       <div className="flex items-baseline justify-between gap-2 mb-1">
-                        <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint font-medium truncate">
+                        <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium truncate">
                           {a.activityName || "Untitled"}
                         </p>
                         <span
@@ -287,7 +287,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
 
                       {/* Description */}
                       <div className="flex items-baseline justify-between gap-2 mb-1">
-                        <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint font-medium">
+                        <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium">
                           Description
                         </p>
                         <span
@@ -378,11 +378,11 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                 className="space-y-3 rounded-xl bg-bg-surface border border-accent-line p-4"
               >
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint font-medium mb-1">Short title</p>
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium mb-1">Short title</p>
                   <p className="text-sm text-text-primary font-semibold">{singleResult.shortVersion}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-text-faint font-medium mb-1">Description</p>
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium mb-1">Description</p>
                   <p className="text-sm text-text-primary leading-snug">{singleResult.improved}</p>
                 </div>
                 <button

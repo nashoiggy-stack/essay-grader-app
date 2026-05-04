@@ -126,7 +126,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                   className="mt-2.5 pt-2.5 border-t border-border-hair"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] uppercase tracking-[0.15em] text-text-faint font-medium shrink-0">
+                    <span className="text-[9px] uppercase tracking-[0.08em] text-text-faint font-medium shrink-0">
                       Resume section
                     </span>
                     <select

@@ -75,7 +75,7 @@ export const GapItem: React.FC<GapItemProps> = ({ flag, fixSuggestion }) => {
               {flag.label}
             </p>
             <span
-              className={`text-[9px] uppercase tracking-[0.12em] font-semibold ${style.text} shrink-0`}
+              className={`text-[9px] uppercase tracking-[0.08em] font-semibold ${style.text} shrink-0`}
             >
               {style.label}
             </span>
@@ -101,14 +101,14 @@ export const GapItem: React.FC<GapItemProps> = ({ flag, fixSuggestion }) => {
           >
             <div className="px-3.5 pb-3.5 pt-1 border-t border-white/[0.04] space-y-3">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-1">
                   Why this matters
                 </p>
                 <p className="text-[13px] text-zinc-300 leading-relaxed">{flag.detail}</p>
               </div>
               {fixSuggestion && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-emerald-400/80 font-semibold mb-1">
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-emerald-400/80 font-semibold mb-1">
                     Fix
                   </p>
                   <p className="text-[13px] text-zinc-300 leading-relaxed">

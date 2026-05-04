@@ -189,7 +189,7 @@ export function ResumeSectionCard<T extends Entry>({
                           {entryTitle}
                         </span>
                         {entry.source && (
-                          <span className="text-[9px] uppercase tracking-wider text-accent-text/70 bg-accent-soft border border-accent-line rounded-full px-2 py-0.5 shrink-0">
+                          <span className="text-[9px] uppercase tracking-[0.08em] text-accent-text/70 bg-accent-soft border border-accent-line rounded-full px-2 py-0.5 shrink-0">
                             {entry.source}
                           </span>
                         )}

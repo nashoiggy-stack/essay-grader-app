@@ -89,7 +89,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
           <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-[0.35em] text-text-muted mb-2">Overall Band</p>
             <div className="flex items-baseline gap-3 mb-1">
-              <h2 className={`text-3xl font-bold tracking-tight ${BAND_STYLES[displayBand] ?? "text-white"}`}>
+              <h2 className={`text-3xl font-bold tracking-[-0.012em] ${BAND_STYLES[displayBand] ?? "text-white"}`}>
                 {EC_BAND_LABELS[displayBand]}
               </h2>
               <span className="font-mono tabular-nums text-lg text-text-muted">
@@ -137,7 +137,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
             />
           </div>
           {/* Band labels under bar */}
-          <div className="mt-2 flex justify-between text-[9px] uppercase tracking-[0.15em] text-text-faint">
+          <div className="mt-2 flex justify-between text-[9px] uppercase tracking-[0.08em] text-text-faint">
             {BAND_ORDER.map((band) => (
               <span
                 key={band}
@@ -155,7 +155,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
             <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.15em] text-text-muted font-medium mb-1">Next step</p>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium mb-1">Next step</p>
             <p className="text-sm text-text-secondary leading-relaxed">{nextStep}</p>
           </div>
         </div>
@@ -164,7 +164,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
         <details className="group mb-6 rounded-xl bg-bg-surface border border-border-hair overflow-hidden">
           <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.15em] text-text-muted font-medium">Band reference</p>
+              <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium">Band reference</p>
               <p className="text-xs text-text-secondary mt-0.5">See how score ranges map to each band</p>
             </div>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-faint transition-transform duration-300 group-open:rotate-180 shrink-0">
@@ -310,7 +310,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
                     <h4 className="text-base font-semibold text-white">{activity.activityName}</h4>
                     <p className="text-xs text-text-muted mt-0.5">{activity.category}</p>
                   </div>
-                  <span className={`text-xs font-semibold uppercase tracking-wider ${style.text} shrink-0`}>
+                  <span className={`text-xs font-semibold uppercase tracking-[0.08em] ${style.text} shrink-0`}>
                     {style.label}
                   </span>
                 </div>
@@ -337,7 +337,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
                 )}
                 {activity.improvements.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-white/5">
-                    <p className="text-[10px] uppercase tracking-wider text-text-faint mb-1.5">Could improve</p>
+                    <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint mb-1.5">Could improve</p>
                     {activity.improvements.map((imp, j) => (
                       <p key={j} className="text-xs text-text-muted">• {imp}</p>
                     ))}

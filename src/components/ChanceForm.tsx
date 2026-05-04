@@ -122,7 +122,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
               <label className={labelClass}>Application Plan</label>
               <div className="inline-flex items-center gap-2 rounded-lg bg-bg-surface border border-border-hair px-3 py-2 text-sm text-text-secondary">
                 <span>{APPLICATION_PLAN_LABELS[only.type]}</span>
-                <span className="text-[10px] uppercase tracking-wider text-text-faint">
+                <span className="text-[10px] uppercase tracking-[0.08em] text-text-faint">
                   only option
                 </span>
               </div>
@@ -295,7 +295,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
                 key={i}
                 className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-1.5"
               >
-                <span className="text-[10px] uppercase tracking-[0.12em] text-text-muted w-12 shrink-0">
+                <span className="text-[10px] uppercase tracking-[0.08em] text-text-muted w-12 shrink-0">
                   {row.type}
                 </span>
                 <span className="flex-1 text-xs text-text-secondary truncate">{row.name}</span>

@@ -127,13 +127,13 @@ export default function LandingPage() {
               College Prep Suite
             </p>
             <h1
-              className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-2 sm:mb-3 text-white leading-[1]"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
               Your edge in
             </h1>
             <h1
-              className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[1] italic"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[1] italic"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
               college admissions.
@@ -212,13 +212,13 @@ export default function LandingPage() {
             }}
           >
             <h2
-              className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-2 sm:mb-3 text-white leading-[1]"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
               Start building
             </h2>
             <h2
-              className="font-[family-name:var(--font-display)] tracking-tight mb-4 sm:mb-6 text-white leading-[1] italic"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-4 sm:mb-6 text-white leading-[1] italic"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
               your profile.

@@ -124,10 +124,10 @@ export default function Home() {
         <ContainerScroll
           titleComponent={
             <div className="mb-4">
-              <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1] mb-5">
+              <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
                 <span className="text-gradient">{APP_CONFIG.title}</span>
               </h1>
-              <p className="text-text-secondary max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
+              <p className="max-w-[60ch] mx-auto text-[15px] leading-relaxed text-text-secondary">
                 {APP_CONFIG.subtitle}
               </p>
             </div>
@@ -136,7 +136,7 @@ export default function Home() {
           {/* Rubric overview inside the 3D card */}
           <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
             <div>
-              <h3 className="text-xs font-bold text-accent-text uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
+              <h3 className="text-xs font-bold text-accent-text uppercase tracking-[0.08em] mb-3">Common App Criteria (1-100)</h3>
               <div className="space-y-2">
                 {[
                   { name: "Authenticity", desc: "Your real voice — not a formal essay voice" },
@@ -159,7 +159,7 @@ export default function Home() {
             </div>
 
             <div className="border-t border-border-hair pt-3">
-              <h3 className="text-xs font-bold text-accent-text uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
+              <h3 className="text-xs font-bold text-accent-text uppercase tracking-[0.08em] mb-3">VSPICE Rubric (1-4)</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {[
                   { name: "Vulnerability", desc: "Real fear or doubt, handled with maturity" },
@@ -219,7 +219,7 @@ export default function Home() {
               {/* Divider + Save button */}
               <div className="flex items-center gap-4">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                <span className="text-xs text-text-muted uppercase tracking-widest">Results</span>
+                <span className="text-xs text-text-muted uppercase tracking-[0.08em]">Results</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
                 <motion.button
                   onClick={handleSave}

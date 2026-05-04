@@ -287,7 +287,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           >
             <div className="flex items-center gap-2 mb-2">
               <span className={`w-2.5 h-2.5 rounded-full ${activeColors.dot}`} />
-              <span className={`text-xs font-semibold uppercase tracking-wider ${activeColors.text}`}>
+              <span className={`text-xs font-semibold uppercase tracking-[0.08em] ${activeColors.text}`}>
                 {activeColors.label}
               </span>
             </div>

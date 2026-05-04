@@ -39,7 +39,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-text-secondary mb-2">
+        <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary mb-2">
           How we got here
         </h4>
         <div className="rounded-lg bg-[#0a0a14]/70 border border-border-hair divide-y divide-border-hair">
@@ -77,7 +77,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
           ))}
           {/* Final row */}
           <div className="px-3 py-2.5 flex items-baseline justify-between gap-3 bg-white/[0.02]">
-            <div className="text-[12px] text-text-primary font-semibold uppercase tracking-[0.1em]">
+            <div className="text-[12px] text-text-primary font-semibold uppercase tracking-[0.08em]">
               Final
             </div>
             <div className="text-[16px] font-mono tabular-nums font-bold text-text-primary shrink-0">
@@ -89,7 +89,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
 
       {whatIfs.length > 0 && (
         <div>
-          <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-text-secondary mb-2">
+          <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary mb-2">
             What-if
           </h4>
           <ul className="space-y-1.5">
@@ -103,7 +103,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
                   <span className={`text-[13px] font-mono tabular-nums ${TIER_TONE[s.classification]}`}>
                     {s.chance}%
                   </span>
-                  <span className={`text-[10px] font-semibold uppercase tracking-[0.1em] ${TIER_TONE[s.classification]}`}>
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.08em] ${TIER_TONE[s.classification]}`}>
                     {TIER_LABEL[s.classification]}
                   </span>
                 </span>

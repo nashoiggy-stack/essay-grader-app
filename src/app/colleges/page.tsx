@@ -86,10 +86,10 @@ export default function CollegesPage() {
         >
           <div className="flex items-baseline justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-text-muted font-medium">
+              <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-medium">
                 Browse · Pin · Build your list
               </p>
-              <h1 className="font-[family-name:var(--font-display)] mt-2 text-[clamp(2.75rem,6vw,4.5rem)] leading-[0.95] tracking-tight text-text-primary">
+              <h1 className="mt-2 text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
                 Colleges
               </h1>
             </div>

@@ -89,13 +89,13 @@ function DonutChart({
             <p className="text-[15px] font-bold text-text-primary tabular-nums">
               {hoveredSlice.value}%
             </p>
-            <p className="text-[9px] text-text-secondary uppercase tracking-wider leading-tight max-w-[60px]">
+            <p className="text-[9px] text-text-secondary uppercase tracking-[0.08em] leading-tight max-w-[60px]">
               {hoveredSlice.label}
             </p>
           </div>
         ) : (
           <div className="text-center">
-            <p className="text-[10px] text-text-muted uppercase tracking-wider">
+            <p className="text-[10px] text-text-muted uppercase tracking-[0.08em]">
               Breakdown
             </p>
           </div>
@@ -137,7 +137,7 @@ function GenderBar({ gender }: { gender: GenderBreakdown }) {
 
   return (
     <div>
-      <p className="text-[9px] uppercase tracking-[0.12em] text-text-muted font-semibold mb-1.5">
+      <p className="text-[9px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1.5">
         Gender Ratio
       </p>
       <div className="flex h-2 rounded-full overflow-hidden bg-bg-surface">
@@ -232,7 +232,7 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
 function MetricChip({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white/[0.03] px-2.5 py-1.5">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-text-muted">{label}</p>
+      <p className="text-[9px] uppercase tracking-[0.08em] text-text-muted">{label}</p>
       <p className="text-[12px] font-semibold text-text-primary mt-0.5">{value}</p>
     </div>
   );

@@ -299,7 +299,7 @@ function LoginScreen() {
               <motion.div key="email-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0.1} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-tight text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
                       {mode === "signin" ? "Welcome back" : "Get started"}
                     </p>
                   </div>
@@ -315,7 +315,7 @@ function LoginScreen() {
               <motion.div key="password-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-tight text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
                       {mode === "signin" ? "Enter password" : "Create password"}
                     </p>
                   </div>

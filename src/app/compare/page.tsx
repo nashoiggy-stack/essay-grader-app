@@ -184,10 +184,10 @@ export default function ComparePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             <span className="text-gradient">College Comparison</span>
           </h1>
-          <p className="mt-3 text-text-secondary max-w-lg mx-auto text-sm">
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             Select 2–4 schools. Compare admissions, academics, campus, outcomes, and fit — side by side.
           </p>
         </motion.div>
@@ -347,7 +347,7 @@ function InsightsBar({ insights }: { insights: readonly ComparisonInsight[] }) {
     <div className="rounded-2xl bg-gradient-to-br from-blue-500/[0.06] to-blue-500/[0.02] border border-blue-500/15 p-5">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-4 h-4 text-accent-text" />
-        <h3 className="text-[12px] font-semibold uppercase tracking-[0.12em] text-blue-200">
+        <h3 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-blue-200">
           Decision Insights
         </h3>
       </div>
@@ -409,7 +409,7 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
             </p>
             <div className="flex items-center gap-2 mt-1">
               <span
-                className={`text-[11px] font-bold uppercase tracking-[0.1em] ${colors.text}`}
+                className={`text-[11px] font-bold uppercase tracking-[0.08em] ${colors.text}`}
               >
                 {f.fitLabel}
               </span>
@@ -468,7 +468,7 @@ function ComparisonRow({
         className="w-full px-4 py-3 text-left"
       >
         <div className="flex items-center gap-3 mb-2">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-text-muted font-semibold">
+          <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-semibold">
             {row.label}
           </p>
           <ChevronDown
@@ -574,7 +574,7 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
               </h4>
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-[0.1em] px-2.5 py-0.5 rounded-full ring-1 ${colors.bg} ${colors.text} ${colors.ring}`}
+                  className={`text-[11px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full ring-1 ${colors.bg} ${colors.text} ${colors.ring}`}
                 >
                   {f.fitLabel}
                 </span>

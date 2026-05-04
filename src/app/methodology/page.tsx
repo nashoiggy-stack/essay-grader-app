@@ -10,7 +10,7 @@ export default function MethodologyPage() {
     <>
       <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)] text-text-primary">
         <header className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             <span className="text-gradient">How AdmitEdge Calculates Your Chances</span>
           </h1>
           <p className="text-text-secondary text-base leading-relaxed max-w-2xl">
@@ -204,7 +204,7 @@ AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
 function Section({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <section className="mb-10 sm:mb-12">
-      <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary mb-3">
+      <h2 className="text-xl sm:text-2xl font-semibold tracking-[-0.012em] text-text-primary mb-3">
         {heading}
       </h2>
       <div className="text-[14px] text-text-secondary leading-relaxed space-y-2">{children}</div>
@@ -221,7 +221,7 @@ function Table({ headers, rows }: { headers: readonly string[]; rows: readonly (
             {headers.map((h, i) => (
               <th
                 key={i}
-                className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-text-secondary"
+                className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary"
               >
                 {h}
               </th>

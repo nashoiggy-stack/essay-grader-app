@@ -215,7 +215,7 @@ function QualRow({
 
   return (
     <div className="space-y-1">
-      <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1.5">
+      <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-1.5">
         {field.label}
       </p>
       <div
@@ -335,7 +335,7 @@ export function CultureTab({ colleges }: { colleges: readonly College[] }) {
       <QualSection title="Culture & Atmosphere" fields={CULTURE_FIELDS} colleges={colleges} />
       {/* Vibe tags as pill cloud */}
       <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] px-5 py-4">
-        <p className="text-[12px] font-bold text-zinc-200 uppercase tracking-[0.12em] mb-3">
+        <p className="text-[12px] font-bold text-zinc-200 uppercase tracking-[0.08em] mb-3">
           Vibe Tags
         </p>
         <div

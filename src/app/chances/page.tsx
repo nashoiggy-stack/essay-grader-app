@@ -20,10 +20,10 @@ export default function ChancesPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             <span className="text-gradient">Chance Calculator</span>
           </h1>
-          <p className="mt-4 text-text-secondary max-w-xl mx-auto">
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             Estimate your admission chances at any school in our database.
             Enter your profile and select a college.
           </p>

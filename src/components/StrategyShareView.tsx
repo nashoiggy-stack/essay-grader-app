@@ -136,7 +136,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
               {result.profileSummary.body}
             </p>
             <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1">
+              <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-1">
                 Competitiveness Positioning
               </p>
               <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
@@ -286,7 +286,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
               />
               {analysis.majorRecommendations.toConsider.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-2">
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-2">
                     Worth considering
                   </p>
                   <div className="space-y-1.5">
@@ -451,7 +451,7 @@ function ActionVerdictBlock({
         <Icon className={`w-5 h-5 ${s.text}`} strokeWidth={2} />
       </div>
       <div className="min-w-0">
-        <p className={`text-[10px] uppercase tracking-[0.18em] font-bold ${s.text} mb-0.5`}>
+        <p className={`text-[10px] uppercase tracking-[0.08em] font-bold ${s.text} mb-0.5`}>
           {s.eyebrow}
         </p>
         <p className="text-[14px] text-zinc-100 font-semibold leading-snug">{label}</p>
@@ -472,7 +472,7 @@ function RecGroup({
   if (items.length === 0) return null;
   return (
     <div>
-      <p className={`text-[10px] uppercase tracking-[0.12em] font-semibold ${color} mb-1.5`}>
+      <p className={`text-[10px] uppercase tracking-[0.08em] font-semibold ${color} mb-1.5`}>
         {label}
       </p>
       <div className="space-y-1.5">

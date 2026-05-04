@@ -46,7 +46,7 @@ export default function ExtracurricularsPage() {
               </motion.button>
             )}
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tighter leading-[0.95] mb-4">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             <span className="text-gradient">Activity Evaluator</span>
           </h1>
           <p className="max-w-xl text-lg text-text-secondary leading-relaxed">

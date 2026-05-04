@@ -200,7 +200,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
         return (
           <div key={group.key}>
             <div className="flex items-center gap-3 mb-4">
-              <h3 className={`text-sm font-bold uppercase tracking-wider ${group.color}`}>
+              <h3 className={`text-sm font-bold uppercase tracking-[0.08em] ${group.color}`}>
                 {group.label}
               </h3>
               <span className="text-xs text-text-faint">({group.items.length})</span>

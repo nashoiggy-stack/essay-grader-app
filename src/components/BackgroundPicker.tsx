@@ -65,7 +65,7 @@ export function BackgroundPicker() {
         >
           <div className="px-2 pt-1 pb-2">
             <p
-              className="text-[10px] uppercase tracking-[0.18em] font-semibold"
+              className="text-[10px] uppercase tracking-[0.08em] font-semibold"
               style={{ color: "var(--text-muted)" }}
             >
               Background

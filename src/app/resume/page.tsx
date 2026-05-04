@@ -149,7 +149,7 @@ export default function ResumePage() {
             </div>
           </div>
           <h1
-            className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[0.95] mb-4"
+            className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[0.95] mb-4"
             style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)" }}
           >
             Build your college resume.
@@ -416,7 +416,7 @@ export default function ResumePage() {
             {/* Preview column */}
             <div className={`${showPreview ? "block" : "hidden"} lg:sticky lg:top-24 lg:self-start print:block print:static`}>
               <div className="flex items-center justify-between mb-3 print:hidden">
-                <p className="text-[11px] uppercase tracking-[0.15em] text-text-muted font-medium">Live preview</p>
+                <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium">Live preview</p>
                 <button
                   onClick={() => setShowPreview((v) => !v)}
                   className="inline-flex items-center gap-1.5 text-[11px] text-text-muted hover:text-text-secondary transition-[color] duration-200 lg:hidden"
