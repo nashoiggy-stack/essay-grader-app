@@ -49,7 +49,7 @@ interface ResumeSectionCardProps<T extends Entry> {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -117,7 +117,7 @@ export function ResumeSectionCard<T extends Entry>({
               onAdd();
               setCollapsed(false);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/25 text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add
@@ -172,7 +172,7 @@ export function ResumeSectionCard<T extends Entry>({
                       transform: { duration: 0.22, ease: [0.23, 1, 0.32, 1] },
                       default: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
                     }}
-                    className="rounded-xl bg-white/[0.02] border border-border-hair overflow-hidden"
+                    className="rounded-xl bg-bg-surface border border-border-hair overflow-hidden"
                   >
                     {/* Entry header */}
                     <div className="flex items-center justify-between gap-2 px-3 py-2.5">
@@ -199,7 +199,7 @@ export function ResumeSectionCard<T extends Entry>({
                           onClick={() => onMove(entry.id, "up")}
                           disabled={idx === 0}
                           aria-label="Move up"
-                          className="p-1 rounded hover:bg-white/[0.08] text-text-muted hover:text-text-secondary disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
+                          className="p-1 rounded hover:bg-bg-elevated text-text-muted hover:text-text-secondary disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
                         </button>
@@ -207,7 +207,7 @@ export function ResumeSectionCard<T extends Entry>({
                           onClick={() => onMove(entry.id, "down")}
                           disabled={idx === entries.length - 1}
                           aria-label="Move down"
-                          className="p-1 rounded hover:bg-white/[0.08] text-text-muted hover:text-text-secondary disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
+                          className="p-1 rounded hover:bg-bg-elevated text-text-muted hover:text-text-secondary disabled:opacity-20 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
                         </button>
@@ -251,7 +251,7 @@ export function ResumeSectionCard<T extends Entry>({
                                       onChange={(e) =>
                                         onUpdate(entry.id, { [f.key]: e.target.checked } as Partial<T>)
                                       }
-                                      className="w-4 h-4 rounded border-white/20 bg-white/[0.03] accent-blue-500"
+                                      className="w-4 h-4 rounded border-white/20 bg-bg-surface accent-blue-500"
                                     />
                                     <span className="text-xs text-text-secondary">{f.label}</span>
                                   </label>

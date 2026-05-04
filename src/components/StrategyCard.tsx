@@ -105,7 +105,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
             </h3>
             {strength !== "neutral" && (
               <span
-                className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] px-2 py-0.5 rounded-full bg-white/[0.02] ring-1 ${style.ring} ${style.text}`}
+                className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] px-2 py-0.5 rounded-full bg-bg-surface  ${style.ring} ${style.text}`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
                 {style.label}

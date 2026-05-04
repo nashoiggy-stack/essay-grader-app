@@ -57,10 +57,10 @@ export const EssayInput: React.FC<EssayInputProps> = ({
               onClick={handleCopy}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ring-1 transition-[background-color,color,box-shadow] duration-200 ${
+              className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full  transition-[background-color,color,box-shadow] duration-200 ${
                 copied
                   ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
-                  : "bg-bg-inset text-text-secondary ring-white/[0.06] hover:text-text-primary hover:bg-bg-surface"
+                  : "bg-bg-inset text-text-secondary border-border-hair hover:text-text-primary hover:bg-bg-surface"
               }`}
               title="Copy essay to clipboard"
             >
@@ -101,7 +101,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
+        className="w-full rounded-xl bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
@@ -111,7 +111,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
       {/* Drop zone */}
       <motion.div
         className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer ${
-          dragging ? "border-blue-500 bg-accent-soft" : "border-border-strong hover:border-white/[0.15] hover:bg-white/[0.02]"
+          dragging ? "border-blue-500 bg-accent-soft" : "border-border-strong hover:border-border-strong hover:bg-bg-surface"
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}

@@ -216,7 +216,7 @@ function Table({ headers, rows }: { headers: readonly string[]; rows: readonly (
   return (
     <div className="mt-3 overflow-x-auto rounded-lg border border-border-hair">
       <table className="w-full text-[13px]">
-        <thead className="bg-white/[0.03]">
+        <thead className="bg-bg-surface">
           <tr>
             {headers.map((h, i) => (
               <th
@@ -230,7 +230,7 @@ function Table({ headers, rows }: { headers: readonly string[]; rows: readonly (
         </thead>
         <tbody className="divide-y divide-border-hair">
           {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-white/[0.02]">
+            <tr key={i} className="hover:bg-bg-surface">
               {row.map((cell, j) => (
                 <td key={j} className="px-3 py-2 text-text-secondary font-mono tabular-nums">
                   {cell}

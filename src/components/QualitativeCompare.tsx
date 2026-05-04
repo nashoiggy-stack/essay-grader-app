@@ -236,11 +236,11 @@ function QualRow({
                 disabled={!hasDetail}
                 className={`w-full rounded-lg text-left transition-all duration-200 ${
                   hasDetail
-                    ? "hover:bg-white/[0.04] cursor-pointer"
+                    ? "hover:bg-bg-surface cursor-pointer"
                     : "cursor-default"
                 } ${
                   isExpanded
-                    ? "bg-white/[0.03] border border-border-hair"
+                    ? "bg-bg-surface border border-border-hair"
                     : ""
                 }`}
               >
@@ -351,7 +351,7 @@ export function CultureTab({ colleges }: { colleges: readonly College[] }) {
                 {(c.vibeTags ?? []).map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] border border-border-hair text-zinc-300"
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-bg-surface border border-border-hair text-zinc-300"
                   >
                     {tag}
                   </span>

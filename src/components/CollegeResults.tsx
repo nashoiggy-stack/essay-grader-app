@@ -153,7 +153,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
           </div>
           <Link
             href="/strategy"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-blue-500/25 text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft text-accent-text px-3 py-1.5 text-xs font-semibold transition-colors shrink-0"
           >
             View Strategy
             <ArrowRight className="w-3.5 h-3.5" />

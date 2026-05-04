@@ -39,7 +39,7 @@ export const ActionChecklist: React.FC<ActionChecklistProps> = ({
               className={`w-full flex items-start gap-3 text-left rounded-xl p-3 transition-[background-color] duration-200 ${
                 done
                   ? "bg-emerald-500/[0.04] hover:bg-emerald-500/[0.06]"
-                  : "bg-white/[0.02] hover:bg-white/[0.04]"
+                  : "bg-bg-surface hover:bg-bg-surface"
               }`}
             >
               <span

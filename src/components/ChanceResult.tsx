@@ -8,12 +8,12 @@ import { BreakdownPanel } from "./BreakdownPanel";
 // Color coding mirrors /colleges CollegeCard so the same school produces the
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
 const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string; glow: string }> = {
-  safety:       { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+  safety:       { bg: "bg-tier-safety-soft", text: "text-tier-safety-fg", bar: "bg-tier-safety-fg", glow: "" },
   likely:       { bg: "bg-accent-soft",    text: "text-accent-text",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
-  target:       { bg: "bg-amber-500/10",   text: "text-amber-400",   bar: "bg-amber-500",   glow: "shadow-amber-500/20" },
-  reach:        { bg: "bg-orange-500/10",  text: "text-orange-400",  bar: "bg-orange-500",  glow: "shadow-orange-500/20" },
-  unlikely:     { bg: "bg-red-500/10",     text: "text-red-500",     bar: "bg-red-500",     glow: "shadow-red-500/20" },
-  insufficient: { bg: "bg-zinc-500/5",     text: "text-text-secondary",    bar: "bg-zinc-500",    glow: "shadow-zinc-500/15" },
+  target:       { bg: "bg-tier-target-soft", text: "text-tier-target-fg", bar: "bg-tier-target-fg", glow: "" },
+  reach:        { bg: "bg-tier-reach-soft", text: "text-tier-reach-fg", bar: "bg-tier-reach-fg", glow: "" },
+  unlikely:     { bg: "bg-tier-unlikely-soft", text: "text-tier-unlikely-fg", bar: "bg-tier-unlikely-fg", glow: "" },
+  insufficient: { bg: "bg-tier-insufficient-soft", text: "text-tier-insufficient-fg", bar: "bg-tier-insufficient-fg", glow: "" },
 };
 
 interface ChanceResultProps {
@@ -174,7 +174,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
       {/* Multiplier breakdown + what-ifs (collapsible) */}
       {result.breakdown && (
         <details className="group rounded-xl bg-bg-surface border border-border-hair overflow-hidden">
-          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-bg-surface transition-[background-color] duration-200">
             <span className="text-xs text-text-muted font-medium">See the breakdown</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-faint transition-transform duration-300 group-open:rotate-180">
               <polyline points="6 9 12 15 18 9"/>

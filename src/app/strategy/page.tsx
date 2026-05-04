@@ -450,7 +450,7 @@ function SnapshotBody({
       </div>
 
       {/* Competitiveness sub-section */}
-      <div className="rounded-xl bg-white/[0.02] border border-border-hair p-4">
+      <div className="rounded-xl bg-bg-surface border border-border-hair p-4">
         <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1">
           Competitiveness Positioning
         </p>
@@ -622,7 +622,7 @@ function ActionVerdictBlock({
   void action;
   return (
     <div
-      className={`rounded-xl ${s.bg} ring-1 ${s.ring} p-4 flex items-center gap-3`}
+      className={`rounded-xl ${s.bg}  ${s.ring} p-4 flex items-center gap-3`}
     >
       <div
         className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-bg-surface`}
@@ -853,7 +853,7 @@ function SchoolListBody({
                   className={`rounded-lg px-2 py-2 text-center transition-[background-color,border-color] duration-200 border ${
                     active
                       ? "bg-bg-surface border-white/[0.16]"
-                      : "bg-white/[0.02] border-border-hair hover:bg-bg-surface"
+                      : "bg-bg-surface border-border-hair hover:bg-bg-surface"
                   }`}
                 >
                   <p
@@ -979,7 +979,7 @@ function StatChip({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full ring-1 ${toneClass} hover:brightness-125 transition-[filter] duration-200`}
+        className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full  ${toneClass} hover:brightness-125 transition-[filter] duration-200`}
       >
         <span className="text-text-muted">{label}</span>
         <span className="font-semibold">{value}</span>
@@ -1072,7 +1072,7 @@ function FooterBar({
         type="button"
         onClick={onRerun}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface hover:bg-white/[0.08] text-text-primary px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface hover:bg-bg-elevated text-text-primary px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40"
       >
         <RefreshCw className="w-3.5 h-3.5" />
         Re-run strategy
@@ -1476,7 +1476,7 @@ function DeadlineRow({ entry }: { entry: DeadlineEntry }) {
       : "text-text-secondary";
 
   return (
-    <li className="flex items-baseline justify-between gap-3 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-2">
+    <li className="flex items-baseline justify-between gap-3 rounded-lg bg-bg-surface border border-border-hair px-3 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[13px] text-text-primary font-semibold truncate">
           {entry.schoolName}
@@ -1557,7 +1557,7 @@ function MajorPicker({ onSaved }: { onSaved: () => void }) {
             placeholder="e.g. sustainability, quant trading"
             value={interest}
             onChange={(e) => setInterest(e.target.value)}
-            className="w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none"
+            className="w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none"
           />
         </div>
       </div>

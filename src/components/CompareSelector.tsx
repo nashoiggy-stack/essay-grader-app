@@ -110,7 +110,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-              className="relative rounded-xl bg-bg-surface border border-border-strong p-3 group hover:border-white/[0.14] transition-[border-color] duration-200"
+              className="relative rounded-xl bg-bg-surface border border-border-strong p-3 group hover:border-border-strong transition-[border-color] duration-200"
             >
               <button
                 type="button"
@@ -161,7 +161,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
             className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-[border-color,box-shadow,background-color] duration-200 ${
               atMax
                 ? "bg-bg-surface border-border-hair opacity-50 cursor-not-allowed"
-                : "bg-bg-inset border-border-hair focus-within:border-accent-line focus-within:ring-1 focus-within:ring-blue-500/20"
+                : "bg-bg-inset border-border-hair focus-within:border-accent-line focus-within: focus-within:ring-blue-500/20"
             }`}
           >
             <Search className="w-4 h-4 text-text-muted shrink-0" />
@@ -220,7 +220,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
                         e.stopPropagation();
                         handleSelect(c);
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-bg-surface active:bg-white/[0.08] transition-[background-color] duration-150 border-b border-border-hair last:border-b-0"
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-bg-surface active:bg-bg-elevated transition-[background-color] duration-150 border-b border-border-hair last:border-b-0"
                     >
                       <div className="min-w-0">
                         <p className="text-[13px] text-text-primary truncate font-medium">
@@ -249,7 +249,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
           type="button"
           onClick={importPinned}
           disabled={atMax}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-bg-surface border border-border-hair hover:bg-white/[0.08] px-3 py-2.5 text-[12px] font-semibold text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-bg-surface border border-border-hair hover:bg-bg-elevated px-3 py-2.5 text-[12px] font-semibold text-text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
         >
           <Bookmark className="w-3.5 h-3.5" />
           Import pinned

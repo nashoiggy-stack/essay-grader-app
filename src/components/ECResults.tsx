@@ -124,7 +124,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
               return (
                 <div
                   key={band}
-                  className="absolute top-0 bottom-0 w-px bg-white/[0.08]"
+                  className="absolute top-0 bottom-0 w-px bg-bg-elevated"
                   style={{ left: `${pct}%` }}
                 />
               );
@@ -162,7 +162,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
 
         {/* ── Band reference chart ─────────────────────────────── */}
         <details className="group mb-6 rounded-xl bg-bg-surface border border-border-hair overflow-hidden">
-          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-bg-surface transition-[background-color] duration-200">
             <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium">Band reference</p>
               <p className="text-xs text-text-secondary mt-0.5">See how score ranges map to each band</p>
@@ -202,7 +202,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
                     </div>
 
                     {/* Proportional range bar */}
-                    <div className="flex-1 relative h-6 rounded-md bg-white/[0.03] overflow-hidden border border-border-hair">
+                    <div className="flex-1 relative h-6 rounded-md bg-bg-surface overflow-hidden border border-border-hair">
                       {/* The band's segment, positioned proportionally across 0-100 */}
                       <motion.div
                         initial={{ scaleX: 0 }}
@@ -276,7 +276,7 @@ export const ECResults: React.FC<ECResultsProps> = ({ result }) => {
         </div>
 
         {/* Recommendations */}
-        <div className="mt-8 rounded-md border border-white/10 bg-white/[0.03] p-6">
+        <div className="mt-8 rounded-md border border-white/10 bg-bg-surface p-6">
           <h4 className="text-xs uppercase tracking-[0.35em] text-text-secondary font-semibold mb-4">Recommendations</h4>
           <ul className="space-y-3">
             {result.recommendations.map((r, i) => (

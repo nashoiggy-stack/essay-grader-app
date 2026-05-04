@@ -69,7 +69,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                   ? "border-border-hair bg-white/[0.01] opacity-50 hover:opacity-70"
                   : isActive
                   ? "border-white/20 bg-white/10"
-                  : "border-white/10 bg-white/[0.03] hover:bg-bg-surface"
+                  : "border-white/10 bg-bg-surface hover:bg-bg-surface"
               }`}
               onClick={() => onSelect(conv.id)}
             >
@@ -134,7 +134,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                       onChange={(e) =>
                         onSetResumeCategory(conv.id, e.target.value as ResumeCategory)
                       }
-                      className="flex-1 min-w-0 text-[11px] bg-bg-inset border border-border-strong rounded-md px-2 py-1 text-text-secondary focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
+                      className="flex-1 min-w-0 text-[11px] bg-bg-inset border border-border-strong rounded-md px-2 py-1 text-text-secondary focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
                     >
                       {(Object.entries(RESUME_CATEGORY_LABELS) as [ResumeCategory, string][]).map(
                         ([key, label]) => (

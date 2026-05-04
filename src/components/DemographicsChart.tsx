@@ -205,7 +205,7 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
           <Legend items={legendItems} />
         </div>
       ) : (
-        <div className="flex items-center justify-center h-[130px] rounded-lg bg-white/[0.02] border border-border-hair">
+        <div className="flex items-center justify-center h-[130px] rounded-lg bg-bg-surface border border-border-hair">
           <p className="text-[11px] text-text-muted">Detailed breakdown not available</p>
         </div>
       )}
@@ -231,7 +231,7 @@ export const DemographicsCard: React.FC<DemographicsCardProps> = ({ college }) =
 
 function MetricChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white/[0.03] px-2.5 py-1.5">
+    <div className="rounded-lg bg-bg-surface px-2.5 py-1.5">
       <p className="text-[9px] uppercase tracking-[0.08em] text-text-muted">{label}</p>
       <p className="text-[12px] font-semibold text-text-primary mt-0.5">{value}</p>
     </div>

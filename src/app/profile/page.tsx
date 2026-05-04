@@ -10,7 +10,7 @@ import { MajorSelect } from "@/components/MajorSelect";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
 function SourceBadge({ source }: { source: string }) {
@@ -114,7 +114,7 @@ export default function ProfilePage() {
                   className={`text-[10px] font-medium uppercase tracking-[0.08em] px-2 py-0.5 rounded-full transition-[background-color,color] duration-300 ${
                     s.done
                       ? "bg-accent-soft text-accent-text ring-1 ring-accent-line"
-                      : "bg-white/[0.03] text-text-faint border border-border-hair"
+                      : "bg-bg-surface text-text-faint border border-border-hair"
                   }`}
                 >
                   {s.done ? "✓ " : ""}{s.key}
@@ -666,7 +666,7 @@ function AdvancedCourseworkSection({
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-1.5"
+                    className="flex items-center gap-2 rounded-lg bg-bg-surface border border-border-hair px-3 py-1.5"
                   >
                     <span className="text-[10px] uppercase tracking-[0.08em] text-text-muted w-16">
                       {row.type}

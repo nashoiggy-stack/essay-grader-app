@@ -76,7 +76,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
             </div>
           ))}
           {/* Final row */}
-          <div className="px-3 py-2.5 flex items-baseline justify-between gap-3 bg-white/[0.02]">
+          <div className="px-3 py-2.5 flex items-baseline justify-between gap-3 bg-bg-surface">
             <div className="text-[12px] text-text-primary font-semibold uppercase tracking-[0.08em]">
               Final
             </div>

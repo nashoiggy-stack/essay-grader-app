@@ -71,7 +71,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
               setOpen(false);
             }}
             aria-label="Clear dream school"
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-bg-surface hover:bg-white/[0.08] text-text-secondary hover:text-text-primary transition-colors shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-bg-surface hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -79,7 +79,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
       ) : (
         // Empty state — search input
         <div>
-          <div className="flex items-center gap-2 rounded-md bg-bg-surface border border-border-strong px-4 py-3.5 focus-within:border-accent-line focus-within:ring-1 focus-within:ring-blue-500/20 transition-[border-color,box-shadow] duration-200">
+          <div className="flex items-center gap-2 rounded-md bg-bg-surface border border-border-strong px-4 py-3.5 focus-within:border-accent-line focus-within: focus-within:ring-blue-500/20 transition-[border-color,box-shadow] duration-200">
             <Star className="w-4 h-4 text-text-muted shrink-0" strokeWidth={1.5} />
             <input
               type="text"
@@ -125,7 +125,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] last:border-b-0"
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-bg-surface transition-colors border-b border-white/[0.03] last:border-b-0"
                 >
                   <div className="min-w-0">
                     <p className="text-sm text-text-primary truncate font-medium">{c.name}</p>

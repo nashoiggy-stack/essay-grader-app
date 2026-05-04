@@ -97,7 +97,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       transition={{ delay: index * 0.04, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       whileHover={{ y: -2 }}
       data-college-card-index={flatIndex ?? undefined}
-      className={`group rounded-md bg-bg-surface border border-border-hair p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.14] hover:shadow-[0_8px_24px_rgba(10,16,29,0.6)] transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
+      className={`group rounded-md bg-bg-surface border border-border-hair p-5 sm:p-6 hover:bg-bg-elevated hover:border-border-strong  transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
         focused ? "ring-2 ring-accent-line" : ""
       }`}
     >
@@ -105,7 +105,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.ring}`}>
+            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}  ${colors.ring}`}>
               {colors.label}
             </span>
             {c.usNewsRank && (
@@ -135,8 +135,8 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               aria-pressed={isPinned}
               className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center transition-[background-color,color] duration-200 ${
                 isPinned
-                  ? "bg-accent-soft text-accent-text hover:bg-blue-500/25"
-                  : "bg-white/[0.03] text-text-muted hover:bg-white/[0.08] hover:text-text-secondary"
+                  ? "bg-accent-soft text-accent-text hover:bg-accent-soft"
+                  : "bg-bg-surface text-text-muted hover:bg-bg-elevated hover:text-text-secondary"
               }`}
             >
               <Bookmark
@@ -290,7 +290,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
 const PILL_TONE = {
   strong: { bg: "bg-emerald-500/10", text: "text-emerald-400", ring: "ring-emerald-500/25", bar: "bg-emerald-400" },
   decent: { bg: "bg-amber-500/10", text: "text-amber-400", ring: "ring-amber-500/25", bar: "bg-amber-400" },
-  none:   { bg: "bg-white/[0.03]", text: "text-text-muted", ring: "ring-white/[0.06]", bar: "bg-zinc-600" },
+  none:   { bg: "bg-bg-surface", text: "text-text-muted", ring: "border-border-hair", bar: "bg-zinc-600" },
 } as const;
 
 function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
@@ -333,7 +333,7 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
   return (
     <div className="mt-2">
       <span
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${tone.bg} ${tone.text} ring-1 ${tone.ring}`}
+        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${tone.bg} ${tone.text}  ${tone.ring}`}
       >
         <GraduationCap
           className="w-3 h-3 shrink-0"

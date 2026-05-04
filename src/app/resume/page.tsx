@@ -10,7 +10,7 @@ import { useResume } from "@/hooks/useResume";
 import { Download, Save, FileText, Wand2, Eye, EyeOff, RotateCcw, Download as DownloadIcon } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Section field schemas ────────────────────────────────────────────────────
 
@@ -165,7 +165,7 @@ export default function ResumePage() {
             onClick={() => setMode("resume")}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
               mode === "resume"
-                ? "bg-white/[0.08] text-white"
+                ? "bg-bg-elevated text-white"
                 : "text-text-muted hover:text-text-secondary"
             }`}
           >
@@ -176,7 +176,7 @@ export default function ResumePage() {
             onClick={() => setMode("activities")}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
               mode === "activities"
-                ? "bg-white/[0.08] text-white"
+                ? "bg-bg-elevated text-white"
                 : "text-text-muted hover:text-text-secondary"
             }`}
           >

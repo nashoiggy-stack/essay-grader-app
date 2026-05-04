@@ -15,7 +15,7 @@ interface CollegeFiltersProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
@@ -140,7 +140,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
               return (
                 <span
                   key={m}
-                  className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5 ring-1 transition-[background-color,color] duration-200 ${
+                  className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5  transition-[background-color,color] duration-200 ${
                     active
                       ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
                       : "bg-transparent ring-white/[0.12] text-text-secondary"
@@ -217,7 +217,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
               return (
                 <span
                   key={i}
-                  className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5 ring-1 transition-[background-color,color] duration-200 ${
+                  className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5  transition-[background-color,color] duration-200 ${
                     active
                       ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
                       : "bg-transparent ring-white/[0.12] text-text-secondary"

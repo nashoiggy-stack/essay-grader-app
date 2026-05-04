@@ -153,7 +153,7 @@ export function MetricBar({
                 {shortName(entry.name)}
               </span>
             </div>
-            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-bg-surface transition-colors duration-150">
+            <div className="flex-1 h-8 rounded-lg bg-bg-surface overflow-hidden relative group-hover:bg-bg-surface transition-colors duration-150">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
@@ -223,7 +223,7 @@ export function RangeBar({
                 {shortName(entry.name)}
               </span>
             </div>
-            <div className="flex-1 h-8 rounded-lg bg-white/[0.03] overflow-hidden relative group-hover:bg-bg-surface transition-colors duration-150">
+            <div className="flex-1 h-8 rounded-lg bg-bg-surface overflow-hidden relative group-hover:bg-bg-surface transition-colors duration-150">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${widthPct}%` }}
@@ -269,7 +269,7 @@ export function MetricCard({
       className={`rounded-xl p-3.5 transition-all duration-200 ${
         isBest
           ? "bg-emerald-500/[0.05] border border-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.06)]"
-          : "bg-white/[0.02] border border-border-hair"
+          : "bg-bg-surface border border-border-hair"
       }`}
     >
       <div className="flex items-start justify-between gap-1">
@@ -306,7 +306,7 @@ export function CompareSection({
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-bg-surface transition-colors"
       >
         <h3 className="text-[12px] font-bold text-text-primary uppercase tracking-[0.08em]">
           {title}

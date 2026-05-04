@@ -31,7 +31,7 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto rounded-md border border-white/10 bg-white/[0.03] p-4 space-y-3 min-h-[300px] max-h-[500px]">
+      <div className="flex-1 overflow-y-auto rounded-md border border-white/10 bg-bg-surface p-4 space-y-3 min-h-[300px] max-h-[500px]">
         {isEmpty && (
           <div className="text-center py-12">
             <p className="text-zinc-500 text-sm mb-2">Describe your activity</p>
@@ -50,7 +50,7 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
             className={`rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
               msg.role === "user"
                 ? "bg-white/10 text-white ml-12"
-                : "border border-white/10 bg-white/[0.03] text-zinc-300 mr-12"
+                : "border border-white/10 bg-bg-surface text-zinc-300 mr-12"
             }`}
           >
             {msg.content}
@@ -58,7 +58,7 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
         ))}
 
         {chatLoading && (
-          <div className="border border-white/10 bg-white/[0.03] rounded-xl px-4 py-3 text-sm text-zinc-500 italic mr-12">
+          <div className="border border-white/10 bg-bg-surface rounded-xl px-4 py-3 text-sm text-zinc-500 italic mr-12">
             <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.5, repeat: Infinity }}>
               Thinking...
             </motion.span>
@@ -94,7 +94,7 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
       {/* Input */}
       <div className="mt-4 flex gap-2">
         <textarea
-          className="flex-1 rounded-xl bg-white/[0.03] border border-white/10 p-3 text-sm text-white placeholder-zinc-600 resize-none focus:border-white/20 focus:ring-1 focus:ring-white/10 focus:outline-none transition-[border-color,box-shadow,background-color,color,opacity] duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 rounded-xl bg-bg-surface border border-white/10 p-3 text-sm text-white placeholder-zinc-600 resize-none focus:border-white/20 focus: focus:ring-white/10 focus:outline-none transition-[border-color,box-shadow,background-color,color,opacity] duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           rows={2}
           placeholder={
             isDone

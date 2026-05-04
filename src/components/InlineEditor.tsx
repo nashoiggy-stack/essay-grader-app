@@ -173,7 +173,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                     <div key={group.key} className="rounded-xl bg-bg-inset border border-border-hair overflow-hidden">
                       <button
                         onClick={() => setOpenGroup(isOpen ? null : group.key)}
-                        className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left transition-[background-color] duration-200 hover:bg-white/[0.03]"
+                        className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left transition-[background-color] duration-200 hover:bg-bg-surface"
                       >
                         <div className="min-w-0 flex-1">
                           <p className={`text-[13px] font-semibold ${hasActive ? "text-accent-text" : "text-text-primary"}`}>
@@ -211,7 +211,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                                   className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-[background-color,color] duration-200 ${
                                     activeFocus === cat
                                       ? "bg-accent-soft text-accent-text ring-1 ring-accent-line"
-                                      : "bg-bg-surface text-text-secondary hover:bg-white/[0.08] hover:text-text-primary"
+                                      : "bg-bg-surface text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
                                   }`}
                                 >
                                   {cat}
@@ -251,7 +251,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
 
       {/* ── Highlighted essay ─────────────────────────────────────── */}
       {highlightedParts && highlightedParts.length > 0 && (
-        <div className="rounded-xl bg-white/[0.02] border border-border-hair p-5 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap">
+        <div className="rounded-xl bg-bg-surface border border-border-hair p-5 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap">
           {highlightedParts.map((part, i) => {
             if (part.suggestionIndex === null) {
               return <span key={i}>{part.text}</span>;
@@ -311,7 +311,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => { onAcceptSuggestion(activeSuggestion!); setActiveSuggestion(null); }}
-                className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-opacity hover:opacity-80 ${activeColors.bg} ${activeColors.text} ring-1 ${activeColors.border}`}
+                className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-opacity hover:opacity-80 ${activeColors.bg} ${activeColors.text}  ${activeColors.border}`}
               >
                 Accept
               </button>

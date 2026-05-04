@@ -108,7 +108,7 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => status !== "uploading" && inputRef.current?.click()}
-        className={`cursor-pointer rounded-md bg-white/[0.03] border ${statusBorder} p-6 transition-colors duration-200 backdrop-blur-sm`}
+        className={`cursor-pointer rounded-md bg-bg-surface border ${statusBorder} p-6 transition-colors duration-200 backdrop-blur-sm`}
       >
         <input
           ref={inputRef}

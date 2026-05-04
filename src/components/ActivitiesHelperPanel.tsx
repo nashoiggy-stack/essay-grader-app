@@ -28,7 +28,7 @@ interface BulkResponse {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -265,7 +265,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                       className={`rounded-xl border p-4 transition-[border-color,background-color] duration-200 ${
                         isApplied
                           ? "border-emerald-500/15 bg-emerald-500/[0.03]"
-                          : "border-border-hair bg-white/[0.02]"
+                          : "border-border-hair bg-bg-surface"
                       }`}
                     >
                       {/* Title */}

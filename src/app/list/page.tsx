@@ -64,12 +64,12 @@ const TIER_KEYS = ["safety", "likely", "target", "reach", "unlikely", "insuffici
 type TierKey = (typeof TIER_KEYS)[number];
 
 const TIER_DOT: Record<TierKey, string> = {
-  safety: "bg-emerald-500",
-  likely: "bg-blue-500",
-  target: "bg-amber-500",
-  reach: "bg-orange-500",
-  unlikely: "bg-red-500",
-  insufficient: "bg-zinc-500",
+  safety: "bg-tier-safety-fg",
+  likely: "bg-tier-likely-fg",
+  target: "bg-tier-target-fg",
+  reach: "bg-tier-reach-fg",
+  unlikely: "bg-tier-unlikely-fg",
+  insufficient: "bg-tier-insufficient-fg",
 };
 const TIER_LABEL: Record<TierKey, string> = {
   safety: "Safety",
@@ -658,7 +658,7 @@ function RecommendationRow({
       <button
         type="button"
         onClick={apply}
-        className="sm:hidden col-span-3 mt-2 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium text-text-primary border border-border-strong rounded-full py-2 hover:bg-white/[0.04] transition-colors"
+        className="sm:hidden col-span-3 mt-2 inline-flex items-center justify-center gap-1.5 text-[12px] font-medium text-text-primary border border-border-strong rounded-full py-2 hover:bg-bg-surface transition-colors"
       >
         {rec.kind === "swap" ? (
           <>

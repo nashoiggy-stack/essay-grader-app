@@ -41,6 +41,25 @@
      is the deep indigo (dark + light themes); near-black when accent
      is forced to white (monochrome theme — see override below). */
   --accent-fg: oklch(99% 0 0);
+
+  /* Tier classification colors — matched-chroma OKLCH per MASTER.md so
+     all six tiers sit in the same visual register. -fg is the foreground
+     (text + dot fill); -soft is a low-opacity background tint. Used on
+     /list, /chances, /colleges, /strategy, /compare wherever the
+     admit-chance tier is the signal. */
+  --tier-safety-fg: oklch(72% 0.16 155);
+  --tier-safety-soft: oklch(72% 0.16 155 / 0.14);
+  --tier-likely-fg: oklch(72% 0.16 220);
+  --tier-likely-soft: oklch(72% 0.16 220 / 0.14);
+  --tier-target-fg: oklch(78% 0.15 75);
+  --tier-target-soft: oklch(78% 0.15 75 / 0.14);
+  --tier-reach-fg: oklch(74% 0.16 45);
+  --tier-reach-soft: oklch(74% 0.16 45 / 0.14);
+  --tier-unlikely-fg: oklch(70% 0.18 22);
+  --tier-unlikely-soft: oklch(70% 0.18 22 / 0.14);
+  --tier-insufficient-fg: oklch(58% 0.008 250);
+  --tier-insufficient-soft: oklch(58% 0.008 250 / 0.10);
+
   /* Legacy aliases retained for compatibility — point at neutral tints */
   --violet-soft: oklch(96% 0.005 250 / 0.06);
   --cyan-soft: oklch(96% 0.005 250 / 0.04);
@@ -96,6 +115,22 @@
   --accent-glow: oklch(48% 0.16 264 / 0.16);
   /* White stays the right contrast on the deep-indigo light-mode accent. */
   --accent-fg: oklch(99% 0 0);
+
+  /* Tier classification colors — light-mode variants (lower lightness so
+     they read on the warm-cool off-white --bg-surface). */
+  --tier-safety-fg: oklch(45% 0.15 155);
+  --tier-safety-soft: oklch(45% 0.15 155 / 0.10);
+  --tier-likely-fg: oklch(48% 0.15 220);
+  --tier-likely-soft: oklch(48% 0.15 220 / 0.10);
+  --tier-target-fg: oklch(56% 0.15 75);
+  --tier-target-soft: oklch(56% 0.15 75 / 0.10);
+  --tier-reach-fg: oklch(54% 0.16 45);
+  --tier-reach-soft: oklch(54% 0.16 45 / 0.10);
+  --tier-unlikely-fg: oklch(48% 0.18 22);
+  --tier-unlikely-soft: oklch(48% 0.18 22 / 0.10);
+  --tier-insufficient-fg: oklch(58% 0.008 250);
+  --tier-insufficient-soft: oklch(58% 0.008 250 / 0.06);
+
   --violet-soft: oklch(18% 0.01 250 / 0.04);
   --cyan-soft: oklch(18% 0.01 250 / 0.03);
   --noise-opacity: 0;
@@ -141,6 +176,22 @@
   --cyan-soft: rgba(255, 255, 255, 0.04);
   --noise-opacity: 0;
 
+  /* Tier classification colors — monochrome variant. Pure grayscale theme
+     deliberately collapses the chroma to a single neutral, signaling
+     'every tier is the same shade of monochrome' as the contract intends. */
+  --tier-safety-fg: rgba(250, 250, 250, 0.92);
+  --tier-safety-soft: rgba(255, 255, 255, 0.10);
+  --tier-likely-fg: rgba(225, 225, 225, 0.88);
+  --tier-likely-soft: rgba(255, 255, 255, 0.08);
+  --tier-target-fg: rgba(200, 200, 200, 0.84);
+  --tier-target-soft: rgba(255, 255, 255, 0.07);
+  --tier-reach-fg: rgba(175, 175, 175, 0.80);
+  --tier-reach-soft: rgba(255, 255, 255, 0.06);
+  --tier-unlikely-fg: rgba(150, 150, 150, 0.76);
+  --tier-unlikely-soft: rgba(255, 255, 255, 0.05);
+  --tier-insufficient-fg: rgba(140, 140, 140, 0.72);
+  --tier-insufficient-soft: rgba(255, 255, 255, 0.04);
+
   /* Layered backdrop: radial highlights at corners + spotlight at top */
   --bg-atmosphere:
     radial-gradient(ellipse 80% 60% at 10% -10%, rgba(255, 255, 255, 0.15), transparent 60%),
@@ -185,6 +236,22 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-line: var(--accent-line);
   --color-accent-text: var(--accent-text);
+  /* Tier color tokens bridged to Tailwind utilities so pages can use
+     bg-tier-safety-soft, text-tier-safety-fg, etc. instead of raw
+     bg-emerald-500. Avoids the 'accent' Tailwind namespace conflict
+     because tier-* doesn't collide with any built-in. */
+  --color-tier-safety-fg: var(--tier-safety-fg);
+  --color-tier-safety-soft: var(--tier-safety-soft);
+  --color-tier-likely-fg: var(--tier-likely-fg);
+  --color-tier-likely-soft: var(--tier-likely-soft);
+  --color-tier-target-fg: var(--tier-target-fg);
+  --color-tier-target-soft: var(--tier-target-soft);
+  --color-tier-reach-fg: var(--tier-reach-fg);
+  --color-tier-reach-soft: var(--tier-reach-soft);
+  --color-tier-unlikely-fg: var(--tier-unlikely-fg);
+  --color-tier-unlikely-soft: var(--tier-unlikely-soft);
+  --color-tier-insufficient-fg: var(--tier-insufficient-fg);
+  --color-tier-insufficient-soft: var(--tier-insufficient-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

@@ -65,7 +65,7 @@ export const GapItem: React.FC<GapItemProps> = ({ flag, fixSuggestion }) => {
         className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left"
       >
         <div
-          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${style.bg} ring-1 ${style.ring}`}
+          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${style.bg}  ${style.ring}`}
         >
           <Icon className={`w-3.5 h-3.5 ${style.text}`} strokeWidth={2} />
         </div>

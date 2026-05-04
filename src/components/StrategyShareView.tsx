@@ -135,7 +135,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
             <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
               {result.profileSummary.body}
             </p>
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
+            <div className="rounded-xl bg-bg-surface border border-white/[0.04] p-4">
               <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-1">
                 Competitiveness Positioning
               </p>
@@ -220,7 +220,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                 {analysis.spike.signals.map((s, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-white/[0.04] text-zinc-400"
+                    className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-bg-surface text-zinc-400"
                   >
                     {s}
                   </span>
@@ -246,7 +246,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
             {analysis.weaknesses.map((w) => (
               <div
                 key={w.code}
-                className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2"
+                className="rounded-lg bg-bg-surface border border-white/[0.04] px-3 py-2"
               >
                 <p className="text-[13px] text-zinc-200 font-semibold">{w.label}</p>
                 <p className="text-[12px] text-zinc-500 leading-snug">{w.detail}</p>
@@ -378,7 +378,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                 {deadlines.map((e, i) => (
                   <li
                     key={`${e.schoolName}-${e.plan}-${i}`}
-                    className="flex items-baseline justify-between gap-3 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2"
+                    className="flex items-baseline justify-between gap-3 rounded-lg bg-bg-surface border border-white/[0.04] px-3 py-2"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] text-zinc-200 font-semibold truncate">
@@ -446,8 +446,8 @@ function ActionVerdictBlock({
   const Icon = s.icon;
   void action;
   return (
-    <div className={`rounded-xl ${s.bg} ring-1 ${s.ring} p-4 flex items-center gap-3`}>
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-white/[0.04]">
+    <div className={`rounded-xl ${s.bg}  ${s.ring} p-4 flex items-center gap-3`}>
+      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-bg-surface">
         <Icon className={`w-5 h-5 ${s.text}`} strokeWidth={2} />
       </div>
       <div className="min-w-0">
@@ -479,7 +479,7 @@ function RecGroup({
         {items.map((c) => (
           <div
             key={c.college.name}
-            className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5 flex items-baseline justify-between gap-2"
+            className="rounded-lg bg-bg-surface border border-white/[0.04] px-3 py-1.5 flex items-baseline justify-between gap-2"
           >
             <span className="text-[13px] text-zinc-200 font-semibold truncate">
               {c.college.name}

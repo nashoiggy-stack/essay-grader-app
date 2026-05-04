@@ -18,7 +18,7 @@ interface ChanceFormProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
@@ -267,7 +267,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         </div>
         <a
           href="/profile"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border-strong bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-text-secondary hover:bg-bg-surface hover:text-white transition-colors"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border-strong bg-bg-surface px-3 py-1.5 text-[11px] font-medium text-text-secondary hover:bg-bg-surface hover:text-white transition-colors"
         >
           {profileCoursework.length === 0 ? "Add in profile" : "Edit in profile"}
         </a>
@@ -293,7 +293,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
             return (
               <div
                 key={i}
-                className="flex items-center gap-2 rounded-lg bg-white/[0.02] border border-border-hair px-3 py-1.5"
+                className="flex items-center gap-2 rounded-lg bg-bg-surface border border-border-hair px-3 py-1.5"
               >
                 <span className="text-[10px] uppercase tracking-[0.08em] text-text-muted w-12 shrink-0">
                   {row.type}

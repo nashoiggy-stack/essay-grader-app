@@ -220,7 +220,7 @@ export default function ComparePage() {
               <button
                 type="button"
                 onClick={() => setConfirmed(false)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface border border-border-strong px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-white/[0.08] transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface border border-border-strong px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-bg-elevated transition-colors"
               >
                 Edit Selection
               </button>
@@ -274,7 +274,7 @@ export default function ComparePage() {
                       onClick={() => setActiveTab(tab.key)}
                       className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-[color,background-color] duration-200 shrink-0 ${
                         isActive
-                          ? "text-white bg-white/[0.08]"
+                          ? "text-white bg-bg-elevated"
                           : "text-text-muted hover:text-text-secondary hover:bg-bg-surface"
                       }`}
                     >
@@ -402,7 +402,7 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
         return (
           <div
             key={f.college.name}
-            className={`rounded-xl ${colors.bg} ring-1 ${colors.ring} p-3`}
+            className={`rounded-xl ${colors.bg}  ${colors.ring} p-3`}
           >
             <p className="text-[12px] text-text-secondary font-medium truncate">
               {f.college.name}
@@ -532,7 +532,7 @@ function ValueCell({ value, isBest }: { value: string; isBest: boolean }) {
         {isBest && <Crown className="w-3 h-3 text-amber-300 shrink-0" />}
         {tierClass ? (
           <span
-            className={`inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-md ring-1 ${tierClass}`}
+            className={`inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-md  ${tierClass}`}
           >
             {value}
           </span>
@@ -574,7 +574,7 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
               </h4>
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full ring-1 ${colors.bg} ${colors.text} ${colors.ring}`}
+                  className={`text-[11px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full  ${colors.bg} ${colors.text} ${colors.ring}`}
                 >
                   {f.fitLabel}
                 </span>

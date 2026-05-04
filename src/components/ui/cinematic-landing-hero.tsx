@@ -230,7 +230,7 @@ export function CinematicLandingHero({ className, ...props }: React.HTMLAttribut
                   <Link
                     key={feature.href}
                     href={feature.href}
-                    className="feature-grid-item feature-card-depth rounded-md p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.08] group"
+                    className="feature-grid-item feature-card-depth rounded-md p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-bg-elevated group"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors">
