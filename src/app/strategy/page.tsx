@@ -31,6 +31,7 @@ import {
 import { DreamSchoolSelector } from "@/components/DreamSchoolSelector";
 import { ActionChecklist } from "@/components/ActionChecklist";
 import { GapItem } from "@/components/GapItem";
+import { StrategyAtlas } from "@/components/strategy/StrategyAtlas";
 import { useStrategy } from "@/hooks/useStrategy";
 import { useDreamSchool } from "@/hooks/useDreamSchool";
 import { useActionChecklist } from "@/hooks/useActionChecklist";
@@ -388,14 +389,20 @@ export default function StrategyPage() {
                     >
                       <SchoolListBody result={result} analysis={analysis} />
                     </StrategyCard>
-                    {/* 8. APPLICATION STRATEGY */}
+                    {/* 8. APPLICATION STRATEGY — school-by-school atlas */}
                     <StrategyCard
                       icon={<ArrowRight className="w-4 h-4" />}
                       title="Application Strategy"
                       strength="neutral"
                       headline={`${analysis.earlyStrategy.length} schools · per-school plan`}
+                      defaultExpanded
                     >
-                      <ApplicationStrategyBody result={result} />
+                      <StrategyAtlas
+                        result={result}
+                        earlyStrategy={analysis.earlyStrategy}
+                        pinnedSchools={profile?.pinnedSchools ?? []}
+                        deadlineEntries={deadlineEntries}
+                      />
                     </StrategyCard>
                   </section>
 
@@ -947,30 +954,6 @@ function SchoolsInClassificationNote({
     <p className="text-[12px] text-text-secondary leading-relaxed">
       Pinned schools: {names.length > 0 ? names.join(", ") : "—"}
     </p>
-  );
-}
-
-function ApplicationStrategyBody({ result }: { result: StrategyResult }) {
-  return (
-    <div className="space-y-3 pt-3">
-      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-        {result.applicationStrategy.body}
-      </p>
-      {result.applicationStrategy.bullets &&
-        result.applicationStrategy.bullets.length > 0 && (
-          <ul className="space-y-2">
-            {result.applicationStrategy.bullets.map((b, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-[13px] text-text-secondary leading-relaxed"
-              >
-                <span className="text-text-muted mt-0.5 shrink-0">→</span>
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-    </div>
   );
 }
 
