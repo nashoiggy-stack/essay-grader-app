@@ -128,7 +128,7 @@ function Header({ data, firstName, isEmpty }: HeaderProps) {
     <section className="ae-header">
       <div className="ae-header-meta">
         <div className="ae-eyebrow">
-          <span className="ae-eyebrow-dot" /> Application atlas
+          <span className="ae-eyebrow-dot" /> Dashboard
         </div>
         <h1 className="ae-name">
           {isEmpty
