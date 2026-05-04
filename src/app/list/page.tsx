@@ -281,7 +281,7 @@ function GradeMasthead({ grade }: { grade: GradeResult }) {
         {/* Stat block — letter sits in the 4xl/5xl range like the rest of
             the app's hero numbers, not the 13rem masthead clamp. */}
         <div>
-          <p className={EYEBROW} id="grade-masthead">Official grade</p>
+          <h2 className={EYEBROW} id="grade-masthead">Official grade</h2>
           <div className="mt-3 flex items-baseline gap-5">
             <span
               aria-label={`Grade: ${grade.letter}`}
@@ -369,9 +369,9 @@ function Breakdown({ grade }: { grade: GradeResult }) {
       className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
     >
       <div className="flex items-baseline justify-between mb-6">
-        <p className={EYEBROW} id="grade-breakdown">
+        <h2 className={EYEBROW} id="grade-breakdown">
           Breakdown
-        </p>
+        </h2>
         <p className="text-[11px] text-text-faint max-w-[20ch] text-right">
           balance + major / 2 = official
         </p>
@@ -452,9 +452,9 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
       className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
     >
       <div className="flex items-baseline justify-between mb-5">
-        <p className={EYEBROW} id="tier-strip">
+        <h2 className={EYEBROW} id="tier-strip">
           Tier distribution
-        </p>
+        </h2>
         <span className={`${MONO} text-[11px] text-text-muted`}>
           {counts.total} pinned
         </span>
@@ -506,9 +506,9 @@ function PinnedSection({
     <section aria-labelledby="pinned-heading">
       <div className="flex items-baseline justify-between mb-6">
         <div className="flex items-baseline gap-3">
-          <p className={EYEBROW} id="pinned-heading">
+          <h2 className={EYEBROW} id="pinned-heading">
             Your pinned schools
-          </p>
+          </h2>
           <span className={`${MONO} text-[11px] text-text-muted`}>
             ·  {sorted.length}
           </span>
@@ -547,7 +547,7 @@ function RecommendationsSection({
     if (listSize >= 8 && listSize <= 12) {
       return (
         <section>
-          <p className={EYEBROW}>Engine suggestions</p>
+          <h2 className={EYEBROW}>Engine suggestions</h2>
           <p className="mt-3 text-lg sm:text-xl font-semibold tracking-[-0.018em] text-text-primary max-w-[60ch] leading-tight">
             Your list is solid.
           </p>
@@ -575,9 +575,9 @@ function RecommendationsSection({
       className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
     >
       <div className="flex items-baseline justify-between mb-5">
-        <p className={EYEBROW} id="recs-heading">
+        <h2 className={EYEBROW} id="recs-heading">
           Engine suggestions
-        </p>
+        </h2>
         <span className={`${MONO} text-[11px] text-text-faint`}>{mode}</span>
       </div>
       <ol className="divide-y divide-border-hair">

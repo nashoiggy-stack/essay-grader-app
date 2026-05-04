@@ -135,9 +135,9 @@ export default function Home() {
 
         {/* Rubric reference — two flat tables, matches /gpa's pattern. */}
         <section className="mb-10 sm:mb-12">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
             How essays are graded
-          </p>
+          </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8 lg:gap-y-0">
             <div>
               <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">

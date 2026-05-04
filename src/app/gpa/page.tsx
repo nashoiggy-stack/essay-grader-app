@@ -32,9 +32,9 @@ export default function GPAPage() {
           tables of bonuses, plus a worked example. Hairline borders, no
           decorative cards. */}
       <section className="mb-10 sm:mb-12">
-        <p className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
           How weighting works
-        </p>
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-x-10 gap-y-8 lg:gap-y-0">
           <div>
             <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
@@ -123,9 +123,9 @@ export default function GPAPage() {
       {/* Calculator widget. The iframe is themed via ?theme=light|dark and
           carries its own visual tokens — see public/gpa-calculator.html. */}
       <section>
-        <p className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+        <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
           Enter your grades
-        </p>
+        </h2>
         <div className="border border-border-hair rounded-md overflow-hidden">
           <iframe
             key={`${iframeKey}-${iframeColorScheme}`}
