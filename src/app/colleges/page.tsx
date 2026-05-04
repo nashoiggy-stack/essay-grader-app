@@ -76,7 +76,7 @@ export default function CollegesPage() {
 
   return (
     <>
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+      <main id="main-content" className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
         {/* ── Masthead ─────────────────────────────────────────────────── */}
         <motion.header
           className="mb-10 sm:mb-12"

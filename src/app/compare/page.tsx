@@ -198,7 +198,7 @@ export default function ComparePage() {
 
   return (
     <>
-      <main className="mx-auto max-w-6xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+      <main id="main-content" className="mx-auto max-w-6xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
           className="mb-8 text-center"

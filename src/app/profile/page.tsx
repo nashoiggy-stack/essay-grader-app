@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+      <main id="main-content" className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
         {/* Masthead */}
         <header className="mb-8 sm:mb-10 animate-fade-in">
           <div className="flex items-baseline justify-between gap-4">

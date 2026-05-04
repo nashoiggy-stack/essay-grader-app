@@ -58,7 +58,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <PersistentBackground />
         <CloudStorageBoundary />
         <NavBarWrapper />
-        <div id="main-content">{children}</div>
+        {children}
         <Footer />
         <CloudSyncToast />
       </AuthGate>

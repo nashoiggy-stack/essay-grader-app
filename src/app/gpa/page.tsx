@@ -13,7 +13,7 @@ export default function GPAPage() {
   const reloadIframe = () => setIframeKey((k) => k + 1);
 
   return (
-    <main className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+    <main id="main-content" className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
       {/* Masthead — Linear-derived eyebrow + heavy sans headline + standfirst */}
       <header className="mb-10 sm:mb-12">
         <p className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-3">

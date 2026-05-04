@@ -95,6 +95,7 @@ export default function LandingPage() {
 
   return (
     <>
+      <main id="main-content">
       {/* ── Page 1 / Hero (sticky, fades out on scroll) ───────── */}
       <div
         ref={heroRef}
@@ -266,6 +267,7 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </div>
+      </main>
 
       {/* ── Footer (after CTA finishes) ───────────────────────── */}
       <LandingFooter />

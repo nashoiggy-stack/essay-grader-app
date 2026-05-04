@@ -185,7 +185,7 @@ export default function ListPage() {
   const isEmpty = pinned.length === 0;
 
   return (
-    <main className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+    <main id="main-content" className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
       {/* ── Masthead ─────────────────────────────────────────────────── */}
       <motion.header
         initial={{ opacity: 0, y: -8 }}

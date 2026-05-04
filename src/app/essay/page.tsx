@@ -118,7 +118,7 @@ export default function Home() {
         currentEssayText={essay.essayText}
       />
 
-      <main className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+      <main id="main-content" className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
 
         {/* Masthead — replaces the cosmic ContainerScroll 3D hero per
             CRITIQUE.md (was a leftover from the pre-Linear redesign). */}

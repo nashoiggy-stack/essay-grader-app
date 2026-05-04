@@ -75,7 +75,7 @@ export function AtlasPage() {
 
   return (
     <div className="ae-root" data-layout={layout}>
-      <main className="ae-main">
+      <main id="main-content" className="ae-main">
         <Header data={data} firstName={firstName} isEmpty={isEmpty} />
 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -32 }}>

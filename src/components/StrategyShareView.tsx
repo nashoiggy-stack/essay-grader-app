@@ -101,7 +101,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
   const deadlines = computeDeadlines(deadlineEntries, new Date());
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+    <main id="main-content" className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
       {/* Banner */}
       <div className="mb-6 rounded-xl border border-white/[0.08] bg-[#0c0c1a]/80 p-4 flex items-start gap-3">
         <Compass className="w-4 h-4 text-accent-text shrink-0 mt-0.5" />

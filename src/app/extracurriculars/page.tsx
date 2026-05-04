@@ -14,7 +14,7 @@ export default function ExtracurricularsPage() {
 
   return (
     <>
-      <main className="mx-auto max-w-5xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+      <main id="main-content" className="mx-auto max-w-5xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
         {/* Masthead — eyebrow + h1 + standfirst, plus Save button on the
             right when there are activities to save. */}
         <header className="mb-10 sm:mb-12">

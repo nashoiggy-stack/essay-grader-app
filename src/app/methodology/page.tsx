@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function MethodologyPage() {
   return (
     <>
-      <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)] text-text-primary">
+      <main id="main-content" className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)] text-text-primary">
         <header className="mb-10">
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
             How AdmitEdge Calculates Your Chances
