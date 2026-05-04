@@ -133,9 +133,9 @@ export function MissingDataBanner({ items }: { readonly items: readonly MissingD
   return (
     <div className="rounded-xl bg-amber-500/[0.04] border border-amber-500/15 p-4 mb-4">
       <div className="flex items-start gap-3">
-        <AlertCircle className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+        <AlertCircle className="w-4 h-4 text-tier-target-fg shrink-0 mt-0.5" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-amber-200 font-semibold mb-2">
+          <p className="text-sm text-tier-target-fg font-semibold mb-2">
             Missing data will weaken this analysis
           </p>
           <ul className="space-y-2">

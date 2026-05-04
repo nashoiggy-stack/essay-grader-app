@@ -411,7 +411,7 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-1.5 rounded-lg bg-bg-surface border border-border-hair hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
       >
-        <Crown className="w-3 h-3 text-amber-300" />
+        <Crown className="w-3 h-3 text-tier-target-fg" />
         <span className="text-text-secondary">{insight.label}:</span>
         <span className="text-text-primary font-semibold">{insight.collegeName}</span>
       </button>
@@ -758,7 +758,7 @@ function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
               key={i}
               className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-bg-surface border border-border-hair text-text-secondary"
             >
-              <Crown className="w-3 h-3 text-amber-300" />
+              <Crown className="w-3 h-3 text-tier-target-fg" />
               <span className="text-text-secondary">{ins.label}:</span>
               <span className="font-semibold text-text-primary">{ins.collegeName}</span>
             </span>
@@ -978,7 +978,7 @@ function CostTab({ colleges }: { colleges: readonly College[] }) {
                 value={c.strongFinancialAid ? "Yes" : "No"}
                 label="Meets full need"
                 isBest={c.strongFinancialAid === true}
-                color={c.strongFinancialAid ? "text-emerald-300" : "text-text-muted"}
+                color={c.strongFinancialAid ? "text-tier-safety-fg" : "text-text-muted"}
               />
               <MetricCard
                 value={c.strongMeritAid ? "Yes" : "No"}

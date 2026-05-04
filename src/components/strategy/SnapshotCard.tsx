@@ -83,10 +83,10 @@ function StatChip({
   const [open, setOpen] = useState(false);
   const toneClass =
     tone === "good"
-      ? "text-emerald-300 bg-emerald-500/[0.06] ring-emerald-500/25"
+      ? "text-tier-safety-fg bg-tier-safety-soft"
       : tone === "bad"
-        ? "text-red-300 bg-red-500/[0.06] ring-red-500/25"
-        : "text-amber-300 bg-amber-500/[0.06] ring-amber-500/25";
+        ? "text-tier-unlikely-fg bg-tier-unlikely-soft"
+        : "text-tier-target-fg bg-tier-target-soft";
   return (
     <div className="relative">
       <button

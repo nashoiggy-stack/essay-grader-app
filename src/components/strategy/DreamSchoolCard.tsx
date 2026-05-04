@@ -126,24 +126,26 @@ const TONE_STYLES: Record<
   UrgencyTone,
   { bg: string; ring: string; text: string; icon: React.ElementType; eyebrow: string }
 > = {
+  // Verdict tones use the OKLCH tier tokens so they stay legible in
+  // light, dark, and monochrome themes.
   go: {
-    bg: "bg-emerald-500/[0.08]",
-    ring: "ring-emerald-400/40",
-    text: "text-emerald-200",
+    bg: "bg-tier-safety-soft",
+    ring: "ring-tier-safety-fg/40",
+    text: "text-tier-safety-fg",
     icon: CheckCircle2,
     eyebrow: "Recommended",
   },
   caution: {
-    bg: "bg-amber-500/[0.08]",
-    ring: "ring-amber-400/40",
-    text: "text-amber-200",
+    bg: "bg-tier-target-soft",
+    ring: "ring-tier-target-fg/40",
+    text: "text-tier-target-fg",
     icon: AlertTriangle,
     eyebrow: "Proceed with care",
   },
   stop: {
-    bg: "bg-red-500/[0.08]",
-    ring: "ring-red-400/40",
-    text: "text-red-200",
+    bg: "bg-tier-unlikely-soft",
+    ring: "ring-tier-unlikely-fg/40",
+    text: "text-tier-unlikely-fg",
     icon: XCircle,
     eyebrow: "Hold",
   },

@@ -149,8 +149,8 @@ export default function StrategyPage() {
           </ScrollReveal>
 
           {error && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 mb-6">
-              <p className="text-sm text-red-300">{error}</p>
+            <div className="rounded-xl border border-tier-unlikely-fg/30 bg-tier-unlikely-soft p-4 mb-6">
+              <p className="text-sm text-tier-unlikely-fg">{error}</p>
             </div>
           )}
 

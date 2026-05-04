@@ -101,7 +101,7 @@ export function SchoolListBody({
           {analysis.schoolList.warnings.map((w, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 text-[12px] text-amber-300/90"
+              className="flex items-start gap-2 text-[12px] text-tier-target-fg"
             >
               <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span>{w}</span>

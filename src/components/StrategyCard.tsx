@@ -10,29 +10,32 @@ const STRENGTH_STYLES: Record<
   StrategyStrength,
   { dot: string; ring: string; label: string; text: string }
 > = {
+  // Strength badges use the OKLCH tier tokens so they stay legible in
+  // light, dark, and monochrome themes — the prior raw Tailwind ramps
+  // (emerald-300 / amber-300 / red-300 / orange-300) were dark-mode-only.
   strong: {
-    dot: "bg-emerald-400",
-    ring: "ring-emerald-400/40",
+    dot: "bg-tier-safety-fg",
+    ring: "ring-tier-safety-fg/40",
     label: "Strong",
-    text: "text-emerald-300",
+    text: "text-tier-safety-fg",
   },
   mixed: {
-    dot: "bg-amber-400",
-    ring: "ring-amber-400/40",
+    dot: "bg-tier-target-fg",
+    ring: "ring-tier-target-fg/40",
     label: "Mixed",
-    text: "text-amber-300",
+    text: "text-tier-target-fg",
   },
   weak: {
-    dot: "bg-red-400",
-    ring: "ring-red-400/40",
+    dot: "bg-tier-unlikely-fg",
+    ring: "ring-tier-unlikely-fg/40",
     label: "Weak",
-    text: "text-red-300",
+    text: "text-tier-unlikely-fg",
   },
   warning: {
-    dot: "bg-orange-400",
-    ring: "ring-orange-400/40",
+    dot: "bg-tier-reach-fg",
+    ring: "ring-tier-reach-fg/40",
     label: "Warning",
-    text: "text-orange-300",
+    text: "text-tier-reach-fg",
   },
   neutral: {
     dot: "bg-zinc-500",
