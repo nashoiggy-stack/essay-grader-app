@@ -1010,4 +1010,113 @@ Files swept: `src/app/essay/page.tsx`, `src/components/EssayInput.tsx`,
   240ms motion baseline for "modal in/out, page transitions."
   Bring closer to 240-300ms.
 
+---
+
+## `/resume`
+
+Files swept: `src/app/resume/page.tsx`,
+`src/components/ResumeSectionCard.tsx`,
+`src/components/ResumeImproveDiff.tsx`,
+`src/components/ResumePreview.tsx`,
+`src/components/ActivitiesHelperPanel.tsx`.
+
+### BLOCK
+
+- [RESOLVED in current `resume/page.tsx:199-211`] CRITIQUE BLOCK:
+  "No section navigation — 8 sections + Skills + Header in one
+  column, easily 4000+ px tall." `<SectionNav>` mounts when in
+  Resume mode, with eight chips: Header / Education / Awards /
+  Activities / Community / Athletics / Summer / Skills.
+- [RESOLVED in current `resume/page.tsx:87-138, 86-87,
+  ResumeImproveDiff.tsx`] CRITIQUE WARN: "AI Improve button
+  silently overwrites prose with no diff/undo. Dangerous."
+  `pendingImprove` state + `acceptImprove` / `rejectImprove`
+  callbacks now route through `<ResumeImproveDiff>` which shows
+  a side-by-side diff before the rewrite is committed.
+- [NEW BLOCK] **H1 violates three MASTER.md rules at once.**
+  `resume/page.tsx:186-191`:
+  ```
+  <h1
+    className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[0.95] mb-4"
+    style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)" }}
+  >
+    Build your college resume.
+  </h1>
+  ```
+  - **Display serif**: uses `var(--font-display)` = Young Serif.
+    MASTER.md: "There is no display serif in this system."
+  - **Locked dark**: `text-white` — invisible on light surface.
+  - **Fluid type on app UI**: `clamp(2.4rem, 6vw, 4rem)`.
+    MASTER.md: "App UI does not use fluid type. Fluid (`clamp`)
+    is reserved for **only** the landing page hero + cinematic
+    CTA."
+  Replace with the same masthead pattern other tool pages use:
+  `<h1 className="text-[2rem] sm:text-[2.5rem] font-semibold
+  tracking-[-0.022em] leading-[1.04] text-text-primary">`.
+- [NEW BLOCK] **"Resume Helper" eyebrow chip uses dark-only
+  glassy style.** `resume/page.tsx:157`: `border border-white/10
+  bg-white/5 backdrop-blur-md`. White at 5% on white is invisible;
+  decorative `backdrop-blur-md` violates the no-glass anti-pattern.
+  Replace with the simple eyebrow line `<p className="text-[11px]
+  font-medium uppercase tracking-[0.08em] text-text-muted">Tools /
+  Resume Helper</p>` other pages use.
+
+### WARN
+
+- [OPEN] **Mode toggle ("Resume / Activities Helper") still
+  replaces the whole editor — destination disguised as a mode.**
+  CRITIQUE flagged this. Verified at `resume/page.tsx:81, 215-256`.
+  When the user flips to "Activities Helper", the entire resume
+  editor unmounts and `<ActivitiesHelperPanel>` takes over the
+  same column. Either render Activities Helper in a side panel or
+  promote it to a route (`/resume/activities`).
+- [OPEN] **Reset-to-autofilled has no confirm.** CRITIQUE INFO.
+  Verified at `resume/page.tsx:470-476`: `<button
+  onClick={r.resetResume}>Reset to autofilled</button>` —
+  one-click destructive action with no confirmation dialog.
+  Wrap in a confirm/dialog or require a double-click pattern.
+- [OPEN] **Mobile preview parity is poor — preview drops below
+  editor with no scroll-to.** CRITIQUE flagged this. Verified at
+  `resume/page.tsx:481-499`: preview is `lg:sticky` (works at
+  desktop) but on mobile it just sits below the editor; the
+  "Show preview" CTA at `:497` toggles visibility but doesn't
+  scroll to it. Add a `requestAnimationFrame` scroll-into-view
+  after `setShowPreview(true)`.
+- [NEW WARN] **Save flash chip uses raw emerald** at
+  `resume/page.tsx:170` (`bg-emerald-500/20 text-emerald-400
+  ring-emerald-500/30`). Same pattern as `/essay`. Migrate to
+  tier tokens.
+- [NEW WARN] **Mode toggle active state is `text-white`.**
+  `resume/page.tsx:220` (`bg-bg-elevated text-white`). Locked
+  white — invisible on light bg-elevated. Use `text-text-primary`.
+- [NEW WARN] **Mobile show-preview button uses `bg-white/5
+  hover:bg-white/10`.** `resume/page.tsx:499`. Dark-only
+  alphas — invisible in light mode. Use `bg-bg-surface
+  hover:bg-bg-surface-2`.
+- [NEW WARN] **`inputClass` typo recurrence.** `resume/page.tsx:19-20`
+  has the same `focus:border-blue-500/50 focus:` pattern as
+  `/chances`, `/colleges`, `/profile`. Confirms this is a
+  copy-pasted utility — fixing once will benefit four pages.
+- [NEW WARN] **Loading spinner uses `border-blue-400`.**
+  `resume/page.tsx:144`. Same as `/profile`.
+
+### INFO
+
+- [RESOLVED] CRITIQUE WARN: "AI `Improve` button silently
+  overwrites prose with no diff/undo." Marked under BLOCK above
+  as resolved.
+- [NEW INFO] `print:hidden` / `print:block` / `print:static` /
+  `print:py-0` modifiers throughout the page (`:152, 154, 198,
+  215, 481, 482, 491, 499`) imply a print-CSS workflow for export.
+  Verify the printed output renders correctly on light paper —
+  `text-white` on `--bg-base` would print invisibly. Tied to
+  the BLOCK above (drop `text-white` from H1).
+- [NEW INFO] `ActivitiesHelperPanel` is mounted at `:230-256`
+  inside the mode toggle. CRITIQUE noted: "ActivitiesHelperPanel
+  is actually a resume-bulk-improve panel (wrong file in the
+  brief; the actual EC suggestion helper doesn't exist on this
+  page)." Worth re-checking the panel's job — if it's
+  resume-bulk-improve, the toggle label "Activities Helper" is
+  misleading. Rename to "Improve activities" or remove the
+  toggle.
 
