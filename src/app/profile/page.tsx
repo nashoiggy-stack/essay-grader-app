@@ -14,13 +14,13 @@ import { TranscriptUpload } from "@/components/TranscriptUpload";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-sm bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
 function SourceBadge({ source }: { source: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] text-accent-text/70 bg-accent-soft border border-accent-line rounded-full px-2 py-0.5">
-      <span className="w-1 h-1 rounded-full bg-blue-400" />
+    <span className="inline-flex items-center gap-1 text-[10px] text-accent-text bg-accent-soft border border-accent-line rounded-full px-2 py-0.5">
+      <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
       {source}
     </span>
   );
@@ -34,7 +34,7 @@ export default function ProfilePage() {
     return (
       <>
         <div className="min-h-dvh flex items-center justify-center">
-          <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+          <div className="h-6 w-6 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
         </div>
       </>
     );
@@ -127,13 +127,13 @@ export default function ProfilePage() {
                 <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium mb-1">Profile completeness</p>
                 <p className="text-sm text-text-primary">{completeMessage}</p>
               </div>
-              <p className="font-mono tabular-nums text-2xl font-semibold text-white leading-none">
+              <p className="font-mono tabular-nums text-2xl font-semibold text-text-primary leading-none">
                 {completed}<span className="text-text-faint">/{total}</span>
               </p>
             </div>
-            <div className="h-1.5 rounded-full bg-bg-surface overflow-hidden">
+            <div className="h-1.5 rounded-full bg-bg-inset overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400"
+                className="h-full rounded-full bg-[var(--accent)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.9, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
@@ -292,7 +292,7 @@ export default function ProfilePage() {
                   aria-invalid={isOverScale(profile.gpaUW, 4.0) ? true : undefined}
                 />
                 {isOverScale(profile.gpaUW, 4.0) && (
-                  <p className="mt-1.5 text-[11px] text-rose-400 leading-snug">
+                  <p className="mt-1.5 text-[11px] text-tier-unlikely-fg leading-snug">
                     Unweighted GPA exceeds the 4.0 scale. Use the GPA calculator to
                     convert your school&rsquo;s scale to the standard 4.0 unweighted scale.
                   </p>
@@ -312,7 +312,7 @@ export default function ProfilePage() {
                   aria-invalid={isOverScale(profile.gpaW, 5.0) ? true : undefined}
                 />
                 {isOverScale(profile.gpaW, 5.0) && (
-                  <p className="mt-1.5 text-[11px] text-rose-400 leading-snug">
+                  <p className="mt-1.5 text-[11px] text-tier-unlikely-fg leading-snug">
                     Weighted GPA exceeds 5.0 scale. Use the GPA calculator to convert
                     your school&rsquo;s scale to the normalized 5.0 scale.
                   </p>
@@ -363,7 +363,7 @@ export default function ProfilePage() {
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">SAT</h2>
               {satComposite !== null && (
                 <span className="text-sm font-mono text-text-secondary">
-                  Composite: <span className="text-white font-bold">{satComposite}</span>
+                  Composite: <span className="text-text-primary font-bold">{satComposite}</span>
                 </span>
               )}
             </div>
@@ -409,7 +409,7 @@ export default function ProfilePage() {
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">ACT</h2>
               {actComposite !== null && (
                 <span className="text-sm font-mono text-text-secondary">
-                  Composite: <span className="text-white font-bold">{actComposite}</span>
+                  Composite: <span className="text-text-primary font-bold">{actComposite}</span>
                 </span>
               )}
             </div>
@@ -766,7 +766,7 @@ function AdvancedCourseworkSection({
             <button
               onClick={addRow}
               disabled={!name.trim()}
-              className="col-span-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="col-span-2 rounded-sm bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-strong)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Add
             </button>

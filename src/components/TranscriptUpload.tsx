@@ -91,24 +91,24 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
   const statusIcon = {
     idle: <Upload className="w-5 h-5" />,
     uploading: <Loader2 className="w-5 h-5 animate-spin" />,
-    success: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
-    error: <AlertCircle className="w-5 h-5 text-red-400" />,
+    success: <CheckCircle2 className="w-5 h-5 text-tier-safety-fg" />,
+    error: <AlertCircle className="w-5 h-5 text-tier-unlikely-fg" />,
   }[status];
 
   const statusBorder = {
-    idle: "border-white/10 hover:border-accent-line",
+    idle: "border-border-hair hover:border-accent-line",
     uploading: "border-accent-line",
-    success: "border-emerald-400/40",
-    error: "border-red-400/40",
+    success: "border-tier-safety-fg/40",
+    error: "border-tier-unlikely-fg/40",
   }[status];
 
   return (
-    <div className="mx-auto max-w-2xl px-4 mb-8">
+    <div className="mb-8">
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => status !== "uploading" && inputRef.current?.click()}
-        className={`cursor-pointer rounded-md bg-bg-surface border ${statusBorder} p-6 transition-colors duration-200 backdrop-blur-sm`}
+        className={`cursor-pointer rounded-md bg-bg-surface border ${statusBorder} p-6 transition-colors duration-200`}
       >
         <input
           ref={inputRef}
@@ -120,13 +120,13 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
           disabled={status === "uploading"}
         />
         <div className="flex items-center gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-bg-surface border border-white/10 flex items-center justify-center text-white/70">
+          <div className="flex-shrink-0 w-10 h-10 rounded-md bg-bg-inset border border-border-hair flex items-center justify-center text-text-secondary">
             {statusIcon}
           </div>
           <div className="flex-1 min-w-0">
             {status === "idle" && (
               <>
-                <p className="text-sm font-semibold text-white mb-0.5">Upload your transcript(s)</p>
+                <p className="text-sm font-semibold text-text-primary mb-0.5">Upload your transcript(s)</p>
                 <p className="text-xs text-text-muted">
                   PDF or image — upload one or more files and we'll merge them automatically
                 </p>
@@ -142,13 +142,13 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
             )}
             {status === "success" && (
               <>
-                <p className="text-sm font-semibold text-emerald-300 mb-0.5">Transcript read successfully</p>
+                <p className="text-sm font-semibold text-tier-safety-fg mb-0.5">Transcript read successfully</p>
                 <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
             {status === "error" && (
               <>
-                <p className="text-sm font-semibold text-red-300 mb-0.5">Couldn't read transcript</p>
+                <p className="text-sm font-semibold text-tier-unlikely-fg mb-0.5">Couldn't read transcript</p>
                 <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}

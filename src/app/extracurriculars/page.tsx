@@ -66,7 +66,7 @@ export default function ExtracurricularsPage() {
         <ScrollReveal delay={0.1}>
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 mb-10">
             {/* Left: Activity List */}
-            <div className="rounded-md border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+            <div className="rounded-md border border-border-hair bg-bg-surface p-5">
               <ECActivityList
                 conversations={ec.conversations}
                 activeConvId={ec.activeConvId}
@@ -79,7 +79,7 @@ export default function ExtracurricularsPage() {
             </div>
 
             {/* Right: Conversation */}
-            <div className="rounded-md border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+            <div className="rounded-md border border-border-hair bg-bg-surface p-6">
               {ec.activeConversation ? (
                 <ECConversationPanel
                   conversation={ec.activeConversation}
@@ -101,7 +101,7 @@ export default function ExtracurricularsPage() {
                     </p>
                     <button
                       onClick={ec.startNewActivity}
-                      className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 transition-[background-color,color,opacity] duration-200"
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-strong)] transition-[background-color] duration-200"
                     >
                       + Add Activity
                     </button>
@@ -116,13 +116,13 @@ export default function ExtracurricularsPage() {
         {ec.doneCount > 0 && (
           <ScrollReveal delay={0.15}>
             <div className="flex items-center gap-4 mb-10">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div className="flex-1 h-px bg-border-hair" />
               <motion.button
                 onClick={ec.evaluate}
                 disabled={ec.evaluating}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="rounded-full bg-white px-8 py-3 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,color,opacity] duration-200"
+                className="rounded-full bg-[var(--accent)] px-8 py-3 text-sm font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-strong)] disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color] duration-200"
               >
                 {ec.evaluating
                   ? ec.evalProgress
@@ -132,15 +132,15 @@ export default function ExtracurricularsPage() {
                     : "Evaluating..."
                   : `Evaluate ${ec.doneCount} Activit${ec.doneCount === 1 ? "y" : "ies"}`}
               </motion.button>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div className="flex-1 h-px bg-border-hair" />
             </div>
           </ScrollReveal>
         )}
 
         {/* Error */}
         {ec.evalError && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-            <p className="text-sm text-red-400">{ec.evalError}</p>
+          <div role="alert" className="mb-6 rounded-md border border-tier-unlikely-fg/30 bg-tier-unlikely-soft p-4">
+            <p className="text-sm text-tier-unlikely-fg">{ec.evalError}</p>
           </div>
         )}
 

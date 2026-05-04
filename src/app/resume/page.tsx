@@ -17,7 +17,7 @@ import { RESUME_STORAGE_KEY } from "@/lib/resume-types";
 import { Download, Save, FileText, Wand2, Eye, EyeOff, RotateCcw, Download as DownloadIcon } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-sm bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 function fieldLabelFor(fields: readonly FieldSchema[], key: string): string {
   return fields.find((f) => f.key === key)?.label ?? key;
@@ -141,7 +141,7 @@ export default function ResumePage() {
     return (
       <>
         <div className="min-h-[60dvh] flex items-center justify-center">
-          <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+          <div className="h-6 w-6 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
         </div>
       </>
     );
@@ -154,12 +154,7 @@ export default function ResumePage() {
         <div className="mb-10 print:hidden">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
-                <FileText className="w-3.5 h-3.5 text-text-secondary" />
-                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-text-secondary">
-                  Resume Helper
-                </span>
-              </div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">Tools / Resume Helper</p>
               <SaveIndicator storageKey={RESUME_STORAGE_KEY} />
             </div>
             <div className="flex items-center gap-2">
@@ -167,7 +162,7 @@ export default function ResumePage() {
                 onClick={r.saveNow}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                   r.saveFlash
-                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                    ? "bg-tier-safety-soft text-tier-safety-fg ring-1 ring-tier-safety-fg/30"
                     : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                 }`}
               >
@@ -183,13 +178,8 @@ export default function ResumePage() {
               </button>
             </div>
           </div>
-          <h1
-            className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[0.95] mb-4"
-            style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)" }}
-          >
-            Build your college resume.
-          </h1>
-          <p className="max-w-xl text-lg text-text-secondary leading-relaxed">
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary mb-4">Build your college resume.</h1>
+          <p className="max-w-[60ch] text-[15px] text-text-secondary leading-relaxed">
             A clean, admissions-ready resume. Autofills from your GPA calculator, EC evaluator, and profile. Edit anything.
           </p>
         </div>
@@ -217,7 +207,7 @@ export default function ResumePage() {
             onClick={() => setMode("resume")}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
               mode === "resume"
-                ? "bg-bg-elevated text-white"
+                ? "bg-bg-elevated text-text-primary"
                 : "text-text-muted hover:text-text-secondary"
             }`}
           >
@@ -228,7 +218,7 @@ export default function ResumePage() {
             onClick={() => setMode("activities")}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-[background-color,color] duration-200 ${
               mode === "activities"
-                ? "bg-bg-elevated text-white"
+                ? "bg-bg-elevated text-text-primary"
                 : "text-text-muted hover:text-text-secondary"
             }`}
           >
@@ -368,7 +358,7 @@ export default function ResumePage() {
                   extraHeaderAction={
                     <button
                       onClick={r.importFromECs}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-3 py-1.5 text-xs font-semibold border border-border-hair transition-[background-color,color] duration-200"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-bg-surface hover:bg-bg-elevated text-text-secondary px-3 py-1.5 text-xs font-semibold border border-border-hair transition-[background-color,color] duration-200"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Import from EC Evaluator
@@ -496,7 +486,7 @@ export default function ResumePage() {
             {!showPreview && (
               <button
                 onClick={() => setShowPreview(true)}
-                className="lg:hidden inline-flex items-center gap-1.5 justify-center w-full rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-4 py-3 text-sm font-semibold border border-border-hair transition-[background-color,color] duration-200 print:hidden"
+                className="lg:hidden inline-flex items-center gap-1.5 justify-center w-full rounded-lg bg-bg-surface hover:bg-bg-elevated text-text-secondary px-4 py-3 text-sm font-semibold border border-border-hair transition-[background-color,color] duration-200 print:hidden"
               >
                 <Eye className="w-4 h-4" />
                 Show preview
