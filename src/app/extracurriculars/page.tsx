@@ -6,34 +6,9 @@ import { ECActivityList } from "@/components/ECActivityList";
 import { ECConversationPanel } from "@/components/ECConversation";
 import { ECResults } from "@/components/ECResults";
 import { useECEvaluator } from "@/hooks/useECEvaluator";
-import { useProfile } from "@/hooks/useProfile";
-
-const DISTINGUISHED_FIELDS = [
-  {
-    key: "firstAuthorPublication",
-    label: "First-author publication",
-    desc: "Peer-reviewed paper, conference talk, or magazine byline where you are the first author. Class assignments and school newspapers don't count.",
-  },
-  {
-    key: "nationalCompetitionPlacement",
-    label: "National competition placement",
-    desc: "Top-N placement at a USAMO/USAPhO/Intel ISEF/etc. national event, or comparable ranked qualifier. Regional and state placements do not count here.",
-  },
-  {
-    key: "founderWithUsers",
-    label: "Founder with real users",
-    desc: "Project, company, or nonprofit you started — with revenue, downloads, members, or another verifiable measure of traction. Not a side project no one used.",
-  },
-  {
-    key: "selectiveProgram",
-    label: "Selective program admit",
-    desc: "Admitted to a < 10% acceptance rate program: RSI, MITES, TASS, SSP, Bank of America Leaders, Telluride, Stanford OHS, etc. Camps and travel programs you paid into don't count.",
-  },
-] as const;
 
 export default function ExtracurricularsPage() {
   const ec = useECEvaluator();
-  const { profile, updateField } = useProfile();
 
   return (
     <>
@@ -52,8 +27,7 @@ export default function ExtracurricularsPage() {
               <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
                 Describe your extracurriculars in your own words. We&apos;ll ask
                 questions to understand your involvement, then tier-rate each
-                activity and your overall profile. Tier-1 candidates can be
-                self-attested below.
+                activity and your overall profile.
               </p>
             </div>
             {ec.conversations.length > 0 && (
@@ -82,47 +56,6 @@ export default function ExtracurricularsPage() {
             )}
           </div>
         </header>
-
-        {/* Distinguished EC self-attestation. CRITIQUE.md flagged this as a
-            missing feature — Tier-1 was being inferred from chat only,
-            users couldn't anchor the model. Each checkbox includes
-            calibration copy that discourages overstating. Writes to the
-            same profile fields toGraderProfile() reads from. */}
-        <section className="mb-10 sm:mb-12 rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-2">
-            Distinguished signals
-          </p>
-          <p className="text-[13px] text-text-muted max-w-[60ch] leading-relaxed mb-5">
-            Self-attest only when you can name a specific instance — first author of
-            <em> what paper</em>, founder of <em>what company with what users</em>.
-            These flags raise your tier ceiling on /chances and /list, so honest
-            calibration matters.
-          </p>
-          <fieldset>
-            <legend className="sr-only">Distinguished EC signals</legend>
-            <ul className="divide-y divide-border-hair">
-              {DISTINGUISHED_FIELDS.map((f) => {
-                const checked = profile[f.key as keyof typeof profile] === true;
-                return (
-                  <li key={f.key} className="py-3">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => updateField(f.key as keyof typeof profile, e.target.checked)}
-                        className="mt-0.5 w-4 h-4 rounded-sm border border-border-strong bg-bg-inset accent-[var(--accent)] cursor-pointer"
-                      />
-                      <div>
-                        <span className="text-[13px] font-medium text-text-primary">{f.label}</span>
-                        <p className="mt-0.5 text-[12px] text-text-muted leading-relaxed max-w-[70ch]">{f.desc}</p>
-                      </div>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-          </fieldset>
-        </section>
 
         {/* Two-column layout: activity list + conversation */}
         <ScrollReveal delay={0.1}>
