@@ -76,9 +76,9 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":10.3,"sat25":1480,"sat75":1540,"act25":32,"act75":35,"yield":40.4,"edAdmitRate":23.2,"avgGPACDS":3.84,"top10HSPercent":80,"pctTopTenClass":80,"studentFacultyRatio":8,"fourYearGradRate":80.9,"undergradPopulation":7407,"inStatePercent":18,"percentInternational":16.7,"demographics":{"white":29.6,"asian":24.8,"hispanic":11.9,"black":10.3,"multiracial":4.1,"international":16.7,"other":2.5},"genderBreakdown":{"male":43.2,"female":56.8}},
   },
   "George Washington University": {
-    cdsYear: "2023-2024",
-    sourcePdfUrl: "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2023-2024_Updated.pdf",
-    data: {"acceptanceRate":43.5,"sat25":1360,"sat75":1480,"act25":31,"act75":34,"yield":21.5,"edAdmitRate":64,"top10HSPercent":47.9,"pctTopTenClass":47.9,"studentFacultyRatio":12,"fourYearGradRate":79.5,"undergradPopulation":11387,"inStatePercent":4,"percentInternational":7.3,"demographics":{"white":48.2,"asian":14.7,"hispanic":13,"black":8.1,"multiracial":5.4,"international":7.3,"other":2.3},"genderBreakdown":{"male":36.4,"female":63.6}},
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2026-04/CDS-PDF-2025-2026.pdf",
+    data: {"acceptanceRate":47.1,"sat25":1310,"sat75":1450,"act25":31,"act75":34,"yield":18.9,"top10HSPercent":44.1,"pctTopTenClass":44.1,"studentFacultyRatio":13,"fourYearGradRate":82.5,"undergradPopulation":11495,"inStatePercent":2.6,"percentInternational":8.4,"demographics":{"white":44.1,"asian":16.2,"hispanic":14.6,"black":8.6,"multiracial":5.9,"international":8.4,"other":2.2},"genderBreakdown":{"male":36.7,"female":63.3}},
   },
   "Harvard University": {
     cdsYear: "2024-2025",
@@ -121,9 +121,9 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":41.3,"sat25":1290,"sat75":1440,"act25":25,"act75":32,"yield":29.7,"avgGPACDS":3.83,"top10HSPercent":40,"pctTopTenClass":40,"studentFacultyRatio":15,"fourYearGradRate":67.7,"undergradPopulation":28422,"inStatePercent":86,"percentInternational":2.3,"demographics":{"white":66.1,"asian":9.8,"hispanic":9.4,"black":5.9,"multiracial":5.1,"international":2.3,"other":1.3},"genderBreakdown":{"male":50,"female":50}},
   },
   "Northeastern University": {
-    cdsYear: "2020-2021",
-    sourcePdfUrl: "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2020-21.pdf",
-    data: {"acceptanceRate":20.5,"sat25":1430,"sat75":1540,"act25":33,"act75":35,"yield":20.9,"edAdmitRate":37.7,"top10HSPercent":76,"pctTopTenClass":76,"studentFacultyRatio":14,"undergradPopulation":19004,"inStatePercent":23,"percentInternational":15.9,"demographics":{"white":45.4,"asian":16.8,"hispanic":8.8,"black":4,"multiracial":5.5,"international":15.9,"other":3.6},"genderBreakdown":{"male":48.6,"female":51.4}},
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+    data: {"acceptanceRate":5.2,"sat25":1450,"sat75":1520,"act25":33,"act75":35,"yield":53.8,"edAdmitRate":43,"top10HSPercent":68.8,"pctTopTenClass":68.8,"studentFacultyRatio":16,"undergradPopulation":22695,"inStatePercent":29,"percentInternational":13.1,"demographics":{"white":40.6,"asian":22.4,"hispanic":10.4,"black":4.8,"multiracial":6.8,"international":13.1,"other":1.8},"genderBreakdown":{"male":42.8,"female":57}},
   },
   "Northwestern University": {
     cdsYear: "2024-2025",
@@ -156,9 +156,9 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":3.8,"sat25":1520,"sat75":1570,"act25":34,"act75":36,"yield":79.9,"avgGPACDS":3.9,"top10HSPercent":97,"pctTopTenClass":97,"studentFacultyRatio":10,"fourYearGradRate":45.3,"undergradPopulation":7346,"inStatePercent":44,"percentInternational":13.1,"demographics":{"white":23.6,"asian":30.4,"hispanic":15.7,"black":6.5,"multiracial":9,"international":13.1,"other":1},"genderBreakdown":{"male":49.1,"female":50.9}},
   },
   "Stevens Institute of Technology": {
-    cdsYear: "2022-2023",
-    sourcePdfUrl: "https://assets.stevens.edu/mviowpldu823/3wAiIgs24xHKlIK2y8Yof8/53f4c59735935f037168207292fb5c65/CDS_2022-2023_Completed_PDF.pdf",
-    data: {"acceptanceRate":46.2,"sat25":1380,"sat75":1510,"act25":31,"act75":34,"yield":25.4,"edAdmitRate":59,"avgGPACDS":3.88,"top10HSPercent":58,"pctTopTenClass":58,"studentFacultyRatio":11,"fourYearGradRate":65.4,"undergradPopulation":4070,"inStatePercent":69,"percentInternational":2.9,"demographics":{"white":50.5,"asian":18.8,"hispanic":15.2,"black":2.3,"multiracial":3.7,"international":2.9,"other":6.6},"genderBreakdown":{"male":67.9,"female":32.1}},
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://assets.stevens.edu/mviowpldu823/3UEOxHKHu8NfqyLxwqBmZP/86f651ed176aae469c805a50cee0d4ee/CDS-2025-2026-PDF_3.12_updated.pdf",
+    data: {"acceptanceRate":50.7,"sat25":1370,"sat75":1470,"act25":32,"act75":34,"yield":20.7,"edAdmitRate":69.8,"avgGPACDS":3.83,"top10HSPercent":47.5,"pctTopTenClass":47.5,"studentFacultyRatio":11,"fourYearGradRate":74.6,"undergradPopulation":4206,"inStatePercent":65.2,"percentInternational":4.1,"demographics":{"white":43.8,"asian":20.5,"hispanic":17.9,"black":3.2,"multiracial":4.6,"international":4.1,"other":5.7},"genderBreakdown":{"male":66.2,"female":33.7}},
   },
   "Swarthmore College": {
     cdsYear: "2025-2026",
@@ -266,9 +266,9 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":5.9,"sat25":1510,"sat75":1560,"act25":34,"act75":35,"yield":61.2,"edAdmitRate":15.4,"avgGPACDS":3.89,"top10HSPercent":90,"pctTopTenClass":90,"studentFacultyRatio":8,"fourYearGradRate":89.8,"undergradPopulation":7221,"inStatePercent":12,"percentInternational":11.2,"demographics":{"white":39,"asian":18.5,"hispanic":11.4,"black":9.2,"multiracial":5.7,"international":11.2,"other":0.7},"genderBreakdown":{"male":47.6,"female":52.4}},
   },
   "Virginia Tech": {
-    cdsYear: "2023-2024",
-    sourcePdfUrl: "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf",
-    data: {"acceptanceRate":57,"sat25":1240,"sat75":1420,"act25":27,"act75":32,"yield":26.7,"avgGPACDS":4.06,"studentFacultyRatio":17,"fourYearGradRate":68.9,"undergradPopulation":30507,"inStatePercent":63,"percentInternational":4.5,"demographics":{"white":58.1,"asian":12.7,"hispanic":10.3,"black":6.2,"multiracial":5.5,"international":4.5,"other":2.6},"genderBreakdown":{"male":56.5,"female":43.3}},
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/25-26/2025-2026-CDS.xlsx",
+    data: {"acceptanceRate":54.6,"sat25":1280,"sat75":1450,"act25":28,"act75":32,"yield":22.6,"avgGPACDS":4.06,"studentFacultyRatio":17,"fourYearGradRate":68.9,"undergradPopulation":31536,"inStatePercent":69,"percentInternational":5.4,"demographics":{"white":55.3,"asian":14.2,"hispanic":10.1,"black":5.7,"multiracial":6,"international":5.4,"other":0.1},"genderBreakdown":{"male":56.2,"female":43.5}},
   },
   "Wake Forest University": {
     cdsYear: "2024-2025",
