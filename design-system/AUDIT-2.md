@@ -496,5 +496,100 @@ duplicated below.
   in two arrays and could drift. Promote to a single
   `src/lib/tier-meta.ts` consumed by both.
 
+---
 
+## `/profile`
+
+Files swept: `src/app/profile/page.tsx`,
+`src/components/SaveIndicator.tsx`, `src/components/SectionNav.tsx`,
+`src/components/TranscriptUpload.tsx` (TranscriptUpload covered
+again on `/gpa`).
+
+### BLOCK
+
+- [RESOLVED in eb6c1ce] CRITIQUE BLOCK: "No `<form>`, no
+  `<fieldset>`/`<legend>`." Verified — `profile/page.tsx:185`
+  wraps everything in `<form onSubmit={(e) => e.preventDefault()}>`
+  and every section is a `<fieldset>` with `<legend className="sr-only">`
+  (e.g. `:188-192`, `:264-268`, `:357-361`, etc.).
+- [RESOLVED in 97d34ed / `profile/page.tsx:89`] CRITIQUE BLOCK:
+  "Save state never shown." `<SaveIndicator storageKey={…} />` is
+  now mounted in the masthead; verified rendering above the H1.
+- [WONT-FIX] CRITIQUE called out a "Missing brief feature —
+  distinguished-EC checkboxes." User direction is the opposite —
+  the EC Evaluator owns tier-1 inference and the self-attestation
+  block was deliberately removed (commit `abd6851`). Verified by
+  `grep` — no `firstAuthorPublication / nationalCompetition /
+  founderWithUsers / selectiveProgram` references in
+  `profile/page.tsx`.
+- [NEW BLOCK] **Hardcoded `text-white` breaks in light mode.**
+  - `profile/page.tsx:130`: completeness count
+    `<p className="font-mono ... text-white leading-none">{completed}…</p>`.
+  - `:366`: SAT composite `<span className="text-white font-bold">{satComposite}</span>`.
+  - `:412`: ACT composite `<span className="text-white font-bold">{actComposite}</span>`.
+  All three are page-level numerics. In light mode, `text-white`
+  on `--bg-surface (oklch(97% 0.004 250))` is white-on-near-white
+  — invisible. Replace with `text-text-primary`.
+- [NEW BLOCK] **Completeness bar track + fill use raw blue ramps
+  and produce an invisible track.**
+  `profile/page.tsx:134`: `<div className="h-1.5 rounded-full
+  bg-bg-surface overflow-hidden">` — track is the same color as
+  the parent fieldset (`bg-bg-surface`), so the track is
+  invisible. Then `:136`: `bg-gradient-to-r from-blue-500 to-blue-400`
+  — raw Tailwind blue gradient instead of `--accent`. MASTER.md
+  anti-patterns: "No gradient text" implies "no decorative
+  gradients" — this fill is a decorative blue gradient where a
+  flat `var(--accent)` would suffice. Track → `bg-bg-inset`,
+  fill → `bg-[var(--accent)]`, drop the gradient.
+
+### WARN
+
+- [RESOLVED in eb6c1ce / a74c68a] CRITIQUE WARN: "Section ordering
+  is wrong (Major sits awkwardly above academics; ECs after essays)."
+  Current order at `profile/page.tsx`: Basic (`:188`) → GPA
+  (`:264`) → Coursework via `<AdvancedCourseworkSection>`
+  (`:348`) → SAT (`:357`) → ACT (`:403`) → ECs (`:471`) →
+  Essay (`:505`) → Major (`:545`) → Summary (`:594`). Major now
+  sits after academics + ECs + essays as CRITIQUE wanted.
+- [RESOLVED in current `profile/page.tsx:118`] CRITIQUE WARN:
+  "TranscriptUpload exists but is not mounted on /profile."
+  Component is now mounted as the first content block under the
+  masthead.
+- [RESOLVED in 6ac1a76] CRITIQUE WARN: "Completeness double-counts
+  (`APs` chip and `Coursework` chip share the same
+  `advancedCoursework` signal)." `profile/page.tsx:55-67` now has
+  five sections — Coursework collapsed into a single chip.
+- [NEW WARN] **`SourceBadge` mixes accent token with raw blue
+  ramp.** `profile/page.tsx:20-27`: outer pill is
+  `bg-accent-soft text-accent-text/70 border-accent-line`
+  (correct), but inside is `<span className="w-1 h-1 rounded-full
+  bg-blue-400" />`. Pick one — use `bg-[var(--accent)]` for the
+  dot.
+- [NEW WARN] **Loading spinner uses `border-blue-400`.**
+  `profile/page.tsx:37`: `<div className="… border-blue-400
+  border-t-transparent animate-spin" />`. Should be
+  `border-[var(--accent)]`.
+- [NEW WARN] **Same `inputClass` typo as `/chances` + `/colleges`.**
+  `profile/page.tsx:17`: `focus:border-blue-500/50 focus:
+  focus:ring-accent-line`. The bare `focus:` is dropped, and
+  `focus:border-blue-500/50` is off-system. Three pages use this
+  same broken `inputClass` — promote to a shared utility once
+  fixed.
+- [NEW WARN] **Over-scale warnings use `text-rose-400`** at
+  `:295, :315`. Same systemic issue as `/chances` —
+  `--negative-fg` token or reuse `--tier-unlikely-fg`.
+- [NEW WARN] **Coursework AP/IB score colors use raw emerald /
+  amber** (`profile/page.tsx:701-708`).
+
+### INFO
+
+- [NEW INFO] `<motion.span>` chip animations at `:144-160` add
+  per-chip staggered entry animation that triggers on every
+  Profile re-render — even when only an unrelated input changed.
+  Mild perf cost; consider `framer-motion`'s `LayoutGroup` or
+  removing the entry animation since the chips persist.
+- [NEW INFO] "Reset to calculated values" button at `:170` has
+  no confirmation dialog. If the user has typed values, this
+  silently overwrites them. Mild — typed values would be re-typeable
+  — but echoes the /resume autofill-reset concern.
 
