@@ -220,6 +220,17 @@ function bandWidthForConfidence(c: ConfidenceTier, testOptionalWiden: boolean): 
   return testOptionalWiden ? { lo: 0.45, hi: 1.65 } : { lo: 0.55, hi: 1.50 };
 }
 
+// ── Soft cap ────────────────────────────────────────────────────────────────
+// When the multiplier stack pushes pre-cap chance above the bracket ceiling,
+// hard-clipping to the cap throws away the rank ordering between strong
+// profiles. The soft cap pins below the bracket value but lets a tapered
+// excess through above it, so two applicants who pre-cap at 33% vs 65%
+// don't both display the same number. 0.20 chosen empirically: 0.25 starts
+// inflating sub-5% schools back into the over-stated zone; 0.15 barely
+// differentiates above the cap. With 0.20 a Georgetown 65% pre-cap profile
+// lands at ~35% (vs 28% hard cap), preserving ~6 points of rank info.
+const SOFT_CAP_TAPER = 0.20;
+
 // ── Data freshness ──────────────────────────────────────────────────────────
 
 const STALE_YEAR_THRESHOLD = 2;
@@ -450,7 +461,10 @@ function computeHolisticEliteChance(
   const totalMult = statMult * ecMult * essayMult;
   let mid = headlineRate * totalMult;
   const capApplied = mid > cap;
-  if (capApplied) mid = cap;
+  // Soft cap (taper 0.20) preserves rank-ordering above the ceiling so two
+  // strong holistic-elite profiles (e.g. one pre-cap 50%, one pre-cap 80%)
+  // don't both display the same number. See SOFT_CAP_TAPER comment above.
+  if (capApplied) mid = cap + (mid - cap) * SOFT_CAP_TAPER;
   mid = clamp(mid, 0.5, 95);
 
   // Default Tier 2 range = ±20%. Widen to ±30% when test-optional with no
@@ -770,7 +784,13 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   const capLookupRate = isEdLikePlan ? baseResult.rate : effectiveAcceptanceRate(college);
   const cap = getChanceCap(capLookupRate);
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
-  if (rawMid > capValue) rawMid = capValue;
+  // Soft cap: hard clip below the cap, gentle compression above. Preserves
+  // rank-ordering between strong profiles at sub-15% schools so two
+  // applicants who project 33% vs 65% pre-cap don't both display the same
+  // number. Taper 0.20 keeps the empirical ceiling close to the bracket
+  // value while letting an extra ~6 points of differentiation through.
+  const capApplied = rawMid > capValue;
+  if (capApplied) rawMid = capValue + (rawMid - capValue) * SOFT_CAP_TAPER;
   const nationalMid = clamp(rawMid, 0.5, 95);
 
   // 11b. School-specific history blend. Sandbox feature: when imported feeder
@@ -868,7 +888,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     ai,
     testOptionalNoScore,
     capValue,
-    capApplied: baseResult.rate * dampened > capValue,
+    capApplied,
     capBracket: capBracketLabel(effectiveAr, isEdLikePlan),
     finalChance: chance.mid,
     schoolBlend,
