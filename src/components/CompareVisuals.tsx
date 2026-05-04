@@ -196,7 +196,7 @@ export function MetricBar({
                 }`}>
                   {entry.value > 0 ? format(entry.value) : "—"}
                 </span>
-                {isBest && <Crown className="w-3 h-3 text-amber-300/80" />}
+                {isBest && <Crown className="w-3 h-3 text-tier-target-fg" />}
               </div>
             </div>
           </div>
@@ -265,7 +265,7 @@ export function RangeBar({
                 <span className="text-[12px] font-mono tabular-nums font-bold text-white">
                   {format(entry.low, entry.high)}
                 </span>
-                {isBest && <Crown className="w-3 h-3 text-amber-300/80" />}
+                {isBest && <Crown className="w-3 h-3 text-tier-target-fg" />}
               </div>
             </div>
           </div>
@@ -296,7 +296,7 @@ export function MetricCard({
     <div
       className={`rounded-xl p-3.5 transition-all duration-200 ${
         isBest
-          ? "bg-emerald-500/[0.05] border border-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.06)]"
+          ? "bg-tier-safety-soft border border-tier-safety-fg/30"
           : "bg-bg-surface border border-border-hair"
       }`}
     >
@@ -304,7 +304,7 @@ export function MetricCard({
         <p className={`text-xl sm:text-2xl font-bold font-mono tabular-nums leading-none ${color}`}>
           {value}
         </p>
-        {isBest && <Crown className="w-3 h-3 text-amber-300/70 shrink-0 mt-1" />}
+        {isBest && <Crown className="w-3 h-3 text-tier-target-fg shrink-0 mt-1" />}
       </div>
       <p className="text-[10px] text-text-muted mt-1.5 uppercase tracking-[0.08em] leading-snug">
         {label}

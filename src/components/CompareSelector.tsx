@@ -115,7 +115,8 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
               <button
                 type="button"
                 onClick={() => onRemove(c.name)}
-                className="absolute top-2 right-2 w-6 h-6 rounded-full bg-bg-surface flex items-center justify-center text-text-muted hover:text-red-300 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-[opacity,color,background-color] duration-200"
+                aria-label="Remove from comparison"
+                className="absolute top-2 right-2 w-7 h-7 rounded-full border border-border-hair bg-bg-surface flex items-center justify-center text-text-muted hover:text-tier-unlikely-fg hover:bg-tier-unlikely-soft hover:border-tier-unlikely-fg/30 transition-[color,background-color,border-color] duration-200"
                 aria-label={`Remove ${c.name}`}
               >
                 <X className="w-3 h-3" />
@@ -145,9 +146,9 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 rounded-lg bg-amber-500/[0.06] border border-amber-500/20 px-3 py-2"
+          className="flex items-center gap-2 rounded-md bg-tier-target-soft border border-tier-target-fg/30 px-3 py-2"
         >
-          <AlertCircle className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+          <AlertCircle className="w-3.5 h-3.5 text-tier-target-fg shrink-0" />
           <p className="text-[12px] text-amber-200">
             Maximum of {maxSlots} schools can be compared at once. Remove one to add another.
           </p>

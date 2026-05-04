@@ -33,7 +33,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
         </h3>
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-white/10 transition-[background-color,color,border-color,opacity] duration-200"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border-hair bg-bg-surface px-3 py-1.5 text-xs font-semibold text-text-secondary hover:bg-bg-elevated hover:text-text-primary transition-[background-color,color,border-color] duration-200"
         >
           <Plus className="w-3.5 h-3.5" />
           Add Activity
@@ -41,11 +41,11 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
       </div>
 
       {conversations.length === 0 && (
-        <div className="rounded-md border border-dashed border-white/10 p-8 text-center">
+        <div className="rounded-md border border-dashed border-border-hair p-8 text-center">
           <p className="text-text-muted text-sm mb-3">No activities yet</p>
           <button
             onClick={onAdd}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 transition-[background-color,color,border-color,opacity] duration-200"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-strong)] transition-[background-color] duration-200"
           >
             <Plus className="w-4 h-4" />
             Describe Your First Activity
@@ -66,10 +66,10 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
               animate={{ opacity: 1, y: 0 }}
               className={`group relative rounded-xl border p-3 cursor-pointer transition-[background-color,color,border-color,opacity] duration-200 ${
                 isDisabled
-                  ? "border-border-hair bg-white/[0.01] opacity-50 hover:opacity-70"
+                  ? "border-border-hair bg-bg-inset opacity-60 hover:opacity-80"
                   : isActive
-                  ? "border-white/20 bg-white/10"
-                  : "border-white/10 bg-bg-surface hover:bg-bg-surface"
+                  ? "border-accent-line bg-accent-soft"
+                  : "border-border-hair bg-bg-surface hover:bg-bg-elevated"
               }`}
               onClick={() => onSelect(conv.id)}
             >
@@ -79,11 +79,11 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                     {isDisabled ? (
                       <EyeOff className="w-3.5 h-3.5 text-text-faint shrink-0" />
                     ) : conv.done ? (
-                      <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                      <Check className="w-3.5 h-3.5 text-tier-safety-fg shrink-0" />
                     ) : (
                       <MessageSquare className="w-3.5 h-3.5 text-text-muted shrink-0" />
                     )}
-                    <span className={`text-sm font-medium truncate ${isDisabled ? "text-text-muted line-through decoration-zinc-700" : "text-white"}`}>
+                    <span className={`text-sm font-medium truncate ${isDisabled ? "text-text-muted line-through decoration-text-faint" : "text-text-primary"}`}>
                       {conv.title}
                     </span>
                   </div>
@@ -92,17 +92,17 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                     {isDisabled ? (
                       <span className="text-text-faint">Excluded from evaluation</span>
                     ) : conv.done ? (
-                      <span className="text-green-400/70">Ready to evaluate</span>
+                      <span className="text-tier-safety-fg">Ready to evaluate</span>
                     ) : null}
                   </div>
                 </div>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-[opacity] duration-200">
+                <div className="flex items-center gap-0.5 opacity-60 hover:opacity-100 focus-within:opacity-100 transition-[opacity] duration-200">
                   {onToggleDisabled && (
                     <button
                       onClick={(e) => { e.stopPropagation(); onToggleDisabled(conv.id); }}
                       aria-label={isDisabled ? "Re-enable activity" : "Disable activity"}
                       title={isDisabled ? "Re-enable this activity" : "Disable — keep but skip in evaluation"}
-                      className="p-1 rounded-lg hover:bg-white/10 text-text-muted hover:text-text-primary transition-[background-color,color] duration-200"
+                      className="p-1 rounded-sm hover:bg-bg-elevated text-text-muted hover:text-text-primary transition-[background-color,color] duration-200"
                     >
                       {isDisabled
                         ? <Eye className="w-3.5 h-3.5" />
@@ -112,7 +112,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemove(conv.id); }}
                     aria-label="Delete activity"
-                    className="p-1 rounded-lg hover:bg-red-500/15 text-text-muted hover:text-red-300 transition-[background-color,color] duration-200"
+                    className="p-1 rounded-sm hover:bg-tier-unlikely-soft text-text-muted hover:text-tier-unlikely-fg transition-[background-color,color] duration-200"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -134,7 +134,7 @@ export const ECActivityList: React.FC<ECActivityListProps> = ({
                       onChange={(e) =>
                         onSetResumeCategory(conv.id, e.target.value as ResumeCategory)
                       }
-                      className="flex-1 min-w-0 text-[11px] bg-bg-inset border border-border-strong rounded-md px-2 py-1 text-text-secondary focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
+                      className="flex-1 min-w-0 text-[11px] bg-bg-inset border border-border-strong rounded-md px-2 py-1 text-text-secondary focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200 appearance-none cursor-pointer"
                     >
                       {(Object.entries(RESUME_CATEGORY_LABELS) as [ResumeCategory, string][]).map(
                         ([key, label]) => (

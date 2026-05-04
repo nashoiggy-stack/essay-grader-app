@@ -984,7 +984,7 @@ function CostTab({ colleges }: { colleges: readonly College[] }) {
                 value={c.strongMeritAid ? "Yes" : "No"}
                 label="Merit scholarships"
                 isBest={c.strongMeritAid === true}
-                color={c.strongMeritAid ? "text-emerald-300" : "text-text-muted"}
+                color={c.strongMeritAid ? "text-tier-safety-fg" : "text-text-muted"}
               />
             </div>
           ))}
