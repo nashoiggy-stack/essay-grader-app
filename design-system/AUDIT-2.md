@@ -899,4 +899,115 @@ Files swept: `src/app/compare/page.tsx`,
   scrolling content this is functional. OK; flagged so reviewers
   don't mistake it for the banned decorative backdrop-blur.
 
+---
+
+## `/essay`
+
+Files swept: `src/app/essay/page.tsx`, `src/components/EssayInput.tsx`,
+`src/components/FeedbackTab.tsx`, `src/components/CommonAppTab.tsx`,
+`src/components/ScoreOverview.tsx`, `src/components/LineNotesTab.tsx`,
+`src/components/ChatTab.tsx`, `src/components/TabNavigation.tsx`,
+`src/components/InlineEditor.tsx`, `src/components/EssayHistorySidebar.tsx`.
+
+### BLOCK
+
+- [RESOLVED in current `essay/page.tsx:123-138`] CRITIQUE BLOCK:
+  "ContainerScroll 3D hero is a cosmic-redesign holdover."
+  Replaced with the standard masthead: eyebrow + h1 + standfirst.
+  No more 3D tilt, no gradient text, no bouncy easing, no
+  `bg-[#0a0a14]`. Confirmed by inline comment at `:123-124`.
+- [RESOLVED in current `EssayInput.tsx:53, 107-108`] CRITIQUE
+  BLOCK: "Textarea has visible `<label>` but no
+  `htmlFor`/`id`/`aria-label`/`aria-describedby`." Label has
+  `htmlFor="essay-textarea"` (`:53`); textarea has matching
+  `id="essay-textarea"` (`:107`) and `aria-describedby={essayText
+  ? "essay-word-count" : undefined}` (`:108`).
+- [RESOLVED in current `EssayInput.tsx:86-100`] CRITIQUE BLOCK:
+  "Word-count pill is not `role="status"` `aria-live="polite"`."
+  Wired explicitly: `role="status" aria-live="polite"` (`:88-89`).
+- [RESOLVED in current `EssayInput.tsx:117-135`] CRITIQUE BLOCK:
+  "Drop zone is `motion.div` with `onClick` — no role, no
+  tabIndex, no Enter/Space handling." Drop zone now has
+  `role="button"`, `tabIndex={0}`, `aria-label`, and
+  `onKeyDown` handling Enter+Space.
+- [NEW BLOCK] **Tab panels still don't render the matching
+  `role="tabpanel"` / `id="tabpanel-${id}"`.** CRITIQUE called
+  this out as a half-wired ARIA contract; verified still broken.
+  `TabNavigation.tsx:39-41` declares `role="tab"` and
+  `aria-controls="tabpanel-${id}"` on every tab, but
+  `essay/page.tsx`, `FeedbackTab.tsx`, `CommonAppTab.tsx`,
+  `LineNotesTab.tsx`, `ChatTab.tsx` never render the matching
+  `id`/`role="tabpanel"`. `aria-controls` points into the void.
+  Wrap each tab's content in
+  `<div role="tabpanel" id="tabpanel-${id}" aria-labelledby="tab-${id}">`.
+- [NEW BLOCK] **Grade button is locked dark and `bg-blue-600
+  text-white`.** `EssayInput.tsx:160`: `bg-blue-600 px-7 py-3
+  text-sm font-semibold text-white`. Then `:163-167` animates a
+  three-stop blue-600 gradient that's actually solid (all three
+  stops are the same color) — pointless animation that still
+  burns a `requestAnimationFrame` while loading. Replace with
+  `bg-[var(--accent)] text-[var(--accent-fg)]` and drop the
+  decorative gradient.
+- [NEW BLOCK] **`LineNotesTab.tsx:29` uses a left-border
+  accent stripe.** `<p className="… border-l-2 border-accent-line
+  pl-3">…</p>`. MASTER.md anti-patterns: "No `border-left: Npx
+  solid color` accent stripes." This is exactly that. Drop the
+  border, indent the quote with padding only, or use a
+  blockquote-ish setup with no left rail.
+
+### WARN
+
+- [OPEN] **`FeedbackTab` Quick Scores duplicate `CommonAppTab`
+  and `ScoreOverview`.** CRITIQUE flagged this. Verified —
+  `FeedbackTab.tsx:31` still renders `<h4>Quick Scores</h4>` plus
+  per-criterion score cards (`:53-65`); `CommonAppTab.tsx:21-22`
+  renders the same scores via `ScoreRow`; `ScoreOverview.tsx`
+  shows them again. Three places, same numbers. Drop the
+  Quick-Scores block from `FeedbackTab` and let it focus on
+  feedback prose.
+- [OPEN] **"Line Notes" tab name vs content mismatch.** CRITIQUE
+  flagged: tab labeled like overlays, renders stacked cards.
+  Verified at `LineNotesTab.tsx:11-41` — it's a stacked list of
+  blockquote cards. Either rename the tab to "Line-by-line notes"
+  (matches the rendering) or move the rendering into the inline
+  editor as overlay annotations.
+- [NEW WARN] **`Card3D` 3D-tilt wrapper around the textarea
+  card.** `EssayInput.tsx:50`: `<Card3D … glowColor="rgba(99,
+  102, 241, 0.12)">`. The Linear-derived contract is "engineered,
+  not decorated" — a 3D tilt-on-mouse-move on the primary essay
+  input is decoration. The hardcoded RGBA glow color is also
+  a leftover indigo. Either wrap in a plain `<div className=
+  "bg-bg-surface rounded-md …">` or document a deliberate
+  page-level override.
+- [NEW WARN] **Animated dividers around the Results header.**
+  `essay/page.tsx:227, 229`: `bg-gradient-to-r from-transparent
+  via-blue-500/30 to-transparent`. Decorative gradient using a
+  raw blue ramp — replace with a flat `border-t border-border-hair`.
+- [NEW WARN] **Save flash chip uses raw emerald.**
+  `essay/page.tsx:236`: `bg-emerald-500/20 text-emerald-400
+  ring-emerald-500/30` for the "Saved" toast. Same pattern as
+  on /list. Use `--tier-safety-soft / --tier-safety-fg`.
+- [NEW WARN] **Copy button "copied" state uses raw emerald.**
+  `EssayInput.tsx:62`: `bg-emerald-500/15 text-emerald-300
+  ring-emerald-500/30`. text-emerald-300 fails 4.5:1 in light
+  mode. Same fix.
+- [NEW WARN] **`LineNotesTab.tsx:27` uses `rounded-xl`.**
+  MASTER.md radii: `rounded-md` for cards (6px), `rounded-lg`
+  (12px) for "Heroes, big cards." A line-note quote card is
+  neither hero nor big card — should be `rounded-md`.
+
+### INFO
+
+- [NEW INFO] `motion.button whileHover={{ scale: 1.04 }}
+  whileTap={{ scale: 0.96 }}` repeated across save / export /
+  grade / file-upload buttons in `essay/page.tsx` and
+  `EssayInput.tsx`. Scale-on-hover is fine (transform-only) but
+  the repeated 1.04/1.02 inconsistency is drift — pick one
+  hover scale and one tap scale, define them in `motion.ts` or
+  similar.
+- [NEW INFO] `motion.div` "Results" wrapper at `essay/page.tsx:218`
+  uses `transition={{ duration: 0.5 }}` — slower than MASTER's
+  240ms motion baseline for "modal in/out, page transitions."
+  Bring closer to 240-300ms.
+
 
