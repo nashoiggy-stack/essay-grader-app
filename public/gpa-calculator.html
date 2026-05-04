@@ -1252,6 +1252,40 @@
       if (cloudState) restoreState(cloudState);
     });
   }
+
+  // Height-sync — broadcast the iframe's actual content height to its
+  // parent so /gpa can grow / shrink with the calculator instead of
+  // locking at a brittle fixed height. Throttled with rAF.
+  (function setupHeightSync() {
+    if (typeof window === 'undefined' || window.parent === window) return;
+    var lastH = 0;
+    var pending = false;
+    function postHeight() {
+      pending = false;
+      var h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0
+      );
+      if (Math.abs(h - lastH) < 2) return;
+      lastH = h;
+      try { window.parent.postMessage({ type: 'gpa-height', h: h }, '*'); }
+      catch (_) {}
+    }
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(postHeight);
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      var ro = new ResizeObserver(schedule);
+      ro.observe(document.documentElement);
+    } else {
+      window.addEventListener('resize', schedule);
+    }
+    setTimeout(schedule, 60);
+    document.addEventListener('input', schedule, true);
+    document.addEventListener('click', schedule, true);
+  })();
 </script>
 
 </body>

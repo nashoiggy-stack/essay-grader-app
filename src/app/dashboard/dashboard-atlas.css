@@ -84,15 +84,20 @@
 }
 .ae-name {
   font-family: var(--ae-sans);
-  font-size: clamp(38px, 5.4vw, 68px);
-  font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: -0.025em;
+  /* Fixed-rem per MASTER §Typography (no fluid type on app UI; clamp is
+     reserved for the landing hero). 32px → 40px at sm breakpoint. */
+  font-size: 2rem; /* 32px */
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.022em;
   margin: 0 0 18px;
   text-wrap: balance;
 }
+@media (min-width: 640px) {
+  .ae-name { font-size: 2.5rem; /* 40px */ }
+}
 .ae-tagline {
-  font-size: clamp(15px, 1.2vw, 17px);
+  font-size: 0.9375rem; /* 15px — matches MASTER --text-base */
   line-height: 1.5;
   color: var(--ink-text-soft);
   margin: 0; max-width: 640px;
@@ -111,7 +116,7 @@
   gap: 1px;
   background: var(--ink-line);
   border: 1px solid var(--ink-line);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 .ae-stat {
@@ -162,9 +167,9 @@
   margin-bottom: 8px;
 }
 .ae-section-title {
-  font-family: var(--ae-sans); font-weight: 400;
-  font-size: clamp(24px, 2.4vw, 32px);
-  letter-spacing: -0.02em;
+  font-family: var(--ae-sans); font-weight: 600;
+  font-size: 1.375rem; /* 22px — MASTER --text-lg page subhead */
+  letter-spacing: -0.022em;
   line-height: 1.1;
   margin: 0;
   text-wrap: balance;
@@ -184,7 +189,7 @@
   display: grid; grid-template-columns: 1fr; gap: 1px;
   background: var(--ink-line);
   border: 1px solid var(--ink-line);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 @media (min-width: 920px) {
@@ -378,11 +383,14 @@
 }
 .ae-empty-title {
   margin: 0;
-  font-size: clamp(1.5rem, 1rem + 1.6vw, 2rem);
+  font-size: 1.5rem; /* 24px */
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
   color: var(--ink-text);
+}
+@media (min-width: 640px) {
+  .ae-empty-title { font-size: 1.875rem; /* 30px — MASTER --text-xl */ }
 }
 .ae-empty-sub {
   margin: 12px 0 0;
@@ -399,7 +407,7 @@
 
 /* ── List layout ──────────────────────────────────────────────── */
 .ae-list-table {
-  border: 1px solid var(--ink-line); border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--ink-line); border-radius: 6px; overflow: hidden;
 }
 .ae-list-row {
   display: grid;
@@ -419,7 +427,7 @@
 .ae-mono { font-family: var(--ae-mono); font-size: 12px; color: var(--ink-text-soft); }
 .ae-list-tool { display: flex; align-items: center; gap: 10px; }
 .ae-list-tool-icon {
-  width: 28px; height: 28px; border-radius: 8px;
+  width: 28px; height: 28px; border-radius: 6px;
   background: rgba(255,255,255,0.04); border: 1px solid var(--ink-line);
   display: grid; place-items: center;
 }
@@ -502,7 +510,7 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   background: var(--ink-line);
   border: 1px solid var(--ink-line);
-  border-radius: 8px; overflow: hidden;
+  border-radius: 6px; overflow: hidden;
 }
 .ae-tier {
   background: var(--ink-surface);

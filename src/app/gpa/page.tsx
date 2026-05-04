@@ -1,16 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TranscriptUpload } from "@/components/TranscriptUpload";
 import { useBackground } from "@/components/BackgroundProvider";
 
+const IFRAME_FALLBACK_HEIGHT = 1600;
+
 export default function GPAPage() {
   const [iframeKey, setIframeKey] = useState(0);
+  const [iframeHeight, setIframeHeight] = useState<number>(IFRAME_FALLBACK_HEIGHT);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const { background } = useBackground();
   const iframeColorScheme: "light" | "dark" =
     background === "light" ? "light" : "dark";
 
   const reloadIframe = () => setIframeKey((k) => k + 1);
+
+  // postMessage-based height sync. The iframe payload posts
+  // { type: "gpa-height", h: scrollHeight } whenever its content height
+  // changes; we mirror it onto the iframe element so the page can grow /
+  // shrink with the calculator instead of locking at a brittle 2400px.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      // Only accept messages whose source is this iframe's contentWindow.
+      // The same-origin check via iframeRef.current.contentWindow lets us
+      // avoid trusting cross-origin frames.
+      if (!iframeRef.current || e.source !== iframeRef.current.contentWindow) return;
+      const data = e.data as { type?: string; h?: number };
+      if (data?.type !== "gpa-height" || typeof data.h !== "number") return;
+      const next = Math.max(400, Math.min(8000, Math.round(data.h)));
+      setIframeHeight(next);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   return (
     <main id="main-content" className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
@@ -128,12 +151,13 @@ export default function GPAPage() {
         </h2>
         <div className="border border-border-hair rounded-md overflow-hidden">
           <iframe
+            ref={iframeRef}
             key={`${iframeKey}-${iframeColorScheme}`}
             src={`/gpa-calculator.html?theme=${iframeColorScheme}`}
             className="w-full block bg-transparent"
             style={{
-              height: "2400px",
-              minHeight: "100vh",
+              height: `${iframeHeight}px`,
+              minHeight: "60vh",
               colorScheme: iframeColorScheme,
               border: 0,
             }}
