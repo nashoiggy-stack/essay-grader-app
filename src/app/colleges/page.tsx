@@ -114,16 +114,16 @@ export default function CollegesPage() {
         </motion.header>
 
         {/* Always-visible disclaimer — kept editorial, methodology one click away. */}
-        <div className="mb-8 border-y border-amber-500/[0.18] py-3">
-          <p className="text-[12px] text-amber-200/85 leading-relaxed">
-            <span className="font-semibold text-amber-200">Estimates only.</span>{" "}
+        <div className="mb-8 border-y border-amber-500/[0.30] dark:border-amber-500/[0.18] py-3">
+          <p className="text-[12px] text-amber-900/85 dark:text-amber-200/85 leading-relaxed">
+            <span className="font-semibold text-amber-900 dark:text-amber-200">Estimates only.</span>{" "}
             Chance estimates use data-informed multipliers calibrated against published research —
             a strategic framework, not a prediction. Estimates may be inaccurate for
             state-residency-dependent schools, program-specific admissions, and schools where
             data is sparse.{" "}
             <Link
               href="/methodology"
-              className="font-semibold text-amber-100 underline decoration-amber-400/40 underline-offset-2 hover:text-amber-50"
+              className="font-semibold text-amber-950 dark:text-amber-100 underline decoration-amber-700/50 dark:decoration-amber-400/40 underline-offset-2 hover:text-amber-900 dark:hover:text-amber-50"
             >
               Read our methodology →
             </Link>
