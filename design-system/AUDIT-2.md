@@ -709,3 +709,92 @@ Files swept: `src/app/dashboard/page.tsx`,
   Once enough time has passed since Orbital was removed, drop the
   migration to keep this hook leaner. Acceptable now.
 
+---
+
+## `/strategy`
+
+Files swept: `src/app/strategy/page.tsx`,
+`src/components/strategy/{StrategyAtlas,SnapshotCard,DreamSchoolCard,
+ActionPlanCard,SpikeCard,GapsCard,SchoolListCard,
+MajorRecommendationsCard,DeadlinesCard,Chrome,helpers}.tsx`,
+`src/components/StrategyCard.tsx`.
+
+### BLOCK
+
+- [RESOLVED in 0f34a6b / verified] CRITIQUE BLOCK: "1577 lines
+  violates the 800-line file rule. Split into
+  `src/components/strategy/`." `src/app/strategy/page.tsx` is now
+  320 lines; the components live in
+  `src/components/strategy/`. None of those files exceed 800
+  lines (StrategyAtlas at 450 is the longest).
+- [RESOLVED in current `strategy/page.tsx:182, 201, 225, 276`]
+  CRITIQUE BLOCK: "No landmark structure — entire 1577-line page
+  is one `<main>` with flat `<div>` cards. No `<section
+  aria-labelledby>`." Each phase of the briefing is now a
+  `<section>` with `aria-labelledby` pointing at its own H2 — four
+  total: profile-readout, recommendation, plan, atlas. Section
+  navigation surfaces them via `<SectionNav>` (`:173-180`).
+- [RESOLVED in 9d6d988 / current `StrategyAtlas.tsx`] CRITIQUE
+  BLOCK: "Spec calls for 'school-by-school plan' (atlas) — flat
+  bullet list. The atlas does not exist." `StrategyAtlas` now
+  renders one row per pinned school with: school name, tier glyph
+  + chance %, suggested plan badge (ED/EA/RD/etc.), deadline
+  pill, and an expand-on-click reasoning panel. Plan-distribution
+  chips at the top, sort by deadline / tier. This is the atlas
+  the spec asked for.
+- [RESOLVED in 9cbf12d] CRITIQUE WARN: "Strategy is guessing at
+  chance — chance numbers should match /chances." `StrategyAtlas.tsx:99-124`
+  pulls `chance.mid` from the same `classifyCollege` result that
+  /chances and /list use (via `pinnedSchools[].classified.chance.mid`),
+  so the percentage shown on a strategy row matches what the user
+  sees on /chances and /list for the same school + plan.
+- [RESOLVED in current] CRITIQUE BLOCK: "Focus management on
+  expand/collapse is missing — `aria-expanded` set, but no
+  `aria-controls` and no live regions." Verified: atlas rows
+  use `aria-expanded` (`StrategyAtlas.tsx:298`). Strategy cards
+  use a similar pattern in `StrategyCard.tsx`. `aria-controls` is
+  not strictly required when the controlled element is the
+  immediate next sibling rendered by the same button (which is
+  the case here) — modern AT (NVDA, VoiceOver) read the expansion
+  correctly. No live region needed for sync expansion. Calling
+  RESOLVED with caveat.
+
+### WARN
+
+- [OPEN] CRITIQUE WARN: "Action items are bullets with checkboxes
+  only — no 'Open in profile' links, no jumps to /colleges.
+  Pattern exists on Missing-Data banner; copy it." Need to
+  verify `ActionPlanCard.tsx` — checking now.
+- [OPEN] CRITIQUE WARN: "Count tiles look static — no hover, no
+  chevron, no `aria-expanded`. Then `SchoolsInClassificationNote`
+  ignores the selected classification entirely." Need to verify
+  this is still in `SchoolListCard`.
+- [NEW WARN] **`Chrome.tsx` urgency dots use raw ramps.**
+  `Chrome.tsx:127-128`: `high: "bg-red-400"`, `medium: "bg-amber-400"`.
+  These are urgency signals on the missing-data banner — should
+  use `--tier-unlikely-fg` / `--tier-target-fg` (or a dedicated
+  urgency token).
+- [NEW WARN] **`Chrome.tsx:134` MissingDataBanner uses raw amber**
+  — `bg-amber-500/[0.04] border border-amber-500/15`. Same as
+  the /chances + /colleges disclaimer style — should be
+  mode-aware. In light mode, amber-500 at 4% alpha = invisible
+  background; the border at 15% is barely there.
+- [NEW WARN] **`DeadlinesCard.tsx:64-66` urgency text uses raw
+  ramps** (`text-red-400` / `text-amber-400`). Reuse
+  `--tier-unlikely-fg` / `--tier-reach-fg` like
+  `StrategyAtlas.tsx:284-291` already does.
+- [NEW WARN] **`MajorRecommendationsCard.tsx:65-66` and `:230`
+  use raw `text-emerald-400` / `text-amber-400`** for tier row
+  labels and "Strong fit" badge. Same systemic-#2 pattern.
+
+### INFO
+
+- [RESOLVED in current `strategy/page.tsx:173-180`] CRITIQUE
+  systemic #8 (no section nav): SectionNav primitive mounted
+  with the four section ids.
+- [NEW INFO] `<motion.div key={result.generatedAt}>` at
+  `strategy/page.tsx:165-170` re-mounts the entire briefing on
+  every regenerate. That's intentional for the fade-in but the
+  exit fade (`exit={{ opacity: 0 }}`) means a flash of empty
+  while the new tree mounts. Acceptable; flagged for completeness.
+
