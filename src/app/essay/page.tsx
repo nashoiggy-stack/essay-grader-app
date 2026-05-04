@@ -293,12 +293,10 @@ export default function Home() {
                     essayModified={essayModified}
                   />
                 </div>
-                </div>
               </ScrollReveal>
 
               {/* Tabbed Content */}
               <ScrollReveal delay={0.2}>
-                <div className="" style={{ "--radius": "1rem" } as React.CSSProperties}>
                 <div className="bg-bg-surface rounded-md overflow-hidden">
                   <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -346,7 +344,6 @@ export default function Home() {
                       )}
                     </AnimatePresence>
                   </div>
-                </div>
                 </div>
               </ScrollReveal>
 
