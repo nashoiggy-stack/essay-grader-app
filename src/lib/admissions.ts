@@ -745,8 +745,18 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   //     admissionsType differentiates 15-25% holistic vs stats-driven.
   let rawMid = baseResult.rate * dampened;
   const admType = college.admissionsType ?? "holistic";
-  const cap = getChanceCap(college.acceptanceRate, admType);
   const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
+  // Anchor the cap bracket to the ACTUAL admit rate for the chosen plan,
+  // not to the overall (RD-derived) acceptance rate. Otherwise schools
+  // with a much friendlier ED pool than their RD pool get pinned to an
+  // unfairly low cap. Concrete case: Northeastern overall 7%, ED ~43% —
+  // the old code looked up by 7% and capped ED at 30%, even though the
+  // school admits 43% of ED applicants at baseline. With this fix the ED
+  // cap for Northeastern lands at 70% (the 25-50% bracket), so a strong
+  // ED applicant can plausibly land in the 50-70% range. RD lookup is
+  // unchanged because the overall rate IS the RD anchor.
+  const capLookupRate = isEdLikePlan ? baseResult.rate : college.acceptanceRate;
+  const cap = getChanceCap(capLookupRate, admType);
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
   if (rawMid > capValue) rawMid = capValue;
   const nationalMid = clamp(rawMid, 0.5, 95);
