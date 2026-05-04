@@ -1,168 +1,64 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import Link from "next/link";
+import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Compass,
-  Sparkles,
-  AlertCircle,
-  RefreshCw,
-  ArrowRight,
-  CalendarClock,
-  CheckCircle2,
-  ChevronDown,
-  TrendingUp,
-  Bookmark,
-  Target,
-  Star,
-  HelpCircle,
-  Zap,
-  School,
-  XCircle,
   AlertTriangle,
+  ArrowRight,
+  Compass,
   GraduationCap,
+  School,
+  Star,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import {
-  StrategyCard,
-  type StrategyStrength,
-} from "@/components/StrategyCard";
+import { StrategyCard } from "@/components/StrategyCard";
 import { DreamSchoolSelector } from "@/components/DreamSchoolSelector";
-import { ActionChecklist } from "@/components/ActionChecklist";
-import { GapItem } from "@/components/GapItem";
 import { SectionNav } from "@/components/SectionNav";
+import { StrategyShareButton } from "@/components/StrategyShareButton";
 import { StrategyAtlas } from "@/components/strategy/StrategyAtlas";
+import { SnapshotBody } from "@/components/strategy/SnapshotCard";
+import { DreamSchoolBody } from "@/components/strategy/DreamSchoolCard";
+import { ActionPlanCard } from "@/components/strategy/ActionPlanCard";
+import { SpikeBody } from "@/components/strategy/SpikeCard";
+import { GapsBody } from "@/components/strategy/GapsCard";
+import { SchoolListBody } from "@/components/strategy/SchoolListCard";
+import { MajorRecommendationsBody } from "@/components/strategy/MajorRecommendationsCard";
+import { DeadlinesCard } from "@/components/strategy/DeadlinesCard";
+import {
+  EmptyState,
+  FooterBar,
+  GenerateBar,
+  MissingDataBanner,
+  PreGenerationHint,
+} from "@/components/strategy/Chrome";
+import {
+  EC_LABEL,
+  PERCENTILE_LABEL,
+  TIER_LABEL,
+  gapsStrength,
+  majorRecsHeadline,
+  majorRecsStrength,
+  schoolListStrength,
+  snapshotStrength,
+  spikeStrength,
+  urgencyToneStrength,
+} from "@/components/strategy/helpers";
 import { useStrategy } from "@/hooks/useStrategy";
 import { useDreamSchool } from "@/hooks/useDreamSchool";
-import { useActionChecklist } from "@/hooks/useActionChecklist";
 import { useCollegePins } from "@/hooks/useCollegePins";
-import { computeDeadlines, type DeadlineEntry } from "@/lib/deadlines";
-import { APPLICATION_PLAN_LABELS } from "@/lib/college-types";
-import { StrategyShareButton } from "@/components/StrategyShareButton";
+import { computeDeadlines } from "@/lib/deadlines";
 import type { StrategyShareSnapshot } from "@/lib/strategy-share-types";
-import type {
-  StrategyAnalysis,
-  StrategyResult,
-  AcademicTier,
-  ECStrengthTier,
-  DreamSchoolAction,
-  UrgencyTone,
-  MajorAwareRecommendations,
-  MissingDataItem,
-} from "@/lib/strategy-types";
-import type { Classification, ClassifiedCollege } from "@/lib/college-types";
-import { MajorSelect } from "@/components/MajorSelect";
-import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
-import { setItemAndNotify } from "@/lib/sync-event";
-import { getCachedJson } from "@/lib/cloud-storage";
-
-// ── Helpers: deterministic strength derivation ─────────────────────────────
-
-function snapshotStrength(a: StrategyAnalysis): StrategyStrength {
-  const ac = a.academic.tier;
-  const ec = a.ec.tier;
-  if ((ac === "elite" || ac === "strong") && (ec === "exceptional" || ec === "strong")) return "strong";
-  if (ac === "limited" || ec === "limited") return "weak";
-  if (ac === "developing" || ec === "developing" || ec === "missing") return "mixed";
-  return "mixed";
-}
-
-function spikeStrength(a: StrategyAnalysis): StrategyStrength {
-  const s = a.spike;
-  if (s.strength === "dominant" && s.clarity === "focused") return "strong";
-  if (s.strength === "strong" && s.clarity === "focused") return "strong";
-  if (s.strength === "none" || s.clarity === "scattered") return "weak";
-  return "mixed";
-}
-
-function gapsStrength(a: StrategyAnalysis): StrategyStrength {
-  if (a.weaknesses.some((w) => w.severity === "critical")) return "weak";
-  if (a.weaknesses.some((w) => w.severity === "high")) return "warning";
-  if (a.weaknesses.length === 0) return "strong";
-  return "mixed";
-}
-
-function schoolListStrength(a: StrategyAnalysis): StrategyStrength {
-  switch (a.schoolList.balance) {
-    case "balanced":
-      return "strong";
-    case "reach-heavy":
-    case "safety-heavy":
-      return "warning";
-    case "thin":
-    case "empty":
-      return "weak";
-    default:
-      return "neutral";
-  }
-}
-
-function urgencyToneStrength(t: UrgencyTone | null): StrategyStrength {
-  // Maps the engine's urgencyTone to the StrategyCard strength scale that
-  // already powers every other card's badge color. Keeps badge tone in
-  // sync with the verdict — go=green, caution=amber, stop=red.
-  if (t === "go") return "strong";
-  if (t === "caution") return "mixed";
-  if (t === "stop") return "weak";
-  return "neutral";
-}
-
-const TIER_LABEL: Record<AcademicTier, string> = {
-  elite: "Elite",
-  strong: "Strong",
-  solid: "Solid",
-  developing: "Developing",
-  limited: "Limited",
-};
-
-const EC_LABEL: Record<ECStrengthTier, string> = {
-  exceptional: "Exceptional",
-  strong: "Strong",
-  solid: "Solid",
-  developing: "Developing",
-  limited: "Limited",
-  missing: "No data",
-};
-
-const PERCENTILE_LABEL: Record<string, string> = {
-  "top-10": "Top 10%",
-  "top-25": "Top 25%",
-  "top-50": "Top 50%",
-  "bottom-50": "Bottom 50%",
-};
-
-function majorRecsStrength(r: MajorAwareRecommendations): StrategyStrength {
-  if (!r.intendedMajor && !r.intendedInterest) return "neutral";
-  const pinnedCount =
-    r.fromPinned.safeties.length + r.fromPinned.targets.length + r.fromPinned.reaches.length;
-  if (pinnedCount === 0 && r.toConsider.length === 0) return "warning";
-  if (pinnedCount >= 3) return "strong";
-  return "mixed";
-}
-
-function majorRecsHeadline(r: MajorAwareRecommendations): string {
-  if (!r.intendedMajor && !r.intendedInterest) return "Pick a major to see tailored picks";
-  const label = r.intendedMajor || r.intendedInterest || "";
-  const pinnedCount =
-    r.fromPinned.safeties.length + r.fromPinned.targets.length + r.fromPinned.reaches.length;
-  const parts: string[] = [];
-  if (pinnedCount > 0) parts.push(`${pinnedCount} from your pins`);
-  if (r.toConsider.length > 0) parts.push(`${r.toConsider.length} to consider`);
-  const summary = parts.length > 0 ? parts.join(" · ") : "no matches yet";
-  return `${label} · ${summary}`;
-}
-
-// ── Page ────────────────────────────────────────────────────────────────────
 
 export default function StrategyPage() {
   const { profile, analysis, result, loading, error, generate, refresh } = useStrategy();
   const { dreamSchool, setDreamSchool } = useDreamSchool();
   const { pinned } = useCollegePins();
 
-  // Phase 12 — deadlines from pinned schools' applicationPlan. Recomputed
-  // on every render but cheap (≤ pinned count). `today` snapshotted per
-  // render so daysAway stays accurate.
+  // Deadlines from pinned schools' applicationPlan. Recomputed on every
+  // render but cheap (≤ pinned count). `today` snapshotted per render so
+  // daysAway stays accurate.
   const deadlineEntries = useMemo(
     () => computeDeadlines(pinned, new Date()),
     [pinned],
@@ -175,1431 +71,250 @@ export default function StrategyPage() {
   // key regenerates and the UI reflects the new selection.
   const onDreamSchoolChange = (name: string | null) => {
     setDreamSchool(name);
-    // Give localStorage a tick to flush before re-reading
     setTimeout(refresh, 0);
   };
 
   const isEmpty = !profile || !profile.hasPinnedSchools;
 
   return (
-    <>
-      <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
-        {/* ── Header ─────────────────────────────────────────────── */}
-        <motion.div
-          className="mb-8 text-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="inline-flex items-center gap-2 rounded-full bg-bg-surface border border-border-strong px-3 py-1 mb-4">
-            <Compass className="w-3.5 h-3.5 text-accent-text" />
-            <span className="text-[11px] uppercase tracking-[0.08em] text-text-secondary font-medium">
-              Strategy Engine
-            </span>
-          </div>
-          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-            Your Strategic Briefing
-          </h1>
-          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
-            A live decision tool — not a static report. Pick a dream school, review your gaps, and check off action items as you improve.
-          </p>
-        </motion.div>
+    <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <motion.div
+        className="mb-8 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="inline-flex items-center gap-2 rounded-full bg-bg-surface border border-border-strong px-3 py-1 mb-4">
+          <Compass className="w-3.5 h-3.5 text-accent-text" />
+          <span className="text-[11px] uppercase tracking-[0.08em] text-text-secondary font-medium">
+            Strategy Engine
+          </span>
+        </div>
+        <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
+          Your Strategic Briefing
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
+          A live decision tool — not a static report. Pick a dream school, review your gaps, and check off action items as you improve.
+        </p>
+      </motion.div>
 
-        {/* ── Empty state (no pinned schools) ────────────────────── */}
-        {isEmpty ? (
+      {isEmpty ? (
+        <ScrollReveal delay={0.08}>
+          <EmptyState />
+        </ScrollReveal>
+      ) : (
+        <>
           <ScrollReveal delay={0.08}>
-            <EmptyState />
-          </ScrollReveal>
-        ) : (
-          <>
-            {/* ── Dream School selector (always at top) ──────────── */}
-            <ScrollReveal delay={0.08}>
-              <div className="mb-6">
-                <DreamSchoolSelector
-                  dreamSchool={dreamSchool}
-                  onChange={onDreamSchoolChange}
-                />
-              </div>
-            </ScrollReveal>
-
-            {/* ── Missing-data banner (only before generation) ───── */}
-            {analysis && analysis.missingDataRanked.length > 0 && !result && (
-              <ScrollReveal delay={0.1}>
-                <MissingDataBanner items={analysis.missingDataRanked} />
-              </ScrollReveal>
-            )}
-
-            {/* ── Generate / Re-run bar (+ Share when a result exists) ─ */}
-            <ScrollReveal delay={0.12}>
-              <GenerateBar
-                loading={loading}
-                hasResult={result != null}
-                generatedAt={result?.generatedAt ?? null}
-                onGenerate={() => generate({ bypassCache: result != null })}
-                shareSlot={
-                  result && analysis ? (
-                    <StrategyShareButton
-                      getSnapshot={(): StrategyShareSnapshot | null => ({
-                        result,
-                        analysis,
-                        profileMeta: {
-                          graduationYear: profile?.basicInfo?.graduationYear ?? null,
-                          intendedMajor: profile?.intendedMajor || null,
-                          pinnedNames: pinned.map((p) => p.name),
-                          pinnedPlans: Object.fromEntries(
-                            pinned.map((p) => [p.name, p.applicationPlan]),
-                          ),
-                        },
-                        capturedAt: Date.now(),
-                      })}
-                    />
-                  ) : null
-                }
+            <div className="mb-6">
+              <DreamSchoolSelector
+                dreamSchool={dreamSchool}
+                onChange={onDreamSchoolChange}
               />
+            </div>
+          </ScrollReveal>
+
+          {analysis && analysis.missingDataRanked.length > 0 && !result && (
+            <ScrollReveal delay={0.1}>
+              <MissingDataBanner items={analysis.missingDataRanked} />
             </ScrollReveal>
+          )}
 
-            {/* ── Error ──────────────────────────────────────────── */}
-            {error && (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 mb-6">
-                <p className="text-sm text-red-300">{error}</p>
-              </div>
-            )}
-
-            {/* ── Pre-generation hint ────────────────────────────── */}
-            {!result && !loading && !error && (
-              <ScrollReveal delay={0.15}>
-                <PreGenerationHint hasDreamSchool={dreamSchool != null} />
-              </ScrollReveal>
-            )}
-
-            {/* ── Result: interactive cards ──────────────────────── */}
-            <AnimatePresence mode="wait">
-              {result && analysis && (
-                <motion.div
-                  key={result.generatedAt}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  className="space-y-8"
-                >
-                  <SectionNav
-                    sections={[
-                      { id: "section-profile-readout", label: "Profile" },
-                      { id: "section-recommendation", label: "Recommendation" },
-                      { id: "section-plan", label: "Plan" },
-                      { id: "section-atlas", label: "Atlas" },
-                    ]}
+          <ScrollReveal delay={0.12}>
+            <GenerateBar
+              loading={loading}
+              hasResult={result != null}
+              generatedAt={result?.generatedAt ?? null}
+              onGenerate={() => generate({ bypassCache: result != null })}
+              shareSlot={
+                result && analysis ? (
+                  <StrategyShareButton
+                    getSnapshot={(): StrategyShareSnapshot | null => ({
+                      result,
+                      analysis,
+                      profileMeta: {
+                        graduationYear: profile?.basicInfo?.graduationYear ?? null,
+                        intendedMajor: profile?.intendedMajor || null,
+                        pinnedNames: pinned.map((p) => p.name),
+                        pinnedPlans: Object.fromEntries(
+                          pinned.map((p) => [p.name, p.applicationPlan]),
+                        ),
+                      },
+                      capturedAt: Date.now(),
+                    })}
                   />
+                ) : null
+              }
+            />
+          </ScrollReveal>
 
-                  {/* === Group 1: Profile readout — what we know about you ==== */}
-                  <section
-                    id="section-profile-readout"
-                    aria-labelledby="strategy-profile-heading"
-                    className="space-y-3 scroll-mt-32"
-                  >
-                    <h2 id="strategy-profile-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
-                      Profile readout
-                    </h2>
-                    {/* 1. SNAPSHOT — default expanded */}
-                    <StrategyCard
-                      icon={<Target className="w-4 h-4" />}
-                      title="Snapshot"
-                      strength={snapshotStrength(analysis)}
-                      headline={`${TIER_LABEL[analysis.academic.tier]} academics · ${EC_LABEL[analysis.ec.tier]} ECs · ${PERCENTILE_LABEL[analysis.positioning.percentileEstimate]}`}
-                      defaultExpanded
-                    >
-                      <SnapshotBody result={result} analysis={analysis} />
-                    </StrategyCard>
-                  </section>
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 mb-6">
+              <p className="text-sm text-red-300">{error}</p>
+            </div>
+          )}
 
-                  {/* === Group 2: Recommendation — what to do about it ==== */}
-                  <section
-                    id="section-recommendation"
-                    aria-labelledby="strategy-recommendation-heading"
-                    className="space-y-3 scroll-mt-32"
-                  >
-                    <h2 id="strategy-recommendation-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
-                      Recommendation
-                    </h2>
-                    {/* 2. DREAM SCHOOL — default expanded, emphasized */}
-                    <StrategyCard
-                      icon={<Star className="w-4 h-4" />}
-                      title="Dream School"
-                      strength={urgencyToneStrength(result.dreamSchool?.urgencyTone ?? null)}
-                      headline={
-                        result.dreamSchool?.schoolName ??
-                        (dreamSchool ? `${dreamSchool} · pending re-run` : "No dream school selected")
-                      }
-                      defaultExpanded
-                      emphasize
-                    >
-                      <DreamSchoolBody result={result} analysis={analysis} dreamSchool={dreamSchool} />
-                    </StrategyCard>
-                    {/* 3. ACTION PLAN — default expanded, emphasized, checkboxes */}
-                    <ActionPlanCard result={result} />
-                  </section>
+          {!result && !loading && !error && (
+            <ScrollReveal delay={0.15}>
+              <PreGenerationHint hasDreamSchool={dreamSchool != null} />
+            </ScrollReveal>
+          )}
 
-                  {/* === Group 3: Plan — gaps, spike, deadlines, major recs ==== */}
-                  <section
-                    id="section-plan"
-                    aria-labelledby="strategy-plan-heading"
-                    className="space-y-3 scroll-mt-32"
-                  >
-                    <h2 id="strategy-plan-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
-                      Plan
-                    </h2>
-                    {/* 4. SPIKE — collapsed */}
-                    <StrategyCard
-                      icon={<TrendingUp className="w-4 h-4" />}
-                      title="Spike Analysis"
-                      strength={spikeStrength(analysis)}
-                      headline={
-                        analysis.spike.primary
-                          ? `${analysis.spike.primary} · ${analysis.spike.clarity}`
-                          : "No clear spike"
-                      }
-                    >
-                      <SpikeBody result={result} analysis={analysis} />
-                    </StrategyCard>
-
-                    {/* Deadlines hoisted when urgent */}
-                    {hasUrgentDeadline && (
-                      <DeadlinesCard entries={deadlineEntries} hoisted />
-                    )}
-
-                    {/* 5. GAPS */}
-                    <StrategyCard
-                      icon={<AlertTriangle className="w-4 h-4" />}
-                      title="Gaps"
-                      strength={gapsStrength(analysis)}
-                      headline={`${analysis.weaknesses.length} flagged`}
-                    >
-                      <GapsBody result={result} analysis={analysis} />
-                    </StrategyCard>
-
-                    {/* Deadlines natural slot */}
-                    {!hasUrgentDeadline && (
-                      <DeadlinesCard entries={deadlineEntries} hoisted={false} />
-                    )}
-
-                    {/* 6. RECOMMENDED FOR YOUR MAJOR */}
-                    <StrategyCard
-                      icon={<GraduationCap className="w-4 h-4" />}
-                      title="Recommended for Your Major"
-                      strength={majorRecsStrength(analysis.majorRecommendations)}
-                      headline={majorRecsHeadline(analysis.majorRecommendations)}
-                    >
-                      <MajorRecommendationsBody
-                        recs={analysis.majorRecommendations}
-                        onMajorSaved={refresh}
-                      />
-                    </StrategyCard>
-                  </section>
-
-                  {/* === Group 4: Atlas — your list, school by school ==== */}
-                  <section
-                    id="section-atlas"
-                    aria-labelledby="strategy-atlas-heading"
-                    className="space-y-3 scroll-mt-32"
-                  >
-                    <h2 id="strategy-atlas-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
-                      Atlas
-                    </h2>
-                    {/* 7. SCHOOL LIST STRATEGY */}
-                    <StrategyCard
-                      icon={<School className="w-4 h-4" />}
-                      title="School List Strategy"
-                      strength={schoolListStrength(analysis)}
-                      headline={`${analysis.schoolList.total} pinned · ${analysis.schoolList.balance}`}
-                    >
-                      <SchoolListBody result={result} analysis={analysis} />
-                    </StrategyCard>
-                    {/* 8. APPLICATION STRATEGY — school-by-school atlas */}
-                    <StrategyCard
-                      icon={<ArrowRight className="w-4 h-4" />}
-                      title="Application Strategy"
-                      strength="neutral"
-                      headline={`${analysis.earlyStrategy.length} schools · per-school plan`}
-                      defaultExpanded
-                    >
-                      <StrategyAtlas
-                        result={result}
-                        earlyStrategy={analysis.earlyStrategy}
-                        pinnedSchools={profile?.pinnedSchools ?? []}
-                        deadlineEntries={deadlineEntries}
-                      />
-                    </StrategyCard>
-                  </section>
-
-                  {/* Footer: last-updated + re-run CTA */}
-                  <FooterBar
-                    generatedAt={result.generatedAt}
-                    onRerun={() => generate({ bypassCache: true })}
-                    loading={loading}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </>
-        )}
-      </main>
-    </>
-  );
-}
-
-// ── Section bodies ──────────────────────────────────────────────────────────
-
-function SnapshotBody({
-  result,
-  analysis,
-}: {
-  result: StrategyResult;
-  analysis: StrategyAnalysis;
-}) {
-  return (
-    <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-        {result.profileSummary.body}
-      </p>
-
-      {/* Clickable stat chips */}
-      <div className="flex flex-wrap gap-2 pt-1">
-        <StatChip
-          label="Academics"
-          value={TIER_LABEL[analysis.academic.tier]}
-          tooltip={analysis.academic.signals.join(" · ")}
-          tone={
-            analysis.academic.tier === "elite" || analysis.academic.tier === "strong"
-              ? "good"
-              : analysis.academic.tier === "limited"
-                ? "bad"
-                : "mid"
-          }
-        />
-        <StatChip
-          label="Extracurriculars"
-          value={EC_LABEL[analysis.ec.tier]}
-          tooltip={analysis.ec.signals.join(" · ")}
-          tone={
-            analysis.ec.tier === "exceptional" || analysis.ec.tier === "strong"
-              ? "good"
-              : analysis.ec.tier === "limited" || analysis.ec.tier === "missing"
-                ? "bad"
-                : "mid"
-          }
-        />
-        <StatChip
-          label="Positioning"
-          value={PERCENTILE_LABEL[analysis.positioning.percentileEstimate]}
-          tooltip={analysis.positioning.gaps.join(" · ")}
-          tone={
-            analysis.positioning.percentileEstimate === "top-10" ||
-            analysis.positioning.percentileEstimate === "top-25"
-              ? "good"
-              : "mid"
-          }
-        />
-      </div>
-
-      {/* Competitiveness sub-section */}
-      <div className="rounded-xl bg-bg-surface border border-border-hair p-4">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1">
-          Competitiveness Positioning
-        </p>
-        <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-          {result.competitiveness.body}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function DreamSchoolBody({
-  result,
-  analysis,
-  dreamSchool,
-}: {
-  result: StrategyResult;
-  analysis: StrategyAnalysis;
-  dreamSchool: string | null;
-}) {
-  const ds = result.dreamSchool;
-  // Levers are a deterministic engine output — single source of truth lives on
-  // analysis.dreamSchool. Legacy v2 cached results stored an LLM-written
-  // string array under result.dreamSchool.whatWouldChangeThis; fall back to
-  // that so a stale entry that survived the cache-version bump still
-  // renders something useful instead of crashing.
-  const engineLevers = analysis.dreamSchool?.leversToImprove ?? [];
-  const legacyLevers =
-    (ds as unknown as { whatWouldChangeThis?: readonly string[] })?.whatWouldChangeThis ?? [];
-  const leverLines: readonly string[] =
-    engineLevers.length > 0
-      ? engineLevers.map((l) => l.description)
-      : legacyLevers;
-  const [leversOpen, setLeversOpen] = useState(false);
-
-  if (!ds && !dreamSchool) {
-    return (
-      <div className="pt-3">
-        <p className="text-[13px] text-text-secondary leading-relaxed">
-          Pick a dream school using the selector above to get a dedicated early-application recommendation with specific reasoning for that school.
-        </p>
-      </div>
-    );
-  }
-
-  if (!ds && dreamSchool) {
-    return (
-      <div className="pt-3">
-        <p className="text-[13px] text-text-secondary leading-relaxed mb-2">
-          You selected <span className="text-text-primary font-semibold">{dreamSchool}</span>, but this strategy was generated before that. Click <span className="text-text-primary font-semibold">Re-run</span> above to get the dedicated recommendation block.
-        </p>
-      </div>
-    );
-  }
-
-  if (!ds) return null;
-
-  return (
-    <div className="space-y-4 pt-3">
-      {/* Action verdict block — describes the recommended early-app path,
-          not just an ED yes/no. Tone drives the badge color. Each prop
-          falls back so a v2 cached result that survived the version bump
-          renders rather than crashes. */}
-      <ActionVerdictBlock
-        action={ds.recommendedAction ?? "apply-early-conditional"}
-        label={
-          ds.actionLabel ??
-          (ds as unknown as { verdictHeadline?: string }).verdictHeadline ??
-          "Recommendation pending re-run"
-        }
-        tone={ds.urgencyTone ?? "caution"}
-      />
-
-      {/* Reasoning */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1.5">
-          Reasoning
-        </p>
-        <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-          {ds.reasoning}
-        </p>
-      </div>
-
-      {/* What would change this? Levers come from the engine — one source
-          of truth — with a legacy-string fallback for stale cached results. */}
-      {leverLines.length > 0 && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setLeversOpen((v) => !v)}
-            aria-expanded={leversOpen}
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-accent-text transition-colors"
-          >
-            <Zap className="w-3.5 h-3.5" />
-            What would change this recommendation?
-          </button>
-          <AnimatePresence initial={false}>
-            {leversOpen && (
+          <AnimatePresence mode="wait">
+            {result && analysis && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                className="overflow-hidden"
+                key={result.generatedAt}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                className="space-y-8"
               >
-                <ul className="mt-3 space-y-2">
-                  {leverLines.map((lever, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-[13px] text-text-secondary leading-relaxed"
-                    >
-                      <span className="text-accent-text mt-0.5 shrink-0">→</span>
-                      <span>{lever}</span>
-                    </li>
-                  ))}
-                </ul>
+                <SectionNav
+                  sections={[
+                    { id: "section-profile-readout", label: "Profile" },
+                    { id: "section-recommendation", label: "Recommendation" },
+                    { id: "section-plan", label: "Plan" },
+                    { id: "section-atlas", label: "Atlas" },
+                  ]}
+                />
+
+                <section
+                  id="section-profile-readout"
+                  aria-labelledby="strategy-profile-heading"
+                  className="space-y-3 scroll-mt-32"
+                >
+                  <h2 id="strategy-profile-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                    Profile readout
+                  </h2>
+                  <StrategyCard
+                    icon={<Target className="w-4 h-4" />}
+                    title="Snapshot"
+                    strength={snapshotStrength(analysis)}
+                    headline={`${TIER_LABEL[analysis.academic.tier]} academics · ${EC_LABEL[analysis.ec.tier]} ECs · ${PERCENTILE_LABEL[analysis.positioning.percentileEstimate]}`}
+                    defaultExpanded
+                  >
+                    <SnapshotBody result={result} analysis={analysis} />
+                  </StrategyCard>
+                </section>
+
+                <section
+                  id="section-recommendation"
+                  aria-labelledby="strategy-recommendation-heading"
+                  className="space-y-3 scroll-mt-32"
+                >
+                  <h2 id="strategy-recommendation-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                    Recommendation
+                  </h2>
+                  <StrategyCard
+                    icon={<Star className="w-4 h-4" />}
+                    title="Dream School"
+                    strength={urgencyToneStrength(result.dreamSchool?.urgencyTone ?? null)}
+                    headline={
+                      result.dreamSchool?.schoolName ??
+                      (dreamSchool ? `${dreamSchool} · pending re-run` : "No dream school selected")
+                    }
+                    defaultExpanded
+                    emphasize
+                  >
+                    <DreamSchoolBody result={result} analysis={analysis} dreamSchool={dreamSchool} />
+                  </StrategyCard>
+                  <ActionPlanCard result={result} />
+                </section>
+
+                <section
+                  id="section-plan"
+                  aria-labelledby="strategy-plan-heading"
+                  className="space-y-3 scroll-mt-32"
+                >
+                  <h2 id="strategy-plan-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                    Plan
+                  </h2>
+                  <StrategyCard
+                    icon={<TrendingUp className="w-4 h-4" />}
+                    title="Spike Analysis"
+                    strength={spikeStrength(analysis)}
+                    headline={
+                      analysis.spike.primary
+                        ? `${analysis.spike.primary} · ${analysis.spike.clarity}`
+                        : "No clear spike"
+                    }
+                  >
+                    <SpikeBody result={result} analysis={analysis} />
+                  </StrategyCard>
+
+                  {hasUrgentDeadline && (
+                    <DeadlinesCard entries={deadlineEntries} hoisted />
+                  )}
+
+                  <StrategyCard
+                    icon={<AlertTriangle className="w-4 h-4" />}
+                    title="Gaps"
+                    strength={gapsStrength(analysis)}
+                    headline={`${analysis.weaknesses.length} flagged`}
+                  >
+                    <GapsBody result={result} analysis={analysis} />
+                  </StrategyCard>
+
+                  {!hasUrgentDeadline && (
+                    <DeadlinesCard entries={deadlineEntries} hoisted={false} />
+                  )}
+
+                  <StrategyCard
+                    icon={<GraduationCap className="w-4 h-4" />}
+                    title="Recommended for Your Major"
+                    strength={majorRecsStrength(analysis.majorRecommendations)}
+                    headline={majorRecsHeadline(analysis.majorRecommendations)}
+                  >
+                    <MajorRecommendationsBody
+                      recs={analysis.majorRecommendations}
+                      onMajorSaved={refresh}
+                    />
+                  </StrategyCard>
+                </section>
+
+                <section
+                  id="section-atlas"
+                  aria-labelledby="strategy-atlas-heading"
+                  className="space-y-3 scroll-mt-32"
+                >
+                  <h2 id="strategy-atlas-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                    Atlas
+                  </h2>
+                  <StrategyCard
+                    icon={<School className="w-4 h-4" />}
+                    title="School List Strategy"
+                    strength={schoolListStrength(analysis)}
+                    headline={`${analysis.schoolList.total} pinned · ${analysis.schoolList.balance}`}
+                  >
+                    <SchoolListBody result={result} analysis={analysis} />
+                  </StrategyCard>
+                  <StrategyCard
+                    icon={<ArrowRight className="w-4 h-4" />}
+                    title="Application Strategy"
+                    strength="neutral"
+                    headline={`${analysis.earlyStrategy.length} schools · per-school plan`}
+                    defaultExpanded
+                  >
+                    <StrategyAtlas
+                      result={result}
+                      earlyStrategy={analysis.earlyStrategy}
+                      pinnedSchools={profile?.pinnedSchools ?? []}
+                      deadlineEntries={deadlineEntries}
+                    />
+                  </StrategyCard>
+                </section>
+
+                <FooterBar
+                  generatedAt={result.generatedAt}
+                  onRerun={() => generate({ bypassCache: true })}
+                  loading={loading}
+                />
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </>
       )}
-    </div>
-  );
-}
-
-const TONE_STYLES: Record<
-  UrgencyTone,
-  { bg: string; ring: string; text: string; icon: React.ElementType; eyebrow: string }
-> = {
-  go: {
-    bg: "bg-emerald-500/[0.08]",
-    ring: "ring-emerald-400/40",
-    text: "text-emerald-200",
-    icon: CheckCircle2,
-    eyebrow: "Recommended",
-  },
-  caution: {
-    bg: "bg-amber-500/[0.08]",
-    ring: "ring-amber-400/40",
-    text: "text-amber-200",
-    icon: AlertTriangle,
-    eyebrow: "Proceed with care",
-  },
-  stop: {
-    bg: "bg-red-500/[0.08]",
-    ring: "ring-red-400/40",
-    text: "text-red-200",
-    icon: XCircle,
-    eyebrow: "Hold",
-  },
-};
-
-function ActionVerdictBlock({
-  action,
-  label,
-  tone,
-}: {
-  action: DreamSchoolAction;
-  label: string;
-  tone: UrgencyTone;
-}) {
-  // Defensive default: legacy share snapshots / v2 cached results predate
-  // urgencyTone. Treat missing tone as "caution" so the page renders
-  // instead of crashing on undefined.style lookup.
-  const s = TONE_STYLES[tone] ?? TONE_STYLES.caution;
-  const Icon = s.icon;
-  // action is part of the type contract but the visible label already
-  // names the action; it stays in props for analytics/aria-label use.
-  void action;
-  return (
-    <div
-      className={`rounded-xl ${s.bg}  ${s.ring} p-4 flex items-center gap-3`}
-    >
-      <div
-        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-bg-surface`}
-      >
-        <Icon className={`w-5 h-5 ${s.text}`} strokeWidth={2} />
-      </div>
-      <div className="min-w-0">
-        <p
-          className={`text-[10px] uppercase tracking-[0.08em] font-bold ${s.text} mb-0.5`}
-        >
-          {s.eyebrow}
-        </p>
-        <p className="text-[14px] text-text-primary font-semibold leading-snug">
-          {label}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function ActionPlanCard({ result }: { result: StrategyResult }) {
-  const bullets = result.actionPlan.bullets ?? [];
-  const { isDone, toggle, completedCount } = useActionChecklist(
-    result.generatedAt,
-    bullets.length,
-  );
-
-  return (
-    <StrategyCard
-      icon={<CheckCircle2 className="w-4 h-4" />}
-      title="Action Plan"
-      strength="neutral"
-      headline={`${completedCount} of ${bullets.length} done`}
-      defaultExpanded
-      emphasize
-      rightSlot={
-        bullets.length > 0 ? (
-          <span className="inline-flex items-center text-[11px] font-mono tabular-nums text-accent-text">
-            {completedCount}/{bullets.length}
-          </span>
-        ) : null
-      }
-    >
-      <div className="space-y-4 pt-3">
-        {result.actionPlan.body && (
-          <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-            {result.actionPlan.body}
-          </p>
-        )}
-        <ActionChecklist items={bullets} isDone={isDone} onToggle={toggle} />
-      </div>
-    </StrategyCard>
-  );
-}
-
-function SpikeBody({
-  result,
-  analysis,
-}: {
-  result: StrategyResult;
-  analysis: StrategyAnalysis;
-}) {
-  const [improveOpen, setImproveOpen] = useState(false);
-  return (
-    <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-        {result.spikeAnalysis.body}
-      </p>
-
-      {/* Signals from analyzer */}
-      <div className="flex flex-wrap gap-1.5">
-        {analysis.spike.signals.map((s, i) => (
-          <span
-            key={i}
-            className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-bg-surface text-text-secondary"
-          >
-            {s}
-          </span>
-        ))}
-      </div>
-
-      {/* How to improve this toggle */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setImproveOpen((v) => !v)}
-          aria-expanded={improveOpen}
-          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-text hover:text-accent-text transition-colors"
-        >
-          <Zap className="w-3.5 h-3.5" />
-          How to sharpen this spike
-        </button>
-        <AnimatePresence initial={false}>
-          {improveOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-              className="overflow-hidden"
-            >
-              <ul className="mt-3 space-y-2 text-[13px] text-text-secondary leading-relaxed">
-                <li className="flex gap-2">
-                  <span className="text-accent-text shrink-0">→</span>
-                  <span>
-                    Convert your strongest Tier-3 activity into a Tier-2 move via measurable
-                    impact (numbers, growth, outcomes) — depth beats breadth.
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-accent-text shrink-0">→</span>
-                  <span>
-                    Thread your top 3 activities around one theme. A &quot;why&quot; statement
-                    that connects them makes the spike legible to readers in 10 seconds.
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-accent-text shrink-0">→</span>
-                  <span>
-                    Add one external validation signal — a published piece, a selective
-                    program acceptance, or a regional-level win within the spike category.
-                  </span>
-                </li>
-              </ul>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-function GapsBody({
-  result,
-  analysis,
-}: {
-  result: StrategyResult;
-  analysis: StrategyAnalysis;
-}) {
-  // Pair analyzer weakness flags with LLM bullets by index when available.
-  const llmBullets = result.weaknessDiagnosis.bullets ?? [];
-  return (
-    <div className="space-y-3 pt-3">
-      {result.weaknessDiagnosis.body && (
-        <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-          {result.weaknessDiagnosis.body}
-        </p>
-      )}
-      <div className="space-y-2">
-        {analysis.weaknesses.map((w, i) => (
-          <GapItem key={w.code} flag={w} fixSuggestion={llmBullets[i] ?? null} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const CLASSIFICATION_COLORS: Record<Classification, string> = {
-  safety: "bg-emerald-500/70",
-  likely: "bg-blue-500/70",
-  target: "bg-amber-500/70",
-  reach: "bg-orange-500/70",
-  unlikely: "bg-red-500/70",
-  insufficient: "bg-zinc-500/30",
-};
-
-const CLASSIFICATION_TEXT: Record<Classification, string> = {
-  safety: "text-emerald-300",
-  likely: "text-accent-text",
-  target: "text-amber-300",
-  reach: "text-orange-300",
-  unlikely: "text-red-300",
-  insufficient: "text-text-secondary",
-};
-
-function SchoolListBody({
-  result,
-  analysis,
-}: {
-  result: StrategyResult;
-  analysis: StrategyAnalysis;
-}) {
-  const [selected, setSelected] = useState<Classification | null>(null);
-  const { counts, total } = analysis.schoolList;
-  const order: readonly Classification[] = [
-    "safety",
-    "likely",
-    "target",
-    "reach",
-    "unlikely",
-  ];
-  return (
-    <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-line">
-        {result.schoolListStrategy.body}
-      </p>
-
-      {/* Distribution bar — segments proportional to count */}
-      {total > 0 && (
-        <div>
-          <div className="flex h-2 rounded-full overflow-hidden bg-bg-surface">
-            {order.map((cat) => {
-              const n = counts[cat];
-              if (n === 0) return null;
-              const pct = (n / total) * 100;
-              return (
-                <button
-                  type="button"
-                  key={cat}
-                  onClick={() => setSelected((s) => (s === cat ? null : cat))}
-                  aria-label={`${n} ${cat} school${n === 1 ? "" : "s"}`}
-                  className={`${CLASSIFICATION_COLORS[cat]} hover:brightness-125 transition-[filter] duration-150`}
-                  style={{ width: `${pct}%` }}
-                />
-              );
-            })}
-          </div>
-          {/* Count tiles */}
-          <div className="mt-3 grid grid-cols-5 gap-2">
-            {order.map((cat) => {
-              const n = counts[cat];
-              const active = selected === cat;
-              return (
-                <button
-                  type="button"
-                  key={cat}
-                  onClick={() => setSelected((s) => (s === cat ? null : cat))}
-                  className={`rounded-lg px-2 py-2 text-center transition-[background-color,border-color] duration-200 border ${
-                    active
-                      ? "bg-bg-surface border-white/[0.16]"
-                      : "bg-bg-surface border-border-hair hover:bg-bg-surface"
-                  }`}
-                >
-                  <p
-                    className={`text-lg font-semibold font-mono tabular-nums ${CLASSIFICATION_TEXT[cat]}`}
-                  >
-                    {n}
-                  </p>
-                  <p className="text-[9px] uppercase tracking-[0.08em] text-text-muted mt-0.5">
-                    {cat}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Per-category school list when a tile is clicked */}
-          <AnimatePresence initial={false}>
-            {selected && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                className="overflow-hidden mt-3"
-              >
-                <p className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-2">
-                  {counts[selected]} {selected} school{counts[selected] === 1 ? "" : "s"}
-                </p>
-                <SchoolsInClassificationNote classification={selected} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Warnings from analyzer */}
-      {analysis.schoolList.warnings.length > 0 && (
-        <div className="space-y-1.5">
-          {analysis.schoolList.warnings.map((w, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 text-[12px] text-amber-300/90"
-            >
-              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-              <span>{w}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Small helper that reads pinned schools from localStorage at click time,
-// filters by the selected classification, and renders the names. Avoids
-// threading the full pinned list down through every card prop.
-function SchoolsInClassificationNote({
-  classification,
-}: {
-  classification: Classification;
-}) {
-  const names = useMemo(() => {
-    const pins = getCachedJson<{ name?: string }[]>("admitedge-pinned-colleges");
-    if (!Array.isArray(pins)) return [];
-    // We don't have classifications cached here — just return the names.
-    // The user can cross-reference with the classification tile counts.
-    return pins.map((p) => p?.name).filter((n): n is string => typeof n === "string");
-  }, []);
-  void classification;
-  return (
-    <p className="text-[12px] text-text-secondary leading-relaxed">
-      Pinned schools: {names.length > 0 ? names.join(", ") : "—"}
-    </p>
-  );
-}
-
-// ── Small helpers ──────────────────────────────────────────────────────────
-
-function StatChip({
-  label,
-  value,
-  tooltip,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tooltip: string;
-  tone: "good" | "mid" | "bad";
-}) {
-  const [open, setOpen] = useState(false);
-  const toneClass =
-    tone === "good"
-      ? "text-emerald-300 bg-emerald-500/[0.06] ring-emerald-500/25"
-      : tone === "bad"
-        ? "text-red-300 bg-red-500/[0.06] ring-red-500/25"
-        : "text-amber-300 bg-amber-500/[0.06] ring-amber-500/25";
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full  ${toneClass} hover:brightness-125 transition-[filter] duration-200`}
-      >
-        <span className="text-text-muted">{label}</span>
-        <span className="font-semibold">{value}</span>
-        <HelpCircle className="w-3 h-3 opacity-70" />
-      </button>
-      <AnimatePresence>
-        {open && tooltip && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 top-full mt-2 w-72 z-10 rounded-lg bg-bg-inset border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
-          >
-            <p className="text-[11px] text-text-secondary leading-relaxed">{tooltip}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function GenerateBar({
-  loading,
-  hasResult,
-  generatedAt,
-  onGenerate,
-  shareSlot,
-}: {
-  loading: boolean;
-  hasResult: boolean;
-  generatedAt: number | null;
-  onGenerate: () => void;
-  shareSlot?: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
-      <div className="text-center sm:text-left">
-        {generatedAt && (
-          <p className="text-[11px] text-text-muted">
-            Last updated {new Date(generatedAt).toLocaleString()}
-          </p>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        {shareSlot}
-        <button
-          type="button"
-          onClick={onGenerate}
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-[background-color,opacity] duration-200"
-        >
-          {loading ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Generating...
-            </>
-          ) : hasResult ? (
-            <>
-              <RefreshCw className="w-4 h-4" />
-              Re-run
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4" />
-              Generate Strategy
-            </>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function FooterBar({
-  generatedAt,
-  onRerun,
-  loading,
-}: {
-  generatedAt: number;
-  onRerun: () => void;
-  loading: boolean;
-}) {
-  return (
-    <div className="mt-6 rounded-md bg-bg-surface border border-border-hair p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p className="text-[11px] text-text-muted">
-        Last updated {new Date(generatedAt).toLocaleString()} · Re-run after improvements to see how the briefing changes.
-      </p>
-      <button
-        type="button"
-        onClick={onRerun}
-        disabled={loading}
-        className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface hover:bg-bg-elevated text-text-primary px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40"
-      >
-        <RefreshCw className="w-3.5 h-3.5" />
-        Re-run strategy
-      </button>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-md bg-bg-surface border border-border-hair p-10 text-center">
-      <div className="w-14 h-14 mx-auto rounded-md bg-accent-soft border border-accent-line flex items-center justify-center mb-5">
-        <Bookmark className="w-6 h-6 text-accent-text" />
-      </div>
-      <h2 className="text-xl font-semibold text-text-primary mb-2">
-        Pin your target schools first
-      </h2>
-      <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed mb-6">
-        The Strategy Engine analyzes <em>your</em> pinned college list — not a generic database.
-        Head to the College List Builder, find the schools you&apos;re actually considering, and
-        pin them with the bookmark icon.
-      </p>
-      <Link
-        href="/colleges"
-        className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-100 transition-colors"
-      >
-        Go to College List Builder
-        <ArrowRight className="w-4 h-4" />
-      </Link>
-    </div>
-  );
-}
-
-const MISSING_IMPACT_DOT: Record<MissingDataItem["impact"], string> = {
-  high: "bg-red-400",
-  medium: "bg-amber-400",
-  low: "bg-zinc-500",
-};
-
-function MissingDataBanner({ items }: { items: readonly MissingDataItem[] }) {
-  return (
-    <div className="rounded-xl bg-amber-500/[0.04] border border-amber-500/15 p-4 mb-4">
-      <div className="flex items-start gap-3">
-        <AlertCircle className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm text-amber-200 font-semibold mb-2">
-            Missing data will weaken this analysis
-          </p>
-          <ul className="space-y-2">
-            {items.map((item) => (
-              <li
-                key={item.key}
-                className="flex items-start gap-3 text-[13px] leading-relaxed"
-              >
-                <span
-                  className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${MISSING_IMPACT_DOT[item.impact]}`}
-                  aria-label={`${item.impact} impact`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-text-primary font-medium">{item.label}</p>
-                  <p className="text-text-muted text-xs">{item.unlockDescription}</p>
-                </div>
-                <Link
-                  href={item.ctaHref}
-                  className="text-xs text-accent-text hover:text-accent-text font-semibold whitespace-nowrap shrink-0 mt-0.5"
-                >
-                  Open →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PreGenerationHint({ hasDreamSchool }: { hasDreamSchool: boolean }) {
-  return (
-    <div className="rounded-md bg-bg-surface border border-border-hair p-8 text-center">
-      <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
-        Click <span className="text-text-primary font-semibold">Generate Strategy</span> to run the
-        analyzers and produce your consultant briefing.
-        {hasDreamSchool
-          ? " You'll get a dedicated recommendation block for your dream school."
-          : " Pick a dream school above to unlock the dedicated early-application recommendation block."}
-      </p>
-    </div>
-  );
-}
-
-// ── Major-aware recommendations body ────────────────────────────────────────
-// Renders the 2+2+2 tier picks from the user's pinned list plus up to 3
-// unpinned schools worth considering. If the user hasn't set a major /
-// interest yet, shows an inline picker that writes to the shared profile
-// and calls `onMajorSaved` so the strategy analysis re-runs with the new
-// query applied.
-
-function MajorRecommendationsBody({
-  recs,
-  onMajorSaved,
-}: {
-  recs: MajorAwareRecommendations;
-  onMajorSaved: () => void;
-}) {
-  if (!recs.intendedMajor && !recs.intendedInterest) {
-    return <MajorPicker onSaved={onMajorSaved} />;
-  }
-
-  const totalPinned =
-    recs.fromPinned.safeties.length + recs.fromPinned.targets.length + recs.fromPinned.reaches.length;
-
-  return (
-    <div className="space-y-5 pt-3">
-      <p className="text-[13px] text-text-secondary leading-relaxed">
-        Picks tailored to{" "}
-        <span className="text-text-primary">
-          {recs.intendedMajor || recs.intendedInterest}
-        </span>
-        {recs.intendedMajor && recs.intendedInterest && (
-          <>
-            {" "}(plus your interest in{" "}
-            <span className="text-text-primary">{recs.intendedInterest}</span>)
-          </>
-        )}
-        .
-      </p>
-
-      {totalPinned === 0 && recs.toConsider.length === 0 && (
-        <div className="rounded-xl bg-bg-surface border border-border-hair p-4">
-          <p className="text-[13px] text-text-secondary leading-relaxed">
-            None of your pinned schools stand out for{" "}
-            <span className="text-text-primary">
-              {recs.intendedMajor || recs.intendedInterest}
-            </span>
-            , and we didn&apos;t find strong alternatives in the full list. Try a
-            more specific interest or a different major.
-          </p>
-        </div>
-      )}
-
-      {totalPinned > 0 && (
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.08em] text-text-secondary mb-3">
-            From your pinned list
-          </h4>
-          <div className="space-y-4">
-            <RecTierRow label="Safety"  color="text-emerald-400" items={recs.fromPinned.safeties} />
-            <RecTierRow label="Target"  color="text-amber-400"   items={recs.fromPinned.targets} />
-            <RecTierRow label="Reach"   color="text-orange-400"  items={recs.fromPinned.reaches} />
-          </div>
-        </div>
-      )}
-
-      {recs.toConsider.length > 0 && (
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-[0.08em] text-text-secondary mb-3">
-            Consider adding
-          </h4>
-          <div className="space-y-2">
-            {recs.toConsider.map((c) => (
-              <RecCard key={c.college.name} item={c} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <RankedPinnedDisclosure
-        items={recs.rankedPinned}
-        hasQuery={!!(recs.intendedMajor || recs.intendedInterest)}
-      />
-
-      <button
-        type="button"
-        onClick={() => {
-          // Let the user change their preference without leaving the page.
-          const current = getCachedJson<Record<string, unknown>>(PROFILE_STORAGE_KEY) ?? {};
-          setItemAndNotify(
-            PROFILE_STORAGE_KEY,
-            JSON.stringify({ ...current, intendedMajor: "", intendedInterest: "" }),
-          );
-          onMajorSaved();
-        }}
-        className="text-[11px] text-text-muted hover:text-text-secondary transition-colors"
-      >
-        Change major / interest
-      </button>
-    </div>
-  );
-}
-
-// Phase 11 — read-only ranked transparency view of every pinned school.
-// Sorts by majorFitScore desc when a query is set; falls back to chance
-// midpoint otherwise. Renders inline (not a modal) for cleaner integration
-// with the existing collapsible StrategyCard.
-function RankedPinnedDisclosure({
-  items,
-  hasQuery,
-}: {
-  items: readonly ClassifiedCollege[];
-  hasQuery: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  if (items.length === 0) return null;
-
-  const buttonLabel = hasQuery ? "See all pins ranked" : "Pinned schools by classification";
-
-  return (
-    <div className="border-t border-border-hair pt-3">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-text-secondary hover:text-text-primary transition-colors"
-      >
-        {buttonLabel}
-        <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "" : "-rotate-90"}`}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-            className="overflow-hidden"
-          >
-            <div className="mt-3 rounded-xl border border-border-hair divide-y divide-border-hair">
-              {/* Header row */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold">
-                <span>School</span>
-                <span className="w-16 text-right">Tier</span>
-                <span className="w-12 text-right">Chance</span>
-                <span className="w-16 text-right">Major fit</span>
-              </div>
-              {items.map((c) => (
-                <RankedPinnedRow key={c.college.name} item={c} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function RankedPinnedRow({ item }: { item: ClassifiedCollege }) {
-  const reason = item.matchReason || item.reason;
-  return (
-    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 py-2 items-baseline">
-      <div className="min-w-0">
-        <p className="text-[13px] text-text-primary font-semibold truncate">{item.college.name}</p>
-        {reason && (
-          <p className="text-[11px] text-text-muted leading-snug truncate">{reason}</p>
-        )}
-      </div>
-      <span
-        className={`w-16 text-right text-[11px] font-semibold uppercase tracking-[0.08em] ${CLASSIFICATION_TEXT[item.classification]}`}
-      >
-        {item.classification}
-      </span>
-      <span className="w-12 text-right text-[12px] font-mono tabular-nums text-text-secondary">
-        {item.classification === "insufficient" ? "—" : `${item.chance.mid}%`}
-      </span>
-      <span className="w-16 text-right text-[12px] font-mono tabular-nums text-text-secondary">
-        {item.majorFitScore != null ? item.majorFitScore : "—"}
-      </span>
-    </div>
-  );
-}
-
-function RecTierRow({
-  label,
-  color,
-  items,
-}: {
-  label: string;
-  color: string;
-  items: readonly ClassifiedCollege[];
-}) {
-  if (items.length === 0) {
-    return (
-      <div className="flex items-start gap-3">
-        <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${color} w-16 shrink-0 pt-1`}>
-          {label}
-        </span>
-        <p className="text-[12px] text-text-faint italic pt-1">
-          None pinned in this tier &mdash; add one.
-        </p>
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-start gap-3">
-      <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${color} w-16 shrink-0 pt-2`}>
-        {label}
-      </span>
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {items.map((c) => (
-          <RecCard key={c.college.name} item={c} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RecCard({ item }: { item: ClassifiedCollege }) {
-  const c = item.college;
-  const match = item.majorMatch ?? "none";
-  const matchLabel = match === "strong"
-    ? { text: "Strong fit",    color: "text-emerald-400" }
-    : match === "decent"
-    ? { text: "Adjacent fit",  color: "text-text-muted" }
-    : null;
-  return (
-    <div className="rounded-lg bg-bg-surface border border-border-hair px-3 py-2 hover:border-white/[0.12] transition-colors">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className="text-[13px] font-semibold text-text-primary truncate">{c.name}</p>
-        <span className="text-[11px] font-mono tabular-nums text-text-muted shrink-0">
-          {c.acceptanceRate}%
-        </span>
-      </div>
-      {/* Deterministic rationale — prefer the specific reason over the
-          generic "Strong fit" label. Falls back to the label when no
-          rationale fragments could be assembled. */}
-      {item.matchReason ? (
-        <p className="text-[11px] mt-0.5 text-text-secondary leading-snug">
-          {item.matchReason}
-        </p>
-      ) : (
-        matchLabel && (
-          <p className={`text-[11px] mt-0.5 ${matchLabel.color}`}>{matchLabel.text}</p>
-        )
-      )}
-    </div>
-  );
-}
-
-// Phase 12 — Upcoming Deadlines card.
-function DeadlinesCard({
-  entries,
-  hoisted,
-}: {
-  entries: readonly DeadlineEntry[];
-  hoisted: boolean;
-}) {
-  const hasAny = entries.length > 0;
-
-  // Headline summarises the nearest non-rolling deadline; falls back to a
-  // rolling-only mention or empty-state message.
-  const headline = (() => {
-    if (!hasAny) return "No deadlines set";
-    const dated = entries.filter((e) => !e.isRolling);
-    if (dated.length === 0) return `${entries.length} rolling`;
-    const nearest = dated[0];
-    const days = nearest.daysAway;
-    const inText =
-      days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? "today" : `in ${days}d`;
-    return `${dated.length} upcoming · nearest ${inText}`;
-  })();
-
-  const strength = hoisted ? "warning" : hasAny ? "neutral" : "neutral";
-
-  return (
-    <StrategyCard
-      icon={<CalendarClock className="w-4 h-4" />}
-      title="Upcoming Deadlines"
-      strength={strength}
-      headline={headline}
-      defaultExpanded={hoisted}
-      emphasize={hoisted}
-    >
-      <div className="pt-3">
-        {!hasAny ? (
-          <p className="text-[13px] text-text-secondary leading-relaxed">
-            No deadlines in your pinned list. Set application plans on your pinned
-            schools to see them here.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {entries.map((e, i) => (
-              <DeadlineRow key={`${e.schoolName}-${e.plan}-${i}`} entry={e} />
-            ))}
-          </ul>
-        )}
-      </div>
-    </StrategyCard>
-  );
-}
-
-function DeadlineRow({ entry }: { entry: DeadlineEntry }) {
-  const colorClass =
-    entry.isRolling
-      ? "text-text-muted"
-      : entry.daysAway <= 14
-      ? "text-red-400"
-      : entry.daysAway <= 30
-      ? "text-amber-400"
-      : "text-text-secondary";
-
-  return (
-    <li className="flex items-baseline justify-between gap-3 rounded-lg bg-bg-surface border border-border-hair px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[13px] text-text-primary font-semibold truncate">
-          {entry.schoolName}
-        </p>
-        <p className="text-[11px] text-text-muted">
-          {APPLICATION_PLAN_LABELS[entry.plan]}
-        </p>
-      </div>
-      {entry.isRolling ? (
-        <span className={`text-[11px] ${colorClass} text-right shrink-0`}>
-          Rolling — apply early for best odds
-        </span>
-      ) : (
-        <span className="text-right shrink-0">
-          <p className={`text-[12px] font-mono tabular-nums ${colorClass}`}>
-            {entry.date!.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </p>
-          <p className={`text-[10px] uppercase tracking-[0.08em] font-semibold ${colorClass}`}>
-            {entry.daysAway < 0
-              ? `${Math.abs(entry.daysAway)}d overdue`
-              : entry.daysAway === 0
-              ? "Today"
-              : `in ${entry.daysAway}d`}
-          </p>
-        </span>
-      )}
-    </li>
-  );
-}
-
-function MajorPicker({ onSaved }: { onSaved: () => void }) {
-  const [major, setMajor] = useState<string>("");
-  const [interest, setInterest] = useState<string>("");
-
-  const save = () => {
-    try {
-      const current = getCachedJson<Record<string, unknown>>(PROFILE_STORAGE_KEY) ?? {};
-      setItemAndNotify(
-        PROFILE_STORAGE_KEY,
-        JSON.stringify({
-          ...current,
-          intendedMajor: major === "Any" ? "" : major,
-          intendedInterest: interest.trim(),
-        }),
-      );
-      onSaved();
-    } catch { /* ignore */ }
-  };
-
-  const canSave = (major && major !== "Any") || interest.trim().length > 0;
-
-  return (
-    <div className="space-y-4 pt-3">
-      <p className="text-[13px] text-text-secondary leading-relaxed">
-        Tell us what you want to study and we&apos;ll surface the schools in your
-        pinned list (and a few outside it) that are strong in that area. This
-        doesn&apos;t narrow your list elsewhere &mdash; it only adds this one
-        card.
-      </p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">
-            Major
-          </label>
-          <MajorSelect value={major} onChange={setMajor} />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-text-secondary mb-1">
-            Specific interest (optional)
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. sustainability, quant trading"
-            value={interest}
-            onChange={(e) => setInterest(e.target.value)}
-            className="w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none"
-          />
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={save}
-        disabled={!canSave}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-accent-soft hover:bg-accent-soft disabled:bg-bg-surface disabled:text-text-faint text-accent-text px-4 py-2 text-xs font-semibold transition-colors"
-      >
-        Save and show picks
-        <ArrowRight className="w-3.5 h-3.5" />
-      </button>
-    </div>
+    </main>
   );
 }
