@@ -1205,3 +1205,93 @@ Files swept: `src/app/gpa/page.tsx`,
   Acceptable for theme switches; flagged so future theme-switch
   speedups don't accidentally drop this.
 
+---
+
+## `/extracurriculars`
+
+Files swept: `src/app/extracurriculars/page.tsx`,
+`src/components/ECConversation.tsx`,
+`src/components/ECActivityList.tsx`,
+`src/components/ECResults.tsx`.
+
+Note: EC chat bubbles inside `ECConversation` are an explicit
+out-of-scope dark surface per user direction; not flagged below
+unless the issue extends past the chat panel itself.
+
+### BLOCK
+
+- [WONT-FIX] CRITIQUE BLOCK: "Missing brief feature —
+  distinguished-EC checkboxes." Per the user's direction the EC
+  Evaluator owns tier-1 inference; users do not self-attest. No
+  finding.
+- [PARTIALLY-RESOLVED] CRITIQUE BLOCK: "Page uses `rounded-3xl
+  border-white/10 bg-white/5 backdrop-blur-xl` cards +
+  `text-gradient` headline."
+  - `text-gradient` headline: RESOLVED — H1 is plain
+    `text-text-primary` (`extracurriculars/page.tsx:29`).
+  - Radii: RESOLVED — `rounded-md` on both columns (`:69, :82`).
+  - **Glassy chrome remains**: `:69` and `:82` still ship
+    `border border-white/10 bg-white/5 backdrop-blur-xl`. In
+    light mode `bg-white/5` over `--bg-base (oklch(99%))` is
+    visually nothing; the `border-white/10` is a near-white
+    border on a near-white bg = invisible. The
+    `backdrop-blur-xl` is decorative (no scrolling content
+    underneath) — banned by MASTER. Replace with `bg-bg-surface
+    border border-border-hair`.
+- [OPEN] **No `aria-live` region for AI responses.** CRITIQUE
+  flagged. `grep aria-live` in `ECConversation.tsx` returned no
+  matches. AI replies stream in silently for screen-reader users.
+  Wrap the assistant message log in `<div role="log"
+  aria-live="polite">` so each new bubble is announced.
+- [NEW BLOCK] **Locked-white CTA buttons.** "Add Activity" at
+  `extracurriculars/page.tsx:104` and the "Evaluate N Activities"
+  button at `:125` use `bg-white text-zinc-950 hover:bg-zinc-200`.
+  In light mode this is a white button on a near-white page
+  with no border — the button shape disappears. (The text
+  `text-zinc-950` will still be readable, but the visual
+  affordance is gone.) Replace with `bg-[var(--accent)]
+  text-[var(--accent-fg)]`.
+- [NEW BLOCK] **Error banner is dark-only.** `:142-143`:
+  `border border-red-500/20 bg-red-500/5 ... text-red-400`.
+  Same family as the dark-only disclaimers on /chances and
+  /compare. Remap to mode-aware tones (or
+  `--tier-unlikely-soft / --tier-unlikely-fg`).
+
+### WARN
+
+- [OPEN] CRITIQUE WARN: "`ActivitiesHelperPanel` is actually a
+  resume-bulk-improve panel; the actual EC suggestion helper
+  doesn't exist on this page." Verified — the page imports
+  `ECActivityList`, `ECConversationPanel`, `ECResults` but no EC
+  suggestion helper. CRITIQUE's underlying point: this page
+  doesn't surface "what would I do next to strengthen my EC
+  profile?". Future feature; flagging because the gap remains.
+- [OPEN] CRITIQUE WARN: "Nothing tells the user their EC band
+  feeds /chances and /list." Verified — the masthead and Results
+  panel describe the evaluator in isolation. No "your band feeds
+  the chance model" callout. Add a short "Used by /chances and
+  /list" hint near the band readout.
+- [OPEN] **Activity row delete/disable still hover-only.**
+  CRITIQUE systemic #5 was supposed to flag this on
+  `/extracurriculars`; verified at `ECActivityList.tsx:99`:
+  `opacity-0 group-hover:opacity-100 transition-[opacity]`.
+  Touch users can't see the actions. Always-visible at
+  reduced opacity instead.
+- [NEW WARN] **Animated gradient dividers around the Evaluate
+  CTA.** `extracurriculars/page.tsx:119, 135`:
+  `bg-gradient-to-r from-transparent via-white/10 to-transparent`.
+  Same anti-pattern as `/essay`. Replace with a flat
+  `border-t border-border-hair` rule.
+
+### INFO
+
+- [RESOLVED] CRITIQUE BLOCK referenced "every container violates
+  the contract." Containers are now hairline-bordered + correct
+  radii; only the glass `bg-white/5` remains. Down to one
+  surface-level WARN.
+- [NEW INFO] `<motion.button whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.97/0.98 }}>` repeated three times on the
+  Save and Evaluate buttons. Same micro-inconsistency as
+  `/essay` (1.02 vs 1.04, 0.97 vs 0.98). Single hover-tap
+  motion token would unify these.
+
