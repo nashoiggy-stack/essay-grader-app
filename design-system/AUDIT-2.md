@@ -135,5 +135,129 @@ limited to a11y, semantics, and SEO — not contrast or motion taste.
   Promote `AppShell.tsx:61` to `<main id="main-content">`. (Affects
   every page in the app, not just `/` — flagged here because this is
   the first surface I checked, will reference back from every other
-  page.)
+  page.) Note: tool pages do declare their own `<main>` element
+  inside `children` (e.g. `list/page.tsx:188`), so the App-Shell
+  wrapper would create a duplicate `<main>` if simply renamed. Fix
+  is to drop the AppShell wrapper to a `<div role="presentation">`
+  (or remove the wrapper entirely) and let route pages own the
+  landmark, then update the skip-link target to `#main-content` on
+  each page's `<main>`. Currently `/` is the only page without its
+  own `<main>` — every tool page has one.
+
+---
+
+## `/list`
+
+Files swept: `src/app/list/page.tsx`, `src/components/CollegeCard.tsx`,
+`src/components/BreakdownPanel.tsx`, `src/components/ScrollReveal.tsx`.
+
+### BLOCK
+
+- [RESOLVED in current `src/app/list/page.tsx:188`] Page declares its
+  own `<main>` landmark — the global skip-link concern from `/`
+  doesn't compound here.
+- [RESOLVED in current `src/components/CollegeCard.tsx:100`]
+  CRITIQUE flagged `CollegeCard` hardcoded `bg-[#0f0f1c]`,
+  `rounded-2xl`, `hover:shadow-*`. Card chrome is now `rounded-md
+  bg-bg-surface border border-border-hair … hover:bg-bg-elevated
+  hover:border-border-strong` — tokens, hairline border, no shadow.
+  (Vestigial `transition-[box-shadow]` still present at `:100`; no
+  `box-shadow` is ever set, so the transition is dead weight but
+  harmless.)
+- [NEW BLOCK] **Tier color ramps in `CollegeCard.tsx:12-20` are still
+  raw Tailwind, not OKLCH tier tokens.** `CLASS_COLORS` defines
+  `unlikely: bg-red-600/10 / text-red-500`, `reach: bg-orange-500/10
+  / text-orange-400`, `target: bg-amber-500/10 / text-amber-400`,
+  `safety: bg-emerald-500/10 / text-emerald-400`. CRITIQUE systemic
+  #2 said all tier signals must use `--tier-*-fg / --tier-*-soft`
+  tokens. `/list` uses these tokens at the page level (`TIER_DOT` at
+  `list/page.tsx:66-73` is correct: `bg-tier-safety-fg` etc.) but
+  the **per-card** signaling — which is what users actually see on
+  every pinned-school card — never migrated. Same fix: remap
+  `CLASS_COLORS` to `bg-tier-<name>-soft` / `text-tier-<name>-fg` /
+  `ring-tier-<name>-line`. (Note: `likely` already uses
+  `bg-accent-soft` / `text-accent-text` — but that's wrong too,
+  because `--accent` is the brand indigo, not the `--tier-likely-*`
+  blue. Two different tokens, accidentally aliased.)
+- [NEW BLOCK] **`BreakdownPanel.tsx:45` and `:99` use hard-coded hex
+  `bg-[#0a0a14]/70`.** This is the panel that opens when a user
+  clicks "See the breakdown" on a college card. Dark-only literal
+  on a panel that has to render in light mode too — in light mode
+  it shows a near-black 70%-alpha block over the card's
+  `--bg-surface`, which is wildly off-system and breaks the
+  same-page contrast contract. Replace both with `bg-bg-inset` (or
+  `bg-bg-surface-2`).
+- [NEW BLOCK] **Confidence/caveat badges in `CollegeCard.tsx:206-228`
+  use dark-only Tailwind ramps.** `text-emerald-300` on
+  `bg-emerald-500/10` for "Recruited athlete pathway" (`:206`), and
+  `text-text-secondary` on `ring-zinc-500/20` for the others. The
+  emerald-300 text on the emerald-500/10 background fails 4.5:1 in
+  light mode (light emerald text on near-white bg). Remap to tier
+  tokens or accent tokens.
+
+### WARN
+
+- [RESOLVED in current `src/components/CollegeCard.tsx:127-148`]
+  CRITIQUE systemic #5 flagged `opacity-0 group-hover:opacity-100`
+  on `/list` pin/unpin. The pin button is now always-visible
+  (`mt-0.5 w-8 h-8 rounded-full flex…`). Touch users can see and
+  use it.
+- [OPEN] **Breakdown columns visually lopsided.** CRITIQUE flagged
+  Balance has 5 rows × ~80px while Major fit has 2 rows. Still
+  true at `list/page.tsx:354-364`: 5 balance rows
+  (`tierDistribution`, `count`, `edLeverage`, `financialFit`,
+  `geoDiversity`) versus 2 major-fit rows (`avgFit`,
+  `programStrong`). Visual rhythm is unchanged. Either pad the
+  major column with the per-major bar list (already computed in
+  `MajorFitFlag`) or compress balance into 3 rows by combining
+  `financialFit` + `geoDiversity` into a single "Diversification"
+  row.
+- [NEW WARN] **`PILL_TONE` for major-fit pills uses raw ramps**
+  (`CollegeCard.tsx:290-294`). `bg-emerald-500/10 / text-emerald-400`
+  for strong, `bg-amber-500/10 / text-amber-400` for decent. This
+  isn't a tier-classification signal so it doesn't strictly need a
+  `--tier-*` token, but it's the same family of "raw Tailwind ramps
+  used decoratively" that CRITIQUE #2 + #9 are about. Define
+  `--fit-strong-*` / `--fit-decent-*` tokens, or reuse `--tier-safety-*`
+  for strong and `--tier-target-*` for decent.
+- [NEW WARN] **`LETTER_TONE` in `list/page.tsx:85-97` uses raw ramps.**
+  A+/A/A- → `text-emerald-600 dark:text-emerald-300`, C+/C/C- →
+  `text-amber-...`, D → `text-orange-...`, F → `text-red-...`. Same
+  systemic-#2 pattern. Less load-bearing because the letter itself
+  is the signal, but still off-system.
+- [NEW WARN] **Pin button is `w-8 h-8` (32×32 px)** at
+  `CollegeCard.tsx:136`. MASTER.md §Accessibility floor says "Min
+  touch target 44×44 on mobile." 32 is below the threshold even
+  with a generous tap-area extension (none is set). Promote to
+  `w-11 h-11` on mobile or add explicit padding to inflate the tap
+  region.
+- [NEW WARN] **Animated `filter: blur(4px)` per card on mount**
+  (`CollegeCard.tsx:95-97`). Each card animates from `blur(4px)`
+  to `blur(0px)` on entry; with N pinned schools you get N blur
+  filters running concurrently. Filter blur is GPU-expensive and
+  not on the compositor-friendly list. MASTER.md §Motion says
+  animate `transform` + `opacity` only. Drop the `filter` term;
+  keep the `y` translate + opacity.
+
+### INFO
+
+- [OPEN] **Numeric score on grade masthead has no aria-label.**
+  CRITIQUE flagged `aria-label="Grade: ${letter}"` on the letter
+  but no label on the numeric score. Still true at
+  `list/page.tsx:287-300`: the `{grade.letter}` span has
+  `aria-label`, the `{grade.officialScore.toFixed(1)} / 100` block
+  next to it doesn't. Add `aria-label={`Score: ${score} of 100`}`.
+- [NEW INFO] `recruitedAthletePathway` toggles a green "Recruited
+  athlete pathway" badge at `CollegeCard.tsx:206-208` but never
+  surfaces what it means or how the user opted into it. If
+  pathway-eligible, also explain (tooltip or short caption: "We
+  detected athletic recruiting on your profile").
+- [NEW INFO] `void Bookmark;` at `list/page.tsx:678` — dead-code
+  shim. The named import is unused now; just drop it from the
+  import statement at `:6` (`import { Plus, ArrowRight, Bookmark,
+  RefreshCw, X }`).
+- [NEW INFO] Empty-state CTA bg uses `var(--accent-fg)` for text
+  color (`list/page.tsx:261`). Verify `--accent-fg` is defined in
+  `globals.css` — if not, falls back to the inherited color and
+  the button text might be near-invisible on `var(--accent)`.
 
