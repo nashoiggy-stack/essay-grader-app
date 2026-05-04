@@ -6,7 +6,7 @@ import { AuthProvider } from "./AuthProvider";
 import { AuthGate } from "./AuthGate";
 import { NavBarWrapper } from "./NavBarWrapper";
 import { CloudStorageBoundary } from "./CloudStorageBoundary";
-import { SaveIndicator } from "./SaveIndicator";
+import { CloudSyncToast } from "./CloudSyncToast";
 import { WebGLShader } from "./ui/web-gl-shader";
 import { useBackground } from "./BackgroundProvider";
 
@@ -60,7 +60,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <NavBarWrapper />
         <div id="main-content">{children}</div>
         <Footer />
-        <SaveIndicator />
+        <CloudSyncToast />
       </AuthGate>
     </AuthProvider>
   );

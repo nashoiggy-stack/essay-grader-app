@@ -4,7 +4,9 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { SectionNav } from "@/components/SectionNav";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { useProfile } from "@/hooks/useProfile";
+import { PROFILE_STORAGE_KEY } from "@/lib/profile-types";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
 import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
 import { MajorSelect } from "@/components/MajorSelect";
@@ -78,9 +80,7 @@ export default function ProfilePage() {
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
               Tools / Your Profile
             </p>
-            <p className="text-[11px] text-text-faint" role="status" aria-live="polite">
-              Saved automatically
-            </p>
+            <SaveIndicator storageKey={PROFILE_STORAGE_KEY} />
           </div>
           <h1 className="mt-3 text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
             Your Profile

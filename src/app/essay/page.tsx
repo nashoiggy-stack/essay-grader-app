@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { EssayInput } from "@/components/EssayInput";
 import { ScoreOverview } from "@/components/ScoreOverview";
 import { TabNavigation, type TabId } from "@/components/TabNavigation";
@@ -122,9 +123,12 @@ export default function Home() {
         {/* Masthead — replaces the cosmic ContainerScroll 3D hero per
             CRITIQUE.md (was a leftover from the pre-Linear redesign). */}
         <header className="mb-10 sm:mb-12">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
-            Tools / Essay Grader
-          </p>
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
+              Tools / Essay Grader
+            </p>
+            <SaveIndicator storageKey="essay-grader-history" />
+          </div>
           <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
             {APP_CONFIG.title}
           </h1>

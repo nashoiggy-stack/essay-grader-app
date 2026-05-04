@@ -2,10 +2,12 @@
 
 import { motion } from "motion/react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { ECActivityList } from "@/components/ECActivityList";
 import { ECConversationPanel } from "@/components/ECConversation";
 import { ECResults } from "@/components/ECResults";
 import { useECEvaluator } from "@/hooks/useECEvaluator";
+import { EC_ACTIVITIES_KEY, EC_STORAGE_KEY } from "@/lib/extracurricular-types";
 
 export default function ExtracurricularsPage() {
   const ec = useECEvaluator();
@@ -18,9 +20,12 @@ export default function ExtracurricularsPage() {
         <header className="mb-10 sm:mb-12">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
-                Tools / Activity Evaluator
-              </p>
+              <div className="flex items-baseline gap-4">
+                <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
+                  Tools / Activity Evaluator
+                </p>
+                <SaveIndicator storageKey={[EC_ACTIVITIES_KEY, EC_STORAGE_KEY]} />
+              </div>
               <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
                 Activity Evaluator
               </h1>

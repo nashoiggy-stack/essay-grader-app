@@ -7,11 +7,13 @@ import { ResumePreview } from "@/components/ResumePreview";
 import { ResumeSectionCard, type FieldSchema } from "@/components/ResumeSectionCard";
 import { ActivitiesHelperPanel } from "@/components/ActivitiesHelperPanel";
 import { SectionNav } from "@/components/SectionNav";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import {
   ResumeImproveDiff,
   type ResumeImprovePending,
 } from "@/components/ResumeImproveDiff";
 import { useResume } from "@/hooks/useResume";
+import { RESUME_STORAGE_KEY } from "@/lib/resume-types";
 import { Download, Save, FileText, Wand2, Eye, EyeOff, RotateCcw, Download as DownloadIcon } from "lucide-react";
 
 const inputClass =
@@ -151,11 +153,14 @@ export default function ResumePage() {
         {/* Header */}
         <div className="mb-10 print:hidden">
           <div className="flex items-start justify-between gap-4 mb-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
-              <FileText className="w-3.5 h-3.5 text-text-secondary" />
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-text-secondary">
-                Resume Helper
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
+                <FileText className="w-3.5 h-3.5 text-text-secondary" />
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-text-secondary">
+                  Resume Helper
+                </span>
+              </div>
+              <SaveIndicator storageKey={RESUME_STORAGE_KEY} />
             </div>
             <div className="flex items-center gap-2">
               <button
