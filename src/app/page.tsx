@@ -8,13 +8,18 @@ import { ArrowRight, User } from "lucide-react";
 // LandingMiddle + LandingFooter are below the fold and cost no first-paint
 // time to defer. Lazy-loading them shrinks the initial JS payload so the
 // hero can paint and become interactive faster.
+// LandingMiddle + LandingFooter are below the fold so dynamic() lets
+// them code-split out of the initial bundle. SSR is left ON (the
+// previous `ssr: false` made the editorial middle + footer invisible
+// to crawlers and caused a flash-of-empty-content on slow networks
+// — see CRITIQUE.md systemic issue / landing BLOCK).
 const LandingMiddle = dynamic(
   () => import("@/components/landing/LandingExtras").then((m) => ({ default: m.LandingMiddle })),
-  { ssr: false, loading: () => <div style={{ minHeight: "60vh" }} /> }
+  { loading: () => <div style={{ minHeight: "60vh" }} /> }
 );
 const LandingFooter = dynamic(
   () => import("@/components/landing/LandingExtras").then((m) => ({ default: m.LandingFooter })),
-  { ssr: false, loading: () => null }
+  { loading: () => null }
 );
 
 const ShaderLines = dynamic(
@@ -126,19 +131,25 @@ export default function LandingPage() {
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-300 mb-4 sm:mb-6 font-semibold">
               College Prep Suite
             </p>
+            {/* Single h1 with two visual lines — second line italic. Was two
+                separate h1s, which advertised two top-level headings to
+                screen readers and broke document outline. */}
             <h1
-              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-2 sm:mb-3 text-white leading-[1]"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[1]"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
-              Your edge in
+              <span className="block mb-2 sm:mb-3">Your edge in</span>
+              <span className="block italic">college admissions.</span>
             </h1>
-            <h1
-              className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[1] italic"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
-            >
-              college admissions.
-            </h1>
-            <p className="text-xs text-zinc-500 text-center mt-2">
+            {/* Standfirst — names what the product actually does, so a
+                first-time visitor scanning the hero understands the value
+                prop without scrolling through 420vh of choreography. */}
+            <p className="mt-5 sm:mt-6 max-w-[44ch] text-[14px] sm:text-[15px] leading-relaxed text-zinc-300">
+              Nine connected tools — essay grading, GPA, extracurriculars,
+              resume, list, chances, comparison, strategy — sourced from CDS
+              data. One profile feeds them all.
+            </p>
+            <p className="text-xs text-zinc-500 text-center mt-4">
               Early access — actively in development
             </p>
           </motion.div>
@@ -212,16 +223,11 @@ export default function LandingPage() {
             }}
           >
             <h2
-              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-2 sm:mb-3 text-white leading-[1]"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-4 sm:mb-6 text-white leading-[1]"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
-              Start building
-            </h2>
-            <h2
-              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-4 sm:mb-6 text-white leading-[1] italic"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
-            >
-              your profile.
+              <span className="block mb-2 sm:mb-3">Start building</span>
+              <span className="block italic">your profile.</span>
             </h2>
             <p className="text-zinc-300 text-sm sm:text-lg md:text-xl mb-8 sm:mb-12 max-w-xl mx-auto font-light leading-relaxed px-2">
               Grade your essays, calculate your GPA, evaluate your extracurriculars, and find your
