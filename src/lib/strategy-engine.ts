@@ -474,6 +474,13 @@ export function analyzeEarlyStrategy(
   // unqualified applicants and can't ground a recommendation without data.
   const essayCA = p.essay?.summaryScore ?? null;
   const essayV = p.essay?.vspice ?? null;
+  // The RD baseline on s.classified was computed with the full chance-model
+  // input set (essay scores, advancedCoursework, EC band, distinguished EC,
+  // rigor, AP scores). The ED leverage = edChance − rdChance must use the
+  // SAME inputs or the comparison drifts numerator-vs-denominator and
+  // systematically under-reports ED upside — which is what was suppressing
+  // viable dream-school ED picks.
+  const ex = p.chanceExtras;
   let edCandidate: typeof sorted[number] | null = null;
   let bestLeverage = 0;
   for (const s of sorted) {
@@ -483,7 +490,8 @@ export function analyzeEarlyStrategy(
     if (s.classified.classification === "unlikely") continue;
     if (s.classified.classification === "insufficient") continue;
     // RD chance is already on the classified card (its plan defaulted to RD).
-    // ED chance: re-classify with applicationPlan: "ED".
+    // ED chance: re-classify with applicationPlan: "ED" using the full input
+    // set — same as buildPinnedSchools used for the RD baseline.
     const edResult = classifyCollege(
       s.classified.college,
       p.gpa.uw,
@@ -492,7 +500,16 @@ export function analyzeEarlyStrategy(
       p.tests.act,
       essayCA,
       essayV,
-      { applicationPlan: types(options).includes("ED") ? "ED" : "ED2" },
+      {
+        applicationPlan: types(options).includes("ED") ? "ED" : "ED2",
+        ecBand: ex.ecBand,
+        distinguishedEC: ex.distinguishedEC,
+        rigor: p.gpa.rigor,
+        apScores: ex.apScores,
+        advancedCoursework: ex.advancedCoursework,
+        advancedCourseworkAvailable: ex.advancedCourseworkAvailable,
+        essayScores: ex.essayScores,
+      },
     );
     const leverage = edResult.chance.mid - s.classified.chance.mid;
     // Require the lift to be meaningful (>= 3 percentage points) so we
@@ -622,10 +639,20 @@ function classifyAll(p: StrategyProfile): ClassifiedCollege[] {
   const essayCA = p.essay?.summaryScore ?? null;
   const essayV = p.essay?.vspice ?? null;
   const query = { major: p.intendedMajor, interest: p.intendedInterest };
+  const ex = p.chanceExtras;
 
   return COLLEGES.map((c) => {
     const result = classifyCollege(
       c, p.gpa.uw, p.gpa.w, p.tests.sat, p.tests.act, essayCA, essayV,
+      {
+        ecBand: ex.ecBand,
+        distinguishedEC: ex.distinguishedEC,
+        rigor: p.gpa.rigor,
+        apScores: ex.apScores,
+        advancedCoursework: ex.advancedCoursework,
+        advancedCourseworkAvailable: ex.advancedCourseworkAvailable,
+        essayScores: ex.essayScores,
+      },
     );
     const fit = computeMajorFit(c, query);
     const matchReason = buildMatchReason(c, query, fit.signals);
@@ -896,8 +923,18 @@ export function computeDreamSchoolVerdict(
       school = found;
       const essayCA = p.essay?.summaryScore ?? null;
       const essayV = p.essay?.vspice ?? null;
+      const ex = p.chanceExtras;
       const { classification: cls } = classifyCollege(
         found, p.gpa.uw, p.gpa.w, p.tests.sat, p.tests.act, essayCA, essayV,
+        {
+          ecBand: ex.ecBand,
+          distinguishedEC: ex.distinguishedEC,
+          rigor: p.gpa.rigor,
+          apScores: ex.apScores,
+          advancedCoursework: ex.advancedCoursework,
+          advancedCourseworkAvailable: ex.advancedCourseworkAvailable,
+          essayScores: ex.essayScores,
+        },
       );
       classification = cls;
     }

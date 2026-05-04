@@ -14,9 +14,10 @@ import type {
   StrategyGpa,
   StrategyTests,
   StrategyEssay,
+  StrategyChanceExtras,
 } from "./strategy-types";
 import { DREAM_SCHOOL_KEY } from "./strategy-types";
-import type { UserProfile } from "./profile-types";
+import type { UserProfile, EssayScoreRecord } from "./profile-types";
 import type { ProfileEvaluation } from "./extracurricular-types";
 import type { GradingResult, SavedEssay } from "./types";
 import type { ClassifiedCollege, PinnedCollege } from "./college-types";
@@ -121,9 +122,70 @@ function buildEssay(
   };
 }
 
+// Build the full chance-model "extras" set from the user profile. Mirrors
+// what useChanceCalculator does for /chances so strategy numbers match the
+// live calculator instead of silently degrading the essay multiplier and
+// rigor uplift.
+function buildChanceExtras(
+  profile: UserProfile | null,
+  essayCA: number | null,
+  essayV: number | null,
+): StrategyChanceExtras {
+  const ecBand =
+    typeof profile?.ecBand === "string" && profile.ecBand ? profile.ecBand : undefined;
+  const distinguishedEC =
+    profile?.firstAuthorPublication === true ||
+    profile?.nationalCompetitionPlacement === true ||
+    profile?.founderWithUsers === true ||
+    profile?.selectiveProgram === true;
+
+  const advancedCoursework = Array.isArray(profile?.advancedCoursework)
+    ? profile!.advancedCoursework
+    : undefined;
+  const advancedCourseworkAvailable =
+    profile?.advancedCourseworkAvailable === "all" ||
+    profile?.advancedCourseworkAvailable === "limited" ||
+    profile?.advancedCourseworkAvailable === "none"
+      ? profile.advancedCourseworkAvailable
+      : undefined;
+
+  // Same synthesis as useChanceCalculator: when no graded essay exists but
+  // the user supplied Common-App + V-SPICE numbers on /profile, treat them
+  // as a valid essay record so the chance model can leave the 1.0× neutral
+  // band. Without this, /strategy under-reports chances vs /chances.
+  let essayScores: readonly EssayScoreRecord[] | undefined;
+  if (Array.isArray(profile?.essayScores) && profile!.essayScores.length > 0) {
+    essayScores = profile!.essayScores;
+  } else if (essayCA != null && Number.isFinite(essayCA)) {
+    const vspice0to24 =
+      essayV != null && Number.isFinite(essayV)
+        ? Math.max(0, Math.min(24, essayV))
+        : 0;
+    essayScores = [
+      {
+        promptId: "strategy-form",
+        combinedScore: essayCA,
+        rubricScore: essayCA,
+        vspiceScore: vspice0to24,
+        gradedAt: Date.now(),
+      },
+    ];
+  }
+
+  return {
+    ecBand,
+    distinguishedEC,
+    apScores: profile?.apScores,
+    advancedCoursework,
+    advancedCourseworkAvailable,
+    essayScores,
+  };
+}
+
 function buildPinnedSchools(
   pins: readonly PinnedCollege[],
   profile: UserProfile | null,
+  extras: StrategyChanceExtras,
 ): readonly StrategyPinnedSchool[] {
   if (pins.length === 0) return [];
 
@@ -150,15 +212,7 @@ function buildPinnedSchools(
     ? parseFloat(profile.essayCommonApp)
     : null;
   const essayV = profile?.essayVspice ? parseFloat(profile.essayVspice) : null;
-  // Pass EC band, rigor, and distinguished-EC flags to the chance model so
-  // strong-profile applicants don't get capped by silent defaults.
-  const ecBand = typeof profile?.ecBand === "string" && profile.ecBand ? profile.ecBand : undefined;
   const rigor = profile?.rigor;
-  const distinguishedEC =
-    profile?.firstAuthorPublication === true ||
-    profile?.nationalCompetitionPlacement === true ||
-    profile?.founderWithUsers === true ||
-    profile?.selectiveProgram === true;
 
   const result: StrategyPinnedSchool[] = [];
   for (const pin of pins) {
@@ -172,7 +226,15 @@ function buildPinnedSchools(
       Number.isFinite(act ?? NaN) ? act : null,
       Number.isFinite(essayCA ?? NaN) ? essayCA : null,
       Number.isFinite(essayV ?? NaN) ? essayV : null,
-      { ecBand, distinguishedEC, rigor, apScores: profile?.apScores },
+      {
+        ecBand: extras.ecBand,
+        distinguishedEC: extras.distinguishedEC,
+        rigor,
+        apScores: extras.apScores,
+        advancedCoursework: extras.advancedCoursework,
+        advancedCourseworkAvailable: extras.advancedCourseworkAvailable,
+        essayScores: extras.essayScores,
+      },
     );
     const classified: ClassifiedCollege = {
       college,
@@ -216,7 +278,17 @@ export function readStrategyProfile(): StrategyProfile {
   const gpa = buildGpa(profile);
   const tests = buildTests(profile);
   const essay = buildEssay(profile, essayHistory);
-  const pinnedSchools = buildPinnedSchools(pins, profile);
+  // Strategy uses the SAME chance-model inputs the live calculator does —
+  // build once and reuse for the RD baseline (here) and any later ED
+  // re-classification in strategy-engine.
+  const essayCAForExtras = profile?.essayCommonApp
+    ? parseFloat(profile.essayCommonApp)
+    : null;
+  const essayVForExtras = profile?.essayVspice
+    ? parseFloat(profile.essayVspice)
+    : null;
+  const chanceExtras = buildChanceExtras(profile, essayCAForExtras, essayVForExtras);
+  const pinnedSchools = buildPinnedSchools(pins, profile, chanceExtras);
 
   const hasGpa = gpa.uw != null || gpa.w != null;
   const hasTests = tests.sat != null || tests.act != null;
@@ -248,6 +320,7 @@ export function readStrategyProfile(): StrategyProfile {
             graduationYear: profile?.basicInfo?.graduationYear ?? "",
           }
         : null,
+    chanceExtras,
     hasGpa,
     hasTests,
     hasEc,

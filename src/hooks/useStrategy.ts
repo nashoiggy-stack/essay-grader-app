@@ -48,6 +48,17 @@ function hashInput(profile: StrategyProfile): string {
         }
       : null,
     pinned: profile.pinnedSchools.map((s) => s.pin.name).sort(),
+    // Extras feed directly into the chance model, so changes (e.g. adding
+    // an AP score, marking advancedCoursework, grading an essay) must
+    // invalidate the cache or the strategy stays out of sync with /chances.
+    extras: {
+      ecBand: profile.chanceExtras.ecBand ?? null,
+      distinguishedEC: profile.chanceExtras.distinguishedEC,
+      apCount: profile.chanceExtras.apScores?.length ?? 0,
+      advancedCount: profile.chanceExtras.advancedCoursework?.length ?? 0,
+      coursework: profile.chanceExtras.advancedCourseworkAvailable ?? null,
+      essayCount: profile.chanceExtras.essayScores?.length ?? 0,
+    },
   };
   const str = JSON.stringify(projected);
   let hash = 5381;
