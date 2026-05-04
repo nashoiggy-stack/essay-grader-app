@@ -24,12 +24,12 @@ export const LineNotesTab: React.FC<LineNotesTabProps> = ({ suggestions }) => (
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.06 }}
-          className="bg-bg-surface rounded-xl p-4"
+          className="bg-bg-surface rounded-md border border-border-hair p-4"
         >
-          <p className="text-sm text-text-muted italic border-l-2 border-accent-line pl-3 mb-2">
+          <p className="text-sm text-text-muted italic mb-2">
             &ldquo;{ls.line}&rdquo;
           </p>
-          <p className="text-sm text-text-secondary pl-3">{ls.suggestion}</p>
+          <p className="text-sm text-text-secondary">{ls.suggestion}</p>
         </motion.div>
       ))
     ) : (

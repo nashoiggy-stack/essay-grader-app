@@ -30,7 +30,7 @@ export default function ChancesPage() {
         </motion.div>
 
         {/* Always-visible disclaimer per final calibration spec. */}
-        <div className="mb-8 rounded-xl bg-amber-500/[0.06] dark:bg-amber-500/[0.04] border border-amber-500/[0.25] dark:border-amber-500/[0.15] px-4 py-3">
+        <div className="mb-8 rounded-md bg-amber-500/[0.06] dark:bg-amber-500/[0.04] border border-amber-500/[0.25] dark:border-amber-500/[0.15] px-4 py-3">
           <p className="text-[12px] text-amber-900/85 dark:text-amber-200/80 leading-relaxed">
             <span className="font-semibold text-amber-900 dark:text-amber-200">Estimates only.</span>{" "}
             Chance estimates use data-informed multipliers calibrated against published research.

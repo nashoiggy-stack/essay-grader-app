@@ -224,16 +224,16 @@ export default function Home() {
             >
               {/* Divider + Save button */}
               <div className="flex items-center gap-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                <div className="flex-1 h-px bg-border-hair" />
                 <span className="text-xs text-text-muted uppercase tracking-[0.08em]">Results</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                <div className="flex-1 h-px bg-border-hair" />
                 <motion.button
                   onClick={handleSave}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                     saveFlash
-                      ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                      ? "bg-tier-safety-soft text-tier-safety-fg ring-1 ring-tier-safety-fg/30"
                       : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                   }`}
                 >
@@ -272,8 +272,7 @@ export default function Home() {
 
               {/* ── Inline Editor / Suggestions ──────────────────────── */}
               <ScrollReveal delay={0.15}>
-                <div className="" style={{ "--radius": "1rem" } as React.CSSProperties}>
-                <div className="bg-bg-surface rounded-md p-6 sm:p-8">
+                <div className="bg-bg-surface rounded-md border border-border-hair p-6 sm:p-8">
                   <h3 className="text-lg font-bold text-text-primary mb-1">Inline Suggestions</h3>
                   <p className="text-sm text-text-muted mb-5">
                     Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
@@ -305,31 +304,45 @@ export default function Home() {
 
                   <div className="p-6 sm:p-8">
                     <AnimatePresence mode="wait">
-                      {activeTab === "common" && <CommonAppTab scores={grading.result.commonApp} />}
+                      {activeTab === "common" && (
+                        <div role="tabpanel" id="tabpanel-common" aria-labelledby="tab-common">
+                          <CommonAppTab scores={grading.result.commonApp} />
+                        </div>
+                      )}
                       {activeTab === "vspice" && (
-                        <VspiceTab
-                          scores={grading.result.vspice}
-                          bonuses={grading.result.bonuses}
-                          pitfalls={grading.result.pitfalls}
-                        />
+                        <div role="tabpanel" id="tabpanel-vspice" aria-labelledby="tab-vspice">
+                          <VspiceTab
+                            scores={grading.result.vspice}
+                            bonuses={grading.result.bonuses}
+                            pitfalls={grading.result.pitfalls}
+                          />
+                        </div>
                       )}
                       {activeTab === "feedback" && (
-                        <FeedbackTab
-                          generalFeedback={grading.result.generalFeedback}
-                          commonApp={grading.result.commonApp}
-                          onNavigateToCommon={() => setActiveTab("common")}
-                        />
+                        <div role="tabpanel" id="tabpanel-feedback" aria-labelledby="tab-feedback">
+                          <FeedbackTab
+                            generalFeedback={grading.result.generalFeedback}
+                            commonApp={grading.result.commonApp}
+                            onNavigateToCommon={() => setActiveTab("common")}
+                          />
+                        </div>
                       )}
-                      {activeTab === "lines" && <LineNotesTab suggestions={grading.result.lineSuggestions} />}
+                      {activeTab === "lines" && (
+                        <div role="tabpanel" id="tabpanel-lines" aria-labelledby="tab-lines">
+                          <LineNotesTab suggestions={grading.result.lineSuggestions} />
+                        </div>
+                      )}
                       {activeTab === "chat" && (
-                        <ChatTab
-                          messages={chat.messages}
-                          input={chat.input}
-                          loading={chat.loading}
-                          chatEndRef={chat.chatEndRef}
-                          onInputChange={chat.setInput}
-                          onSend={handleChatSend}
-                        />
+                        <div role="tabpanel" id="tabpanel-chat" aria-labelledby="tab-chat">
+                          <ChatTab
+                            messages={chat.messages}
+                            input={chat.input}
+                            loading={chat.loading}
+                            chatEndRef={chat.chatEndRef}
+                            onInputChange={chat.setInput}
+                            onSend={handleChatSend}
+                          />
+                        </div>
                       )}
                     </AnimatePresence>
                   </div>

@@ -18,7 +18,7 @@ interface ChanceFormProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-sm bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
@@ -171,7 +171,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           aria-invalid={isOverScale(inputs.gpaUW, 4.0) ? true : undefined}
           onChange={(e) => onUpdate("gpaUW", e.target.value)} />
         {isOverScale(inputs.gpaUW, 4.0) && (
-          <p className="mt-1 text-[10px] text-rose-400 leading-snug">
+          <p className="mt-1 text-[10px] text-tier-unlikely-fg leading-snug">
             Exceeds 4.0 scale — convert via GPA calculator.
           </p>
         )}
@@ -183,7 +183,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           aria-invalid={isOverScale(inputs.gpaW, 5.0) ? true : undefined}
           onChange={(e) => onUpdate("gpaW", e.target.value)} />
         {isOverScale(inputs.gpaW, 5.0) && (
-          <p className="mt-1 text-[10px] text-rose-400 leading-snug">
+          <p className="mt-1 text-[10px] text-tier-unlikely-fg leading-snug">
             Exceeds 5.0 scale — convert via GPA calculator.
           </p>
         )}
@@ -281,14 +281,14 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
                 ? "text-text-muted"
                 : row.type === "AP"
                   ? row.score >= 4
-                    ? "text-emerald-400"
+                    ? "text-tier-safety-fg"
                     : row.score === 3
-                      ? "text-amber-400"
+                      ? "text-tier-target-fg"
                       : "text-text-muted"
                   : row.score >= 6
-                    ? "text-emerald-400"
+                    ? "text-tier-safety-fg"
                     : row.score >= 4
-                      ? "text-amber-400"
+                      ? "text-tier-target-fg"
                       : "text-text-muted";
             return (
               <div
@@ -317,7 +317,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
 // to the GPA Calculator for students whose schools use a different scale.
 function GpaScaleNote() {
   return (
-    <div className="rounded-xl bg-blue-500/[0.05] border border-blue-500/[0.18] px-4 py-3 flex items-start gap-3">
+    <div className="rounded-md bg-accent-soft border border-accent-line px-4 py-3 flex items-start gap-3">
       <svg
         width="16"
         height="16"

@@ -15,7 +15,7 @@ interface CollegeFiltersProps {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-sm bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-xs font-medium text-text-secondary mb-1";
 
@@ -157,8 +157,8 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
                   key={m}
                   className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5  transition-[background-color,color] duration-200 ${
                     active
-                      ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
-                      : "bg-transparent ring-white/[0.12] text-text-secondary"
+                      ? "bg-accent-soft ring-accent-line text-accent-text"
+                      : "bg-transparent ring-border-hair text-text-secondary"
                   }`}
                 >
                   <button
@@ -190,7 +190,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
               ? "All majors inactive — click a chip to filter on it"
               : "Add majors to flag strong-fit schools — doesn't filter others out"}
           {filters.intendedMajors.length === MAX_MAJORS && (
-            <span className="text-amber-400/80 ml-1">· {MAX_MAJORS}/{MAX_MAJORS} used</span>
+            <span className="text-tier-target-fg ml-1">· {MAX_MAJORS}/{MAX_MAJORS} used</span>
           )}
         </p>
       </div>
@@ -220,7 +220,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
             onClick={addInterest}
             disabled={!pendingInterest.trim() || filters.intendedInterests.length >= MAX_INTERESTS}
             aria-label="Add interest"
-            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-accent-soft hover:bg-accent-soft disabled:bg-bg-surface disabled:text-text-faint text-accent-text px-3 text-xs font-semibold transition-colors"
+            className="shrink-0 inline-flex items-center gap-1 rounded-sm bg-[var(--accent)] hover:bg-[var(--accent-strong)] disabled:bg-bg-surface disabled:text-text-faint text-[var(--accent-fg)] px-3 text-xs font-semibold transition-colors"
           >
             Add
           </button>
@@ -234,8 +234,8 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
                   key={i}
                   className={`inline-flex items-center gap-1 rounded-full text-[11px] pl-2.5 pr-1 py-0.5  transition-[background-color,color] duration-200 ${
                     active
-                      ? "bg-emerald-500/15 ring-emerald-500/30 text-emerald-200"
-                      : "bg-transparent ring-white/[0.12] text-text-secondary"
+                      ? "bg-accent-soft ring-accent-line text-accent-text"
+                      : "bg-transparent ring-border-hair text-text-secondary"
                   }`}
                 >
                   <button
@@ -267,7 +267,7 @@ export const CollegeFiltersPanel: React.FC<CollegeFiltersProps> = ({
               ? "All interests inactive — click a chip to filter on it"
               : "Niches and themes; matched fuzzily against college tags"}
           {filters.intendedInterests.length === MAX_INTERESTS && (
-            <span className="text-amber-400/80 ml-1">· {MAX_INTERESTS}/{MAX_INTERESTS} used</span>
+            <span className="text-tier-target-fg ml-1">· {MAX_INTERESTS}/{MAX_INTERESTS} used</span>
           )}
         </p>
       </div>

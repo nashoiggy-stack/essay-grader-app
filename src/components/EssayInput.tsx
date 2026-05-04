@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Card3D } from "./Card3D";
 import { APP_CONFIG, LOADING_TEXT, UPLOAD_ACCEPT } from "@/data/mockData";
 
 interface EssayInputProps {
@@ -47,7 +46,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
   };
 
   return (
-    <Card3D className="bg-bg-surface rounded-md p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
+    <div className="bg-bg-surface rounded-md p-6 sm:p-8 border border-border-hair">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 gap-2">
         <label htmlFor="essay-textarea" className="text-sm font-medium text-text-secondary">Your essay</label>
@@ -59,7 +58,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
               whileTap={{ scale: 0.96 }}
               className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full  transition-[background-color,color,box-shadow] duration-200 ${
                 copied
-                  ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
+                  ? "bg-tier-safety-soft text-tier-safety-fg ring-tier-safety-fg/30"
                   : "bg-bg-inset text-text-secondary border-border-hair hover:text-text-primary hover:bg-bg-surface"
               }`}
               title="Copy essay to clipboard"
@@ -157,22 +156,17 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           disabled={loading}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          className="relative rounded-xl bg-blue-600 px-7 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+          className="relative rounded-md bg-[var(--accent)] hover:bg-[var(--accent-strong)] px-7 py-3 text-sm font-semibold text-[var(--accent-fg)] disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color] duration-200"
         >
-          <motion.span
-            className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 pointer-events-none"
-            animate={{ backgroundPosition: loading ? ["0% 50%", "200% 50%"] : "0% 50%" }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            style={{ backgroundSize: "200% 100%" }}
-          />
-          <span className="relative z-10 flex items-center gap-2">
-            {loading && <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />}
+          
+          <span className="flex items-center gap-2">
+            {loading && <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />}
             {loading ? "Analyzing..." : "Grade Essay"}
           </span>
         </motion.button>
         <button
           onClick={onClear}
-          className="rounded-xl px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-[border-color,box-shadow,background-color,color] duration-200"
+          className="rounded-sm px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-[background-color,color] duration-200"
         >
           Clear
         </button>
@@ -185,11 +179,11 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-5 bg-bg-surface rounded-xl p-5 overflow-hidden animate-pulse-glow"
+            className="mt-5 bg-bg-inset rounded-md border border-border-hair p-5 overflow-hidden"
           >
             <p className="text-sm text-accent-text font-medium">{LOADING_TEXT}</p>
-            <div className="mt-3 h-1 w-full rounded-full bg-bg-surface overflow-hidden">
-              <div className="h-full bg-blue-500/50 rounded-full shimmer w-full" />
+            <div className="mt-3 h-1 w-full rounded-full bg-bg-elevated overflow-hidden">
+              <div className="h-full bg-[var(--accent)] rounded-full shimmer w-full" />
             </div>
           </motion.div>
         )}
@@ -202,13 +196,13 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="mt-5 rounded-xl border border-red-500/20 bg-red-500/5 p-4"
+            className="mt-5 rounded-md border border-tier-unlikely-fg/30 bg-tier-unlikely-soft p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-red-300">{error}</p>
+                <p className="text-sm text-tier-unlikely-fg">{error}</p>
                 {errorCode && errorCode !== "EMPTY_INPUT" && (
-                  <p className="mt-1 text-[10px] text-red-400/60 font-mono tabular-nums">
+                  <p className="mt-1 text-[10px] text-tier-unlikely-fg/70 font-mono tabular-nums">
                     Error: {errorCode}
                   </p>
                 )}
@@ -228,6 +222,6 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </Card3D>
+    </div>
   );
 };

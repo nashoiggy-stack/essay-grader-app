@@ -43,7 +43,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
-            className={`relative px-5 py-3.5 text-sm font-medium transition-[color] duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-inset ${
+            className={`relative px-5 py-3.5 text-sm font-medium transition-[color] duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-inset ${
               isActive ? "text-accent-text" : "text-text-muted hover:text-text-secondary"
             }`}
           >
@@ -51,8 +51,8 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             {isActive && (
               <motion.div
                 layoutId="tab-underline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-500"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent)]"
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
               />
             )}
           </button>
