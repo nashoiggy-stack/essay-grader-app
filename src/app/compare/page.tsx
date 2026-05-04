@@ -261,28 +261,48 @@ export default function ComparePage() {
               })}
             </div>
 
-            {/* Tabs */}
+            {/* Tabs — sticky horizontal nav with scroll affordance.
+                The right-edge fade gradient signals overflow on mobile
+                (CRITIQUE.md flagged the tabs as silently clipping at
+                375px with no cue to scroll). */}
             <ScrollReveal delay={0.14}>
-              <div className="sticky top-16 z-30 bg-bg-base/90 backdrop-blur-md -mx-4 px-4 py-2 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none rounded-b-xl">
-                {visibleTabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => setActiveTab(tab.key)}
-                      className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-[color,background-color] duration-200 shrink-0 ${
-                        isActive
-                          ? "text-white bg-bg-elevated"
-                          : "text-text-muted hover:text-text-secondary hover:bg-bg-surface"
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
+              <div className="sticky top-16 z-30 bg-bg-base/90 backdrop-blur-md -mx-4 px-4 py-2 rounded-b-md">
+                <div
+                  role="tablist"
+                  aria-label="Comparison categories"
+                  className="relative flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none -mr-4 pr-4"
+                  style={{
+                    /* Right-edge fade so overflowing tabs visibly trail off,
+                       cueing 'there is more, scroll'. Mask is a transform-
+                       cheap way to fade without an extra DOM element. */
+                    maskImage:
+                      "linear-gradient(to right, black calc(100% - 28px), transparent)",
+                    WebkitMaskImage:
+                      "linear-gradient(to right, black calc(100% - 28px), transparent)",
+                  }}
+                >
+                  {visibleTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.key;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-sm text-[12px] font-medium transition-[color,background-color] duration-200 shrink-0 ${
+                          isActive
+                            ? "text-text-primary bg-bg-elevated"
+                            : "text-text-muted hover:text-text-secondary hover:bg-bg-surface"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </ScrollReveal>
 
