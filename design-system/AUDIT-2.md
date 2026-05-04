@@ -1120,3 +1120,88 @@ Files swept: `src/app/resume/page.tsx`,
   misleading. Rename to "Improve activities" or remove the
   toggle.
 
+---
+
+## `/gpa`
+
+Files swept: `src/app/gpa/page.tsx`,
+`src/components/TranscriptUpload.tsx`, `public/gpa-calculator.html`
+(iframe payload).
+
+### BLOCK
+
+- [PARTIALLY-RESOLVED] CRITIQUE BLOCK: "`TranscriptUpload` is the
+  primary off-system component on this page — `rounded-2xl`,
+  `bg-white/[0.03]`, `backdrop-blur-sm`, `text-emerald-400` /
+  `text-red-400`, hardcoded `text-white`. Sits between
+  disciplined chrome and disciplined iframe and visibly screams
+  'old design system.'"
+  - Radii migrated: `rounded-md` (`TranscriptUpload.tsx:111`).
+  - But still violating: `backdrop-blur-sm` (`:111`), nested
+    `rounded-xl bg-bg-surface border border-white/10` icon
+    container (`:123`), `text-white/70` (`:123`), `text-white`
+    (`:129`), `text-emerald-400` (`:94`), `text-red-400` (`:95`),
+    `text-emerald-300` (`:145`), `text-red-300` (`:151`),
+    `border-white/10` (`:99`, `:123`), `border-emerald-400/40`
+    (`:101`), `border-red-400/40` (`:102`).
+  - Net: visually quieter than before, but still drift relative
+    to MASTER.md.
+- [OPEN] **`TranscriptUpload` width contract violates the page.**
+  CRITIQUE flagged `max-w-2xl mx-auto` while the rest of the
+  page is `max-w-[1180px]`. Verified at `TranscriptUpload.tsx:106`:
+  `<div className="mx-auto max-w-2xl px-4 mb-8">`. Hard visual
+  break. Either drop the inner `max-w-2xl` and let the parent
+  control width, or change the parent's wrapping section to
+  match. (`/profile` mounts the same component but inside its
+  own narrower `max-w-3xl` page, so the seam shows here.)
+
+### WARN
+
+- [OPEN] **Iframe seam — body uses `-apple-system`, parent
+  uses Geist.** CRITIQUE flagged. Verified
+  `public/gpa-calculator.html:71`:
+  `font-family: -apple-system, BlinkMacSystemFont, "Inter",
+  "Segoe UI", …`. On non-Mac the iframe will render Inter (or
+  whichever system fallback) while the parent renders Geist —
+  visibly different forms.
+- [OPEN] **Iframe still has `'DM Sans'` references on multiple
+  classes.** CRITIQUE flagged `.btn-add-year` and `.ytab-remove`.
+  Verified at `public/gpa-calculator.html:188, 198, 239, 277,
+  318, 523, 541` — `font-family: 'DM Sans', sans-serif` in eight
+  declarations. Any of these elements is a font-family mismatch.
+  Migrate the iframe payload to inherit the parent's
+  `--font-geist-sans`.
+- [OPEN] **Fixed `height: 2400px` is brittle.** `gpa/page.tsx:135`
+  hardcodes the iframe height. CRITIQUE flagged: "No
+  postMessage-based height sync." Still no postMessage. As the
+  user adds more years/courses, the iframe will overflow or
+  truncate. Implement a `window.parent.postMessage({type:
+  "gpa-height", h: document.body.scrollHeight}, "*")` from the
+  iframe and a listener in `gpa/page.tsx`.
+- [NEW WARN] **TranscriptUpload status colors all use raw
+  ramps**. `:94` `text-emerald-400`, `:95` `text-red-400`, `:145`
+  `text-emerald-300` (light-mode broken), `:151` `text-red-300`
+  (light-mode broken), borders too. Migrate to
+  `--tier-safety-fg` for success and `--tier-unlikely-fg` for
+  error.
+- [NEW WARN] **TranscriptUpload uses `backdrop-blur-sm` as
+  decoration.** `:111`. MASTER.md anti-patterns: backdrop-blur
+  is allowed only when functional. The card sits over the page
+  bg, not over scrolling content — drop the blur.
+- [NEW WARN] **Locked white in TranscriptUpload heading.** `:129`
+  `<p className="text-sm font-semibold text-white …">Upload your
+  transcript(s)</p>`. Same family as the /profile and /resume
+  text-white findings. Use `text-text-primary`.
+
+### INFO
+
+- [NEW INFO] `iframeColorScheme` at `gpa/page.tsx:10-11` only
+  switches `light` vs `dark` — but the parent app supports a
+  monochrome theme too. The iframe will render dark when the
+  parent is monochrome. Consider passing through the actual
+  monochrome state.
+- [NEW INFO] `<iframe ... key={`${iframeKey}-${iframeColorScheme}`}>`
+  forces a hard remount every time the user toggles theme.
+  Acceptable for theme switches; flagged so future theme-switch
+  speedups don't accidentally drop this.
+
