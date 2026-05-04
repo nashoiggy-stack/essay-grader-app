@@ -30,8 +30,14 @@ export const ECConversationPanel: React.FC<ECConversationProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto rounded-md border border-white/10 bg-bg-surface p-4 space-y-3 min-h-[300px] max-h-[500px]">
+      {/* Messages — log landmark with aria-live so each new bubble is
+          announced to AT users as it streams in. */}
+      <div
+        role="log"
+        aria-live="polite"
+        aria-atomic="false"
+        className="flex-1 overflow-y-auto rounded-md border border-white/10 bg-bg-surface p-4 space-y-3 min-h-[300px] max-h-[500px]"
+      >
         {isEmpty && (
           <div className="text-center py-12">
             <p className="text-zinc-500 text-sm mb-2">Describe your activity</p>

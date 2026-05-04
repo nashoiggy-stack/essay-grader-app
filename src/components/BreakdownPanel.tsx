@@ -42,7 +42,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
         <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary mb-2">
           How we got here
         </h4>
-        <div className="rounded-lg bg-[#0a0a14]/70 border border-border-hair divide-y divide-border-hair">
+        <div className="rounded-md bg-bg-inset border border-border-hair divide-y divide-border-hair">
           {/* Base row */}
           <div className="px-3 py-2.5 flex items-baseline justify-between gap-3">
             <div className="min-w-0">
@@ -96,7 +96,7 @@ export const BreakdownPanel: React.FC<BreakdownPanelProps> = ({
             {whatIfs.map((s, i) => (
               <li
                 key={i}
-                className="rounded-lg bg-[#0a0a14]/70 border border-border-hair px-3 py-2 flex items-baseline justify-between gap-3"
+                className="rounded-md bg-bg-inset border border-border-hair px-3 py-2 flex items-baseline justify-between gap-3"
               >
                 <span className="text-[12px] text-text-secondary leading-snug">{s.label}</span>
                 <span className="shrink-0 flex items-baseline gap-2">

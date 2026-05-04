@@ -136,7 +136,7 @@ export default function CollegesPage() {
         <AnimatePresence>
           {showGuide && (
             <motion.div id="fit-score-guide" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-8">
-              <div className="rounded-md bg-[#12121f] border border-border-strong p-6">
+              <div className="rounded-md bg-bg-inset border border-border-strong p-6">
                 <h3 className="text-sm font-bold text-text-primary mb-4">Classification Tiers & Chance Estimates</h3>
                 <div className="space-y-3 mb-6">
                   {TIERS.map((t) => (

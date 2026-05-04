@@ -26,7 +26,7 @@ export default function MethodologyPage() {
             score. This is the same formula Ivy League schools use internally for admissions
             evaluation.
           </p>
-          <pre className="mt-3 rounded-lg bg-[#0a0a14]/70 border border-border-hair px-4 py-3 text-[12px] font-mono text-text-secondary overflow-x-auto">
+          <pre className="mt-3 rounded-md bg-bg-inset border border-border-hair px-4 py-3 text-[12px] font-mono text-text-secondary overflow-x-auto">
 {`weightedGPAComponent = (weightedGPA / 5.0) × 80
 testComponent        = ((bestSAT − 400) / 1200) × 80
 AI = (weightedGPAComponent × 1.5) + (testComponent × 1.5)`}
@@ -230,7 +230,7 @@ function Table({ headers, rows }: { headers: readonly string[]; rows: readonly (
         </thead>
         <tbody className="divide-y divide-border-hair">
           {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-bg-surface">
+            <tr key={i} className="hover:bg-bg-elevated">
               {row.map((cell, j) => (
                 <td key={j} className="px-3 py-2 text-text-secondary font-mono tabular-nums">
                   {cell}

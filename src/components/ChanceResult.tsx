@@ -7,13 +7,13 @@ import { BreakdownPanel } from "./BreakdownPanel";
 
 // Color coding mirrors /colleges CollegeCard so the same school produces the
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
-const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string; glow: string }> = {
-  safety:       { bg: "bg-tier-safety-soft", text: "text-tier-safety-fg", bar: "bg-tier-safety-fg", glow: "" },
-  likely:       { bg: "bg-accent-soft",    text: "text-accent-text",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
-  target:       { bg: "bg-tier-target-soft", text: "text-tier-target-fg", bar: "bg-tier-target-fg", glow: "" },
-  reach:        { bg: "bg-tier-reach-soft", text: "text-tier-reach-fg", bar: "bg-tier-reach-fg", glow: "" },
-  unlikely:     { bg: "bg-tier-unlikely-soft", text: "text-tier-unlikely-fg", bar: "bg-tier-unlikely-fg", glow: "" },
-  insufficient: { bg: "bg-tier-insufficient-soft", text: "text-tier-insufficient-fg", bar: "bg-tier-insufficient-fg", glow: "" },
+const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string }> = {
+  safety:       { bg: "bg-tier-safety-soft",       text: "text-tier-safety-fg",       bar: "bg-tier-safety-fg" },
+  likely:       { bg: "bg-tier-likely-soft",       text: "text-tier-likely-fg",       bar: "bg-tier-likely-fg" },
+  target:       { bg: "bg-tier-target-soft",       text: "text-tier-target-fg",       bar: "bg-tier-target-fg" },
+  reach:        { bg: "bg-tier-reach-soft",        text: "text-tier-reach-fg",        bar: "bg-tier-reach-fg" },
+  unlikely:     { bg: "bg-tier-unlikely-soft",     text: "text-tier-unlikely-fg",     bar: "bg-tier-unlikely-fg" },
+  insufficient: { bg: "bg-tier-insufficient-soft", text: "text-tier-insufficient-fg", bar: "bg-tier-insufficient-fg" },
 };
 
 interface ChanceResultProps {
@@ -107,10 +107,10 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           Your chances at {collegeName}
         </p>
         <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow}  border border-border-hair`}
+          initial={{ scale: 0.96, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+          className={`inline-flex flex-col items-center px-6 py-3 rounded-md ${style.bg} border border-border-hair`}
         >
           <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
             {result.classification === "insufficient" ? "—" : `${result.chance.mid}%`}
@@ -145,7 +145,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
             <span className="text-center">Likely</span>
             <span className="text-right">Safety</span>
           </div>
-          <div className="h-2 rounded-full bg-bg-surface overflow-hidden">
+          <div className="h-2 rounded-full bg-bg-inset overflow-hidden">
             <motion.div
               className={`h-full rounded-full ${style.bar}`}
               initial={{ width: 0 }}
@@ -157,7 +157,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
       )}
 
       {/* Headline narrative */}
-      <div className="rounded-xl bg-[#12121f] border border-border-strong p-5">
+      <div className="rounded-md bg-bg-inset border border-border-strong p-5">
         <p className="text-[15px] text-text-primary leading-relaxed font-medium">
           {headline}
         </p>
@@ -173,8 +173,8 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
 
       {/* Multiplier breakdown + what-ifs (collapsible) */}
       {result.breakdown && (
-        <details className="group rounded-xl bg-bg-surface border border-border-hair overflow-hidden">
-          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-bg-surface transition-[background-color] duration-200">
+        <details className="group rounded-md bg-bg-surface border border-border-hair overflow-hidden">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-bg-elevated transition-[background-color] duration-200">
             <span className="text-xs text-text-muted font-medium">See the breakdown</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-faint transition-transform duration-300 group-open:rotate-180">
               <polyline points="6 9 12 15 18 9"/>
@@ -187,15 +187,17 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </details>
       )}
 
-      {/* Strengths & Weaknesses */}
+      {/* Strengths & Weaknesses — colors reuse the tier-safety / tier-unlikely
+          tokens so they adapt across light / dark / monochrome themes
+          (raw text-emerald-400 / text-red-400 failed 4.5:1 in light mode). */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <h4 className="text-sm font-semibold text-emerald-400 mb-2">Strengths</h4>
+          <h4 className="text-sm font-semibold text-tier-safety-fg mb-2">Strengths</h4>
           {result.strengths.length > 0 ? (
             <ul className="space-y-1.5">
               {result.strengths.map((s, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
-                  <span className="text-emerald-400 mt-0.5 shrink-0">+</span>{s}
+                  <span className="text-tier-safety-fg mt-0.5 shrink-0">+</span>{s}
                 </li>
               ))}
             </ul>
@@ -204,12 +206,12 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
           )}
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-red-400 mb-2">Areas to Improve</h4>
+          <h4 className="text-sm font-semibold text-tier-unlikely-fg mb-2">Areas to Improve</h4>
           {result.weaknesses.length > 0 ? (
             <ul className="space-y-1.5">
               {result.weaknesses.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
-                  <span className="text-red-400 mt-0.5 shrink-0">!</span>{w}
+                  <span className="text-tier-unlikely-fg mt-0.5 shrink-0">!</span>{w}
                 </li>
               ))}
             </ul>
@@ -221,7 +223,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
 
       {/* Missing data hints — neutral CTAs, not weaknesses */}
       {result.missingDataHints && result.missingDataHints.length > 0 && (
-        <ul className="rounded-lg bg-zinc-500/5 border border-border-hair p-3 space-y-1.5">
+        <ul className="rounded-md bg-bg-inset border border-border-hair p-3 space-y-1.5">
           {result.missingDataHints.map((hint, i) => (
             <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
               <span className="text-text-muted mt-0.5 shrink-0">+</span>
@@ -236,14 +238,9 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </ul>
       )}
 
-      {/* Disclaimer */}
-      <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-3">
-        <p className="text-[11px] text-amber-400/70 leading-relaxed">
-          This is an estimate based on general admissions patterns and is not a guarantee.
-          Actual admission decisions depend on many factors including essays, recommendations,
-          demonstrated interest, and institutional priorities.
-        </p>
-      </div>
+      {/* The page-level "Estimates only" disclaimer with the methodology
+          link (chances/page.tsx:33-47) covers this. A second amber block
+          here was redundant + dark-only. */}
     </motion.div>
   );
 };

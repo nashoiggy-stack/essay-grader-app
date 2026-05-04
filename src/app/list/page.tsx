@@ -3,7 +3,7 @@
 import { useMemo, useDeferredValue } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Plus, ArrowRight, Bookmark, RefreshCw, X } from "lucide-react";
+import { Plus, ArrowRight, RefreshCw, X } from "lucide-react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CollegeCard } from "@/components/CollegeCard";
 import { useCollegePins } from "@/hooks/useCollegePins";
@@ -673,6 +673,3 @@ function RecommendationRow({
     </motion.li>
   );
 }
-
-// Make the unused symbol from the type imports tree-shake cleanly.
-void Bookmark;
