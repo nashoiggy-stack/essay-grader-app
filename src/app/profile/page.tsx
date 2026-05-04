@@ -170,9 +170,20 @@ export default function ProfilePage() {
           </div>
         </ScrollReveal>
 
+        {/* Form-level wrapper. onSubmit prevents the implicit submit when
+            a user hits Enter inside an input — the page is fully
+            controlled (every change writes to cloud-storage), no submit
+            target. Each section is a <fieldset> with a sr-only <legend>
+            so AT users hear the section grouping that sighted users see
+            visually via the H2. */}
+        <form onSubmit={(e) => e.preventDefault()}>
         {/* Basic Info — shared across resume + future tools */}
         <ScrollReveal delay={0.08}>
-          <div id="profile-basic" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-basic"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Basic Info</legend>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Basic Info</h2>
               <span className="text-[10px] text-text-muted">Used in Resume Helper</span>
@@ -239,14 +250,18 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* Academic Interests — intended major + free-text interests.
             Edits propagate to /colleges, /chances, and /strategy via
             useProfile's setItemAndNotify writes. */}
         <ScrollReveal delay={0.09}>
-          <div id="profile-major" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-major"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Academic Interests</legend>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
@@ -283,12 +298,16 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* GPA Section */}
         <ScrollReveal delay={0.1}>
-          <div id="profile-gpa" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-gpa"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">GPA</legend>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">GPA</h2>
               {computed?.gpaUW && <SourceBadge source="GPA Calculator" />}
@@ -363,7 +382,7 @@ export default function ProfilePage() {
                 waives the rigor signal entirely (no penalty for not having APs).
               </p>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* Advanced Coursework — replaces the old single rigor dropdown */}
@@ -377,7 +396,11 @@ export default function ProfilePage() {
 
         {/* SAT Section */}
         <ScrollReveal delay={0.15}>
-          <div id="profile-sat" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-sat"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">SAT</legend>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">SAT</h2>
               {satComposite !== null && (
@@ -414,12 +437,16 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* ACT Section */}
         <ScrollReveal delay={0.2}>
-          <div id="profile-act" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-act"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">ACT</legend>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">ACT</h2>
               {actComposite !== null && (
@@ -478,12 +505,16 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* Essay Scores */}
         <ScrollReveal delay={0.25}>
-          <div id="profile-essay" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-essay"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Essay Scores</legend>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Essay Scores</h2>
               {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
@@ -515,12 +546,16 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* Extracurriculars */}
         <ScrollReveal delay={0.3}>
-          <div id="profile-ec" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
+          <fieldset
+            id="profile-ec"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Extracurriculars</legend>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Extracurriculars</h2>
               {computed?.ecBand && <SourceBadge source="EC Evaluator" />}
@@ -580,12 +615,16 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
 
         {/* Summary Card */}
         <ScrollReveal delay={0.35}>
-          <div id="profile-summary" className="bg-bg-surface rounded-md p-6 border border-border-hair scroll-mt-32">
+          <fieldset
+            id="profile-summary"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Auto-Fill Summary</legend>
             <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em] mb-4">Auto-Fill Summary</h2>
             <p className="text-xs text-text-muted mb-4">
               These values auto-fill into the College List Builder and Chance Calculator.
@@ -609,8 +648,9 @@ export default function ProfilePage() {
               <SummaryItem label="Major" value={profile.intendedMajor || "—"} />
               <SummaryItem label="Interest" value={profile.intendedInterest || "—"} />
             </div>
-          </div>
+          </fieldset>
         </ScrollReveal>
+        </form>
       </main>
     </>
   );
