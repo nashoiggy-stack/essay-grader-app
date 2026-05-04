@@ -755,9 +755,8 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   const dampened = applyCombinedDampener(rawCombined);
 
   // 11. Compute midpoint, then apply the final selectivity cap.
-  //     admissionsType differentiates 15-25% holistic vs stats-driven.
+  //     All schools share the holistic cap table now.
   let rawMid = baseResult.rate * dampened;
-  const admType = college.admissionsType ?? "holistic";
   const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
   // Anchor the cap bracket to the ACTUAL admit rate for the chosen plan,
   // not to the overall (RD-derived) acceptance rate. Otherwise schools
@@ -769,7 +768,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // ED applicant can plausibly land in the 50-70% range. RD lookup is
   // unchanged because the overall rate IS the RD anchor.
   const capLookupRate = isEdLikePlan ? baseResult.rate : effectiveAcceptanceRate(college);
-  const cap = getChanceCap(capLookupRate, admType);
+  const cap = getChanceCap(capLookupRate);
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
   if (rawMid > capValue) rawMid = capValue;
   const nationalMid = clamp(rawMid, 0.5, 95);

@@ -303,7 +303,7 @@ export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
 // chance values produced by the prior school-relative classifier.
 // v6: final calibration — two-tier routing (algorithmic vs holistic-elite),
 // essay multiplier reintroduced (graded-only), advancedCoursework[] replaces
-// rigor dropdown, admissionsType cap split in 15-25% bracket.
+// rigor dropdown.
 // v5: Feature 1 chance-model rewrite — fitScore removed.
 // v4: DreamSchoolSection no longer carries whatWouldChangeThis. v3 lacked
 // action/tone fields. Both old shapes are invalidated by this bump.

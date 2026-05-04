@@ -2,7 +2,7 @@ import type { College, ApplicationOption } from "@/lib/college-types";
 import { COLLEGE_EXTENDED_DATA, COLLEGE_ALIASES } from "./college-extended";
 import { CDS_DATA } from "./cds-data";
 import { isLegacyBlind, isYieldProtected } from "./hook-multipliers";
-import { admissionsTierForSchool, admissionsTypeForSchool } from "./admissions-tier";
+import { admissionsTierForSchool } from "./admissions-tier";
 import { ADMIT_RATE_OVERRIDES } from "./admit-rate-overrides";
 
 // UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
@@ -326,11 +326,10 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
   // Both lists live in src/data/hook-multipliers.ts with citations.
   const legacyConsidered = isLegacyBlind(c.name) ? { legacyConsidered: false as const } : {};
   const yieldProtected = isYieldProtected(c.name) ? { yieldProtected: true as const } : {};
-  // Final calibration tier tags. Routes to algorithmic vs holistic-elite math
-  // (admissionsTier) and differentiates 15-25% bracket caps for stats-driven
-  // publics (admissionsType). Lists in src/data/admissions-tier.ts.
+  // Routes to algorithmic vs holistic-elite math. All schools share a
+  // single holistic cap table — the prior stats-driven public split was
+  // over-inflating chances at UNC/UMich/UVA/UCs and is removed.
   const admissionsTier = admissionsTierForSchool(c.name);
-  const admissionsType = admissionsTypeForSchool(c.name);
   // Verified plan-specific admit-rate overrides. Spread AFTER the CDS layer
   // because CDS often lacks the early/RD split for top schools — the values
   // in admit-rate-overrides.ts come from primary sources (CDS C21, school
@@ -347,7 +346,6 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
     ...legacyConsidered,
     ...yieldProtected,
     admissionsTier,
-    admissionsType,
     ...(aliases ? { aliases } : {}),
   };
 });
