@@ -273,8 +273,11 @@ function EmptyState() {
 function GradeMasthead({ grade }: { grade: GradeResult }) {
   const tone = LETTER_TONE[grade.letter];
   return (
-    <section aria-labelledby="grade-masthead">
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-x-10 gap-y-8 pt-6 border-t border-border-hair">
+    <section
+      aria-labelledby="grade-masthead"
+      className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-x-10 gap-y-8">
         {/* Stat block — letter sits in the 4xl/5xl range like the rest of
             the app's hero numbers, not the 13rem masthead clamp. */}
         <div>
@@ -361,7 +364,10 @@ function Breakdown({ grade }: { grade: GradeResult }) {
   ];
 
   return (
-    <section aria-labelledby="grade-breakdown">
+    <section
+      aria-labelledby="grade-breakdown"
+      className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
+    >
       <div className="flex items-baseline justify-between mb-6">
         <p className={EYEBROW} id="grade-breakdown">
           Breakdown
@@ -415,12 +421,12 @@ function BreakdownColumn({
                   {r.score.toFixed(1)}
                   <span className="text-text-faint"> / {r.out}</span>
                 </div>
-                {/* Thin meter — uses border-strong as the fill so it reads
-                    in both light and dark modes (the previous bg-zinc-200
-                    fill was invisible on the light surface). */}
-                <div className="mt-2 h-px w-24 bg-border-hair overflow-hidden">
+                {/* Meter — accent fill on a hairline track. Visible in
+                    both modes; previous border-strong fill was barely
+                    distinguishable from the track. */}
+                <div className="mt-2 h-1 w-24 rounded-sm bg-bg-inset overflow-hidden">
                   <div
-                    className="h-full bg-border-strong"
+                    className="h-full rounded-sm bg-accent"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -441,8 +447,11 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
     .map((tier) => ({ tier, n: counts[tier] }))
     .filter((s) => s.n > 0);
   return (
-    <section aria-labelledby="tier-strip">
-      <div className="flex items-baseline justify-between mb-4">
+    <section
+      aria-labelledby="tier-strip"
+      className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
+    >
+      <div className="flex items-baseline justify-between mb-5">
         <p className={EYEBROW} id="tier-strip">
           Tier distribution
         </p>
@@ -450,7 +459,7 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
           {counts.total} pinned
         </span>
       </div>
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {TIER_KEYS.map((tier) => {
           const n = counts[tier];
           const pct = n / denom;
@@ -458,11 +467,11 @@ function TierStrip({ counts }: { counts: GradeResult["tierCounts"] }) {
             <div key={tier} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between">
                 <span className="text-[11px] text-text-secondary">{TIER_LABEL[tier]}</span>
-                <span className={`${MONO} text-[11px] text-text-secondary`}>{n}</span>
+                <span className={`${MONO} text-[11px] text-text-primary`}>{n}</span>
               </div>
-              <div className="h-px bg-bg-surface">
+              <div className="h-1 rounded-sm bg-bg-inset overflow-hidden">
                 <div
-                  className={`h-full ${TIER_DOT[tier]}`}
+                  className={`h-full rounded-sm ${TIER_DOT[tier]}`}
                   style={{ width: `${pct * 100}%`, minWidth: n > 0 ? "12%" : 0 }}
                 />
               </div>
@@ -561,14 +570,17 @@ function RecommendationsSection({
       : "Filling toward 8–12";
 
   return (
-    <section aria-labelledby="recs-heading">
-      <div className="flex items-baseline justify-between mb-6">
+    <section
+      aria-labelledby="recs-heading"
+      className="rounded-md border border-border-hair bg-bg-surface p-6 sm:p-8"
+    >
+      <div className="flex items-baseline justify-between mb-5">
         <p className={EYEBROW} id="recs-heading">
           Engine suggestions
         </p>
-        <span className="text-[11px] text-text-faint">{mode}</span>
+        <span className={`${MONO} text-[11px] text-text-faint`}>{mode}</span>
       </div>
-      <ol className="divide-y divide-border-hair border-y border-border-hair">
+      <ol className="divide-y divide-border-hair">
         {recommendations.map((rec, i) => (
           <RecommendationRow
             key={`${rec.kind}-${rec.college.name}-${rec.replaces ?? ""}`}
