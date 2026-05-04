@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
 import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
 import { MajorSelect } from "@/components/MajorSelect";
+import { TranscriptUpload } from "@/components/TranscriptUpload";
 import { Plus, Trash2 } from "lucide-react";
 
 const inputClass =
@@ -70,15 +71,33 @@ export default function ProfilePage() {
   return (
     <>
       <main className="mx-auto max-w-3xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
-        {/* Header */}
-        <div className="mb-10 animate-fade-in">
-          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
+        {/* Masthead */}
+        <header className="mb-8 sm:mb-10 animate-fade-in">
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+              Tools / Your Profile
+            </p>
+            <p className="text-[11px] text-text-faint" role="status" aria-live="polite">
+              Saved automatically
+            </p>
+          </div>
+          <h1 className="mt-3 text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
             Your Profile
           </h1>
-          <p className="max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
-            Your scores and stats auto-fill from the tools you&apos;ve used. Edit anything here — it will be used across all tools.
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
+            Every tool reads from this profile. Drop in a transcript to auto-fill
+            GPA + coursework, or edit any section by hand. Changes save instantly.
           </p>
-        </div>
+        </header>
+
+        {/* Transcript upload — primary on-ramp for new users. Mounted on
+            /profile per CRITIQUE.md (was only on /gpa, hidden from
+            users who started with the profile). */}
+        <ScrollReveal delay={0.02}>
+          <div className="mb-8">
+            <TranscriptUpload />
+          </div>
+        </ScrollReveal>
 
         {/* Completeness Meter */}
         <ScrollReveal delay={0.03}>
