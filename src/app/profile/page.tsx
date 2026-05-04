@@ -94,12 +94,12 @@ export default function ProfilePage() {
         <SectionNav
           sections={[
             { id: "profile-basic", label: "Basic" },
-            { id: "profile-major", label: "Major" },
             { id: "profile-gpa", label: "GPA", complete: !!computed?.gpaUW },
             { id: "profile-sat", label: "SAT", complete: satComposite !== null },
             { id: "profile-act", label: "ACT", complete: actComposite !== null },
-            { id: "profile-essay", label: "Essay", complete: !!computed?.essayCommonApp },
             { id: "profile-ec", label: "ECs", complete: !!computed?.ecBand },
+            { id: "profile-essay", label: "Essay", complete: !!computed?.essayCommonApp },
+            { id: "profile-major", label: "Major" },
             { id: "profile-summary", label: "Summary" },
           ]}
         />
@@ -248,54 +248,6 @@ export default function ProfilePage() {
                   onChange={(e) => updateBasicInfo({ graduationYear: e.target.value })}
                   className={inputClass}
                 />
-              </div>
-            </div>
-          </fieldset>
-        </ScrollReveal>
-
-        {/* Academic Interests — intended major + free-text interests.
-            Edits propagate to /colleges, /chances, and /strategy via
-            useProfile's setItemAndNotify writes. */}
-        <ScrollReveal delay={0.09}>
-          <fieldset
-            id="profile-major"
-            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
-          >
-            <legend className="sr-only">Academic Interests</legend>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
-                  Academic Interests
-                </h2>
-                <p className="text-[10px] text-text-faint mt-0.5">
-                  Used to badge strong-fit schools, surface major-tailored picks, and tune chance estimates.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Intended major</label>
-                <MajorSelect
-                  value={profile.intendedMajor ?? ""}
-                  onChange={(v) =>
-                    updateField("intendedMajor", v === "Any" ? "" : v)
-                  }
-                />
-              </div>
-              <div>
-                <label className={labelClass}>
-                  Specific interest <span className="text-text-faint">(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. quant trading, climate policy"
-                  value={profile.intendedInterest ?? ""}
-                  onChange={(e) => updateField("intendedInterest", e.target.value)}
-                  className={inputClass}
-                />
-                <p className="mt-1.5 text-[10px] text-text-muted">
-                  A niche or theme inside your major. Helps the matcher find adjacent-fit schools.
-                </p>
               </div>
             </div>
           </fieldset>
@@ -508,49 +460,8 @@ export default function ProfilePage() {
           </fieldset>
         </ScrollReveal>
 
-        {/* Essay Scores */}
-        <ScrollReveal delay={0.25}>
-          <fieldset
-            id="profile-essay"
-            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
-          >
-            <legend className="sr-only">Essay Scores</legend>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Essay Scores</h2>
-              {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Common App Score (0-100)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  placeholder="e.g. 82"
-                  value={profile.essayCommonApp}
-                  onChange={(e) => updateField("essayCommonApp", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>VSPICE Composite (0-24)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="24"
-                  step="1"
-                  placeholder="e.g. 18"
-                  value={profile.essayVspice}
-                  onChange={(e) => updateField("essayVspice", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </fieldset>
-        </ScrollReveal>
-
         {/* Extracurriculars */}
-        <ScrollReveal delay={0.3}>
+        <ScrollReveal delay={0.25}>
           <fieldset
             id="profile-ec"
             className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
@@ -613,6 +524,96 @@ export default function ProfilePage() {
                   checked={profile.selectiveProgram === true}
                   onChange={(v) => updateField("selectiveProgram", v)}
                 />
+              </div>
+            </div>
+          </fieldset>
+        </ScrollReveal>
+
+        {/* Essay Scores — moved to follow ECs per the new order
+            Basics → GPA → Coursework → Tests → ECs → Essays → Major. */}
+        <ScrollReveal delay={0.3}>
+          <fieldset
+            id="profile-essay"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Essay Scores</legend>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Essay Scores</h2>
+              {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Common App Score (0-100)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="e.g. 82"
+                  value={profile.essayCommonApp}
+                  onChange={(e) => updateField("essayCommonApp", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>VSPICE Composite (0-24)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="24"
+                  step="1"
+                  placeholder="e.g. 18"
+                  value={profile.essayVspice}
+                  onChange={(e) => updateField("essayVspice", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </fieldset>
+        </ScrollReveal>
+
+        {/* Academic Interests — moved to the end (after academics + ECs +
+            essays) since "what I want to study" is downstream of "what
+            I've actually done." */}
+        <ScrollReveal delay={0.32}>
+          <fieldset
+            id="profile-major"
+            className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32 min-w-0"
+          >
+            <legend className="sr-only">Academic Interests</legend>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
+                  Academic Interests
+                </h2>
+                <p className="text-[10px] text-text-faint mt-0.5">
+                  Used to badge strong-fit schools, surface major-tailored picks, and tune chance estimates.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Intended major</label>
+                <MajorSelect
+                  value={profile.intendedMajor ?? ""}
+                  onChange={(v) =>
+                    updateField("intendedMajor", v === "Any" ? "" : v)
+                  }
+                />
+              </div>
+              <div>
+                <label className={labelClass}>
+                  Specific interest <span className="text-text-faint">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. quant trading, climate policy"
+                  value={profile.intendedInterest ?? ""}
+                  onChange={(e) => updateField("intendedInterest", e.target.value)}
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-[10px] text-text-muted">
+                  A niche or theme inside your major. Helps the matcher find adjacent-fit schools.
+                </p>
               </div>
             </div>
           </fieldset>
