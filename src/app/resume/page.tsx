@@ -6,11 +6,20 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { ResumePreview } from "@/components/ResumePreview";
 import { ResumeSectionCard, type FieldSchema } from "@/components/ResumeSectionCard";
 import { ActivitiesHelperPanel } from "@/components/ActivitiesHelperPanel";
+import { SectionNav } from "@/components/SectionNav";
+import {
+  ResumeImproveDiff,
+  type ResumeImprovePending,
+} from "@/components/ResumeImproveDiff";
 import { useResume } from "@/hooks/useResume";
 import { Download, Save, FileText, Wand2, Eye, EyeOff, RotateCcw, Download as DownloadIcon } from "lucide-react";
 
 const inputClass =
   "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
+
+function fieldLabelFor(fields: readonly FieldSchema[], key: string): string {
+  return fields.find((f) => f.key === key)?.label ?? key;
+}
 
 // ── Section field schemas ────────────────────────────────────────────────────
 
@@ -70,6 +79,10 @@ export default function ResumePage() {
   const [mode, setMode] = useState<"resume" | "activities">("resume");
   const [showPreview, setShowPreview] = useState(true);
   const [improvingKey, setImprovingKey] = useState<string | null>(null);
+  // Pending Improve preview. AI rewrites can drop specific numbers / names
+  // the user actually needs, so the field is no longer overwritten until
+  // the user explicitly accepts the diff in <ResumeImproveDiff>.
+  const [pendingImprove, setPendingImprove] = useState<ResumeImprovePending | null>(null);
 
   // ── Improve a field via AI ─────────────────────────────────────────────
   const handleImprove = useCallback(
@@ -77,7 +90,8 @@ export default function ResumePage() {
       section: "awards" | "communityService" | "athletics" | "activities" | "summerExperience",
       id: string,
       fieldKey: string,
-      currentText: string
+      currentText: string,
+      fieldLabel?: string,
     ) => {
       if (!currentText.trim() || improvingKey) return;
       setImprovingKey(`${id}:${fieldKey}`);
@@ -88,13 +102,15 @@ export default function ResumePage() {
           body: JSON.stringify({ text: currentText, mode: "description" }),
         });
         const data = await res.json();
-        if (data.improved) {
-          const patch = { [fieldKey]: data.improved } as Record<string, string>;
-          if (section === "awards") r.updateAward(id, patch);
-          else if (section === "communityService") r.updateCommunityService(id, patch);
-          else if (section === "athletics") r.updateAthletics(id, patch);
-          else if (section === "activities") r.updateActivity(id, patch);
-          else if (section === "summerExperience") r.updateSummerExperience(id, patch);
+        if (typeof data.improved === "string" && data.improved.trim().length > 0) {
+          setPendingImprove({
+            section,
+            id,
+            fieldKey,
+            fieldLabel: fieldLabel ?? fieldKey,
+            original: currentText,
+            improved: data.improved,
+          });
         }
       } catch {
         // silent — user can retry
@@ -102,8 +118,22 @@ export default function ResumePage() {
         setImprovingKey(null);
       }
     },
-    [r, improvingKey]
+    [improvingKey]
   );
+
+  const acceptImprove = useCallback(() => {
+    const p = pendingImprove;
+    if (!p) return;
+    const patch = { [p.fieldKey]: p.improved } as Record<string, string>;
+    if (p.section === "awards") r.updateAward(p.id, patch);
+    else if (p.section === "communityService") r.updateCommunityService(p.id, patch);
+    else if (p.section === "athletics") r.updateAthletics(p.id, patch);
+    else if (p.section === "activities") r.updateActivity(p.id, patch);
+    else if (p.section === "summerExperience") r.updateSummerExperience(p.id, patch);
+    setPendingImprove(null);
+  }, [pendingImprove, r]);
+
+  const rejectImprove = useCallback(() => setPendingImprove(null), []);
 
   if (!r.loaded) {
     return (
@@ -159,6 +189,23 @@ export default function ResumePage() {
           </p>
         </div>
 
+        {mode === "resume" && (
+          <div className="print:hidden">
+            <SectionNav
+              sections={[
+                { id: "resume-header", label: "Header" },
+                { id: "resume-education", label: "Education" },
+                { id: "resume-awards", label: "Awards", complete: r.resume.awards.length > 0 },
+                { id: "resume-activities", label: "Activities", complete: r.resume.activities.length > 0 },
+                { id: "resume-community", label: "Community" },
+                { id: "resume-athletics", label: "Athletics" },
+                { id: "resume-summer", label: "Summer" },
+                { id: "resume-skills", label: "Skills" },
+              ]}
+            />
+          </div>
+        )}
+
         {/* Mode switcher */}
         <div className="mb-6 inline-flex rounded-full bg-bg-inset border border-border-hair p-1 print:hidden">
           <button
@@ -205,7 +252,7 @@ export default function ResumePage() {
             {/* Editor column */}
             <div className="space-y-5 print:hidden">
               {/* Basic info */}
-              <div className="rounded-md bg-bg-surface border border-border-hair p-5">
+              <div id="resume-header" className="rounded-md bg-bg-surface border border-border-hair p-5 scroll-mt-32">
                 <h3 className="text-sm font-semibold text-text-primary mb-3">Header</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
@@ -271,101 +318,113 @@ export default function ResumePage() {
                 </div>
               </div>
 
-              <ResumeSectionCard
-                title="Education"
-                entries={r.resume.education}
-                fields={EDUCATION_FIELDS}
-                onAdd={r.addEducation}
-                onUpdate={r.updateEducation}
-                onRemove={r.removeEducation}
-                onMove={r.moveEducation}
-              />
+              <div id="resume-education" className="scroll-mt-32">
+                <ResumeSectionCard
+                  title="Education"
+                  entries={r.resume.education}
+                  fields={EDUCATION_FIELDS}
+                  onAdd={r.addEducation}
+                  onUpdate={r.updateEducation}
+                  onRemove={r.removeEducation}
+                  onMove={r.moveEducation}
+                />
+              </div>
 
-              <ResumeSectionCard
-                title="Awards & Honors"
-                entries={r.resume.awards}
-                fields={AWARD_FIELDS}
-                onAdd={r.addAward}
-                onUpdate={r.updateAward}
-                onRemove={r.removeAward}
-                onMove={r.moveAward}
-                onImprove={(id, fk, val) => handleImprove("awards", id, fk, val)}
-                improvingKey={improvingKey}
-                currentSection="awards"
-                onRecategorize={r.recategorizeActivity}
-              />
+              <div id="resume-awards" className="scroll-mt-32">
+                <ResumeSectionCard
+                  title="Awards & Honors"
+                  entries={r.resume.awards}
+                  fields={AWARD_FIELDS}
+                  onAdd={r.addAward}
+                  onUpdate={r.updateAward}
+                  onRemove={r.removeAward}
+                  onMove={r.moveAward}
+                  onImprove={(id, fk, val) => handleImprove("awards", id, fk, val, fieldLabelFor(AWARD_FIELDS, fk))}
+                  improvingKey={improvingKey}
+                  currentSection="awards"
+                  onRecategorize={r.recategorizeActivity}
+                />
+              </div>
 
-              <ResumeSectionCard
-                title="Activities"
-                entries={r.resume.activities}
-                fields={ACTIVITY_FIELDS}
-                onAdd={r.addActivity}
-                onUpdate={r.updateActivity}
-                onRemove={r.removeActivity}
-                onMove={r.moveActivity}
-                onImprove={(id, fk, val) => handleImprove("activities", id, fk, val)}
-                improvingKey={improvingKey}
-                titleForEntry={(e) => e.activityName || "New activity"}
-                currentSection="activities"
-                onRecategorize={r.recategorizeActivity}
-                extraHeaderAction={
-                  <button
-                    onClick={r.importFromECs}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-3 py-1.5 text-xs font-semibold border border-border-hair transition-[background-color,color] duration-200"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Import from EC Evaluator
-                  </button>
-                }
-              />
+              <div id="resume-activities" className="scroll-mt-32">
+                <ResumeSectionCard
+                  title="Activities"
+                  entries={r.resume.activities}
+                  fields={ACTIVITY_FIELDS}
+                  onAdd={r.addActivity}
+                  onUpdate={r.updateActivity}
+                  onRemove={r.removeActivity}
+                  onMove={r.moveActivity}
+                  onImprove={(id, fk, val) => handleImprove("activities", id, fk, val, fieldLabelFor(ACTIVITY_FIELDS, fk))}
+                  improvingKey={improvingKey}
+                  titleForEntry={(e) => e.activityName || "New activity"}
+                  currentSection="activities"
+                  onRecategorize={r.recategorizeActivity}
+                  extraHeaderAction={
+                    <button
+                      onClick={r.importFromECs}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary px-3 py-1.5 text-xs font-semibold border border-border-hair transition-[background-color,color] duration-200"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Import from EC Evaluator
+                    </button>
+                  }
+                />
+              </div>
 
-              <ResumeSectionCard
-                title="Community Service"
-                entries={r.resume.communityService}
-                fields={COMMUNITY_FIELDS}
-                onAdd={r.addCommunityService}
-                onUpdate={r.updateCommunityService}
-                onRemove={r.removeCommunityService}
-                onMove={r.moveCommunityService}
-                onImprove={(id, fk, val) => handleImprove("communityService", id, fk, val)}
-                improvingKey={improvingKey}
-                titleForEntry={(e) => e.organization || "New entry"}
-                currentSection="communityService"
-                onRecategorize={r.recategorizeActivity}
-              />
+              <div id="resume-community" className="scroll-mt-32">
+                <ResumeSectionCard
+                  title="Community Service"
+                  entries={r.resume.communityService}
+                  fields={COMMUNITY_FIELDS}
+                  onAdd={r.addCommunityService}
+                  onUpdate={r.updateCommunityService}
+                  onRemove={r.removeCommunityService}
+                  onMove={r.moveCommunityService}
+                  onImprove={(id, fk, val) => handleImprove("communityService", id, fk, val, fieldLabelFor(COMMUNITY_FIELDS, fk))}
+                  improvingKey={improvingKey}
+                  titleForEntry={(e) => e.organization || "New entry"}
+                  currentSection="communityService"
+                  onRecategorize={r.recategorizeActivity}
+                />
+              </div>
 
-              <ResumeSectionCard
-                title="Athletics"
-                entries={r.resume.athletics}
-                fields={ATHLETICS_FIELDS}
-                onAdd={r.addAthletics}
-                onUpdate={r.updateAthletics}
-                onRemove={r.removeAthletics}
-                onMove={r.moveAthletics}
-                onImprove={(id, fk, val) => handleImprove("athletics", id, fk, val)}
-                improvingKey={improvingKey}
-                titleForEntry={(e) => e.sport || "New entry"}
-                currentSection="athletics"
-                onRecategorize={r.recategorizeActivity}
-              />
+              <div id="resume-athletics" className="scroll-mt-32">
+                <ResumeSectionCard
+                  title="Athletics"
+                  entries={r.resume.athletics}
+                  fields={ATHLETICS_FIELDS}
+                  onAdd={r.addAthletics}
+                  onUpdate={r.updateAthletics}
+                  onRemove={r.removeAthletics}
+                  onMove={r.moveAthletics}
+                  onImprove={(id, fk, val) => handleImprove("athletics", id, fk, val, fieldLabelFor(ATHLETICS_FIELDS, fk))}
+                  improvingKey={improvingKey}
+                  titleForEntry={(e) => e.sport || "New entry"}
+                  currentSection="athletics"
+                  onRecategorize={r.recategorizeActivity}
+                />
+              </div>
 
-              <ResumeSectionCard
-                title="Summer Experience"
-                entries={r.resume.summerExperience}
-                fields={SUMMER_FIELDS}
-                onAdd={r.addSummerExperience}
-                onUpdate={r.updateSummerExperience}
-                onRemove={r.removeSummerExperience}
-                onMove={r.moveSummerExperience}
-                onImprove={(id, fk, val) => handleImprove("summerExperience", id, fk, val)}
-                improvingKey={improvingKey}
-                titleForEntry={(e) => e.program || "New entry"}
-                currentSection="summerExperience"
-                onRecategorize={r.recategorizeActivity}
-              />
+              <div id="resume-summer" className="scroll-mt-32">
+                <ResumeSectionCard
+                  title="Summer Experience"
+                  entries={r.resume.summerExperience}
+                  fields={SUMMER_FIELDS}
+                  onAdd={r.addSummerExperience}
+                  onUpdate={r.updateSummerExperience}
+                  onRemove={r.removeSummerExperience}
+                  onMove={r.moveSummerExperience}
+                  onImprove={(id, fk, val) => handleImprove("summerExperience", id, fk, val, fieldLabelFor(SUMMER_FIELDS, fk))}
+                  improvingKey={improvingKey}
+                  titleForEntry={(e) => e.program || "New entry"}
+                  currentSection="summerExperience"
+                  onRecategorize={r.recategorizeActivity}
+                />
+              </div>
 
               {/* Skills */}
-              <div className="rounded-md bg-bg-surface border border-border-hair p-5">
+              <div id="resume-skills" className="rounded-md bg-bg-surface border border-border-hair p-5 scroll-mt-32">
                 <h3 className="text-sm font-semibold text-text-primary mb-3">Skills</h3>
                 <div className="space-y-3">
                   <div>
@@ -451,6 +510,11 @@ export default function ResumePage() {
           </ScrollReveal>
         )}
       </main>
+      <ResumeImproveDiff
+        pending={pendingImprove}
+        onAccept={acceptImprove}
+        onReject={rejectImprove}
+      />
     </>
   );
 }

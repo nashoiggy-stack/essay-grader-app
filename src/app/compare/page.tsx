@@ -94,20 +94,42 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 // ── Tier colors ────────────────────────────────────────────────────────────
+// All tier visuals use the OKLCH tier-* tokens so they stay legible in
+// light, dark, and monochrome themes. Glyphs live alongside the colors
+// so the signal isn't color-only — meets the a11y contract that color
+// is never the sole indicator (CRITIQUE.md /compare BLOCK).
 
 const TIER3_COLOR: Record<Tier3 | string, string> = {
-  high: "text-emerald-300 bg-emerald-500/10 ring-emerald-500/25",
-  medium: "text-amber-300 bg-amber-500/10 ring-amber-500/25",
-  low: "text-red-300 bg-red-500/10 ring-red-500/25",
+  high: "text-tier-safety-fg bg-tier-safety-soft",
+  medium: "text-tier-target-fg bg-tier-target-soft",
+  low: "text-tier-unlikely-fg bg-tier-unlikely-soft",
 };
 
-const FIT_COLORS: Record<Classification, { text: string; bg: string; ring: string }> = {
-  safety: { text: "text-emerald-300", bg: "bg-emerald-500/10", ring: "ring-emerald-500/25" },
-  likely: { text: "text-accent-text", bg: "bg-accent-soft", ring: "ring-accent-line" },
-  target: { text: "text-amber-300", bg: "bg-amber-500/10", ring: "ring-amber-500/25" },
-  reach: { text: "text-orange-300", bg: "bg-orange-500/10", ring: "ring-orange-500/25" },
-  unlikely: { text: "text-red-300", bg: "bg-red-500/10", ring: "ring-red-500/25" },
-  insufficient: { text: "text-text-secondary", bg: "bg-zinc-500/5", ring: "ring-zinc-500/15" },
+const TIER3_GLYPH: Record<Tier3, string> = {
+  high: "▲",
+  medium: "●",
+  low: "▼",
+};
+
+const FIT_COLORS: Record<Classification, { text: string; bg: string }> = {
+  safety: { text: "text-tier-safety-fg", bg: "bg-tier-safety-soft" },
+  likely: { text: "text-accent-text", bg: "bg-accent-soft" },
+  target: { text: "text-tier-target-fg", bg: "bg-tier-target-soft" },
+  reach: { text: "text-tier-reach-fg", bg: "bg-tier-reach-soft" },
+  unlikely: { text: "text-tier-unlikely-fg", bg: "bg-tier-unlikely-soft" },
+  insufficient: { text: "text-tier-insufficient-fg", bg: "bg-tier-insufficient-soft" },
+};
+
+// Non-color signal — distinct glyphs survive monochrome / colorblind /
+// printed screenshots. The double-glyphs differentiate the two extremes
+// (safety vs unlikely) at a glance.
+const FIT_GLYPH: Record<Classification, string> = {
+  safety: "▲▲",
+  likely: "▲",
+  target: "●",
+  reach: "▼",
+  unlikely: "▼▼",
+  insufficient: "−",
 };
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -419,21 +441,28 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {fits.map((f) => {
         const colors = FIT_COLORS[f.classification];
+        const glyph = FIT_GLYPH[f.classification];
         return (
           <div
             key={f.college.name}
-            className={`rounded-xl ${colors.bg}  ${colors.ring} p-3`}
+            className={`rounded-md border border-border-hair ${colors.bg} p-3`}
           >
             <p className="text-[12px] text-text-secondary font-medium truncate">
               {f.college.name}
             </p>
             <div className="flex items-center gap-2 mt-1">
               <span
+                aria-hidden
+                className={`text-[10px] leading-none ${colors.text} font-mono`}
+              >
+                {glyph}
+              </span>
+              <span
                 className={`text-[11px] font-bold uppercase tracking-[0.08em] ${colors.text}`}
               >
                 {f.fitLabel}
               </span>
-              <span className="text-[10px] font-mono tabular-nums text-text-muted">
+              <span className="text-[10px] font-mono tabular-nums text-text-muted ml-auto">
                 {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
               </span>
             </div>
@@ -461,8 +490,24 @@ function ComparisonGrid({
     );
   }
 
+  // ARIA grid semantics — the visual layout is auto-fit responsive cards,
+  // not a true HTML <table>, but assistive tech needs row/cell structure
+  // to read this as comparable data. Each ComparisonRow announces itself
+  // as a row; ValueCells live inside as gridcells.
   return (
-    <div className="space-y-2">
+    <div
+      role="grid"
+      aria-label={`Comparison of ${colleges.map((c) => c.name).join(", ")}`}
+      className="space-y-2"
+    >
+      <div role="row" className="sr-only">
+        <span role="columnheader">Field</span>
+        {colleges.map((c) => (
+          <span key={c.name} role="columnheader">
+            {c.name}
+          </span>
+        ))}
+      </div>
       {rows.map((row) => (
         <ComparisonRow key={row.field} row={row} collegeCount={colleges.length} />
       ))}
@@ -481,14 +526,21 @@ function ComparisonRow({
   const hasBest = row.values.some((v) => v.isBest);
 
   return (
-    <div className="rounded-xl bg-bg-surface border border-border-hair overflow-hidden hover:border-border-strong transition-[border-color] duration-200">
+    <div
+      role="row"
+      className="rounded-md bg-bg-surface border border-border-hair overflow-hidden hover:border-border-strong transition-[border-color] duration-200"
+    >
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         className="w-full px-4 py-3 text-left"
       >
         <div className="flex items-center gap-3 mb-2">
-          <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-semibold">
+          <p
+            role="rowheader"
+            className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-semibold"
+          >
             {row.label}
           </p>
           <ChevronDown
@@ -509,7 +561,13 @@ function ComparisonRow({
           }}
         >
           {row.values.map((v) => (
-            <ValueCell key={v.collegeName} value={v.value} isBest={v.isBest && hasBest} />
+            <div
+              key={v.collegeName}
+              role="gridcell"
+              aria-label={`${v.collegeName}: ${v.value}`}
+            >
+              <ValueCell value={v.value} isBest={v.isBest && hasBest} />
+            </div>
           ))}
         </div>
       </button>
@@ -545,15 +603,21 @@ function ValueCell({ value, isBest }: { value: string; isBest: boolean }) {
       ? (lower as Tier3)
       : null;
   const tierClass = tierMatch ? TIER3_COLOR[tierMatch] : null;
+  const tierGlyph = tierMatch ? TIER3_GLYPH[tierMatch] : null;
 
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5">
-        {isBest && <Crown className="w-3 h-3 text-amber-300 shrink-0" />}
+        {isBest && <Crown className="w-3 h-3 text-tier-target-fg shrink-0" aria-label="Best in row" />}
         {tierClass ? (
           <span
-            className={`inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-md  ${tierClass}`}
+            className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-md ${tierClass}`}
           >
+            {tierGlyph && (
+              <span aria-hidden className="font-mono text-[10px] leading-none">
+                {tierGlyph}
+              </span>
+            )}
             {value}
           </span>
         ) : (
@@ -563,7 +627,9 @@ function ValueCell({ value, isBest }: { value: string; isBest: boolean }) {
             }`}
           >
             {value === "Yes" ? (
-              <span className="text-emerald-300 font-semibold">Yes</span>
+              <span className="inline-flex items-center gap-1 text-tier-safety-fg font-semibold">
+                <span aria-hidden>✓</span> Yes
+              </span>
             ) : value === "No" ? (
               <span className="text-text-muted">No</span>
             ) : (
@@ -583,10 +649,11 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
     <div className="space-y-3">
       {fits.map((f) => {
         const colors = FIT_COLORS[f.classification];
+        const glyph = FIT_GLYPH[f.classification];
         return (
           <div
             key={f.college.name}
-            className="rounded-xl bg-bg-surface border border-border-hair p-5"
+            className="rounded-md bg-bg-surface border border-border-hair p-5"
           >
             <div className="flex items-center justify-between gap-3 mb-2">
               <h4 className="text-[15px] font-semibold text-text-primary">
@@ -594,8 +661,11 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
               </h4>
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full  ${colors.bg} ${colors.text} ${colors.ring}`}
+                  className={`inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full ${colors.bg} ${colors.text}`}
                 >
+                  <span aria-hidden className="font-mono leading-none">
+                    {glyph}
+                  </span>
                   {f.fitLabel}
                 </span>
                 <span className="text-sm font-mono tabular-nums text-text-secondary">

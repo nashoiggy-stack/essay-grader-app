@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { SectionNav } from "@/components/SectionNav";
 import { useProfile } from "@/hooks/useProfile";
 import { computeSATComposite, computeACTComposite } from "@/lib/profile-types";
 import { EC_BAND_LABELS } from "@/lib/extracurricular-types";
@@ -90,6 +91,19 @@ export default function ProfilePage() {
           </p>
         </header>
 
+        <SectionNav
+          sections={[
+            { id: "profile-basic", label: "Basic" },
+            { id: "profile-major", label: "Major" },
+            { id: "profile-gpa", label: "GPA", complete: !!computed?.gpaUW },
+            { id: "profile-sat", label: "SAT", complete: satComposite !== null },
+            { id: "profile-act", label: "ACT", complete: actComposite !== null },
+            { id: "profile-essay", label: "Essay", complete: !!computed?.essayCommonApp },
+            { id: "profile-ec", label: "ECs", complete: !!computed?.ecBand },
+            { id: "profile-summary", label: "Summary" },
+          ]}
+        />
+
         {/* Transcript upload — primary on-ramp for new users. Mounted on
             /profile per CRITIQUE.md (was only on /gpa, hidden from
             users who started with the profile). */}
@@ -158,7 +172,7 @@ export default function ProfilePage() {
 
         {/* Basic Info — shared across resume + future tools */}
         <ScrollReveal delay={0.08}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-basic" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Basic Info</h2>
               <span className="text-[10px] text-text-muted">Used in Resume Helper</span>
@@ -232,7 +246,7 @@ export default function ProfilePage() {
             Edits propagate to /colleges, /chances, and /strategy via
             useProfile's setItemAndNotify writes. */}
         <ScrollReveal delay={0.09}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-major" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">
@@ -274,7 +288,7 @@ export default function ProfilePage() {
 
         {/* GPA Section */}
         <ScrollReveal delay={0.1}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-gpa" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">GPA</h2>
               {computed?.gpaUW && <SourceBadge source="GPA Calculator" />}
@@ -363,7 +377,7 @@ export default function ProfilePage() {
 
         {/* SAT Section */}
         <ScrollReveal delay={0.15}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-sat" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">SAT</h2>
               {satComposite !== null && (
@@ -405,7 +419,7 @@ export default function ProfilePage() {
 
         {/* ACT Section */}
         <ScrollReveal delay={0.2}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-act" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">ACT</h2>
               {actComposite !== null && (
@@ -469,7 +483,7 @@ export default function ProfilePage() {
 
         {/* Essay Scores */}
         <ScrollReveal delay={0.25}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-essay" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Essay Scores</h2>
               {computed?.essayCommonApp && <SourceBadge source="Essay Grader" />}
@@ -506,7 +520,7 @@ export default function ProfilePage() {
 
         {/* Extracurriculars */}
         <ScrollReveal delay={0.3}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6">
+          <div id="profile-ec" className="bg-bg-surface rounded-md p-6 border border-border-hair mb-6 scroll-mt-32">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em]">Extracurriculars</h2>
               {computed?.ecBand && <SourceBadge source="EC Evaluator" />}
@@ -571,7 +585,7 @@ export default function ProfilePage() {
 
         {/* Summary Card */}
         <ScrollReveal delay={0.35}>
-          <div className="bg-bg-surface rounded-md p-6 border border-border-hair">
+          <div id="profile-summary" className="bg-bg-surface rounded-md p-6 border border-border-hair scroll-mt-32">
             <h2 className="text-sm font-semibold text-text-primary uppercase tracking-[0.08em] mb-4">Auto-Fill Summary</h2>
             <p className="text-xs text-text-muted mb-4">
               These values auto-fill into the College List Builder and Chance Calculator.

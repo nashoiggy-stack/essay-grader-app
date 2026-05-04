@@ -31,6 +31,7 @@ import {
 import { DreamSchoolSelector } from "@/components/DreamSchoolSelector";
 import { ActionChecklist } from "@/components/ActionChecklist";
 import { GapItem } from "@/components/GapItem";
+import { SectionNav } from "@/components/SectionNav";
 import { StrategyAtlas } from "@/components/strategy/StrategyAtlas";
 import { useStrategy } from "@/hooks/useStrategy";
 import { useDreamSchool } from "@/hooks/useDreamSchool";
@@ -282,8 +283,21 @@ export default function StrategyPage() {
                   transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                   className="space-y-8"
                 >
+                  <SectionNav
+                    sections={[
+                      { id: "section-profile-readout", label: "Profile" },
+                      { id: "section-recommendation", label: "Recommendation" },
+                      { id: "section-plan", label: "Plan" },
+                      { id: "section-atlas", label: "Atlas" },
+                    ]}
+                  />
+
                   {/* === Group 1: Profile readout — what we know about you ==== */}
-                  <section aria-labelledby="strategy-profile-heading" className="space-y-3">
+                  <section
+                    id="section-profile-readout"
+                    aria-labelledby="strategy-profile-heading"
+                    className="space-y-3 scroll-mt-32"
+                  >
                     <h2 id="strategy-profile-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
                       Profile readout
                     </h2>
@@ -300,7 +314,11 @@ export default function StrategyPage() {
                   </section>
 
                   {/* === Group 2: Recommendation — what to do about it ==== */}
-                  <section aria-labelledby="strategy-recommendation-heading" className="space-y-3">
+                  <section
+                    id="section-recommendation"
+                    aria-labelledby="strategy-recommendation-heading"
+                    className="space-y-3 scroll-mt-32"
+                  >
                     <h2 id="strategy-recommendation-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
                       Recommendation
                     </h2>
@@ -323,7 +341,11 @@ export default function StrategyPage() {
                   </section>
 
                   {/* === Group 3: Plan — gaps, spike, deadlines, major recs ==== */}
-                  <section aria-labelledby="strategy-plan-heading" className="space-y-3">
+                  <section
+                    id="section-plan"
+                    aria-labelledby="strategy-plan-heading"
+                    className="space-y-3 scroll-mt-32"
+                  >
                     <h2 id="strategy-plan-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
                       Plan
                     </h2>
@@ -376,7 +398,11 @@ export default function StrategyPage() {
                   </section>
 
                   {/* === Group 4: Atlas — your list, school by school ==== */}
-                  <section aria-labelledby="strategy-atlas-heading" className="space-y-3">
+                  <section
+                    id="section-atlas"
+                    aria-labelledby="strategy-atlas-heading"
+                    className="space-y-3 scroll-mt-32"
+                  >
                     <h2 id="strategy-atlas-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
                       Atlas
                     </h2>
