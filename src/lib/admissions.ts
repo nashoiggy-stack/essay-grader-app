@@ -131,18 +131,33 @@ interface BaseRateResult {
   planNote: string | null;
 }
 
-// Out-of-state-aware "overall" rate. Public flagships with in-state
-// preference (UNC, UVA, all UCs, etc.) publish a misleading overall figure
-// because in-state applicants are admitted at multiples higher than OOS.
-// When `oosAcceptanceRate` is set on the school, that's what an OOS
-// applicant actually faces — and our chance tool's default audience is
-// OOS-or-international, since most users aren't applying as in-state.
-function effectiveAcceptanceRate(college: College): number {
-  return college.oosAcceptanceRate ?? college.acceptanceRate;
+// Residency-aware "overall" rate. Public flagships with strong in-state
+// preference (UNC, UVA, all UCs, GT, etc.) publish a misleading overall
+// figure because in-state applicants are admitted at multiples higher
+// than OOS. The chance model picks the rate that matches the user's
+// residency. International applicants face OOS rate (or a blend) at most
+// schools — using OOS as the fallback is conservative.
+type Residency = "in-state" | "oos" | "international";
+
+function effectiveAcceptanceRate(
+  college: College,
+  residency: Residency = "oos",
+): number {
+  if (residency === "in-state" && typeof college.inStateAcceptanceRate === "number") {
+    return college.inStateAcceptanceRate;
+  }
+  if (typeof college.oosAcceptanceRate === "number") {
+    return college.oosAcceptanceRate;
+  }
+  return college.acceptanceRate;
 }
 
-function getBaseRateForPlan(college: College, plan: ApplicationPlan): BaseRateResult {
-  const overall = effectiveAcceptanceRate(college);
+function getBaseRateForPlan(
+  college: College,
+  plan: ApplicationPlan,
+  residency: Residency = "oos",
+): BaseRateResult {
+  const overall = effectiveAcceptanceRate(college, residency);
   switch (plan) {
     case "ED":
     case "ED2": {
@@ -659,6 +674,10 @@ export interface ChanceInputsModel {
   apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
   recruitedAthlete?: boolean;
   applicationPlan?: ApplicationPlan;
+  // Residency relative to the school. Defaults to "oos" inside the model
+  // when undefined. Drives selection of inStateAcceptanceRate vs
+  // oosAcceptanceRate when those fields are populated on the school.
+  residency?: "in-state" | "oos" | "international";
 }
 
 // Multiplier-stack trace returned alongside the chance result so the UI can
@@ -691,9 +710,13 @@ export interface ChanceResultModel {
   readonly breakdown?: ChanceBreakdown;
   readonly statBand?: StatBand;          // exposed for what-if scenarios
   readonly effectiveEcBand?: string;     // exposed for what-if scenarios
-  // Set when the school has an OOS-specific admit rate that diverges from
-  // the published overall figure (in-state-heavy publics).
-  readonly oosUsed?: { readonly oos: number; readonly overall: number };
+  // Set when the chance model used a residency-specific admit rate
+  // instead of the school's published overall (in-state-heavy publics).
+  readonly residencyUsed?: {
+    readonly residency: Residency;
+    readonly rate: number;
+    readonly overall: number;
+  };
   // School-specific history blend (sandbox feature). Present when the
   // imported feeder-school data has a record for this college+plan; the
   // blend may or may not have shifted the chance — see schoolBlend.applied.
@@ -703,6 +726,7 @@ export interface ChanceResultModel {
 export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultModel {
   const college = args.college;
   const plan: ApplicationPlan = args.applicationPlan ?? "RD";
+  const residency: Residency = args.residency ?? "oos";
 
   // 0. Two-tier routing. Holistic-elite schools use a different math entirely.
   if (college.admissionsTier === "holistic-elite") {
@@ -745,7 +769,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   }
 
   // 6. Per-plan base rate with fallbacks.
-  const baseResult = getBaseRateForPlan(college, plan);
+  const baseResult = getBaseRateForPlan(college, plan, residency);
 
   // 7. Stat multiplier from the empirical band table (final calibration).
   let multiplier = getStatBandMultiplier(combinedBand);
@@ -781,7 +805,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // cap for Northeastern lands at 70% (the 25-50% bracket), so a strong
   // ED applicant can plausibly land in the 50-70% range. RD lookup is
   // unchanged because the overall rate IS the RD anchor.
-  const capLookupRate = isEdLikePlan ? baseResult.rate : effectiveAcceptanceRate(college);
+  const capLookupRate = isEdLikePlan ? baseResult.rate : effectiveAcceptanceRate(college, residency);
   const cap = getChanceCap(capLookupRate);
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
   // Soft cap: hard clip below the cap, gentle compression above. Preserves
@@ -834,7 +858,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // 14. Hard cliff at 10% admit: sub-10% schools cap at "reach" floor and
   // ceiling. Variance dominates at that selectivity, "unlikely" is misleading,
   // and the caps already prevent anything above target there.
-  if (effectiveAcceptanceRate(college) < 10 && classification !== "insufficient") {
+  if (effectiveAcceptanceRate(college, residency) < 10 && classification !== "insufficient") {
     classification = "reach";
   }
 
@@ -853,17 +877,20 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
   if (baseResult.planNote) reasonParts.push(baseResult.planNote);
   if (schoolBlend.callout) reasonParts.push(schoolBlend.callout);
-  const oosNote: { oos: number; overall: number } | null =
-    typeof college.oosAcceptanceRate === "number" &&
-    college.oosAcceptanceRate !== college.acceptanceRate
-      ? { oos: college.oosAcceptanceRate, overall: college.acceptanceRate }
+  const effectiveAr = effectiveAcceptanceRate(college, residency);
+  const residencyUsed: { residency: Residency; rate: number; overall: number } | null =
+    effectiveAr !== college.acceptanceRate
+      ? { residency, rate: effectiveAr, overall: college.acceptanceRate }
       : null;
-  if (oosNote) {
-    reasonParts.push(
-      `Using OOS rate ${oosNote.oos}% (overall ${oosNote.overall}% reflects in-state preference)`,
-    );
+  if (residencyUsed) {
+    const label =
+      residencyUsed.residency === "in-state"
+        ? `Using in-state rate ${residencyUsed.rate}% (overall ${residencyUsed.overall}%)`
+        : residencyUsed.residency === "international"
+          ? `Using international rate ${residencyUsed.rate}% (overall ${residencyUsed.overall}%)`
+          : `Using OOS rate ${residencyUsed.rate}% (overall ${residencyUsed.overall}% reflects in-state preference)`;
+    reasonParts.push(label);
   }
-  const effectiveAr = effectiveAcceptanceRate(college);
   const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${effectiveAr}% acceptance rate.`;
 
   // Build the multiplier-stack trace. Steps show running chance after each
@@ -872,8 +899,8 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     baseRate: baseResult.rate,
     baseLabel:
       baseResult.planNote ??
-      (oosNote
-        ? `OOS acceptance rate (${oosNote.oos}% — overall ${oosNote.overall}%)`
+      (residencyUsed
+        ? `${residencyUsed.residency === "in-state" ? "In-state" : residencyUsed.residency === "international" ? "International" : "OOS"} acceptance rate (${residencyUsed.rate}% — overall ${residencyUsed.overall}%)`
         : `Overall acceptance rate (${effectiveAr}%)`),
     statBand: combinedBand,
     statMultiplier: multiplier,
@@ -906,7 +933,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     statBand: combinedBand,
     effectiveEcBand,
     schoolBlend,
-    oosUsed: oosNote ?? undefined,
+    residencyUsed: residencyUsed ?? undefined,
   };
   return result;
 }

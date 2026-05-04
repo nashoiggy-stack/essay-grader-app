@@ -421,11 +421,14 @@ export interface ChanceResult {
   readonly confidence: ConfidenceTier;
   readonly breakdown?: import("./admissions").ChanceBreakdown;
   readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];
-  // Set when the chance model substituted the OOS acceptance rate for the
-  // school's overall published rate (in-state-heavy publics like UNC).
-  // The UI surfaces a flag so the user understands why the chance figure
-  // is grounded in the lower-than-headline rate.
-  readonly oosUsed?: { readonly oos: number; readonly overall: number };
+  // Set when the chance model used a residency-specific acceptance rate
+  // instead of the school's overall published rate. UI surfaces a flag
+  // so the user sees why the chance figure differs from the headline AR.
+  readonly residencyUsed?: {
+    readonly residency: "in-state" | "oos" | "international";
+    readonly rate: number;
+    readonly overall: number;
+  };
 }
 
 export interface CollegeFilters {
@@ -457,6 +460,8 @@ export interface CollegeFilters {
 
 export type ECBandInput = "" | "limited" | "developing" | "solid" | "strong" | "exceptional";
 
+export type Residency = "in-state" | "oos" | "international";
+
 export interface ChanceInputs {
   gpaUW: string;
   gpaW: string;
@@ -474,6 +479,11 @@ export interface ChanceInputs {
   // it and deleting the reset-on-college-change effect restores the original
   // behavior exactly.
   applicationPlan: ApplicationPlan;
+  // Residency relative to the selected school. Default "oos" — most users
+  // are out-of-state for any given school. Only matters when the school
+  // has oosAcceptanceRate / inStateAcceptanceRate set; otherwise the
+  // chance model falls back to the published overall rate regardless.
+  residency: Residency;
 }
 
 export const EMPTY_FILTERS: CollegeFilters = {
@@ -512,6 +522,7 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   collegeIndex: null,
   // UNDO [application-plan]: remove this line.
   applicationPlan: "RD",
+  residency: "oos",
 };
 
 export const REGIONS = [

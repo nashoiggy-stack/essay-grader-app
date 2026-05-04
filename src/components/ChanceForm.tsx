@@ -150,6 +150,50 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
       })()}
       {/* end UNDO [application-plan] */}
 
+      {/* Residency selector — visible only when the selected school has a
+          residency-specific admit rate set (UNC, UVA, GT, UCB). For most
+          schools (MIT, Stanford, etc.) it would be irrelevant clutter. */}
+      {inputs.collegeIndex !== null && (() => {
+        const selectedCollege = colleges[inputs.collegeIndex];
+        if (!selectedCollege) return null;
+        const hasResidencyData =
+          typeof selectedCollege.oosAcceptanceRate === "number" ||
+          typeof selectedCollege.inStateAcceptanceRate === "number";
+        if (!hasResidencyData) return null;
+        const stateLabel = selectedCollege.state;
+        return (
+          <div className="col-span-2 sm:col-span-3">
+            <label className={labelClass}>Residency for {selectedCollege.name}</label>
+            <div className="inline-flex rounded-sm bg-bg-inset border border-border-hair p-0.5">
+              {(["in-state", "oos", "international"] as const).map((opt) => {
+                const active = inputs.residency === opt;
+                const label =
+                  opt === "in-state" ? `In-state (${stateLabel})`
+                  : opt === "oos" ? "Out-of-state"
+                  : "International";
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => onUpdate("residency", opt)}
+                    className={`px-3 py-1.5 text-xs rounded-sm transition-colors ${
+                      active
+                        ? "bg-bg-surface text-text-primary shadow-sm"
+                        : "text-text-muted hover:text-text-secondary"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[10px] text-text-faint">
+              {selectedCollege.name} has a residency-dependent admit rate. Picking the wrong option produces a misleading chance.
+            </p>
+          </div>
+        );
+      })()}
+
       {/* GPA-scale note spans both columns. Surfaces the 5.0-scale
           assumption that the Academic Index depends on; users with
           differently weighted scales (4.5/6.0/100-pt) need to convert

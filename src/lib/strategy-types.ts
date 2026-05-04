@@ -307,4 +307,8 @@ export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
 // v5: Feature 1 chance-model rewrite — fitScore removed.
 // v4: DreamSchoolSection no longer carries whatWouldChangeThis. v3 lacked
 // action/tone fields. Both old shapes are invalidated by this bump.
-export const STRATEGY_CACHE_VERSION = "v8";
+// v9: stats-driven cap divider removed (single holistic cap table); soft
+// cap (0.20 taper) replaces hard clip; ChanceInputs gains residency field
+// for in-state/OOS/international toggle. v8 caches produce numerically
+// stale chances at affected schools, so invalidate.
+export const STRATEGY_CACHE_VERSION = "v9";

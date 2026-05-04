@@ -156,10 +156,10 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </div>
       )}
 
-      {/* OOS flag — shown when the model used the school's out-of-state
-          admit rate instead of the inflated overall figure. Common at
-          public flagships with strong in-state preference (UNC, UVA, UCs). */}
-      {result.oosUsed && (
+      {/* Residency flag — shown when the model used a residency-specific
+          rate instead of the published overall. Common at publics with
+          in-state preference (UNC, UVA, UCs, GT). */}
+      {result.residencyUsed && (
         <div className="rounded-md bg-accent-soft border border-accent-line px-4 py-3 flex items-start gap-3">
           <svg
             width="14"
@@ -178,12 +178,31 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           <p className="text-[12px] text-accent-text leading-relaxed">
-            <span className="font-semibold">Out-of-state rate used ({result.oosUsed.oos}%)</span>
-            {" — "}
-            the published overall acceptance rate ({result.oosUsed.overall}%) is roughly{" "}
-            {Math.max(1, Math.round((result.oosUsed.overall - result.oosUsed.oos) * 10) / 10)} points
-            higher because in-state applicants are admitted at a much higher rate. If you&rsquo;re
-            applying as in-state, your real chance is materially higher than what&rsquo;s shown.
+            {result.residencyUsed.residency === "in-state" ? (
+              <>
+                <span className="font-semibold">In-state rate used ({result.residencyUsed.rate}%)</span>
+                {" — "}
+                your residency advantage produces a meaningfully higher chance than the published
+                overall acceptance rate ({result.residencyUsed.overall}%). Toggle to Out-of-state
+                above if you&rsquo;re not a resident.
+              </>
+            ) : result.residencyUsed.residency === "international" ? (
+              <>
+                <span className="font-semibold">International rate used ({result.residencyUsed.rate}%)</span>
+                {" — "}
+                the published overall acceptance rate ({result.residencyUsed.overall}%) reflects
+                mostly domestic admits.
+              </>
+            ) : (
+              <>
+                <span className="font-semibold">Out-of-state rate used ({result.residencyUsed.rate}%)</span>
+                {" — "}
+                the published overall acceptance rate ({result.residencyUsed.overall}%) is roughly{" "}
+                {Math.max(1, Math.round((result.residencyUsed.overall - result.residencyUsed.rate) * 10) / 10)} points
+                higher because in-state applicants are admitted at a much higher rate. If you&rsquo;re
+                applying as in-state, toggle the residency selector above.
+              </>
+            )}
           </p>
         </div>
       )}
