@@ -379,3 +379,122 @@ Files swept: `src/app/chances/page.tsx`, `src/components/ChanceForm.tsx`,
   the chevron rotation transition is on `transform` — good. No
   action; flagged for completeness.
 
+---
+
+## `/colleges`
+
+Files swept: `src/app/colleges/page.tsx`,
+`src/components/CollegeFilters.tsx`,
+`src/components/CollegeResults.tsx`,
+`src/components/CollegeSearchInput.tsx`, `CollegeCard.tsx` (covered
+in /list section). Also reuses `CollegeCard.tsx` so all the BLOCK +
+WARN findings logged on /list (raw tier ramps in `CLASS_COLORS`,
+`PILL_TONE` ramps, `bg-[#0a0a14]/70` in `BreakdownPanel`, 32px touch
+target, blur-on-mount filter) apply equally on this surface — not
+duplicated below.
+
+### BLOCK
+
+- [RESOLVED in current `src/components/CollegeSearchInput.tsx:50-53`]
+  CRITIQUE BLOCK: "Escape does not clear search input." Escape
+  handler is wired explicitly: `if (e.key === "Escape" && local)
+  { e.preventDefault(); setLocal(""); }`.
+- [RESOLVED in current `src/components/CollegeFilters.tsx:78`]
+  CRITIQUE BLOCK: "Filters always-open, 14 fields tall." Filter
+  panel is now `<details className="…">` collapsed by default with
+  a single-line summary. First card is above the fold on a 13"
+  laptop again.
+- [NEW BLOCK] **`bg-[#12121f]` hardcoded hex on the tier guide
+  panel.** `colleges/page.tsx:139`: `<div className="rounded-md
+  bg-[#12121f] border border-border-strong p-6">`. Same pattern as
+  `ChanceResult.tsx:160` — dark-only literal that breaks light
+  mode. Replace with `bg-bg-surface` (or `bg-bg-inset` for
+  inset look).
+- [NEW BLOCK] **TIERS legend in `colleges/page.tsx:17-24` uses raw
+  Tailwind ramps for both dot color AND text color.**
+  `bg-emerald-500`, `bg-amber-500`, `bg-orange-500`, `bg-red-500`,
+  `bg-zinc-500` for dots; `text-emerald-400`, `text-amber-400`,
+  `text-orange-400`, `text-red-500`, `text-text-secondary`,
+  `text-accent-text` for labels. CRITIQUE systemic #2 specifically
+  flagged the same ramps — and this is the *canonical legend that
+  defines what tier means* on the page. Hardest place to leave
+  off-system. Migrate to `bg-tier-<name>-fg` / `text-tier-<name>-fg`.
+  Note `Likely` row uses `bg-blue-500` + `text-accent-text` —
+  same accent-vs-tier-likely confusion as `ChanceResult.tsx`
+  (BLOCK on /chances).
+- [NEW BLOCK] **`GROUPS` in `CollegeResults.tsx:39-49` repeats the
+  same raw ramp pattern for the tier-group section headers.**
+  `text-emerald-400`, `text-amber-400`, `text-orange-400`,
+  `text-red-500`. These are the headings the user reads as they
+  scroll down — the most visible tier signal on the page after
+  the per-card badge. Migrate to `text-tier-<name>-fg`.
+
+### WARN
+
+- [OPEN] **Card grid wastes ~40% of screen at ≥1024px.** CRITIQUE
+  flagged "(2-up + tall cards)" — still exactly that at
+  `CollegeResults.tsx:209`: `grid grid-cols-1 sm:grid-cols-2 gap-3`
+  with no `lg:` breakpoint. Add a 3-up at `lg:` (or a list-view
+  density toggle). Cards collapse cleanly to 1-up on mobile so the
+  density bump is purely additive.
+- [OPEN] **Tier label per-card is redundant with tier-grouped
+  headers.** `CollegeResults.tsx:198-232` already groups results
+  by tier with a heading like "Reach (12)"; `CollegeCard.tsx:108`
+  *also* badges every card with the same tier label inside that
+  group. Drop the per-card badge when rendered inside a grouped
+  layout, or swap the per-card badge to a more useful signal
+  (e.g. acceptance-rate range, ED/EA availability). Pass a prop
+  like `inGroupedView` from `CollegeResults` so `CollegeCard` can
+  render the badge only when standalone (e.g. on /list).
+- [NEW WARN] **Pinned-count CTA bar mixes accent token + raw
+  blue ramp.** `CollegeResults.tsx:145`: `bg-accent-soft border
+  border-blue-500/15`. The `border-blue-500/15` is a leftover
+  from the pre-token era; pair it with `border-accent-line` to
+  match the rest.
+- [NEW WARN] **Same-color hover states throughout.**
+  - `CollegeResults.tsx:156` "View Strategy" link: `bg-accent-soft
+    hover:bg-accent-soft` (no hover delta).
+  - `CollegeFilters.tsx:223` "Add interest" button:
+    `bg-accent-soft hover:bg-accent-soft`.
+  - `CollegeFilters.tsx:177` chip remove button: `opacity-60
+    hover:opacity-100` — that one does have a delta but the chip
+    itself never gets a hover state.
+  Pick one: `hover:bg-accent-soft-strong` (define new token), or
+  `hover:bg-accent` with text inversion.
+- [NEW WARN] **Active major/interest chips use raw emerald
+  ramps.** `CollegeFilters.tsx:160` and `:237`: `bg-emerald-500/15
+  ring-emerald-500/30 text-emerald-200`. These signal "active
+  filter" not a tier — but they steal the tier-safety visual
+  language and they're dark-only (text-emerald-200 on emerald-500/15
+  is unreadable in light mode). Either swap to `bg-accent-soft
+  text-accent-text ring-accent-line` (active = accented) or
+  define a dedicated active-filter token. Same applies to inactive
+  chips at `:161` / `:238`: `ring-white/[0.12]` is dark-only by
+  construction — invisible in light mode.
+- [NEW WARN] **Filters input class has the same `focus:` typo and
+  raw blue ramp** as `ChanceForm.tsx`. `CollegeFilters.tsx:18`:
+  `focus:border-blue-500/50 focus: focus:ring-accent-line` — bare
+  `focus:` is dropped, and the focus border should be
+  `focus:border-[var(--accent)]` per MASTER §Focus.
+- [NEW WARN] **Cap-warning text uses raw amber ramp.**
+  `CollegeFilters.tsx:193`: `text-amber-400/80`. Should be a
+  warning token or `text-tier-target-fg`.
+
+### INFO
+
+- [OPEN] CRITIQUE flagged "(optional)" inside label strings —
+  same problem as `/chances`; covered there.
+- [NEW INFO] Top "Estimates only" disclaimer at
+  `colleges/page.tsx:117-131` is mode-aware (RESOLVED in 343ff95)
+  but the legend below at `:139` (the `bg-[#12121f]` block) is
+  not — they're two adjacent disclaimers with inconsistent
+  mode-handling. Fix together with the BLOCK above.
+- [NEW INFO] Two-source-of-truth for tier names: `colleges/page.tsx:17-24`
+  defines `TIERS[]` for the legend, and `CollegeResults.tsx:39-49`
+  defines `GROUPS[]` for the section headers. The labels match
+  ("Safety", "Likely", …) but the colors and descriptions live
+  in two arrays and could drift. Promote to a single
+  `src/lib/tier-meta.ts` consumed by both.
+
+
+
