@@ -9,6 +9,7 @@ import { getApplicationOptions } from "@/lib/admissions";
 import type { AdvancedCourseworkRow } from "@/lib/profile-types";
 import { getCachedJson } from "@/lib/cloud-storage";
 import { MajorSelect } from "./MajorSelect";
+import { CollegeCombobox } from "./CollegeCombobox";
 
 interface ChanceFormProps {
   readonly inputs: ChanceInputs;
@@ -92,21 +93,15 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
     )}
 
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-      {/* College selector */}
+      {/* College selector — typeahead combobox so picking a school is "type 3
+          letters" instead of "scroll through 120 options". */}
       <div className="col-span-2 sm:col-span-3">
         <label className={labelClass}>Select a College</label>
-        <select
-          className={selectClass}
-          value={inputs.collegeIndex ?? ""}
-          onChange={(e) => onUpdate("collegeIndex", e.target.value ? parseInt(e.target.value) : null)}
-        >
-          <option value="">Choose a school...</option>
-          {colleges.map((c, i) => (
-            <option key={c.name} value={i}>
-              {c.name} — {c.state} ({c.acceptanceRate}%)
-            </option>
-          ))}
-        </select>
+        <CollegeCombobox
+          colleges={colleges}
+          value={inputs.collegeIndex}
+          onChange={(idx) => onUpdate("collegeIndex", idx)}
+        />
       </div>
 
       {/* UNDO [application-plan]: remove this entire block (the plan selector). */}

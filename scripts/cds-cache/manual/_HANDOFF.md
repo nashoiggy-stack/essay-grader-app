@@ -150,13 +150,14 @@ fs.writeFileSync("src/data/cds-data.ts", out);
 
 ## State at handoff
 
-- 13 files dropped + 1 multi-school PDF — none yet processed.
-- Existing `cds-data.ts` has 55 schools.
-- After this work, expect 70-100 schools with CDS data.
+- 13 files + 1 multi-school PDF — all processed (moved to `manual/processed/`).
+- `cds-data.ts` now has 69 schools (was 55). 14 added across 3 batches:
+  JHU, Drexel, UCR, UMiami, WPI; Rutgers, FIU, Buffalo, FSU, MIT;
+  UC Berkeley, UC Merced, NJIT, Yeshiva.
 - Build is green at HEAD.
-- The 21 schools added in `259ae8b` are mostly waiting on this work to get
-  their CDS data — they currently use hand-curated estimates from
-  `colleges.ts`.
+- For the next batch: drop new files into this directory and follow the
+  workflow below. The 21 schools added in `259ae8b` still need CDS for
+  several of them.
 
 ---
 
