@@ -45,19 +45,25 @@ export default function ProfilePage() {
   const satComposite = profile.sat ? computeSATComposite(profile.sat) : null;
   const actComposite = profile.act ? computeACTComposite(profile.act) : null;
 
-  // Completeness: 6 sections, each 0/1
+  // Completeness: 5 sections, each 0/1.
+  // APs and Coursework used to be separate chips that both satisfied on
+  // advancedCoursework[] — so a single advancedCoursework entry double-
+  // lit two chips for the same signal. Merged into one "Coursework" chip
+  // (availability === "none" also satisfies, since the model waives the
+  // rigor signal in that case). The legacy apScores[] field is
+  // deprecated and only kept for round-tripping old saved data.
   const sections = [
     { key: "GPA", done: !!profile.gpaUW },
     { key: "Test", done: satComposite !== null || actComposite !== null },
-    { key: "APs", done: profile.apScores.length > 0 || (profile.advancedCoursework?.length ?? 0) > 0 },
-    { key: "Essay", done: !!profile.essayCommonApp || (profile.essayScores?.length ?? 0) > 0 },
-    { key: "ECs", done: !!profile.ecBand },
     {
       key: "Coursework",
       done:
         profile.advancedCourseworkAvailable === "none" ||
-        (profile.advancedCoursework?.length ?? 0) > 0,
+        (profile.advancedCoursework?.length ?? 0) > 0 ||
+        profile.apScores.length > 0,
     },
+    { key: "Essay", done: !!profile.essayCommonApp || (profile.essayScores?.length ?? 0) > 0 },
+    { key: "ECs", done: !!profile.ecBand },
   ];
   const completed = sections.filter((s) => s.done).length;
   const total = sections.length;
