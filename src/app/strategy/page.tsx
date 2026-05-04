@@ -279,105 +279,125 @@ export default function StrategyPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  className="space-y-3"
+                  className="space-y-8"
                 >
-                  {/* 1. SNAPSHOT — default expanded */}
-                  <StrategyCard
-                    icon={<Target className="w-4 h-4" />}
-                    title="Snapshot"
-                    strength={snapshotStrength(analysis)}
-                    headline={`${TIER_LABEL[analysis.academic.tier]} academics · ${EC_LABEL[analysis.ec.tier]} ECs · ${PERCENTILE_LABEL[analysis.positioning.percentileEstimate]}`}
-                    defaultExpanded
-                  >
-                    <SnapshotBody result={result} analysis={analysis} />
-                  </StrategyCard>
+                  {/* === Group 1: Profile readout — what we know about you ==== */}
+                  <section aria-labelledby="strategy-profile-heading" className="space-y-3">
+                    <h2 id="strategy-profile-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                      Profile readout
+                    </h2>
+                    {/* 1. SNAPSHOT — default expanded */}
+                    <StrategyCard
+                      icon={<Target className="w-4 h-4" />}
+                      title="Snapshot"
+                      strength={snapshotStrength(analysis)}
+                      headline={`${TIER_LABEL[analysis.academic.tier]} academics · ${EC_LABEL[analysis.ec.tier]} ECs · ${PERCENTILE_LABEL[analysis.positioning.percentileEstimate]}`}
+                      defaultExpanded
+                    >
+                      <SnapshotBody result={result} analysis={analysis} />
+                    </StrategyCard>
+                  </section>
 
-                  {/* 2. DREAM SCHOOL — default expanded, emphasized */}
-                  <StrategyCard
-                    icon={<Star className="w-4 h-4" />}
-                    title="Dream School"
-                    strength={urgencyToneStrength(result.dreamSchool?.urgencyTone ?? null)}
-                    headline={
-                      result.dreamSchool?.schoolName ??
-                      (dreamSchool ? `${dreamSchool} · pending re-run` : "No dream school selected")
-                    }
-                    defaultExpanded
-                    emphasize
-                  >
-                    <DreamSchoolBody result={result} analysis={analysis} dreamSchool={dreamSchool} />
-                  </StrategyCard>
+                  {/* === Group 2: Recommendation — what to do about it ==== */}
+                  <section aria-labelledby="strategy-recommendation-heading" className="space-y-3">
+                    <h2 id="strategy-recommendation-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                      Recommendation
+                    </h2>
+                    {/* 2. DREAM SCHOOL — default expanded, emphasized */}
+                    <StrategyCard
+                      icon={<Star className="w-4 h-4" />}
+                      title="Dream School"
+                      strength={urgencyToneStrength(result.dreamSchool?.urgencyTone ?? null)}
+                      headline={
+                        result.dreamSchool?.schoolName ??
+                        (dreamSchool ? `${dreamSchool} · pending re-run` : "No dream school selected")
+                      }
+                      defaultExpanded
+                      emphasize
+                    >
+                      <DreamSchoolBody result={result} analysis={analysis} dreamSchool={dreamSchool} />
+                    </StrategyCard>
+                    {/* 3. ACTION PLAN — default expanded, emphasized, checkboxes */}
+                    <ActionPlanCard result={result} />
+                  </section>
 
-                  {/* 3. ACTION PLAN — default expanded, emphasized, checkboxes */}
-                  <ActionPlanCard result={result} />
+                  {/* === Group 3: Plan — gaps, spike, deadlines, major recs ==== */}
+                  <section aria-labelledby="strategy-plan-heading" className="space-y-3">
+                    <h2 id="strategy-plan-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                      Plan
+                    </h2>
+                    {/* 4. SPIKE — collapsed */}
+                    <StrategyCard
+                      icon={<TrendingUp className="w-4 h-4" />}
+                      title="Spike Analysis"
+                      strength={spikeStrength(analysis)}
+                      headline={
+                        analysis.spike.primary
+                          ? `${analysis.spike.primary} · ${analysis.spike.clarity}`
+                          : "No clear spike"
+                      }
+                    >
+                      <SpikeBody result={result} analysis={analysis} />
+                    </StrategyCard>
 
-                  {/* 4. SPIKE — collapsed */}
-                  <StrategyCard
-                    icon={<TrendingUp className="w-4 h-4" />}
-                    title="Spike Analysis"
-                    strength={spikeStrength(analysis)}
-                    headline={
-                      analysis.spike.primary
-                        ? `${analysis.spike.primary} · ${analysis.spike.clarity}`
-                        : "No clear spike"
-                    }
-                  >
-                    <SpikeBody result={result} analysis={analysis} />
-                  </StrategyCard>
+                    {/* Deadlines hoisted when urgent */}
+                    {hasUrgentDeadline && (
+                      <DeadlinesCard entries={deadlineEntries} hoisted />
+                    )}
 
-                  {/* Deadlines card — hoisted to top of this stack when any
-                      pinned school has a deadline within 7 days. Otherwise
-                      rendered in its natural slot below. */}
-                  {hasUrgentDeadline && (
-                    <DeadlinesCard entries={deadlineEntries} hoisted />
-                  )}
+                    {/* 5. GAPS */}
+                    <StrategyCard
+                      icon={<AlertTriangle className="w-4 h-4" />}
+                      title="Gaps"
+                      strength={gapsStrength(analysis)}
+                      headline={`${analysis.weaknesses.length} flagged`}
+                    >
+                      <GapsBody result={result} analysis={analysis} />
+                    </StrategyCard>
 
-                  {/* 5. GAPS — collapsed, GapItem list */}
-                  <StrategyCard
-                    icon={<AlertTriangle className="w-4 h-4" />}
-                    title="Gaps"
-                    strength={gapsStrength(analysis)}
-                    headline={`${analysis.weaknesses.length} flagged`}
-                  >
-                    <GapsBody result={result} analysis={analysis} />
-                  </StrategyCard>
+                    {/* Deadlines natural slot */}
+                    {!hasUrgentDeadline && (
+                      <DeadlinesCard entries={deadlineEntries} hoisted={false} />
+                    )}
 
-                  {/* Deadlines (natural slot — only if not already hoisted above) */}
-                  {!hasUrgentDeadline && (
-                    <DeadlinesCard entries={deadlineEntries} hoisted={false} />
-                  )}
+                    {/* 6. RECOMMENDED FOR YOUR MAJOR */}
+                    <StrategyCard
+                      icon={<GraduationCap className="w-4 h-4" />}
+                      title="Recommended for Your Major"
+                      strength={majorRecsStrength(analysis.majorRecommendations)}
+                      headline={majorRecsHeadline(analysis.majorRecommendations)}
+                    >
+                      <MajorRecommendationsBody
+                        recs={analysis.majorRecommendations}
+                        onMajorSaved={refresh}
+                      />
+                    </StrategyCard>
+                  </section>
 
-                  {/* 6. RECOMMENDED FOR YOUR MAJOR — major-aware picks */}
-                  <StrategyCard
-                    icon={<GraduationCap className="w-4 h-4" />}
-                    title="Recommended for Your Major"
-                    strength={majorRecsStrength(analysis.majorRecommendations)}
-                    headline={majorRecsHeadline(analysis.majorRecommendations)}
-                  >
-                    <MajorRecommendationsBody
-                      recs={analysis.majorRecommendations}
-                      onMajorSaved={refresh}
-                    />
-                  </StrategyCard>
-
-                  {/* 7. SCHOOL LIST STRATEGY — collapsed, distribution bar */}
-                  <StrategyCard
-                    icon={<School className="w-4 h-4" />}
-                    title="School List Strategy"
-                    strength={schoolListStrength(analysis)}
-                    headline={`${analysis.schoolList.total} pinned · ${analysis.schoolList.balance}`}
-                  >
-                    <SchoolListBody result={result} analysis={analysis} />
-                  </StrategyCard>
-
-                  {/* 7. APPLICATION STRATEGY — collapsed */}
-                  <StrategyCard
-                    icon={<ArrowRight className="w-4 h-4" />}
-                    title="Application Strategy"
-                    strength="neutral"
-                    headline={`${analysis.earlyStrategy.length} schools · per-school plan`}
-                  >
-                    <ApplicationStrategyBody result={result} />
-                  </StrategyCard>
+                  {/* === Group 4: Atlas — your list, school by school ==== */}
+                  <section aria-labelledby="strategy-atlas-heading" className="space-y-3">
+                    <h2 id="strategy-atlas-heading" className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted">
+                      Atlas
+                    </h2>
+                    {/* 7. SCHOOL LIST STRATEGY */}
+                    <StrategyCard
+                      icon={<School className="w-4 h-4" />}
+                      title="School List Strategy"
+                      strength={schoolListStrength(analysis)}
+                      headline={`${analysis.schoolList.total} pinned · ${analysis.schoolList.balance}`}
+                    >
+                      <SchoolListBody result={result} analysis={analysis} />
+                    </StrategyCard>
+                    {/* 8. APPLICATION STRATEGY */}
+                    <StrategyCard
+                      icon={<ArrowRight className="w-4 h-4" />}
+                      title="Application Strategy"
+                      strength="neutral"
+                      headline={`${analysis.earlyStrategy.length} schools · per-school plan`}
+                    >
+                      <ApplicationStrategyBody result={result} />
+                    </StrategyCard>
+                  </section>
 
                   {/* Footer: last-updated + re-run CTA */}
                   <FooterBar
