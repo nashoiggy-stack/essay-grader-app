@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { EssayInput } from "@/components/EssayInput";
 import { ScoreOverview } from "@/components/ScoreOverview";
 import { TabNavigation, type TabId } from "@/components/TabNavigation";
@@ -118,26 +117,33 @@ export default function Home() {
         currentEssayText={essay.essayText}
       />
 
-      <main className="mx-auto max-w-5xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+      <main className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
 
-        {/* ── Hero with Scroll Animation ─────────────────────────── */}
-        <ContainerScroll
-          titleComponent={
-            <div className="mb-4">
-              <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
-                {APP_CONFIG.title}
-              </h1>
-              <p className="max-w-[60ch] mx-auto text-[15px] leading-relaxed text-text-secondary">
-                {APP_CONFIG.subtitle}
-              </p>
-            </div>
-          }
-        >
-          {/* Rubric overview inside the 3D card */}
-          <div className="h-full w-full bg-bg-base p-5 flex flex-col gap-4 overflow-hidden">
+        {/* Masthead — replaces the cosmic ContainerScroll 3D hero per
+            CRITIQUE.md (was a leftover from the pre-Linear redesign). */}
+        <header className="mb-10 sm:mb-12">
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
+            Tools / Essay Grader
+          </p>
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
+            {APP_CONFIG.title}
+          </h1>
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
+            {APP_CONFIG.subtitle}
+          </p>
+        </header>
+
+        {/* Rubric reference — two flat tables, matches /gpa's pattern. */}
+        <section className="mb-10 sm:mb-12">
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+            How essays are graded
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8 lg:gap-y-0">
             <div>
-              <h3 className="text-xs font-bold text-accent-text uppercase tracking-[0.08em] mb-3">Common App Criteria (1-100)</h3>
-              <div className="space-y-2">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+                Common App criteria · 1–100
+              </h2>
+              <ul className="divide-y divide-border-hair">
                 {[
                   { name: "Authenticity", desc: "Your real voice — not a formal essay voice" },
                   { name: "Compelling Story", desc: "Clear beginning, turn, and landing that hooks the reader" },
@@ -147,20 +153,19 @@ export default function Home() {
                   { name: "Passion", desc: "What energizes you — shown through specific detail" },
                   { name: "Ambition", desc: "Meaningful goals with a concrete next step" },
                 ].map((c) => (
-                  <div key={c.name} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                    <div>
-                      <span className="text-xs text-text-secondary font-semibold">{c.name}</span>
-                      <span className="text-[10px] text-text-faint ml-1.5">{c.desc}</span>
-                    </div>
-                  </div>
+                  <li key={c.name} className="py-2">
+                    <p className="text-[13px] text-text-primary font-medium">{c.name}</p>
+                    <p className="text-[12px] text-text-muted leading-relaxed">{c.desc}</p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
-            <div className="border-t border-border-hair pt-3">
-              <h3 className="text-xs font-bold text-accent-text uppercase tracking-[0.08em] mb-3">VSPICE Rubric (1-4)</h3>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+            <div>
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+                VSPICE rubric · 1–4
+              </h2>
+              <ul className="divide-y divide-border-hair">
                 {[
                   { name: "Vulnerability", desc: "Real fear or doubt, handled with maturity" },
                   { name: "Selflessness", desc: "Genuine care for others, grounded and specific" },
@@ -169,18 +174,15 @@ export default function Home() {
                   { name: "Curiosity", desc: "A question you chased with real receipts" },
                   { name: "Expression", desc: "Creative choices — image, metaphor, dialogue" },
                 ].map((c) => (
-                  <div key={c.name} className="flex items-start gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                    <div>
-                      <span className="text-[11px] text-text-secondary font-semibold">{c.name}</span>
-                      <p className="text-[9px] text-text-faint">{c.desc}</p>
-                    </div>
-                  </div>
+                  <li key={c.name} className="py-2">
+                    <p className="text-[13px] text-text-primary font-medium">{c.name}</p>
+                    <p className="text-[12px] text-text-muted leading-relaxed">{c.desc}</p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
-        </ContainerScroll>
+        </section>
 
         {/* ── Input Section ────────────────────────────────────────── */}
         <ScrollReveal delay={0.1}>

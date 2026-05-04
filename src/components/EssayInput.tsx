@@ -50,7 +50,7 @@ export const EssayInput: React.FC<EssayInputProps> = ({
     <Card3D className="bg-bg-surface rounded-md p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 gap-2">
-        <label className="text-sm font-medium text-text-secondary">Your essay</label>
+        <label htmlFor="essay-textarea" className="text-sm font-medium text-text-secondary">Your essay</label>
         <div className="flex items-center gap-2">
           {essayText && (
             <motion.button
@@ -84,12 +84,15 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           )}
           {essayText && (
             <motion.span
+              id="essay-word-count"
+              role="status"
+              aria-live="polite"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`text-xs font-mono px-2.5 py-1 rounded-full ${
+              className={`text-xs font-mono px-2.5 py-1 rounded-sm ${
                 inRange
-                  ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
-                  : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
+                  ? "bg-tier-safety-soft text-tier-safety-fg"
+                  : "bg-tier-target-soft text-tier-target-fg"
               }`}
             >
               {wordCount} words
@@ -101,22 +104,33 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
+        id="essay-textarea"
+        aria-describedby={essayText ? "essay-word-count" : undefined}
+        className="w-full rounded-sm bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
         onChange={(e) => onTextChange(e.target.value)}
       />
 
-      {/* Drop zone */}
+      {/* Drop zone — keyboard-accessible (role=button + tabIndex + Enter/Space) */}
       <motion.div
-        className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer ${
-          dragging ? "border-blue-500 bg-accent-soft" : "border-border-strong hover:border-border-strong hover:bg-bg-surface"
+        role="button"
+        tabIndex={0}
+        aria-label={file ? `${file.name} selected. Click or press Enter to choose a different file.` : "Click, press Enter, or drag and drop a PDF or Word document to upload your essay."}
+        className={`mt-4 flex items-center justify-center rounded-sm border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-line ${
+          dragging ? "border-[var(--accent)] bg-accent-soft" : "border-border-strong hover:border-[var(--accent)] hover:bg-bg-surface"
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={onOpenFilePicker}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpenFilePicker();
+          }
+        }}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
       >
