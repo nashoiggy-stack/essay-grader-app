@@ -258,7 +258,7 @@ function EmptyState() {
       </p>
       <Link
         href="/colleges"
-        className="mt-6 inline-flex items-center gap-2 rounded-sm bg-[var(--accent)] text-white px-4 py-2 text-[13px] font-medium transition-[background-color] duration-150 hover:bg-[var(--accent-strong)]"
+        className="mt-6 inline-flex items-center gap-2 rounded-sm bg-[var(--accent)] text-[var(--accent-fg)] px-4 py-2 text-[13px] font-medium transition-[background-color] duration-150 hover:bg-[var(--accent-strong)]"
       >
         Browse colleges <ArrowRight className="w-3.5 h-3.5" />
       </Link>

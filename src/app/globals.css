@@ -37,6 +37,10 @@
   --accent-line: oklch(64% 0.18 264 / 0.32);
   --accent-text: oklch(82% 0.10 264);
   --accent-glow: oklch(64% 0.18 264 / 0.30);
+  /* Foreground that always reads on top of --accent. White when accent
+     is the deep indigo (dark + light themes); near-black when accent
+     is forced to white (monochrome theme — see override below). */
+  --accent-fg: oklch(99% 0 0);
   /* Legacy aliases retained for compatibility — point at neutral tints */
   --violet-soft: oklch(96% 0.005 250 / 0.06);
   --cyan-soft: oklch(96% 0.005 250 / 0.04);
@@ -90,6 +94,8 @@
   --accent-line: oklch(48% 0.16 264 / 0.24);
   --accent-text: oklch(36% 0.12 264);
   --accent-glow: oklch(48% 0.16 264 / 0.16);
+  /* White stays the right contrast on the deep-indigo light-mode accent. */
+  --accent-fg: oklch(99% 0 0);
   --violet-soft: oklch(18% 0.01 250 / 0.04);
   --cyan-soft: oklch(18% 0.01 250 / 0.03);
   --noise-opacity: 0;
@@ -129,6 +135,8 @@
   --accent-strong: #ffffff;
   --accent-soft: rgba(255, 255, 255, 0.08);
   --accent-glow: rgba(255, 255, 255, 0.18);
+  /* Foreground that reads on the white accent — must invert. */
+  --accent-fg: #040404;
   --violet-soft: rgba(255, 255, 255, 0.06);
   --cyan-soft: rgba(255, 255, 255, 0.04);
   --noise-opacity: 0;
