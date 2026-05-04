@@ -68,7 +68,7 @@ export const StrategyShareButton: React.FC<StrategyShareButtonProps> = ({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 z-20 rounded-xl bg-bg-inset border border-border-strong shadow-[0_16px_32px_rgba(0,0,0,0.4)] p-4">
+        <div className="absolute right-0 top-full mt-2 w-[min(20rem,calc(100vw-2rem))] z-20 rounded-xl bg-bg-inset border border-border-strong shadow-[0_16px_32px_rgba(0,0,0,0.4)] p-4">
           <p className="text-[12px] font-semibold text-text-primary mb-2">
             Share your briefing
           </p>

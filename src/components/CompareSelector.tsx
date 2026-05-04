@@ -100,7 +100,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
   return (
     <div className="space-y-4">
       {/* Selected school slots */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <AnimatePresence mode="popLayout">
           {selected.map((c) => (
             <motion.div
@@ -204,7 +204,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-                className="absolute left-0 right-0 top-full mt-1.5 rounded-xl border border-border-strong shadow-[0_24px_64px_rgba(0,0,0,0.7),0_8px_24px_rgba(0,0,0,0.5)] overflow-hidden z-50 max-h-[320px] overflow-y-auto"
+                className="absolute left-0 right-0 top-full mt-1.5 rounded-xl border border-border-strong shadow-[0_24px_64px_rgba(0,0,0,0.7),0_8px_24px_rgba(0,0,0,0.5)] overflow-hidden z-50 max-h-[min(50vh,320px)] overflow-y-auto"
                 style={{ backgroundColor: "var(--bg-elevated, #0d0d1a)" }}
               >
                 {results.length === 0 ? (

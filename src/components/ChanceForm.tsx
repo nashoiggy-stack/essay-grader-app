@@ -92,10 +92,10 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
       </p>
     )}
 
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* College selector — typeahead combobox so picking a school is "type 3
           letters" instead of "scroll through 120 options". */}
-      <div className="col-span-2 sm:col-span-3">
+      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
         <label className={labelClass}>Select a College</label>
         <CollegeCombobox
           colleges={colleges}
@@ -113,7 +113,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           // Single option — render as a static chip rather than a dropdown.
           const only = options[0];
           return (
-            <div className="col-span-2 sm:col-span-3">
+            <div className="col-span-1 sm:col-span-2 lg:col-span-3">
               <label className={labelClass}>Application Plan</label>
               <div className="inline-flex items-center gap-2 rounded-lg bg-bg-surface border border-border-hair px-3 py-2 text-sm text-text-secondary">
                 <span>{APPLICATION_PLAN_LABELS[only.type]}</span>
@@ -126,7 +126,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         }
         const bindingNote = options.some((o) => o.binding);
         return (
-          <div className="col-span-2 sm:col-span-3">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3">
             <label className={labelClass}>Application Plan</label>
             <select
               className={selectClass}
@@ -162,7 +162,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
         if (!hasResidencyData) return null;
         const stateLabel = selectedCollege.state;
         return (
-          <div className="col-span-2 sm:col-span-3">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3">
             <label className={labelClass}>Residency for {selectedCollege.name}</label>
             <div className="inline-flex rounded-sm bg-bg-inset border border-border-hair p-0.5">
               {(["in-state", "oos", "international"] as const).map((opt) => {
@@ -198,7 +198,7 @@ export const ChanceForm: React.FC<ChanceFormProps> = ({ inputs, colleges, onUpda
           assumption that the Academic Index depends on; users with
           differently weighted scales (4.5/6.0/100-pt) need to convert
           via the GPA Calculator first. */}
-      <div className="col-span-2 sm:col-span-3">
+      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
         <GpaScaleNote />
       </div>
 

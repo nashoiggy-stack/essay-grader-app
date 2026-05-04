@@ -116,7 +116,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 320, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-80 bg-bg-base border-l border-white/[0.06] shadow-black/60 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-80 max-w-[85vw] bg-bg-base border-l border-white/[0.06] shadow-black/60 flex flex-col pb-[env(safe-area-inset-bottom)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">

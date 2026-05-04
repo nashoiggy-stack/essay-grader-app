@@ -168,7 +168,7 @@ export const CollegeCombobox: React.FC<CollegeComboboxProps> = ({
           ref={listRef}
           id="college-combobox-list"
           role="listbox"
-          className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-sm border border-border-hair bg-bg-surface shadow-lg"
+          className="absolute z-30 mt-1 max-h-[min(50vh,18rem)] w-full overflow-auto rounded-sm border border-border-hair bg-bg-surface shadow-lg"
         >
           {matches.length === 0 ? (
             <li className="px-3 py-3 text-xs text-text-muted">

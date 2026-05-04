@@ -35,10 +35,13 @@ function PersistentBackground() {
 // chance-model methodology page on every route.
 function Footer() {
   return (
-    <footer className="mt-auto border-t border-white/[0.04] bg-[#06060c]/40 backdrop-blur-sm">
-      <div className="mx-auto max-w-6xl px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-zinc-600">
-        <p>© AdmitEdge — Beta. Chance estimates are strategic guidance, not predictions.</p>
-        <nav className="flex items-center gap-4">
+    <footer
+      className="mt-auto border-t border-white/[0.04] bg-[#06060c]/40 backdrop-blur-sm"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="mx-auto max-w-6xl px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-[11px] text-zinc-600">
+        <p className="leading-relaxed">© AdmitEdge — Beta. Chance estimates are strategic guidance, not predictions.</p>
+        <nav className="flex items-center gap-4 shrink-0">
           <Link href="/methodology" className="hover:text-zinc-300 transition-colors">
             Methodology
           </Link>

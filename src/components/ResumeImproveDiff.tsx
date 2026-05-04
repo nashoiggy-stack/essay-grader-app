@@ -52,7 +52,7 @@ export function ResumeImproveDiff({ pending, onAccept, onReject }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-base/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] bg-bg-base/80 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="resume-improve-diff-title"
