@@ -245,6 +245,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
     data: {"acceptanceRate":15.3,"oosAcceptanceRate":6.6,"inStateAcceptanceRate":38,"sat25":1400,"sat75":1530,"act25":28,"act75":34,"yield":45.4,"avgGPACDS":4.49,"top10HSPercent":77,"pctTopTenClass":77,"studentFacultyRatio":15,"fourYearGradRate":83.6,"undergradPopulation":21075,"inStatePercent":85,"percentInternational":6.4,"demographics":{"white":52.8,"asian":15.9,"hispanic":9.6,"black":7.3,"multiracial":5,"international":6.4,"other":2.9},"genderBreakdown":{"male":39.3,"female":60.7}},
   },
+  "UT Austin": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "UT_Austin_CDS_2025-2025.pdf",
+    data: {"acceptanceRate":26.6,"oosAcceptanceRate":10.1,"inStateAcceptanceRate":37.7,"yield":47.4,"studentFacultyRatio":18,"fourYearGradRate":73.5,"undergradPopulation":43165,"inStatePercent":87.4,"percentInternational":4.5,"demographics":{"white":30.4,"asian":25.6,"hispanic":28.3,"black":4.6,"multiracial":4.1,"international":4.5,"other":2.6},"genderBreakdown":{"male":42.2,"female":57.7}},
+  },
   "University at Buffalo": {
     cdsYear: "2025-2026",
     sourcePdfUrl: "university_of_buffalo_CDS_2025-2026.pdf",
