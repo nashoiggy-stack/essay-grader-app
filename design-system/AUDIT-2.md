@@ -1295,3 +1295,74 @@ unless the issue extends past the chat panel itself.
   `/essay` (1.02 vs 1.04, 0.97 vs 0.98). Single hover-tap
   motion token would unify these.
 
+---
+
+## `/methodology`
+
+Files swept: `src/app/methodology/page.tsx`.
+
+CRITIQUE.md had no per-page findings here. New findings only.
+
+### BLOCK
+
+- [NEW BLOCK] **`bg-[#0a0a14]/70` hex literal on the AI formula
+  code block.** `methodology/page.tsx:29`: `<pre className="…
+  rounded-lg bg-[#0a0a14]/70 border border-border-hair …">`.
+  Same pattern as `BreakdownPanel.tsx`. In light mode this
+  renders a near-black 70%-alpha box inside a near-white page —
+  the only thing that breaks the otherwise calm reading flow.
+  Replace with `bg-bg-inset`.
+
+### WARN
+
+- [NEW WARN] **Table header + row hover use the same color.**
+  `methodology/page.tsx:219` (`thead className="bg-bg-surface"`)
+  and `:233` (`tr className="hover:bg-bg-surface"`). Hovering a
+  row produces no visible delta because the bg is already that
+  color elsewhere on the page. Use `hover:bg-bg-surface-2`.
+
+### INFO
+
+- [NEW INFO] Page archetype matches MASTER.md "Detail/result"
+  spec — long-form readable column at `max-w-3xl` (≈ 65ch).
+  Good.
+- [NEW INFO] All external citation links use `target="_blank"
+  rel="noopener noreferrer"` — correct.
+
+---
+
+## `/strategy/share/[token]`
+
+Files swept: `src/app/strategy/share/[token]/page.tsx`,
+`src/components/StrategyShareView.tsx`.
+
+This view is **out-of-scope for the contrast sweep** per user
+direction — the share-view dark gradient backdrop is intentional.
+Findings here are limited to a11y, semantics, security, and
+hard contract violations the dark theming doesn't excuse.
+
+### BLOCK
+
+- (none surfaced in this sweep)
+
+### WARN
+
+- [NEW INFO] `force-dynamic` rendering at
+  `share/[token]/page.tsx:51` is correct — share tokens shouldn't
+  be cached. Flagged so future "speed-up" passes don't try to
+  cache this route.
+- [NEW WARN] **`bg-[#0c0c1a]/80` hex literal at
+  `StrategyShareView.tsx:106`.** Per user direction the share
+  view is intentionally dark, so this is **not** a contrast bug.
+  Still worth defining a single `--share-bg-card` token to keep
+  the dark-share palette referenceable instead of scattering
+  hex literals across the file. Tracked as WARN, not BLOCK,
+  because the visual is correct.
+
+### INFO
+
+- [NEW INFO] `fetchShare()` constructs the origin from
+  `headers()` — correct, lets the route work on any host without
+  hardcoding. `force-dynamic` ensures the server-side fetch isn't
+  cached.
+
