@@ -238,7 +238,7 @@ export const CDS_DATA: Record<string, CDSEntry> = {
   "UNC Chapel Hill": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
-    data: {"acceptanceRate":15.3,"sat25":1400,"sat75":1530,"act25":28,"act75":34,"yield":45.4,"avgGPACDS":4.49,"top10HSPercent":77,"pctTopTenClass":77,"studentFacultyRatio":15,"fourYearGradRate":83.6,"undergradPopulation":21075,"inStatePercent":85,"percentInternational":6.4,"demographics":{"white":52.8,"asian":15.9,"hispanic":9.6,"black":7.3,"multiracial":5,"international":6.4,"other":2.9},"genderBreakdown":{"male":39.3,"female":60.7}},
+    data: {"acceptanceRate":15.3,"oosAcceptanceRate":9,"inStateAcceptanceRate":44,"sat25":1400,"sat75":1530,"act25":28,"act75":34,"yield":45.4,"avgGPACDS":4.49,"top10HSPercent":77,"pctTopTenClass":77,"studentFacultyRatio":15,"fourYearGradRate":83.6,"undergradPopulation":21075,"inStatePercent":85,"percentInternational":6.4,"demographics":{"white":52.8,"asian":15.9,"hispanic":9.6,"black":7.3,"multiracial":5,"international":6.4,"other":2.9},"genderBreakdown":{"male":39.3,"female":60.7}},
   },
   "University at Buffalo": {
     cdsYear: "2025-2026",

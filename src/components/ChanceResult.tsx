@@ -156,6 +156,38 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
         </div>
       )}
 
+      {/* OOS flag — shown when the model used the school's out-of-state
+          admit rate instead of the inflated overall figure. Common at
+          public flagships with strong in-state preference (UNC, UVA, UCs). */}
+      {result.oosUsed && (
+        <div className="rounded-md bg-accent-soft border border-accent-line px-4 py-3 flex items-start gap-3">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mt-[2px] text-accent-text shrink-0"
+            aria-hidden
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p className="text-[12px] text-accent-text leading-relaxed">
+            <span className="font-semibold">Out-of-state rate used ({result.oosUsed.oos}%)</span>
+            {" — "}
+            the published overall acceptance rate ({result.oosUsed.overall}%) is roughly{" "}
+            {Math.max(1, Math.round((result.oosUsed.overall - result.oosUsed.oos) * 10) / 10)} points
+            higher because in-state applicants are admitted at a much higher rate. If you&rsquo;re
+            applying as in-state, your real chance is materially higher than what&rsquo;s shown.
+          </p>
+        </div>
+      )}
+
       {/* Headline narrative */}
       <div className="rounded-md bg-bg-inset border border-border-strong p-5">
         <p className="text-[15px] text-text-primary leading-relaxed font-medium">

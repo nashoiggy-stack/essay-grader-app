@@ -131,8 +131,18 @@ interface BaseRateResult {
   planNote: string | null;
 }
 
+// Out-of-state-aware "overall" rate. Public flagships with in-state
+// preference (UNC, UVA, all UCs, etc.) publish a misleading overall figure
+// because in-state applicants are admitted at multiples higher than OOS.
+// When `oosAcceptanceRate` is set on the school, that's what an OOS
+// applicant actually faces — and our chance tool's default audience is
+// OOS-or-international, since most users aren't applying as in-state.
+function effectiveAcceptanceRate(college: College): number {
+  return college.oosAcceptanceRate ?? college.acceptanceRate;
+}
+
 function getBaseRateForPlan(college: College, plan: ApplicationPlan): BaseRateResult {
-  const overall = college.acceptanceRate;
+  const overall = effectiveAcceptanceRate(college);
   switch (plan) {
     case "ED":
     case "ED2": {
@@ -667,6 +677,9 @@ export interface ChanceResultModel {
   readonly breakdown?: ChanceBreakdown;
   readonly statBand?: StatBand;          // exposed for what-if scenarios
   readonly effectiveEcBand?: string;     // exposed for what-if scenarios
+  // Set when the school has an OOS-specific admit rate that diverges from
+  // the published overall figure (in-state-heavy publics).
+  readonly oosUsed?: { readonly oos: number; readonly overall: number };
   // School-specific history blend (sandbox feature). Present when the
   // imported feeder-school data has a record for this college+plan; the
   // blend may or may not have shifted the chance — see schoolBlend.applied.
@@ -755,7 +768,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // cap for Northeastern lands at 70% (the 25-50% bracket), so a strong
   // ED applicant can plausibly land in the 50-70% range. RD lookup is
   // unchanged because the overall rate IS the RD anchor.
-  const capLookupRate = isEdLikePlan ? baseResult.rate : college.acceptanceRate;
+  const capLookupRate = isEdLikePlan ? baseResult.rate : effectiveAcceptanceRate(college);
   const cap = getChanceCap(capLookupRate, admType);
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
   if (rawMid > capValue) rawMid = capValue;
@@ -802,7 +815,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // 14. Hard cliff at 10% admit: sub-10% schools cap at "reach" floor and
   // ceiling. Variance dominates at that selectivity, "unlikely" is misleading,
   // and the caps already prevent anything above target there.
-  if (college.acceptanceRate < 10 && classification !== "insufficient") {
+  if (effectiveAcceptanceRate(college) < 10 && classification !== "insufficient") {
     classification = "reach";
   }
 
@@ -821,13 +834,28 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
   if (baseResult.planNote) reasonParts.push(baseResult.planNote);
   if (schoolBlend.callout) reasonParts.push(schoolBlend.callout);
-  const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${college.acceptanceRate}% overall acceptance rate.`;
+  const oosNote: { oos: number; overall: number } | null =
+    typeof college.oosAcceptanceRate === "number" &&
+    college.oosAcceptanceRate !== college.acceptanceRate
+      ? { oos: college.oosAcceptanceRate, overall: college.acceptanceRate }
+      : null;
+  if (oosNote) {
+    reasonParts.push(
+      `Using OOS rate ${oosNote.oos}% (overall ${oosNote.overall}% reflects in-state preference)`,
+    );
+  }
+  const effectiveAr = effectiveAcceptanceRate(college);
+  const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${effectiveAr}% acceptance rate.`;
 
   // Build the multiplier-stack trace. Steps show running chance after each
   // layer so the UI can render an accumulating display.
   const breakdown = buildBreakdown({
     baseRate: baseResult.rate,
-    baseLabel: baseResult.planNote ?? `Overall acceptance rate (${college.acceptanceRate}%)`,
+    baseLabel:
+      baseResult.planNote ??
+      (oosNote
+        ? `OOS acceptance rate (${oosNote.oos}% — overall ${oosNote.overall}%)`
+        : `Overall acceptance rate (${effectiveAr}%)`),
     statBand: combinedBand,
     statMultiplier: multiplier,
     yieldProtected: yp.note,
@@ -842,7 +870,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     testOptionalNoScore,
     capValue,
     capApplied: baseResult.rate * dampened > capValue,
-    capBracket: capBracketLabel(college.acceptanceRate, isEdLikePlan),
+    capBracket: capBracketLabel(effectiveAr, isEdLikePlan),
     finalChance: chance.mid,
     schoolBlend,
   });
@@ -859,6 +887,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     statBand: combinedBand,
     effectiveEcBand,
     schoolBlend,
+    oosUsed: oosNote ?? undefined,
   };
   return result;
 }

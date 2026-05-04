@@ -360,7 +360,10 @@ export function useChanceCalculator() {
       }
     }
 
-    const baseAR = college.acceptanceRate;
+    // Use OOS rate as the comparison anchor when set — same rate the chance
+    // model used internally — so the "Nx typical" multiplier matches what
+    // the user actually faces, not the in-state-inflated overall.
+    const baseAR = college.oosAcceptanceRate ?? college.acceptanceRate;
     const multiple = baseAR > 0 ? r.chance.mid / baseAR : 0;
     const explanation = buildExplanation(
       r.classification,
@@ -383,6 +386,7 @@ export function useChanceCalculator() {
       confidence: r.confidence,
       breakdown: r.breakdown,
       whatIfs,
+      oosUsed: r.oosUsed,
     };
   }, [inputs, college]);
 

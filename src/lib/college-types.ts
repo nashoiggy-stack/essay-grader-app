@@ -92,6 +92,15 @@ export interface College {
   readonly edAdmitRate?: number;                  // 0-100, Early Decision admit rate (CDS C21)
   readonly eaAdmitRate?: number;                  // 0-100, Early Action admit rate (CDS C21)
   readonly regularDecisionAdmitRate?: number;     // 0-100, RD-only admit rate (CDS C1/C21 derived)
+  // Out-of-state acceptance rate. Set on schools where in-state preference
+  // skews the overall published rate (UNC, UVA, UMich, all UCs, public
+  // flagships generally). When present, the chance model uses this in place
+  // of `acceptanceRate` for OOS applicants (the default audience for this
+  // tool) — the published "overall" rate is otherwise misleading by 5-15
+  // points at residency-preference schools. Source: CDS C1 residency
+  // breakdown (admits ÷ applicants for the Out-of-State column).
+  readonly oosAcceptanceRate?: number;            // 0-100
+  readonly inStateAcceptanceRate?: number;        // 0-100, informational
   readonly top10HSPercent?: number;               // 0-100, CDS-reported top 10% of HS class (CDS C11)
   readonly avgGPACDS?: number;                    // CDS-reported average HS GPA of enrolled freshmen (CDS C12)
   // Trailing year of the source CDS academic year (e.g. "2024-2025" → 2025).
@@ -419,6 +428,11 @@ export interface ChanceResult {
   readonly confidence: ConfidenceTier;
   readonly breakdown?: import("./admissions").ChanceBreakdown;
   readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];
+  // Set when the chance model substituted the OOS acceptance rate for the
+  // school's overall published rate (in-state-heavy publics like UNC).
+  // The UI surfaces a flag so the user understands why the chance figure
+  // is grounded in the lower-than-headline rate.
+  readonly oosUsed?: { readonly oos: number; readonly overall: number };
 }
 
 export interface CollegeFilters {
