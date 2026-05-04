@@ -106,6 +106,7 @@ function LayoutTweaks({ layout, onChange }: { layout: Layout; onChange: (l: Layo
         <button
           key={opt}
           type="button"
+          aria-pressed={layout === opt}
           className={`ae-tweak-btn ${layout === opt ? "is-active" : ""}`}
           onClick={() => onChange(opt)}
         >

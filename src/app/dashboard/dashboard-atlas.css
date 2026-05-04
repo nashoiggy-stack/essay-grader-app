@@ -1,12 +1,18 @@
 /* ─── AdmitEdge profile redesign — "Application Atlas" ────────────────────
    Scoped to .ae-root so it doesn't bleed into the rest of the app.
-   Fonts reuse the project tokens: Geist (sans/mono) + Young Serif (display). */
+   Fonts reuse the project sans + mono tokens (Geist). */
 
 .ae-root {
   --ae-pad: 26px;
   --ae-gap: 22px;
   --ae-row-pad: 14px;
   --ae-font: 14px;
+
+  /* Brand-accent hue. Used downstream in oklch() formulas for the
+     readiness-bar gradient and tier-label tints. Was referenced but
+     never defined — undefined CSS vars inside oklch() invalidate the
+     entire declaration, which silently wiped out those colors. */
+  --ae-hue: 264;
 
   /* Site-wide theme tokens (dark / light / monochrome adapt automatically). */
   --ink-bg: var(--bg-base);
@@ -136,11 +142,11 @@
 .ae-stat-caption { font-size: 12px; color: var(--ink-text-muted); margin-top: 4px; }
 .ae-stat-bar {
   margin-top: 14px; height: 3px; border-radius: 999px;
-  background: rgba(255,255,255,0.06); overflow: hidden;
+  background: var(--bg-inset); overflow: hidden;
 }
 .ae-stat-bar-fill {
   height: 100%; border-radius: inherit;
-  background: linear-gradient(90deg, var(--ae-accent), oklch(0.78 0.16 var(--ae-hue)));
+  background: var(--ae-accent);
   box-shadow: none;
   transition: width 0.8s cubic-bezier(0.23, 1, 0.32, 1);
 }
