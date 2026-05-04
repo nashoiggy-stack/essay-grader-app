@@ -7,6 +7,7 @@ import { TOOL_ICON } from "./icons";
 import {
   IconArrow,
   IconRefresh,
+  IconSchool,
   IconSpark,
   IconUser,
 } from "./icons";
@@ -177,42 +178,74 @@ function Header({ data, firstName, isEmpty }: HeaderProps) {
         )}
       </div>
 
-      <div className="ae-header-grid">
-        <Stat
-          big
-          label="Profile readiness"
-          value={isEmpty ? "—" : `${readiness}%`}
-          caption={
-            isEmpty
-              ? "Start any tool to begin"
-              : `${completedCount} of ${tools.length} tools complete · ${inProgressCount} in progress`
-          }
-          progress={isEmpty ? 0 : readiness}
-        />
-        <Stat label="GPA, weighted" value={snapshot.gpaW} sub={snapshot.gpaUW !== "—" ? `${snapshot.gpaUW} unweighted` : ""} />
-        {snapshot.sat !== "—" ? (
+      {isEmpty ? (
+        // Empty state — a 7-stat grid of "—" with a 0% readiness bar
+        // told a brand new user nothing they could act on. Replace it
+        // with a single concrete next-step above the fold; users with
+        // any partial data fall through to the stat grid below.
+        <EmptyHero />
+      ) : (
+        <div className="ae-header-grid">
           <Stat
-            label="SAT composite"
-            value={snapshot.sat}
-            sub={snapshot.satRW !== "—" || snapshot.satMath !== "—" ? `${snapshot.satRW} RW · ${snapshot.satMath} Math` : ""}
+            big
+            label="Profile readiness"
+            value={`${readiness}%`}
+            caption={`${completedCount} of ${tools.length} tools complete · ${inProgressCount} in progress`}
+            progress={readiness}
           />
-        ) : (
+          <Stat label="GPA, weighted" value={snapshot.gpaW} sub={snapshot.gpaUW !== "—" ? `${snapshot.gpaUW} unweighted` : ""} />
+          {snapshot.sat !== "—" ? (
+            <Stat
+              label="SAT composite"
+              value={snapshot.sat}
+              sub={snapshot.satRW !== "—" || snapshot.satMath !== "—" ? `${snapshot.satRW} RW · ${snapshot.satMath} Math` : ""}
+            />
+          ) : (
+            <Stat
+              label="ACT composite"
+              value={snapshot.act}
+              sub={snapshot.act !== "—" ? "Average of E + M + R" : "Add SAT or ACT in Edit profile"}
+            />
+          )}
           <Stat
-            label="ACT composite"
-            value={snapshot.act}
-            sub={snapshot.act !== "—" ? "Average of E + M + R" : "Add SAT or ACT in Edit profile"}
+            label="AP scores"
+            value={snapshot.apCount > 0 ? String(snapshot.apCount) : "—"}
+            sub={snapshot.apCount > 0 ? `${snapshot.apFives}× 5 · avg ${snapshot.apAvg}` : ""}
           />
-        )}
-        <Stat
-          label="AP scores"
-          value={snapshot.apCount > 0 ? String(snapshot.apCount) : "—"}
-          sub={snapshot.apCount > 0 ? `${snapshot.apFives}× 5 · avg ${snapshot.apAvg}` : ""}
-        />
-        <Stat label="Course rigor" value={snapshot.rigor} sub={snapshot.gpaW !== "—" ? "Auto from weighted GPA" : ""} />
-        <Stat label="EC strength" value={snapshot.ecBand} sub={snapshot.ecBand !== "—" ? "From EC evaluator" : ""} />
-        <Stat label="Essay grade" value={snapshot.essay} sub={snapshot.vspice !== "—" ? `VSPICE ${snapshot.vspice} / 24` : ""} />
-      </div>
+          <Stat label="Course rigor" value={snapshot.rigor} sub={snapshot.gpaW !== "—" ? "Auto from weighted GPA" : ""} />
+          <Stat label="EC strength" value={snapshot.ecBand} sub={snapshot.ecBand !== "—" ? "From EC evaluator" : ""} />
+          <Stat label="Essay grade" value={snapshot.essay} sub={snapshot.vspice !== "—" ? `VSPICE ${snapshot.vspice} / 24` : ""} />
+        </div>
+      )}
     </section>
+  );
+}
+
+function EmptyHero() {
+  return (
+    <div className="ae-empty-hero">
+      <div className="ae-empty-hero-text">
+        <p className="ae-empty-eyebrow">First step</p>
+        <h2 className="ae-empty-title">
+          Start by pinning a few schools.
+        </h2>
+        <p className="ae-empty-sub">
+          Every other tool — chance estimates, strategy, the application
+          atlas — reads from your pinned list. Add 3-5 schools you&apos;re
+          actually considering and the rest of this dashboard fills in.
+        </p>
+      </div>
+      <div className="ae-empty-cta-row">
+        <Link href="/colleges" className="ae-btn ae-btn-primary">
+          <IconSchool size={14} /> Pin your first school
+          <IconArrow size={14} />
+        </Link>
+        <Link href="/profile" className="ae-btn ae-btn-secondary">
+          Or build your profile
+          <IconArrow size={14} />
+        </Link>
+      </div>
+    </div>
   );
 }
 

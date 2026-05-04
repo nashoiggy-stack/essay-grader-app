@@ -338,6 +338,58 @@
   color: var(--ink-text-soft);
 }
 .ae-btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--ink-line-hi); color: var(--ink-text); }
+.ae-btn-secondary {
+  background: transparent;
+  border-color: var(--ink-line);
+  color: var(--ink-text-soft);
+}
+.ae-btn-secondary:hover {
+  background: var(--ae-surface);
+  border-color: var(--ink-line-hi);
+  color: var(--ink-text);
+}
+
+/* ── Empty hero ───────────────────────────────────────────────── */
+/* Replaces the 7-stat grid + 0% bar that used to fill the dashboard
+   for first-time users. One concrete next-step is more useful than
+   seven em-dashes. */
+.ae-empty-hero {
+  display: grid;
+  gap: 24px;
+  padding: 36px 32px;
+  border: 1px solid var(--ae-accent-line);
+  background: var(--ae-accent-soft);
+  border-radius: var(--ae-radius);
+  margin-top: 8px;
+}
+.ae-empty-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ae-accent);
+  margin: 0 0 10px;
+}
+.ae-empty-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 1rem + 1.6vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink-text);
+}
+.ae-empty-sub {
+  margin: 12px 0 0;
+  max-width: 60ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-text-soft);
+}
+.ae-empty-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 /* ── Orbital layout ───────────────────────────────────────────── */
 .ae-orbital { display: grid; gap: 24px; }
