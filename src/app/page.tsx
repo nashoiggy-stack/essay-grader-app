@@ -166,17 +166,22 @@ export default function LandingPage() {
               <span className="block mb-2 sm:mb-3">Your edge in</span>
               <span className="block italic">college admissions.</span>
             </h1>
-            {/* Standfirst — names what the product actually does, so a
-                first-time visitor scanning the hero understands the value
-                prop without scrolling through 420vh of choreography. */}
-            <p className="mt-5 sm:mt-6 max-w-[44ch] text-[14px] sm:text-[15px] leading-relaxed text-zinc-300">
-              Nine connected tools — essay grading, GPA, extracurriculars,
-              resume, list, chances, comparison, strategy — sourced from CDS
-              data. One profile feeds them all.
-            </p>
-            <p className="text-xs text-zinc-500 text-center mt-4">
-              Early access — actively in development
-            </p>
+
+            {/* Beta / early-access badge. Small uppercase text plus a pill
+                are easy to miss; the dot + amber tone make the status
+                obvious without competing with the hero typography. */}
+            <div className="mt-6 sm:mt-8 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/[0.06] px-3.5 py-1.5">
+              <span aria-hidden className="relative flex h-2 w-2">
+                <span className="absolute inset-0 rounded-full bg-amber-300 animate-ping opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-300" />
+              </span>
+              <span className="text-[11px] uppercase tracking-[0.18em] text-amber-200 font-semibold">
+                Beta
+              </span>
+              <span className="text-[11px] text-amber-200/70">
+                · early access — actively in development
+              </span>
+            </div>
           </motion.div>
 
           {/* Scroll hint — fades out alongside the rest of the hero on
