@@ -199,6 +199,7 @@ export default function ProfilePage() {
                 <label className={labelClass}>Name</label>
                 <input
                   type="text"
+                  autoComplete="name"
                   placeholder="Your full name"
                   value={bi.name}
                   onChange={(e) => updateBasicInfo({ name: e.target.value })}
@@ -209,6 +210,8 @@ export default function ProfilePage() {
                 <label className={labelClass}>Email</label>
                 <input
                   type="email"
+                  autoComplete="email"
+                  inputMode="email"
                   placeholder="you@school.edu"
                   value={bi.email}
                   onChange={(e) => updateBasicInfo({ email: e.target.value })}
@@ -219,6 +222,8 @@ export default function ProfilePage() {
                 <label className={labelClass}>Phone</label>
                 <input
                   type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
                   placeholder="(555) 555-5555"
                   value={bi.phone}
                   onChange={(e) => updateBasicInfo({ phone: e.target.value })}
@@ -229,6 +234,7 @@ export default function ProfilePage() {
                 <label className={labelClass}>Address (optional)</label>
                 <input
                   type="text"
+                  autoComplete="address-level2"
                   placeholder="City, State"
                   value={bi.address}
                   onChange={(e) => updateBasicInfo({ address: e.target.value })}
@@ -239,6 +245,7 @@ export default function ProfilePage() {
                 <label className={labelClass}>School</label>
                 <input
                   type="text"
+                  autoComplete="organization"
                   placeholder="e.g. Lincoln High School"
                   value={bi.school}
                   onChange={(e) => updateBasicInfo({ school: e.target.value })}
@@ -249,6 +256,8 @@ export default function ProfilePage() {
                 <label className={labelClass}>Graduation year</label>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="e.g. 2026"
                   value={bi.graduationYear}
                   onChange={(e) => updateBasicInfo({ graduationYear: e.target.value })}
