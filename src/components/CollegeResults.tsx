@@ -187,7 +187,7 @@ export const CollegeResults: React.FC<CollegeResultsProps> = ({
             onClick={onShowGuide}
             aria-label="How are admission chances calculated? Open the full legend."
             title="How are admission chances calculated?"
-            className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-text-muted hover:text-accent-text hover:bg-accent-soft transition-colors"
+            className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 sm:w-7 sm:h-7 rounded-lg text-text-muted hover:text-accent-text hover:bg-accent-soft transition-colors"
           >
             <HelpCircle className="w-3.5 h-3.5" />
           </button>

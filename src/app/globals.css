@@ -307,6 +307,14 @@ button, a, [role="button"], [role="tab"] {
   input, textarea, select { font-size: 16px; }
 }
 
+/* Keep focused inputs above the iOS virtual keyboard. Sticky NavBar (h-14
+   = 56px) plus the SectionNav can otherwise hide a focused field when iPad
+   pulls the keyboard up — `scroll-margin-top` tells the browser to leave
+   that much space when scrollIntoView fires on focus. */
+input, textarea, select {
+  scroll-margin-top: calc(var(--navbar-height, 56px) + 1rem);
+}
+
 body {
   background: transparent;
   color: var(--text-primary);

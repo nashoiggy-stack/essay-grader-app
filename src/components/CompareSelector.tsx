@@ -116,7 +116,7 @@ export const CompareSelector: React.FC<CompareSelectorProps> = ({
                 type="button"
                 onClick={() => onRemove(c.name)}
                 aria-label={`Remove ${c.name}`}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full border border-border-hair bg-bg-surface flex items-center justify-center text-text-muted hover:text-tier-unlikely-fg hover:bg-tier-unlikely-soft hover:border-tier-unlikely-fg/30 transition-[color,background-color,border-color] duration-200"
+                className="absolute top-1 right-1 w-11 h-11 sm:w-7 sm:h-7 sm:top-2 sm:right-2 rounded-full border border-border-hair bg-bg-surface flex items-center justify-center text-text-muted hover:text-tier-unlikely-fg hover:bg-tier-unlikely-soft hover:border-tier-unlikely-fg/30 transition-[color,background-color,border-color] duration-200"
               >
                 <X className="w-3 h-3" />
               </button>

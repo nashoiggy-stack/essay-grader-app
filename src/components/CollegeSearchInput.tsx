@@ -61,7 +61,7 @@ export const CollegeSearchInput: React.FC<CollegeSearchInputProps> = ({
           type="button"
           onClick={() => setLocal("")}
           aria-label="Clear search"
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-2.5 sm:p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

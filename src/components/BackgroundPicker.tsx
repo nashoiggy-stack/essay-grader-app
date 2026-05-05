@@ -50,7 +50,11 @@ export function BackgroundPicker() {
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-4 right-4 z-50 print:hidden"
+      className="fixed z-50 print:hidden"
+      style={{
+        bottom: "max(1rem, env(safe-area-inset-bottom))",
+        right: "max(1rem, env(safe-area-inset-right))",
+      }}
       data-bg-picker
     >
       {open && (

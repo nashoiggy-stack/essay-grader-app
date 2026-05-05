@@ -53,8 +53,11 @@ export const CloudSyncToast: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className="fixed right-4 z-40 pointer-events-none"
-      style={{ bottom: "max(5rem, calc(5rem + env(safe-area-inset-bottom)))" }}
+      className="fixed z-40 pointer-events-none"
+      style={{
+        bottom: "max(5rem, calc(5rem + env(safe-area-inset-bottom)))",
+        right: "max(1rem, env(safe-area-inset-right))",
+      }}
     >
       <AnimatePresence>
         {state !== "idle" && (
