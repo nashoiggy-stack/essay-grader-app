@@ -39,6 +39,20 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Touch-primary detection (iPad / iPhone). The 420vh + 280vh sticky
+  // scroll choreography fights iOS Safari's inertia and feels janky
+  // even on iPad Pro. On touch, we bypass it: hero and CTA each become
+  // simple full-viewport sections that scroll naturally.
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(hover: none) and (pointer: coarse)");
+    setIsTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   // ── Hero scroll choreography ──────────────────────────────────
   // Hero text + shader fade out as the user scrolls past the first
   // sticky viewport into the editorial middle.
@@ -96,21 +110,27 @@ export default function LandingPage() {
   return (
     <>
       <main id="main-content">
-      {/* ── Page 1 / Hero (sticky, fades out on scroll) ───────── */}
+      {/* ── Page 1 / Hero — sticky scroll-jacked on desktop, simple
+          full-viewport section on touch (iPad / iPhone). ─────── */}
       <div
         ref={heroRef}
         data-landing-page=""
         className="bg-zinc-950"
-        style={{ height: "420vh", ...landingTokens }}
+        style={{ height: isTouch ? "100dvh" : "420vh", ...landingTokens }}
       >
         <div
           className="relative w-full bg-zinc-950 text-white"
-          style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}
+          style={{
+            position: isTouch ? "relative" : "sticky",
+            top: 0,
+            height: "100dvh",
+            overflow: "hidden",
+          }}
         >
           <motion.div
             className="absolute inset-0 pointer-events-none"
             style={{
-              opacity: heroGridOpacity,
+              opacity: isTouch ? 0.4 : heroGridOpacity,
               backgroundSize: "60px 60px",
               backgroundImage:
                 "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
@@ -120,14 +140,18 @@ export default function LandingPage() {
           />
 
           {shaderReady && (
-            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: heroOpacity }}>
+            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: isTouch ? 1 : heroOpacity }}>
               <ShaderLines />
             </motion.div>
           )}
 
           <motion.div
             className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
-            style={{ opacity: heroOpacity, scale: heroScale, filter: heroBlurFilter }}
+            style={
+              isTouch
+                ? { opacity: 1, scale: 1, filter: "none" }
+                : { opacity: heroOpacity, scale: heroScale, filter: heroBlurFilter }
+            }
           >
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-300 mb-4 sm:mb-6 font-semibold">
               College Prep Suite
@@ -155,7 +179,10 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          {/* Scroll hint — fades out alongside the rest of the hero */}
+          {/* Scroll hint — fades out alongside the rest of the hero on
+              desktop. Hidden entirely on touch since content scrolls
+              naturally there and the prompt is misleading. */}
+          {!isTouch && (
           <motion.div
             style={{ opacity: heroOpacity }}
             className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
@@ -179,27 +206,34 @@ export default function LandingPage() {
               />
             </div>
           </motion.div>
+          )}
         </div>
       </div>
 
       {/* ── Page 2 / Editorial middle (normal scroll) ─────────── */}
       <LandingMiddle />
 
-      {/* ── Page 3 / CTA (sticky, fades in on scroll) ─────────── */}
+      {/* ── Page 3 / CTA — sticky scroll-jacked on desktop, simple
+          full-viewport section on touch (iPad / iPhone). ─────── */}
       <div
         ref={ctaRef}
         data-landing-page=""
         className="bg-zinc-950"
-        style={{ height: "280vh", ...landingTokens }}
+        style={{ height: isTouch ? "100dvh" : "280vh", ...landingTokens }}
       >
         <div
           className="relative w-full bg-zinc-950 text-white"
-          style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}
+          style={{
+            position: isTouch ? "relative" : "sticky",
+            top: 0,
+            height: "100dvh",
+            overflow: "hidden",
+          }}
         >
           <motion.div
             className="absolute inset-0 pointer-events-none"
             style={{
-              opacity: ctaGridOpacity,
+              opacity: isTouch ? 0.4 : ctaGridOpacity,
               backgroundSize: "60px 60px",
               backgroundImage:
                 "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
@@ -209,19 +243,23 @@ export default function LandingPage() {
           />
 
           {shaderReady && (
-            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: ctaOpacity }}>
+            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: isTouch ? 1 : ctaOpacity }}>
               <ShaderLines />
             </motion.div>
           )}
 
           <motion.div
             className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
-            style={{
-              opacity: ctaOpacity,
-              scale: ctaScale,
-              filter: ctaBlurFilter,
-              pointerEvents: ctaPointerEvents,
-            }}
+            style={
+              isTouch
+                ? { opacity: 1, scale: 1, filter: "none", pointerEvents: "auto" }
+                : {
+                    opacity: ctaOpacity,
+                    scale: ctaScale,
+                    filter: ctaBlurFilter,
+                    pointerEvents: ctaPointerEvents,
+                  }
+            }
           >
             <h2
               className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-4 sm:mb-6 text-white leading-[1]"
