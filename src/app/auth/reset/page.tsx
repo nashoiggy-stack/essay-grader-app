@@ -68,8 +68,19 @@ export default function ResetPasswordPage() {
     setSubmitting(false);
   };
 
+  // Auth screens always render dark — see AuthGate.tsx for the rationale.
+  const authTokens: React.CSSProperties = {
+    ["--bg-base" as string]: "#06060f",
+    ["--text-primary" as string]: "#e4e4e7",
+    ["--text-muted" as string]: "#a1a1aa",
+    ["--accent-text" as string]: "#93c5fd",
+  };
+
   return (
-    <div className="bg-bg-base min-h-dvh w-full flex flex-col text-white">
+    <div
+      className="min-h-dvh w-full flex flex-col text-white"
+      style={{ background: "#06060f", ...authTokens }}
+    >
       <div className="fixed top-4 left-4 z-20 flex items-center gap-2 md:left-1/2 md:-translate-x-1/2">
         <AdmitEdgeLogo size={28} />
         <h1 className="text-base font-bold">AdmitEdge</h1>

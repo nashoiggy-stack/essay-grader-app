@@ -35,7 +35,7 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-bg-base">
+      <div className="min-h-dvh flex items-center justify-center bg-[#06060f]">
         <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
       </div>
     );
@@ -281,8 +281,29 @@ function LoginScreen() {
     }
   };
 
+  // Auth flow always renders in a dark visual register regardless of the
+  // user's theme preference — same pattern as Stripe/Vercel/Linear login.
+  // Light mode would otherwise produce white-on-off-white text inside the
+  // glass inputs (their CSS reads --background and --foreground), and the
+  // gradient backdrop SVG uses dark-friendly blue blobs that don't read on
+  // a warm light backdrop. Locking the tokens here keeps the auth screen
+  // legible in every theme without forking the glass styles.
+  const authTokens: React.CSSProperties = {
+    ["--background" as string]: "#06060f",
+    ["--foreground" as string]: "#e4e4e7",
+    ["--bg-base" as string]: "#06060f",
+    ["--text-primary" as string]: "#e4e4e7",
+    ["--text-secondary" as string]: "#d4d4d8",
+    ["--text-muted" as string]: "#a1a1aa",
+    ["--text-faint" as string]: "rgba(255, 255, 255, 0.4)",
+    ["--accent-text" as string]: "#93c5fd",
+  };
+
   return (
-    <div className="bg-bg-base min-h-dvh w-full flex flex-col text-white">
+    <div
+      className="min-h-dvh w-full flex flex-col text-white"
+      style={{ background: "#06060f", ...authTokens }}
+    >
       <style dangerouslySetInnerHTML={{ __html: GLASS_STYLES }} />
       <ConfettiCanvas ref={confettiRef} manualstart className="fixed top-0 left-0 w-full h-full pointer-events-none z-[999]" />
 
