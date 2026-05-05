@@ -295,6 +295,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "UMiami_CDS.pdf",
     data: {"acceptanceRate":17.6,"yield":26.2,"edAdmitRate":44.3,"sat25":1350,"sat75":1450,"act25":30,"act75":33,"avgGPACDS":3.75,"top10HSPercent":55,"pctTopTenClass":55,"studentFacultyRatio":11,"fourYearGradRate":71.5,"undergradPopulation":13241,"inStatePercent":29.5,"percentInternational":7.4,"demographics":{"white":46.6,"asian":4.9,"hispanic":26.6,"black":6.4,"multiracial":4.7,"international":7.4,"other":3.4},"genderBreakdown":{"male":44.4,"female":55.6}},
   },
+  "University of Michigan": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "firstyearsprofile_umaa_2025 (1).pdf",
+    data: {"acceptanceRate":15.6,"yield":47.3,"sat25":1360,"sat75":1530,"act25":31,"act75":34,"avgGPACDS":3.95,"inStatePercent":52.9,"percentInternational":4.2,"demographics":{"white":44.8,"asian":18.2,"hispanic":14.8,"black":6.3,"multiracial":6.7,"international":4.2,"other":5.1},"genderBreakdown":{"male":43.9,"female":56}},
+  },
   "University of Minnesota": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
