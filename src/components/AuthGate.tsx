@@ -147,7 +147,7 @@ function GlassInput({ icon, type, placeholder, value, onChange, onKeyDown, input
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
-          className="relative z-10 h-full w-0 flex-grow bg-transparent text-white placeholder:text-white/50 focus:outline-none py-3"
+          className="relative z-10 h-full w-0 flex-grow bg-transparent text-text-primary placeholder:text-text-faint focus:outline-none py-3"
         />
         {rightElement && (
           <div className="relative z-10 flex-shrink-0 pr-1">
@@ -170,7 +170,7 @@ function GlassButton({ children, onClick, type = "button", disabled, className }
 }) {
   return (
     <div className={cn("glass-btn-wrap rounded-full", className)}>
-      <button type={type} onClick={onClick} disabled={disabled} className="glass-btn relative z-10 px-6 py-3 text-sm font-medium text-white/90 disabled:opacity-40 disabled:cursor-not-allowed w-full">
+      <button type={type} onClick={onClick} disabled={disabled} className="glass-btn relative z-10 px-6 py-3 text-sm font-medium text-text-primary disabled:opacity-40 disabled:cursor-not-allowed w-full">
         {children}
       </button>
     </div>
@@ -182,7 +182,7 @@ function GlassButton({ children, onClick, type = "button", disabled, className }
 function IconBtn({ onClick, children, type = "button" }: { onClick?: () => void; children: React.ReactNode; type?: "button" | "submit" }) {
   return (
     <div className="glass-btn-wrap rounded-full">
-      <button type={type} onClick={onClick} className="glass-btn relative z-10 p-2.5 text-white/80 hover:text-white">
+      <button type={type} onClick={onClick} className="glass-btn relative z-10 p-2.5 text-text-secondary hover:text-text-primary">
         {children}
       </button>
     </div>
@@ -281,29 +281,8 @@ function LoginScreen() {
     }
   };
 
-  // Auth flow always renders in a dark visual register regardless of the
-  // user's theme preference — same pattern as Stripe/Vercel/Linear login.
-  // Light mode would otherwise produce white-on-off-white text inside the
-  // glass inputs (their CSS reads --background and --foreground), and the
-  // gradient backdrop SVG uses dark-friendly blue blobs that don't read on
-  // a warm light backdrop. Locking the tokens here keeps the auth screen
-  // legible in every theme without forking the glass styles.
-  const authTokens: React.CSSProperties = {
-    ["--background" as string]: "#06060f",
-    ["--foreground" as string]: "#e4e4e7",
-    ["--bg-base" as string]: "#06060f",
-    ["--text-primary" as string]: "#e4e4e7",
-    ["--text-secondary" as string]: "#d4d4d8",
-    ["--text-muted" as string]: "#a1a1aa",
-    ["--text-faint" as string]: "rgba(255, 255, 255, 0.4)",
-    ["--accent-text" as string]: "#93c5fd",
-  };
-
   return (
-    <div
-      className="min-h-dvh w-full flex flex-col text-white"
-      style={{ background: "#06060f", ...authTokens }}
-    >
+    <div className="bg-bg-base min-h-dvh w-full flex flex-col text-text-primary">
       <style dangerouslySetInnerHTML={{ __html: GLASS_STYLES }} />
       <ConfettiCanvas ref={confettiRef} manualstart className="fixed top-0 left-0 w-full h-full pointer-events-none z-[999]" />
 
@@ -335,7 +314,7 @@ function LoginScreen() {
               <motion.div key="email-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0.1} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-text-primary">
                       {mode === "signin" ? "Welcome back" : "Get started"}
                     </p>
                   </div>
@@ -351,7 +330,7 @@ function LoginScreen() {
               <motion.div key="password-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-text-primary">
                       {mode === "signin" ? "Enter password" : "Create password"}
                     </p>
                   </div>
@@ -365,7 +344,7 @@ function LoginScreen() {
               <motion.div key="reset-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-text-primary">
                       Reset password
                     </p>
                   </div>
@@ -394,7 +373,7 @@ function LoginScreen() {
                 <motion.div key="email-form" exit={{ opacity: 0, filter: "blur(4px)" }} transition={{ duration: 0.3 }} className="space-y-4">
                   <BlurFade delay={0.3} className="w-full">
                     <GlassInput
-                      icon={<Mail className="h-5 w-5 text-white/70" />}
+                      icon={<Mail className="h-5 w-5 text-text-secondary" />}
                       type="email"
                       placeholder="Email address"
                       value={email}
@@ -412,8 +391,8 @@ function LoginScreen() {
                     <GlassInput
                       icon={
                         isPasswordValid
-                          ? <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-white/70 hover:text-white">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button>
-                          : <Lock className="h-5 w-5 text-white/70" />
+                          ? <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-text-secondary hover:text-text-primary">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button>
+                          : <Lock className="h-5 w-5 text-text-secondary" />
                       }
                       type={showPassword ? "text" : "password"}
                       placeholder="Password"
@@ -425,14 +404,14 @@ function LoginScreen() {
                   </BlurFade>
                   <BlurFade delay={0.15}>
                     <div className="flex items-center justify-between">
-                      <button type="button" onClick={() => setStep("email")} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors">
+                      <button type="button" onClick={() => setStep("email")} className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors">
                         <ArrowLeft className="w-4 h-4" /> Go back
                       </button>
                       {mode === "signin" && (
                         <button
                           type="button"
                           onClick={() => { setStep("reset"); setSuccessMsg(""); }}
-                          className="text-sm text-white/60 hover:text-white transition-colors"
+                          className="text-sm text-text-muted hover:text-text-primary transition-colors"
                         >
                           Forgot password?
                         </button>
@@ -445,8 +424,8 @@ function LoginScreen() {
               {step === "reset" && (
                 <motion.div key="reset-form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.1 }} className="space-y-4">
                   <BlurFade delay={0} className="w-full">
-                    <p className="text-sm text-white/70 leading-relaxed">
-                      We&rsquo;ll send a reset link to <span className="font-medium text-white">{email}</span>. Open the link from your email and you&rsquo;ll be able to set a new password.
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      We&rsquo;ll send a reset link to <span className="font-medium text-text-primary">{email}</span>. Open the link from your email and you&rsquo;ll be able to set a new password.
                     </p>
                   </BlurFade>
                   <BlurFade delay={0.1} className="w-full">
@@ -459,7 +438,7 @@ function LoginScreen() {
                     </GlassButton>
                   </BlurFade>
                   <BlurFade delay={0.2}>
-                    <button type="button" onClick={() => { setStep("password"); setSuccessMsg(""); }} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors">
+                    <button type="button" onClick={() => { setStep("password"); setSuccessMsg(""); }} className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors">
                       <ArrowLeft className="w-4 h-4" /> Back to sign-in
                     </button>
                   </BlurFade>

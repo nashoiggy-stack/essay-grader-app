@@ -68,19 +68,8 @@ export default function ResetPasswordPage() {
     setSubmitting(false);
   };
 
-  // Auth screens always render dark — see AuthGate.tsx for the rationale.
-  const authTokens: React.CSSProperties = {
-    ["--bg-base" as string]: "#06060f",
-    ["--text-primary" as string]: "#e4e4e7",
-    ["--text-muted" as string]: "#a1a1aa",
-    ["--accent-text" as string]: "#93c5fd",
-  };
-
   return (
-    <div
-      className="min-h-dvh w-full flex flex-col text-white"
-      style={{ background: "#06060f", ...authTokens }}
-    >
+    <div className="bg-bg-base min-h-dvh w-full flex flex-col text-text-primary">
       <div className="fixed top-4 left-4 z-20 flex items-center gap-2 md:left-1/2 md:-translate-x-1/2">
         <AdmitEdgeLogo size={28} />
         <h1 className="text-base font-bold">AdmitEdge</h1>
@@ -100,7 +89,7 @@ export default function ResetPasswordPage() {
               </p>
               <Link
                 href="/"
-                className="text-sm text-accent-text hover:text-white transition-colors underline underline-offset-2"
+                className="text-sm text-accent-text hover:text-text-primary transition-colors underline underline-offset-2"
               >
                 Go to sign-in
               </Link>
@@ -123,7 +112,7 @@ export default function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit} className="w-full space-y-3">
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" aria-hidden />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-faint" aria-hidden />
                   <input
                     type="password"
                     autoFocus
@@ -131,18 +120,18 @@ export default function ResetPasswordPage() {
                     placeholder="New password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] pl-9 pr-3 py-3 text-sm text-white placeholder-white/40 focus:border-white/30 focus:outline-none"
+                    className="w-full rounded-xl bg-bg-inset border border-border-hair pl-9 pr-3 py-3 text-sm text-text-primary placeholder-text-faint focus:border-accent-line focus:outline-none"
                   />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" aria-hidden />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-faint" aria-hidden />
                   <input
                     type="password"
                     autoComplete="new-password"
                     placeholder="Confirm new password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
-                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] pl-9 pr-3 py-3 text-sm text-white placeholder-white/40 focus:border-white/30 focus:outline-none"
+                    className="w-full rounded-xl bg-bg-inset border border-border-hair pl-9 pr-3 py-3 text-sm text-text-primary placeholder-text-faint focus:border-accent-line focus:outline-none"
                   />
                 </div>
                 {confirm.length > 0 && password !== confirm && (
@@ -151,7 +140,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="submit"
                   disabled={!isValid || submitting}
-                  className="w-full rounded-xl bg-white text-zinc-900 px-4 py-3 text-sm font-semibold transition-colors hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl bg-white text-zinc-900 px-4 py-3 text-sm font-semibold transition-colors hover:bg-zinc-100 disabled:bg-bg-inset disabled:text-text-faint disabled:cursor-not-allowed"
                 >
                   {submitting ? "Updating…" : "Update password"}
                 </button>
