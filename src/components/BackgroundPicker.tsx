@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Palette, Sparkles, Moon, Sun, Grid3x3, Check } from "lucide-react";
+import { Palette, Moon, Sun, Grid3x3, Check } from "lucide-react";
 import { useBackground, type BackgroundChoice } from "./BackgroundProvider";
 
 interface Option {
@@ -12,7 +12,6 @@ interface Option {
 }
 
 const OPTIONS: readonly Option[] = [
-  { value: "shader", label: "WebGL Shader", description: "Animated dark surface", icon: Sparkles },
   { value: "dark", label: "Dark", description: "Cosmic gradient mesh", icon: Moon },
   { value: "light", label: "Light", description: "Editorial luxury", icon: Sun },
   { value: "monochrome", label: "Monochrome", description: "HERO3 dot mesh", icon: Grid3x3 },

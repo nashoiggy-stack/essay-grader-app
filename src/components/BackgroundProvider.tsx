@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { setItemAndNotify } from "@/lib/sync-event";
 import { getCachedRaw, type CloudKey } from "@/lib/cloud-storage";
 
-export type BackgroundChoice = "shader" | "dark" | "light" | "monochrome";
+export type BackgroundChoice = "dark" | "light" | "monochrome";
 
 const STORAGE_KEY: CloudKey = "admitedge-bg-preference";
 const DEFAULT_CHOICE: BackgroundChoice = "monochrome";
@@ -18,16 +18,16 @@ interface BackgroundContextValue {
 const BackgroundContext = createContext<BackgroundContextValue | undefined>(undefined);
 
 function isBackgroundChoice(value: string | null): value is BackgroundChoice {
-  return (
-    value === "shader" ||
-    value === "dark" ||
-    value === "light" ||
-    value === "monochrome"
-  );
+  return value === "dark" || value === "light" || value === "monochrome";
 }
 
 function readStoredChoice(): BackgroundChoice {
   const raw = getCachedRaw(STORAGE_KEY);
+  // Migrate the legacy "shader" choice to the default — the WebGL shader
+  // option was removed because the underlying renderer was broken on
+  // several devices. Existing users with "shader" persisted in storage
+  // get bumped to monochrome on next read.
+  if (raw === "shader") return DEFAULT_CHOICE;
   return isBackgroundChoice(raw) ? raw : DEFAULT_CHOICE;
 }
 
