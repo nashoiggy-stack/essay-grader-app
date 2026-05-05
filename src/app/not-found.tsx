@@ -3,12 +3,12 @@ import { ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <main className="min-h-[80dvh] flex flex-col items-center justify-center text-center px-6">
+    <main id="main-content" className="min-h-[80dvh] flex flex-col items-center justify-center text-center px-6">
       <p className="text-[10px] uppercase tracking-[0.5em] text-zinc-500 font-semibold mb-6">
         Page not found
       </p>
       <h1
-        className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[1] mb-4"
+        className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[1] mb-4"
         style={{ fontSize: "clamp(3rem, 10vw, 8rem)" }}
       >
         404

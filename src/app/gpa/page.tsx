@@ -1,131 +1,170 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "motion/react";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
-import { AuroraBackground } from "@/components/AuroraBackground";
+import { useEffect, useRef, useState } from "react";
 import { TranscriptUpload } from "@/components/TranscriptUpload";
 import { useBackground } from "@/components/BackgroundProvider";
 
+const IFRAME_FALLBACK_HEIGHT = 1600;
+
 export default function GPAPage() {
   const [iframeKey, setIframeKey] = useState(0);
+  const [iframeHeight, setIframeHeight] = useState<number>(IFRAME_FALLBACK_HEIGHT);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const { background } = useBackground();
-  // Iframe is a separate document — its viewport canvas color comes from
-  // its own `color-scheme`, NOT inherited from the parent's CSS. Match the
-  // active picker theme so the iframe canvas (which is what shows when the
-  // iframe content body is transparent) doesn't default to white.
   const iframeColorScheme: "light" | "dark" =
     background === "light" ? "light" : "dark";
 
-  const reloadIframe = () => {
-    // Force the iframe to remount so it re-reads localStorage
-    setIframeKey((k) => k + 1);
-  };
+  const reloadIframe = () => setIframeKey((k) => k + 1);
+
+  // postMessage-based height sync. The iframe payload posts
+  // { type: "gpa-height", h: scrollHeight } whenever its content height
+  // changes; we mirror it onto the iframe element so the page can grow /
+  // shrink with the calculator instead of locking at a brittle 2400px.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      // Only accept messages whose source is this iframe's contentWindow.
+      // The same-origin check via iframeRef.current.contentWindow lets us
+      // avoid trusting cross-origin frames.
+      if (!iframeRef.current || e.source !== iframeRef.current.contentWindow) return;
+      const data = e.data as { type?: string; h?: number };
+      if (data?.type !== "gpa-height" || typeof data.h !== "number") return;
+      const next = Math.max(400, Math.min(8000, Math.round(data.h)));
+      setIframeHeight(next);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   return (
-    <AuroraBackground>
-      <ContainerScroll
-        titleComponent={
-          <div className="mb-4">
-            <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1] mb-5">
-              <span className="text-gradient">GPA Calculator</span>
-            </h1>
-            <p className="text-zinc-400 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
-              Calculate your weighted and unweighted GPA across high school and college scales.
+    <main id="main-content" className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+      {/* Masthead — Linear-derived eyebrow + heavy sans headline + standfirst */}
+      <header className="mb-10 sm:mb-12">
+        <p className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
+          Tools / GPA Calculator
+        </p>
+        <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
+          Calculate your GPA.
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-[15px] text-text-secondary leading-relaxed">
+          Both unweighted and weighted, on the high-school 4.0 scale and the
+          college recalculated scale. Numbers update as you enter grades.
+        </p>
+      </header>
+
+      {/* Reference — how the weighting actually works. Two side-by-side
+          tables of bonuses, plus a worked example. Hairline borders, no
+          decorative cards. */}
+      <section className="mb-10 sm:mb-12">
+        <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+          How weighting works
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-x-10 gap-y-8 lg:gap-y-0">
+          <div>
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+              High school scale
+            </h2>
+            <table className="w-full font-[family-name:var(--font-geist-mono)] text-[13px]">
+              <tbody className="divide-y divide-border-hair">
+                {[
+                  { level: "College Prep", bonus: "+0.0" },
+                  { level: "Honors", bonus: "+1.0" },
+                  { level: "AP", bonus: "+2.0" },
+                ].map((l) => (
+                  <tr key={l.level}>
+                    <td className="py-2 text-text-secondary">{l.level}</td>
+                    <td className="py-2 text-right tabular-nums text-text-primary">
+                      {l.bonus}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+              College recalculated
+            </h2>
+            <table className="w-full font-[family-name:var(--font-geist-mono)] text-[13px]">
+              <tbody className="divide-y divide-border-hair">
+                {[
+                  { level: "College Prep", bonus: "+0.0" },
+                  { level: "Honors", bonus: "+0.5" },
+                  { level: "Dual Enroll", bonus: "+1.0" },
+                  { level: "AP", bonus: "+1.0" },
+                ].map((l) => (
+                  <tr key={l.level}>
+                    <td className="py-2 text-text-secondary">{l.level}</td>
+                    <td className="py-2 text-right tabular-nums text-text-primary">
+                      {l.bonus}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+              Worked example
+            </h2>
+            <p className="text-[12px] text-text-muted mb-3 leading-relaxed">
+              An <span className="text-text-primary">A</span> in an AP class
+              produces three values:
             </p>
+            <table className="w-full font-[family-name:var(--font-geist-mono)] text-[13px]">
+              <tbody className="divide-y divide-border-hair">
+                <tr>
+                  <td className="py-2 text-text-secondary">Unweighted</td>
+                  <td className="py-2 text-right tabular-nums text-text-primary">
+                    4.00
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 text-text-secondary">HS weighted</td>
+                  <td className="py-2 text-right tabular-nums text-accent-text">
+                    6.00
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 text-text-secondary">College weighted</td>
+                  <td className="py-2 text-right tabular-nums text-accent-text">
+                    5.00
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        }
-      >
-        {/* How weighting works inside the 3D card */}
-        <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
-          <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider">How GPA Weighting Works</h3>
-
-          <div>
-            <h4 className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">High School Scale</h4>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { level: "College Prep", bonus: "+0.0", color: "text-zinc-400" },
-                { level: "Honors", bonus: "+1.0", color: "text-blue-400" },
-                { level: "AP", bonus: "+2.0", color: "text-blue-400" },
-              ].map((l) => (
-                <div key={l.level} className="rounded-lg bg-[#0c0c1a]/90 border border-white/[0.05] p-2.5 text-center">
-                  <p className="text-[10px] text-zinc-500">{l.level}</p>
-                  <p className={`text-lg font-bold font-mono ${l.color}`}>{l.bonus}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">College Recalculated Scale</h4>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { level: "CP", bonus: "+0.0", color: "text-zinc-400" },
-                { level: "Honors", bonus: "+0.5", color: "text-blue-400" },
-                { level: "Dual Enroll", bonus: "+1.0", color: "text-cyan-400" },
-                { level: "AP", bonus: "+1.0", color: "text-blue-400" },
-              ].map((l) => (
-                <div key={l.level} className="rounded-lg bg-[#0c0c1a]/90 border border-white/[0.05] p-2 text-center">
-                  <p className="text-[9px] text-zinc-500">{l.level}</p>
-                  <p className={`text-base font-bold font-mono ${l.color}`}>{l.bonus}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-t border-white/[0.06] pt-3">
-            <h4 className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">Example: A in AP Class</h4>
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span className="text-zinc-500">Base grade (A)</span>
-                <span className="text-zinc-300 font-mono">4.00</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-zinc-500">+ HS AP bonus</span>
-                <span className="text-blue-400 font-mono">+2.00 = 6.00</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-zinc-500">+ College AP bonus</span>
-                <span className="text-blue-400 font-mono">+1.00 = 5.00</span>
-              </div>
-            </div>
-          </div>
-
-          <p className="text-[9px] text-zinc-600 mt-auto">
-            Unweighted GPA uses base grades only (4.0 max). Weighted adds course-level bonuses.
-          </p>
         </div>
-      </ContainerScroll>
+      </section>
 
-      {/* Transcript upload — AI-powered grade extraction */}
-      <motion.div
-        className="-mt-28 relative z-10"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-      >
+      {/* Auto-fill from transcript */}
+      <section className="mb-8 sm:mb-10">
         <TranscriptUpload onSuccess={reloadIframe} />
-      </motion.div>
+      </section>
 
-      {/* Actual GPA calculator iframe — transparent so the active theme's
-          html-canvas bg shows through naturally. */}
-      <motion.div
-        initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.7, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      >
-        <iframe
-          key={`${iframeKey}-${iframeColorScheme}`}
-          src={`/gpa-calculator.html?theme=${iframeColorScheme}`}
-          className="w-full border-0 bg-transparent"
-          style={{
-            height: "2400px",
-            minHeight: "100vh",
-            colorScheme: iframeColorScheme,
-          }}
-          title="GPA Calculator"
-        />
-      </motion.div>
-    </AuroraBackground>
+      {/* Calculator widget. The iframe is themed via ?theme=light|dark and
+          carries its own visual tokens — see public/gpa-calculator.html. */}
+      <section>
+        <h2 className="text-xs font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+          Enter your grades
+        </h2>
+        <div className="border border-border-hair rounded-md overflow-hidden">
+          <iframe
+            ref={iframeRef}
+            key={`${iframeKey}-${iframeColorScheme}`}
+            src={`/gpa-calculator.html?theme=${iframeColorScheme}`}
+            className="w-full block bg-transparent"
+            style={{
+              height: `${iframeHeight}px`,
+              minHeight: "60vh",
+              colorScheme: iframeColorScheme,
+              border: 0,
+            }}
+            title="GPA Calculator"
+          />
+        </div>
+      </section>
+    </main>
   );
 }

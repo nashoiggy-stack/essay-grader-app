@@ -32,9 +32,9 @@ const SEVERITY_STYLES: Record<
   },
   low: {
     icon: Info,
-    text: "text-blue-300",
+    text: "text-accent-text",
     bg: "bg-blue-500/[0.05]",
-    ring: "ring-blue-500/25",
+    ring: "ring-accent-line",
     label: "Low",
   },
 };
@@ -65,7 +65,7 @@ export const GapItem: React.FC<GapItemProps> = ({ flag, fixSuggestion }) => {
         className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left"
       >
         <div
-          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${style.bg} ring-1 ${style.ring}`}
+          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${style.bg}  ${style.ring}`}
         >
           <Icon className={`w-3.5 h-3.5 ${style.text}`} strokeWidth={2} />
         </div>
@@ -75,7 +75,7 @@ export const GapItem: React.FC<GapItemProps> = ({ flag, fixSuggestion }) => {
               {flag.label}
             </p>
             <span
-              className={`text-[9px] uppercase tracking-[0.12em] font-semibold ${style.text} shrink-0`}
+              className={`text-[9px] uppercase tracking-[0.08em] font-semibold ${style.text} shrink-0`}
             >
               {style.label}
             </span>
@@ -101,14 +101,14 @@ export const GapItem: React.FC<GapItemProps> = ({ flag, fixSuggestion }) => {
           >
             <div className="px-3.5 pb-3.5 pt-1 border-t border-white/[0.04] space-y-3">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-1">
                   Why this matters
                 </p>
                 <p className="text-[13px] text-zinc-300 leading-relaxed">{flag.detail}</p>
               </div>
               {fixSuggestion && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-emerald-400/80 font-semibold mb-1">
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-emerald-400/80 font-semibold mb-1">
                     Fix
                   </p>
                   <p className="text-[13px] text-zinc-300 leading-relaxed">

@@ -2,7 +2,7 @@ import type { College, ApplicationOption } from "@/lib/college-types";
 import { COLLEGE_EXTENDED_DATA, COLLEGE_ALIASES } from "./college-extended";
 import { CDS_DATA } from "./cds-data";
 import { isLegacyBlind, isYieldProtected } from "./hook-multipliers";
-import { admissionsTierForSchool, admissionsTypeForSchool } from "./admissions-tier";
+import { admissionsTierForSchool } from "./admissions-tier";
 import { ADMIT_RATE_OVERRIDES } from "./admit-rate-overrides";
 
 // UNDO [application-plan]: rename RAW_COLLEGES back to `export const COLLEGES`
@@ -109,6 +109,31 @@ const RAW_COLLEGES: College[] = [
   { name: "University of Alabama", state: "AL", type: "public", size: "large", setting: "suburban", acceptanceRate: 80, avgGPAUW: 3.45, avgGPAW: 3.90, sat25: 1080, sat75: 1300, act25: 23, act75: 30, testPolicy: "optional", topMajors: ["Business", "Engineering", "Communications"], competitiveMajors: [], tags: [], usNewsRank: 77, region: "Southeast" },
   { name: "Binghamton University", state: "NY", type: "public", size: "large", setting: "suburban", acceptanceRate: 42, avgGPAUW: 3.70, avgGPAW: 4.15, sat25: 1290, sat75: 1440, act25: 28, act75: 33, testPolicy: "optional", topMajors: ["Business", "Computer Science", "Biology"], competitiveMajors: [], tags: [], usNewsRank: 78, region: "Northeast" },
   { name: "Auburn University", state: "AL", type: "public", size: "large", setting: "suburban", acceptanceRate: 75, avgGPAUW: 3.50, avgGPAW: 3.95, sat25: 1100, sat75: 1290, act25: 24, act75: 30, testPolicy: "optional", topMajors: ["Engineering", "Business", "Biology"], competitiveMajors: [], tags: [], usNewsRank: 82, region: "Southeast" },
+
+  // ── Additional Top-100 (filling US News ranks) ─────────────────────────────
+  // Estimates below are hand-curated from each school's IR / admissions
+  // pages. They'll be overridden once a CDS entry lands in cds-data.ts.
+  { name: "Florida State University",                    state: "FL", type: "public",  size: "large",  setting: "urban",     acceptanceRate: 36, avgGPAUW: 4.10, avgGPAW: 4.50, sat25: 1230, sat75: 1380, act25: 27, act75: 31, testPolicy: "optional", topMajors: ["Business", "Communications", "Biology"],            competitiveMajors: [], tags: [], usNewsRank: 51,  region: "Southeast" },
+  { name: "UC Merced",                                   state: "CA", type: "public",  size: "medium", setting: "suburban",  acceptanceRate: 89, avgGPAUW: 3.50, avgGPAW: 3.85, sat25: 1080, sat75: 1240, act25: 19, act75: 26, testPolicy: "blind",    topMajors: ["Biology", "Engineering", "Psychology"],              competitiveMajors: [], tags: [], usNewsRank: 57,  region: "West" },
+  { name: "University of Miami",                         state: "FL", type: "private", size: "medium", setting: "suburban",  acceptanceRate: 19, avgGPAUW: 3.70, avgGPAW: 4.15, sat25: 1310, sat75: 1470, act25: 30, act75: 34, testPolicy: "optional", topMajors: ["Business", "Biology", "Communications"],              competitiveMajors: [], tags: [], usNewsRank: 64,  region: "Southeast" },
+  { name: "Rutgers University–Newark",                   state: "NJ", type: "public",  size: "medium", setting: "urban",     acceptanceRate: 65, avgGPAUW: 3.40, avgGPAW: 3.85, sat25: 1100, sat75: 1280, act25: 22, act75: 29, testPolicy: "optional", topMajors: ["Business", "Criminal Justice", "Biology"],            competitiveMajors: [], tags: [], usNewsRank: 75,  region: "Northeast" },
+  { name: "University at Buffalo",                       state: "NY", type: "public",  size: "large",  setting: "suburban",  acceptanceRate: 65, avgGPAUW: 3.60, avgGPAW: 4.00, sat25: 1180, sat75: 1370, act25: 25, act75: 30, testPolicy: "optional", topMajors: ["Business", "Engineering", "Biology"],                competitiveMajors: [], tags: [], usNewsRank: 75,  region: "Northeast" },
+  { name: "UC Riverside",                                state: "CA", type: "public",  size: "large",  setting: "suburban",  acceptanceRate: 69, avgGPAUW: 3.70, avgGPAW: 3.95, sat25: 1100, sat75: 1310, act25: 22, act75: 29, testPolicy: "blind",    topMajors: ["Business", "Biology", "Engineering"],                competitiveMajors: [], tags: [], usNewsRank: 75,  region: "West" },
+  { name: "Drexel University",                           state: "PA", type: "private", size: "large",  setting: "urban",     acceptanceRate: 71, avgGPAUW: 3.50, avgGPAW: 3.95, sat25: 1190, sat75: 1380, act25: 25, act75: 31, testPolicy: "optional", topMajors: ["Engineering", "Business", "Computer Science"],        competitiveMajors: [], tags: [], usNewsRank: 80,  region: "Northeast" },
+  { name: "New Jersey Institute of Technology",          state: "NJ", type: "public",  size: "medium", setting: "urban",     acceptanceRate: 65, avgGPAUW: 3.55, avgGPAW: 3.95, sat25: 1170, sat75: 1380, act25: 25, act75: 31, testPolicy: "optional", topMajors: ["Engineering", "Computer Science", "Business"],       competitiveMajors: [], tags: [], usNewsRank: 80,  region: "Northeast" },
+  { name: "University of Illinois Chicago",              state: "IL", type: "public",  size: "large",  setting: "urban",     acceptanceRate: 79, avgGPAUW: 3.40, avgGPAW: 3.85, sat25: 1080, sat75: 1310, act25: 22, act75: 28, testPolicy: "optional", topMajors: ["Business", "Biology", "Engineering"],                competitiveMajors: [], tags: [], usNewsRank: 84,  region: "Midwest" },
+  { name: "Worcester Polytechnic Institute",             state: "MA", type: "private", size: "medium", setting: "urban",     acceptanceRate: 60, avgGPAUW: 3.85, avgGPAW: 4.25, sat25: 1320, sat75: 1470, act25: 30, act75: 33, testPolicy: "optional", topMajors: ["Engineering", "Computer Science", "Mathematics"],     competitiveMajors: [], tags: [], usNewsRank: 84,  region: "Northeast" },
+  { name: "Yeshiva University",                          state: "NY", type: "private", size: "small",  setting: "urban",     acceptanceRate: 56, avgGPAUW: 3.50, avgGPAW: 3.90, sat25: 1170, sat75: 1410, act25: 24, act75: 31, testPolicy: "optional", topMajors: ["Business", "Biology", "Psychology"],                  competitiveMajors: [], tags: [], usNewsRank: 84,  region: "Northeast" },
+  { name: "American University",                         state: "DC", type: "private", size: "medium", setting: "urban",     acceptanceRate: 47, avgGPAUW: 3.65, avgGPAW: 4.05, sat25: 1230, sat75: 1410, act25: 28, act75: 32, testPolicy: "optional", topMajors: ["Political Science", "Business", "International Relations"], competitiveMajors: [], tags: [], usNewsRank: 88,  region: "Northeast" },
+  { name: "Rochester Institute of Technology",           state: "NY", type: "private", size: "large",  setting: "suburban",  acceptanceRate: 71, avgGPAUW: 3.70, avgGPAW: 4.05, sat25: 1240, sat75: 1430, act25: 27, act75: 32, testPolicy: "optional", topMajors: ["Engineering", "Computer Science", "Business"],       competitiveMajors: [], tags: [], usNewsRank: 88,  region: "Northeast" },
+  { name: "UC Santa Cruz",                               state: "CA", type: "public",  size: "large",  setting: "rural",     acceptanceRate: 64, avgGPAUW: 3.70, avgGPAW: 3.95, sat25: 1180, sat75: 1380, act25: 24, act75: 30, testPolicy: "blind",    topMajors: ["Biology", "Computer Science", "Psychology"],         competitiveMajors: [], tags: [], usNewsRank: 88,  region: "West" },
+  { name: "Florida International University",            state: "FL", type: "public",  size: "large",  setting: "urban",     acceptanceRate: 65, avgGPAUW: 3.55, avgGPAW: 3.95, sat25: 1110, sat75: 1280, act25: 23, act75: 28, testPolicy: "optional", topMajors: ["Business", "Biology", "Hospitality"],                competitiveMajors: [], tags: [], usNewsRank: 97,  region: "Southeast" },
+  { name: "Rutgers University–Camden",                   state: "NJ", type: "public",  size: "small",  setting: "urban",     acceptanceRate: 79, avgGPAUW: 3.40, avgGPAW: 3.85, sat25: 1080, sat75: 1260, act25: 22, act75: 28, testPolicy: "optional", topMajors: ["Business", "Nursing", "Psychology"],                 competitiveMajors: [], tags: [], usNewsRank: 97,  region: "Northeast" },
+  { name: "Texas Christian University",                  state: "TX", type: "private", size: "medium", setting: "suburban",  acceptanceRate: 41, avgGPAUW: 3.70, avgGPAW: 4.05, sat25: 1200, sat75: 1380, act25: 27, act75: 32, testPolicy: "optional", topMajors: ["Business", "Communications", "Biology"],             competitiveMajors: [], tags: [], usNewsRank: 97,  region: "Southwest" },
+  { name: "Loyola Marymount University",                 state: "CA", type: "private", size: "medium", setting: "urban",     acceptanceRate: 47, avgGPAUW: 3.65, avgGPAW: 4.00, sat25: 1230, sat75: 1410, act25: 28, act75: 32, testPolicy: "optional", topMajors: ["Business", "Communications", "Psychology"],           competitiveMajors: [], tags: [], usNewsRank: 102, region: "West" },
+  { name: "Saint Louis University",                      state: "MO", type: "private", size: "medium", setting: "urban",     acceptanceRate: 73, avgGPAUW: 3.70, avgGPAW: 4.05, sat25: 1240, sat75: 1410, act25: 27, act75: 32, testPolicy: "optional", topMajors: ["Business", "Biology", "Nursing"],                    competitiveMajors: [], tags: [], usNewsRank: 102, region: "Midwest" },
+  { name: "Temple University",                           state: "PA", type: "public",  size: "large",  setting: "urban",     acceptanceRate: 80, avgGPAUW: 3.55, avgGPAW: 3.95, sat25: 1140, sat75: 1320, act25: 24, act75: 30, testPolicy: "optional", topMajors: ["Business", "Communications", "Biology"],             competitiveMajors: [], tags: [], usNewsRank: 102, region: "Northeast" },
+  { name: "University of Missouri",                      state: "MO", type: "public",  size: "large",  setting: "suburban",  acceptanceRate: 87, avgGPAUW: 3.70, avgGPAW: 4.00, sat25: 1130, sat75: 1330, act25: 23, act75: 29, testPolicy: "optional", topMajors: ["Business", "Journalism", "Biology"],                 competitiveMajors: [], tags: [], usNewsRank: 102, region: "Midwest" },
 
   // ── Liberal Arts ────────────────────────────────────────────────────────────
   { name: "Williams College", state: "MA", type: "private", size: "small", setting: "rural", acceptanceRate: 9, avgGPAUW: 3.93, avgGPAW: 4.48, sat25: 1430, sat75: 1560, act25: 33, act75: 35, testPolicy: "optional", topMajors: ["Economics", "Mathematics", "English"], competitiveMajors: [], tags: [], usNewsRank: null, region: "Northeast" },
@@ -301,11 +326,10 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
   // Both lists live in src/data/hook-multipliers.ts with citations.
   const legacyConsidered = isLegacyBlind(c.name) ? { legacyConsidered: false as const } : {};
   const yieldProtected = isYieldProtected(c.name) ? { yieldProtected: true as const } : {};
-  // Final calibration tier tags. Routes to algorithmic vs holistic-elite math
-  // (admissionsTier) and differentiates 15-25% bracket caps for stats-driven
-  // publics (admissionsType). Lists in src/data/admissions-tier.ts.
+  // Routes to algorithmic vs holistic-elite math. All schools share a
+  // single holistic cap table — the prior stats-driven public split was
+  // over-inflating chances at UNC/UMich/UVA/UCs and is removed.
   const admissionsTier = admissionsTierForSchool(c.name);
-  const admissionsType = admissionsTypeForSchool(c.name);
   // Verified plan-specific admit-rate overrides. Spread AFTER the CDS layer
   // because CDS often lacks the early/RD split for top schools — the values
   // in admit-rate-overrides.ts come from primary sources (CDS C21, school
@@ -322,7 +346,6 @@ export const COLLEGES: College[] = RAW_COLLEGES.map((c) => {
     ...legacyConsidered,
     ...yieldProtected,
     admissionsTier,
-    admissionsType,
     ...(aliases ? { aliases } : {}),
   };
 });

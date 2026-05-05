@@ -15,6 +15,11 @@
 import type { ClassifiedCollege, ApplicationPlan, PinnedCollege } from "./college-types";
 import type { ProfileEvaluation } from "./extracurricular-types";
 import type { GradingResult } from "./types";
+import type {
+  AdvancedCourseworkRow,
+  EssayScoreRecord,
+  APScoreProfile,
+} from "./profile-types";
 
 // ── Profile (assembled from every localStorage source) ─────────────────────
 
@@ -42,6 +47,22 @@ export interface StrategyPinnedSchool {
   readonly classified: ClassifiedCollege;   // live classification against profile
 }
 
+// Extra inputs the chance model needs but aren't surfaced anywhere else
+// on StrategyProfile. Without these, strategy-engine's per-school chance
+// numbers diverge from /chances (the live calculator) — most visibly the
+// essay multiplier and rigor uplift never fire, suppressing both RD and
+// ED estimates. The strategy profile reader populates this so
+// buildPinnedSchools (RD baseline) and analyzeEarlyStrategy (ED leverage
+// recalc) can share the same input set.
+export interface StrategyChanceExtras {
+  readonly ecBand: string | undefined;
+  readonly distinguishedEC: boolean;
+  readonly apScores: readonly APScoreProfile[] | undefined;
+  readonly advancedCoursework: readonly AdvancedCourseworkRow[] | undefined;
+  readonly advancedCourseworkAvailable: "all" | "limited" | "none" | undefined;
+  readonly essayScores: readonly EssayScoreRecord[] | undefined;
+}
+
 export interface StrategyProfile {
   readonly gpa: StrategyGpa;
   readonly tests: StrategyTests;
@@ -52,6 +73,7 @@ export interface StrategyProfile {
   readonly intendedMajor: string;            // from admitedge-profile if present, else ""
   readonly intendedInterest: string;         // free-text niche, "" if unset
   readonly basicInfo: { name: string; graduationYear: string } | null;
+  readonly chanceExtras: StrategyChanceExtras;
   // Flags for the empty-state / missing-data UI
   readonly hasGpa: boolean;
   readonly hasTests: boolean;
@@ -269,6 +291,11 @@ export interface DreamSchoolSection {
 }
 
 export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
+// v8: strategy engine now feeds classifyCollege the same input set the live
+// /chances calculator uses (essayScores, advancedCoursework,
+// advancedCourseworkAvailable). v7 caches under-reported chances because
+// the essay multiplier and rigor uplift never fired through the strategy
+// path, which also broke ED-leverage selection for the dream school.
 // v7: Academic Index (AI) replaces the school-relative percentile classifier.
 // AI = (weightedGPA/5×80)×1.5 + ((bestTest-400)/1200×80)×1.5, mapped to
 // stat bands via Arcidiacono Harvard 2019 decile cutoffs. Tier 2 multipliers
@@ -276,8 +303,12 @@ export const STRATEGY_CACHE_KEY = "admitedge-strategy-cache";
 // chance values produced by the prior school-relative classifier.
 // v6: final calibration — two-tier routing (algorithmic vs holistic-elite),
 // essay multiplier reintroduced (graded-only), advancedCoursework[] replaces
-// rigor dropdown, admissionsType cap split in 15-25% bracket.
+// rigor dropdown.
 // v5: Feature 1 chance-model rewrite — fitScore removed.
 // v4: DreamSchoolSection no longer carries whatWouldChangeThis. v3 lacked
 // action/tone fields. Both old shapes are invalidated by this bump.
-export const STRATEGY_CACHE_VERSION = "v7";
+// v9: stats-driven cap divider removed (single holistic cap table); soft
+// cap (0.20 taper) replaces hard clip; ChanceInputs gains residency field
+// for in-state/OOS/international toggle. v8 caches produce numerically
+// stale chances at affected schools, so invalidate.
+export const STRATEGY_CACHE_VERSION = "v9";

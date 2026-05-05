@@ -65,6 +65,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://www.dartmouth.edu/oir/pdfs/cds_2025-26.pdf",
     data: {"acceptanceRate":6,"sat25":1440,"sat75":1550,"act25":32,"act75":35,"yield":70.9,"edAdmitRate":21.6,"top10HSPercent":96,"pctTopTenClass":96,"studentFacultyRatio":7.9,"fourYearGradRate":78.5,"undergradPopulation":4715,"inStatePercent":3,"percentInternational":14.5,"demographics":{"white":43.8,"asian":12.5,"hispanic":9.2,"black":5.2,"multiracial":7.5,"international":14.5,"other":6.2},"genderBreakdown":{"male":51.8,"female":48.2}},
   },
+  "Drexel University": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "Drexel_university_CDS-2024-2025-publish.pdf",
+    data: {"acceptanceRate":79.4,"yield":8.1,"edAdmitRate":91.7,"sat25":1250,"sat75":1430,"act25":27,"act75":32,"avgGPACDS":3.75,"top10HSPercent":27.5,"pctTopTenClass":27.5,"studentFacultyRatio":9.4,"undergradPopulation":13169,"inStatePercent":43.2,"percentInternational":9.1,"demographics":{"white":40.3,"asian":24.4,"hispanic":9.1,"black":10.1,"multiracial":4.6,"international":9.1,"other":2.3},"genderBreakdown":{"male":50.1,"female":47.8}},
+  },
   "Duke University": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://ir.provost.duke.edu/sites/default/files/CDS-2024-25-Final-2.pdf",
@@ -75,10 +80,25 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
     data: {"acceptanceRate":10.3,"sat25":1480,"sat75":1540,"act25":32,"act75":35,"yield":40.4,"edAdmitRate":23.2,"avgGPACDS":3.84,"top10HSPercent":80,"pctTopTenClass":80,"studentFacultyRatio":8,"fourYearGradRate":80.9,"undergradPopulation":7407,"inStatePercent":18,"percentInternational":16.7,"demographics":{"white":29.6,"asian":24.8,"hispanic":11.9,"black":10.3,"multiracial":4.1,"international":16.7,"other":2.5},"genderBreakdown":{"male":43.2,"female":56.8}},
   },
+  "Florida International University": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "fiu_CDS2025.pdf",
+    data: {"acceptanceRate":60.9,"yield":26.6,"sat25":1070,"sat75":1260,"act25":22,"act75":27,"top10HSPercent":23,"pctTopTenClass":23,"studentFacultyRatio":25,"fourYearGradRate":64,"undergradPopulation":46249,"inStatePercent":90.5,"percentInternational":7.7,"demographics":{"white":8.3,"asian":2.6,"hispanic":67.5,"black":11,"multiracial":2,"international":7.7,"other":1},"genderBreakdown":{"male":45.5,"female":54.5}},
+  },
+  "Florida State University": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "CDS.pdf (FSU section)",
+    data: {"acceptanceRate":23.8,"yield":32.2,"sat25":1300,"sat75":1410,"act25":29,"act75":32,"avgGPACDS":3.72,"top10HSPercent":77.8,"pctTopTenClass":77.8,"studentFacultyRatio":17.1,"fourYearGradRate":74.9,"undergradPopulation":34271,"inStatePercent":86.8,"percentInternational":2.6,"demographics":{"white":55.8,"asian":4.1,"hispanic":24.2,"black":6.9,"multiracial":4.7,"international":2.6,"other":1.7},"genderBreakdown":{"male":44,"female":56}},
+  },
   "George Washington University": {
-    cdsYear: "2023-2024",
-    sourcePdfUrl: "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2023-2024_Updated.pdf",
-    data: {"acceptanceRate":43.5,"sat25":1360,"sat75":1480,"act25":31,"act75":34,"yield":21.5,"edAdmitRate":64,"top10HSPercent":47.9,"pctTopTenClass":47.9,"studentFacultyRatio":12,"fourYearGradRate":79.5,"undergradPopulation":11387,"inStatePercent":4,"percentInternational":7.3,"demographics":{"white":48.2,"asian":14.7,"hispanic":13,"black":8.1,"multiracial":5.4,"international":7.3,"other":2.3},"genderBreakdown":{"male":36.4,"female":63.6}},
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2026-04/CDS-PDF-2025-2026.pdf",
+    data: {"acceptanceRate":47.1,"sat25":1310,"sat75":1450,"act25":31,"act75":34,"yield":18.9,"top10HSPercent":44.1,"pctTopTenClass":44.1,"studentFacultyRatio":13,"fourYearGradRate":82.5,"undergradPopulation":11495,"inStatePercent":2.6,"percentInternational":8.4,"demographics":{"white":44.1,"asian":16.2,"hispanic":14.6,"black":8.6,"multiracial":5.9,"international":8.4,"other":2.2},"genderBreakdown":{"male":36.7,"female":63.3}},
+  },
+  "Georgia Tech": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "georgia_tech_CDS_2025-2026.pdf",
+    data: {"acceptanceRate":13.3,"oosAcceptanceRate":10.1,"inStateAcceptanceRate":29.5,"yield":45.6,"sat25":1370,"sat75":1530,"act25":31,"act75":35,"avgGPACDS":4.17,"top10HSPercent":88.7,"pctTopTenClass":88.7,"studentFacultyRatio":20,"fourYearGradRate":65.5,"undergradPopulation":21028,"inStatePercent":59.5,"percentInternational":7.6,"demographics":{"white":32.1,"asian":37.1,"hispanic":8.7,"black":8.2,"multiracial":5.1,"international":7.6,"other":1.3},"genderBreakdown":{"male":60.2,"female":39.8}},
   },
   "Harvard University": {
     cdsYear: "2024-2025",
@@ -95,10 +115,20 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://ira.howard.edu/sites/ira.howard.edu/files/2025-06/Howard%20University%20-%20CDS%20PDF%20Format.pdf",
     data: {"acceptanceRate":41.3,"sat25":1050,"sat75":1250,"act25":22,"act75":28,"yield":19.4,"edAdmitRate":49.4,"avgGPACDS":3.75,"studentFacultyRatio":13,"fourYearGradRate":59.5,"undergradPopulation":11519,"inStatePercent":4.9,"percentInternational":3.9,"demographics":{"white":0.2,"asian":1.3,"hispanic":6,"black":67.4,"multiracial":4.7,"international":3.9,"other":16.4},"genderBreakdown":{"male":28.3,"female":71.7}},
   },
+  "Johns Hopkins University": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://oira.jhu.edu/common-data-set-2025-26/",
+    data: {"acceptanceRate":6.1,"yield":44.9,"edAdmitRate":10.9,"sat25":1530,"sat75":1565,"act25":35,"act75":35,"avgGPACDS":3.93,"top10HSPercent":100,"pctTopTenClass":100,"studentFacultyRatio":9,"fourYearGradRate":85.4,"undergradPopulation":6354,"inStatePercent":8.1,"percentInternational":14.4,"demographics":{"white":19.9,"asian":34,"hispanic":16.3,"black":7.2,"multiracial":5.9,"international":14.4,"other":2.3},"genderBreakdown":{"male":43.8,"female":55.1}},
+  },
   "Lehigh University": {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.6.2026_CDS_Finalized-Published_Definition%20Sheet%20Removed%20for%20Website%20Posting_0.pdf",
     data: {"acceptanceRate":28.9,"sat25":1380,"sat75":1480,"act25":31,"act75":34,"yield":27.4,"edAdmitRate":47.4,"top10HSPercent":60,"pctTopTenClass":60,"studentFacultyRatio":11,"fourYearGradRate":75.7,"undergradPopulation":5986,"inStatePercent":26.3,"percentInternational":6.2,"demographics":{"white":59.9,"asian":10.9,"hispanic":11.6,"black":4.2,"multiracial":4.6,"international":6.2,"other":2.5},"genderBreakdown":{"male":51.1,"female":48.9}},
+  },
+  "MIT": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "CDS.pdf (MIT section)",
+    data: {"acceptanceRate":4.5,"yield":86.1,"sat25":1520,"sat75":1570,"act25":34,"act75":36,"top10HSPercent":96,"pctTopTenClass":96,"studentFacultyRatio":3,"fourYearGradRate":82.7,"undergradPopulation":4535,"percentInternational":11.7,"demographics":{"white":21.3,"asian":35.2,"hispanic":14.1,"black":7.7,"multiracial":6.8,"international":11.7,"other":3.3},"genderBreakdown":{"male":51.8,"female":48.2}},
   },
   "Marquette University": {
     cdsYear: "2025-2026",
@@ -115,15 +145,20 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-2024-2025/CDS_2024-2025-1.pdf",
     data: {"acceptanceRate":9.2,"sat25":1480,"sat75":1550,"act25":34,"act75":35,"yield":55,"avgGPACDS":3.81,"studentFacultyRatio":8,"fourYearGradRate":73.7,"undergradPopulation":29060,"inStatePercent":34,"percentInternational":26.2,"demographics":{"white":22,"asian":22,"hispanic":14.3,"black":6.8,"multiracial":4.3,"international":26.2,"other":4},"genderBreakdown":{"male":40.7,"female":59.3}},
   },
+  "New Jersey Institute of Technology": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "njit_CDS_2024-2025_v12.xlsx",
+    data: {"acceptanceRate":65.1,"yield":17.2,"sat25":1235,"sat75":1460,"act25":28,"act75":31,"avgGPACDS":3.73,"top10HSPercent":30.2,"pctTopTenClass":30.2,"studentFacultyRatio":16,"fourYearGradRate":48.8,"undergradPopulation":10200,"inStatePercent":85.3,"percentInternational":5.9,"demographics":{"white":28.4,"asian":19.5,"hispanic":27.2,"black":11.4,"multiracial":2.9,"international":5.9,"other":4.6},"genderBreakdown":{"male":69.4,"female":30.6}},
+  },
   "North Carolina State University": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://report.isa.ncsu.edu/ir/cds/pdfs/CDS_2024-25.v3.pdf",
     data: {"acceptanceRate":41.3,"sat25":1290,"sat75":1440,"act25":25,"act75":32,"yield":29.7,"avgGPACDS":3.83,"top10HSPercent":40,"pctTopTenClass":40,"studentFacultyRatio":15,"fourYearGradRate":67.7,"undergradPopulation":28422,"inStatePercent":86,"percentInternational":2.3,"demographics":{"white":66.1,"asian":9.8,"hispanic":9.4,"black":5.9,"multiracial":5.1,"international":2.3,"other":1.3},"genderBreakdown":{"male":50,"female":50}},
   },
   "Northeastern University": {
-    cdsYear: "2020-2021",
-    sourcePdfUrl: "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2020-21.pdf",
-    data: {"acceptanceRate":20.5,"sat25":1430,"sat75":1540,"act25":33,"act75":35,"yield":20.9,"edAdmitRate":37.7,"top10HSPercent":76,"pctTopTenClass":76,"studentFacultyRatio":14,"undergradPopulation":19004,"inStatePercent":23,"percentInternational":15.9,"demographics":{"white":45.4,"asian":16.8,"hispanic":8.8,"black":4,"multiracial":5.5,"international":15.9,"other":3.6},"genderBreakdown":{"male":48.6,"female":51.4}},
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+    data: {"acceptanceRate":5.2,"sat25":1450,"sat75":1520,"act25":33,"act75":35,"yield":53.8,"edAdmitRate":43,"top10HSPercent":68.8,"pctTopTenClass":68.8,"studentFacultyRatio":16,"undergradPopulation":22695,"inStatePercent":29,"percentInternational":13.1,"demographics":{"white":40.6,"asian":22.4,"hispanic":10.4,"black":4.8,"multiracial":6.8,"international":13.1,"other":1.8},"genderBreakdown":{"male":42.8,"female":57}},
   },
   "Northwestern University": {
     cdsYear: "2024-2025",
@@ -145,6 +180,11 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
     data: {"acceptanceRate":8,"sat25":1510,"sat75":1560,"act25":34,"act75":35,"yield":44.2,"edAdmitRate":16.8,"regularDecisionAdmitRate":7.1,"top10HSPercent":89,"pctTopTenClass":89,"studentFacultyRatio":5.83,"fourYearGradRate":86.9,"undergradPopulation":4789,"inStatePercent":43,"percentInternational":13,"demographics":{"white":25.5,"asian":29,"hispanic":16.6,"black":7.9,"multiracial":5.5,"international":13,"other":2.3},"genderBreakdown":{"male":50.4,"female":49.6}},
   },
+  "Rutgers University": {
+    cdsYear: "2023-2024",
+    sourcePdfUrl: "New Brunswick CDS_2023-2024_final_V1.pdf",
+    data: {"acceptanceRate":65.4,"yield":27.1,"sat25":1270,"sat75":1480,"act25":28,"act75":33,"top10HSPercent":30,"pctTopTenClass":30,"studentFacultyRatio":15,"fourYearGradRate":71.4,"undergradPopulation":36588,"inStatePercent":84.4,"percentInternational":6.9,"demographics":{"white":31.5,"asian":33.3,"hispanic":15.6,"black":6.7,"multiracial":3.6,"international":6.9,"other":2.4},"genderBreakdown":{"male":49.9,"female":50.2}},
+  },
   "Santa Clara University": {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/Common-Data-Set-2025-2026.pdf",
@@ -156,9 +196,9 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":3.8,"sat25":1520,"sat75":1570,"act25":34,"act75":36,"yield":79.9,"avgGPACDS":3.9,"top10HSPercent":97,"pctTopTenClass":97,"studentFacultyRatio":10,"fourYearGradRate":45.3,"undergradPopulation":7346,"inStatePercent":44,"percentInternational":13.1,"demographics":{"white":23.6,"asian":30.4,"hispanic":15.7,"black":6.5,"multiracial":9,"international":13.1,"other":1},"genderBreakdown":{"male":49.1,"female":50.9}},
   },
   "Stevens Institute of Technology": {
-    cdsYear: "2022-2023",
-    sourcePdfUrl: "https://assets.stevens.edu/mviowpldu823/3wAiIgs24xHKlIK2y8Yof8/53f4c59735935f037168207292fb5c65/CDS_2022-2023_Completed_PDF.pdf",
-    data: {"acceptanceRate":46.2,"sat25":1380,"sat75":1510,"act25":31,"act75":34,"yield":25.4,"edAdmitRate":59,"avgGPACDS":3.88,"top10HSPercent":58,"pctTopTenClass":58,"studentFacultyRatio":11,"fourYearGradRate":65.4,"undergradPopulation":4070,"inStatePercent":69,"percentInternational":2.9,"demographics":{"white":50.5,"asian":18.8,"hispanic":15.2,"black":2.3,"multiracial":3.7,"international":2.9,"other":6.6},"genderBreakdown":{"male":67.9,"female":32.1}},
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://assets.stevens.edu/mviowpldu823/3UEOxHKHu8NfqyLxwqBmZP/86f651ed176aae469c805a50cee0d4ee/CDS-2025-2026-PDF_3.12_updated.pdf",
+    data: {"acceptanceRate":50.7,"sat25":1370,"sat75":1470,"act25":32,"act75":34,"yield":20.7,"edAdmitRate":69.8,"avgGPACDS":3.83,"top10HSPercent":47.5,"pctTopTenClass":47.5,"studentFacultyRatio":11,"fourYearGradRate":74.6,"undergradPopulation":4206,"inStatePercent":65.2,"percentInternational":4.1,"demographics":{"white":43.8,"asian":20.5,"hispanic":17.9,"black":3.2,"multiracial":4.6,"international":4.1,"other":5.7},"genderBreakdown":{"male":66.2,"female":33.7}},
   },
   "Swarthmore College": {
     cdsYear: "2025-2026",
@@ -180,6 +220,21 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
     data: {"acceptanceRate":11.5,"sat25":1480,"sat75":1540,"act25":33,"act75":35,"yield":38.4,"top10HSPercent":85,"pctTopTenClass":85,"studentFacultyRatio":10,"fourYearGradRate":82.6,"undergradPopulation":7126,"inStatePercent":29,"percentInternational":12.5,"demographics":{"white":40.6,"asian":16.7,"hispanic":10.2,"black":6.1,"multiracial":7.8,"international":12.5,"other":6},"genderBreakdown":{"male":42.5,"female":55.3}},
   },
+  "UC Berkeley": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "CDS 2025-26 UC Berkeley (March 20).xlsx",
+    data: {"acceptanceRate":11.4,"yield":46,"avgGPACDS":3.9,"fourYearGradRate":81.3,"undergradPopulation":33513,"percentInternational":9.8,"demographics":{"white":19.1,"asian":35.3,"hispanic":22.6,"black":1.9,"multiracial":7,"international":9.8,"other":4.3},"genderBreakdown":{"male":44.5,"female":55.5},"oosAcceptanceRate":7.3,"inStateAcceptanceRate":14.9},
+  },
+  "UC Merced": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "cds_2025-26_uc_merced.xlsx",
+    data: {"acceptanceRate":97,"yield":4.3,"avgGPACDS":3.59,"studentFacultyRatio":22.3,"fourYearGradRate":51.3,"undergradPopulation":8234,"inStatePercent":98.5,"percentInternational":0.9,"demographics":{"white":9.4,"asian":22.4,"hispanic":55.2,"black":5,"multiracial":4.9,"international":0.9,"other":2.2},"genderBreakdown":{"male":54.1,"female":41.8}},
+  },
+  "UC Riverside": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "UC_Riverside_cds-2024-2025.pdf",
+    data: {"acceptanceRate":76.9,"yield":12.2,"avgGPACDS":3.83,"studentFacultyRatio":22.3,"fourYearGradRate":65.4,"undergradPopulation":22599,"inStatePercent":94.8,"percentInternational":3.4,"demographics":{"white":10.3,"asian":35.9,"hispanic":40,"black":3.5,"multiracial":5,"international":3.4,"other":1.7},"genderBreakdown":{"male":46,"female":51.1}},
+  },
   "UC San Diego": {
     cdsYear: "2025-2026",
     sourcePdfUrl: "https://ir.ucsd.edu/stats/undergrad/CDS_2024-2025_Final1.pdf",
@@ -188,7 +243,17 @@ export const CDS_DATA: Record<string, CDSEntry> = {
   "UNC Chapel Hill": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
-    data: {"acceptanceRate":15.3,"sat25":1400,"sat75":1530,"act25":28,"act75":34,"yield":45.4,"avgGPACDS":4.49,"top10HSPercent":77,"pctTopTenClass":77,"studentFacultyRatio":15,"fourYearGradRate":83.6,"undergradPopulation":21075,"inStatePercent":85,"percentInternational":6.4,"demographics":{"white":52.8,"asian":15.9,"hispanic":9.6,"black":7.3,"multiracial":5,"international":6.4,"other":2.9},"genderBreakdown":{"male":39.3,"female":60.7}},
+    data: {"acceptanceRate":15.3,"oosAcceptanceRate":6.6,"inStateAcceptanceRate":38,"sat25":1400,"sat75":1530,"act25":28,"act75":34,"yield":45.4,"avgGPACDS":4.49,"top10HSPercent":77,"pctTopTenClass":77,"studentFacultyRatio":15,"fourYearGradRate":83.6,"undergradPopulation":21075,"inStatePercent":85,"percentInternational":6.4,"demographics":{"white":52.8,"asian":15.9,"hispanic":9.6,"black":7.3,"multiracial":5,"international":6.4,"other":2.9},"genderBreakdown":{"male":39.3,"female":60.7}},
+  },
+  "UT Austin": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "UT_Austin_CDS_2025-2025.pdf",
+    data: {"acceptanceRate":26.6,"oosAcceptanceRate":10.1,"inStateAcceptanceRate":37.7,"yield":47.4,"studentFacultyRatio":18,"fourYearGradRate":73.5,"undergradPopulation":43165,"inStatePercent":87.4,"percentInternational":4.5,"demographics":{"white":30.4,"asian":25.6,"hispanic":28.3,"black":4.6,"multiracial":4.1,"international":4.5,"other":2.6},"genderBreakdown":{"male":42.2,"female":57.7}},
+  },
+  "University at Buffalo": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "university_of_buffalo_CDS_2025-2026.pdf",
+    data: {"acceptanceRate":80.6,"yield":14,"sat25":1220,"sat75":1390,"act25":27,"act75":31,"studentFacultyRatio":12,"fourYearGradRate":58,"undergradPopulation":21192,"inStatePercent":87.9,"percentInternational":11.1,"demographics":{"white":41.1,"asian":18.5,"hispanic":10.1,"black":9.9,"multiracial":4.3,"international":11.1,"other":3.7},"genderBreakdown":{"male":53.8,"female":46.2}},
   },
   "University of Alabama": {
     cdsYear: "2025-2026",
@@ -225,6 +290,16 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/CDS_2526.pdf",
     data: {"acceptanceRate":79.9,"sat25":1130,"sat75":1320,"act25":21,"act75":28,"yield":22.1,"avgGPACDS":3.86,"studentFacultyRatio":17,"fourYearGradRate":60.7,"undergradPopulation":23407,"inStatePercent":57,"percentInternational":1.1,"demographics":{"white":74.2,"asian":4.2,"hispanic":8.7,"black":2.7,"multiracial":3.9,"international":1.1,"other":5},"genderBreakdown":{"male":42.6,"female":57.4}},
   },
+  "University of Miami": {
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "UMiami_CDS.pdf",
+    data: {"acceptanceRate":17.6,"yield":26.2,"edAdmitRate":44.3,"sat25":1350,"sat75":1450,"act25":30,"act75":33,"avgGPACDS":3.75,"top10HSPercent":55,"pctTopTenClass":55,"studentFacultyRatio":11,"fourYearGradRate":71.5,"undergradPopulation":13241,"inStatePercent":29.5,"percentInternational":7.4,"demographics":{"white":46.6,"asian":4.9,"hispanic":26.6,"black":6.4,"multiracial":4.7,"international":7.4,"other":3.4},"genderBreakdown":{"male":44.4,"female":55.6}},
+  },
+  "University of Michigan": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "firstyearsprofile_umaa_2025 (1).pdf",
+    data: {"acceptanceRate":15.6,"yield":47.3,"sat25":1360,"sat75":1530,"act25":31,"act75":34,"avgGPACDS":3.95,"inStatePercent":52.9,"percentInternational":4.2,"demographics":{"white":44.8,"asian":18.2,"hispanic":14.8,"black":6.3,"multiracial":6.7,"international":4.2,"other":5.1},"genderBreakdown":{"male":43.9,"female":56}},
+  },
   "University of Minnesota": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
@@ -253,7 +328,7 @@ export const CDS_DATA: Record<string, CDSEntry> = {
   "University of Virginia": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://ira.virginia.edu/sites/g/files/jsddwu1106/files/2025-03/CDS_2024-2025_508.pdf",
-    data: {"acceptanceRate":16.8,"sat25":1410,"sat75":1520,"act25":32,"act75":35,"yield":40,"edAdmitRate":27.9,"top10HSPercent":84,"pctTopTenClass":84,"studentFacultyRatio":14,"fourYearGradRate":92.3,"undergradPopulation":17567,"inStatePercent":70,"percentInternational":4.9,"demographics":{"white":48.8,"asian":19.7,"hispanic":7.8,"black":7.5,"multiracial":5.8,"international":4.9,"other":5.3},"genderBreakdown":{"male":43.8,"female":56.1}},
+    data: {"acceptanceRate":16.8,"sat25":1410,"sat75":1520,"act25":32,"act75":35,"yield":40,"edAdmitRate":27.9,"top10HSPercent":84,"pctTopTenClass":84,"studentFacultyRatio":14,"fourYearGradRate":92.3,"undergradPopulation":17567,"inStatePercent":70,"percentInternational":4.9,"demographics":{"white":48.8,"asian":19.7,"hispanic":7.8,"black":7.5,"multiracial":5.8,"international":4.9,"other":5.3},"genderBreakdown":{"male":43.8,"female":56.1},"oosAcceptanceRate":13.8,"inStateAcceptanceRate":25.9},
   },
   "University of Washington": {
     cdsYear: "2025-2026",
@@ -266,9 +341,9 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     data: {"acceptanceRate":5.9,"sat25":1510,"sat75":1560,"act25":34,"act75":35,"yield":61.2,"edAdmitRate":15.4,"avgGPACDS":3.89,"top10HSPercent":90,"pctTopTenClass":90,"studentFacultyRatio":8,"fourYearGradRate":89.8,"undergradPopulation":7221,"inStatePercent":12,"percentInternational":11.2,"demographics":{"white":39,"asian":18.5,"hispanic":11.4,"black":9.2,"multiracial":5.7,"international":11.2,"other":0.7},"genderBreakdown":{"male":47.6,"female":52.4}},
   },
   "Virginia Tech": {
-    cdsYear: "2023-2024",
-    sourcePdfUrl: "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf",
-    data: {"acceptanceRate":57,"sat25":1240,"sat75":1420,"act25":27,"act75":32,"yield":26.7,"avgGPACDS":4.06,"studentFacultyRatio":17,"fourYearGradRate":68.9,"undergradPopulation":30507,"inStatePercent":63,"percentInternational":4.5,"demographics":{"white":58.1,"asian":12.7,"hispanic":10.3,"black":6.2,"multiracial":5.5,"international":4.5,"other":2.6},"genderBreakdown":{"male":56.5,"female":43.3}},
+    cdsYear: "2025-2026",
+    sourcePdfUrl: "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/25-26/2025-2026-CDS.xlsx",
+    data: {"acceptanceRate":54.6,"sat25":1280,"sat75":1450,"act25":28,"act75":32,"yield":22.6,"avgGPACDS":4.06,"studentFacultyRatio":17,"fourYearGradRate":68.9,"undergradPopulation":31536,"inStatePercent":69,"percentInternational":5.4,"demographics":{"white":55.3,"asian":14.2,"hispanic":10.1,"black":5.7,"multiracial":6,"international":5.4,"other":0.1},"genderBreakdown":{"male":56.2,"female":43.5}},
   },
   "Wake Forest University": {
     cdsYear: "2024-2025",
@@ -285,9 +360,19 @@ export const CDS_DATA: Record<string, CDSEntry> = {
     sourcePdfUrl: "https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2025-2026-FINAL.pdf?dm=1773253066",
     data: {"acceptanceRate":14.8,"sat25":1460,"sat75":1540,"act25":33,"act75":35,"yield":45.8,"edAdmitRate":29.4,"regularDecisionAdmitRate":12.8,"top10HSPercent":88,"pctTopTenClass":88,"studentFacultyRatio":8,"fourYearGradRate":78.6,"undergradPopulation":2366,"inStatePercent":14,"percentInternational":13,"demographics":{"white":29.8,"asian":27.7,"hispanic":12.8,"black":7.1,"multiracial":7.6,"international":13,"other":1.9},"genderBreakdown":{"male":1.3,"female":98.4}},
   },
+  "Worcester Polytechnic Institute": {
+    cdsYear: "2024-2025",
+    sourcePdfUrl: "WPI_CDS_2024-2025_2-27-25.pdf",
+    data: {"acceptanceRate":60.2,"yield":18.1,"edAdmitRate":75.6,"avgGPACDS":3.9,"top10HSPercent":56,"pctTopTenClass":56,"studentFacultyRatio":13,"fourYearGradRate":84.4,"undergradPopulation":5558,"inStatePercent":46.9,"percentInternational":6.4,"demographics":{"white":63.1,"asian":12.5,"hispanic":8.4,"black":2.7,"multiracial":3.5,"international":6.4,"other":3.5},"genderBreakdown":{"male":67.3,"female":32.7}},
+  },
   "Yale University": {
     cdsYear: "2024-2025",
     sourcePdfUrl: "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
     data: {"acceptanceRate":3.9,"sat25":1480,"sat75":1560,"act25":33,"act75":35,"yield":69.8,"top10HSPercent":96,"pctTopTenClass":96,"studentFacultyRatio":5,"fourYearGradRate":57.5,"undergradPopulation":6814,"inStatePercent":7,"percentInternational":11.1,"demographics":{"white":31,"asian":21.8,"hispanic":16.5,"black":9.2,"multiracial":7,"international":11.1,"other":0.6},"genderBreakdown":{"male":48.5,"female":50.1}},
+  },
+  "Yeshiva University": {
+    cdsYear: "2023-2024",
+    sourcePdfUrl: "yeshiva_university_CDS_2023_2024.xlsx",
+    data: {"acceptanceRate":63.8,"yield":59,"edAdmitRate":100,"sat25":1330,"sat75":1470,"act25":28,"act75":33,"avgGPACDS":3.5,"studentFacultyRatio":7,"fourYearGradRate":79.4,"undergradPopulation":2334,"percentInternational":7.7,"demographics":{"white":53.7,"asian":0.1,"hispanic":2.1,"black":0.2,"multiracial":0.5,"international":7.7,"other":35.7},"genderBreakdown":{"male":54.8,"female":45.2}},
   },
 };

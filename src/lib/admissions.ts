@@ -14,6 +14,7 @@ import {
   type StatBand,
 } from "@/data/stat-band-multipliers";
 import { isYieldProtected } from "@/data/hook-multipliers";
+import { applySchoolHistory, type SchoolBlendResult } from "./school-data";
 import type { AdvancedCourseworkRow, EssayScoreRecord } from "./profile-types";
 import { classifyRigor, rigorSignal, rigorLabel, type RigorTier } from "./rigor";
 import {
@@ -130,8 +131,33 @@ interface BaseRateResult {
   planNote: string | null;
 }
 
-function getBaseRateForPlan(college: College, plan: ApplicationPlan): BaseRateResult {
-  const overall = college.acceptanceRate;
+// Residency-aware "overall" rate. Public flagships with strong in-state
+// preference (UNC, UVA, all UCs, GT, etc.) publish a misleading overall
+// figure because in-state applicants are admitted at multiples higher
+// than OOS. The chance model picks the rate that matches the user's
+// residency. International applicants face OOS rate (or a blend) at most
+// schools — using OOS as the fallback is conservative.
+type Residency = "in-state" | "oos" | "international";
+
+function effectiveAcceptanceRate(
+  college: College,
+  residency: Residency = "oos",
+): number {
+  if (residency === "in-state" && typeof college.inStateAcceptanceRate === "number") {
+    return college.inStateAcceptanceRate;
+  }
+  if (typeof college.oosAcceptanceRate === "number") {
+    return college.oosAcceptanceRate;
+  }
+  return college.acceptanceRate;
+}
+
+function getBaseRateForPlan(
+  college: College,
+  plan: ApplicationPlan,
+  residency: Residency = "oos",
+): BaseRateResult {
+  const overall = effectiveAcceptanceRate(college, residency);
   switch (plan) {
     case "ED":
     case "ED2": {
@@ -208,6 +234,17 @@ function bandWidthForConfidence(c: ConfidenceTier, testOptionalWiden: boolean): 
   if (c === "medium") return testOptionalWiden ? { lo: 0.62, hi: 1.42 } : { lo: 0.70, hi: 1.30 };
   return testOptionalWiden ? { lo: 0.45, hi: 1.65 } : { lo: 0.55, hi: 1.50 };
 }
+
+// ── Soft cap ────────────────────────────────────────────────────────────────
+// When the multiplier stack pushes pre-cap chance above the bracket ceiling,
+// hard-clipping to the cap throws away the rank ordering between strong
+// profiles. The soft cap pins below the bracket value but lets a tapered
+// excess through above it, so two applicants who pre-cap at 33% vs 65%
+// don't both display the same number. 0.20 chosen empirically: 0.25 starts
+// inflating sub-5% schools back into the over-stated zone; 0.15 barely
+// differentiates above the cap. With 0.20 a Georgetown 65% pre-cap profile
+// lands at ~35% (vs 28% hard cap), preserving ~6 points of rank info.
+const SOFT_CAP_TAPER = 0.20;
 
 // ── Data freshness ──────────────────────────────────────────────────────────
 
@@ -439,7 +476,10 @@ function computeHolisticEliteChance(
   const totalMult = statMult * ecMult * essayMult;
   let mid = headlineRate * totalMult;
   const capApplied = mid > cap;
-  if (capApplied) mid = cap;
+  // Soft cap (taper 0.20) preserves rank-ordering above the ceiling so two
+  // strong holistic-elite profiles (e.g. one pre-cap 50%, one pre-cap 80%)
+  // don't both display the same number. See SOFT_CAP_TAPER comment above.
+  if (capApplied) mid = cap + (mid - cap) * SOFT_CAP_TAPER;
   mid = clamp(mid, 0.5, 95);
 
   // Default Tier 2 range = ±20%. Widen to ±30% when test-optional with no
@@ -634,6 +674,10 @@ export interface ChanceInputsModel {
   apScores?: readonly { score: 1 | 2 | 3 | 4 | 5 }[];
   recruitedAthlete?: boolean;
   applicationPlan?: ApplicationPlan;
+  // Residency relative to the school. Defaults to "oos" inside the model
+  // when undefined. Drives selection of inStateAcceptanceRate vs
+  // oosAcceptanceRate when those fields are populated on the school.
+  residency?: "in-state" | "oos" | "international";
 }
 
 // Multiplier-stack trace returned alongside the chance result so the UI can
@@ -666,11 +710,23 @@ export interface ChanceResultModel {
   readonly breakdown?: ChanceBreakdown;
   readonly statBand?: StatBand;          // exposed for what-if scenarios
   readonly effectiveEcBand?: string;     // exposed for what-if scenarios
+  // Set when the chance model used a residency-specific admit rate
+  // instead of the school's published overall (in-state-heavy publics).
+  readonly residencyUsed?: {
+    readonly residency: Residency;
+    readonly rate: number;
+    readonly overall: number;
+  };
+  // School-specific history blend (sandbox feature). Present when the
+  // imported feeder-school data has a record for this college+plan; the
+  // blend may or may not have shifted the chance — see schoolBlend.applied.
+  readonly schoolBlend?: SchoolBlendResult;
 }
 
 export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultModel {
   const college = args.college;
   const plan: ApplicationPlan = args.applicationPlan ?? "RD";
+  const residency: Residency = args.residency ?? "oos";
 
   // 0. Two-tier routing. Holistic-elite schools use a different math entirely.
   if (college.admissionsTier === "holistic-elite") {
@@ -713,7 +769,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   }
 
   // 6. Per-plan base rate with fallbacks.
-  const baseResult = getBaseRateForPlan(college, plan);
+  const baseResult = getBaseRateForPlan(college, plan, residency);
 
   // 7. Stat multiplier from the empirical band table (final calibration).
   let multiplier = getStatBandMultiplier(combinedBand);
@@ -737,14 +793,40 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   const dampened = applyCombinedDampener(rawCombined);
 
   // 11. Compute midpoint, then apply the final selectivity cap.
-  //     admissionsType differentiates 15-25% holistic vs stats-driven.
+  //     All schools share the holistic cap table now.
   let rawMid = baseResult.rate * dampened;
-  const admType = college.admissionsType ?? "holistic";
-  const cap = getChanceCap(college.acceptanceRate, admType);
   const isEdLikePlan = plan === "ED" || plan === "ED2" || plan === "REA" || plan === "SCEA";
+  // Anchor the cap bracket to the ACTUAL admit rate for the chosen plan,
+  // not to the overall (RD-derived) acceptance rate. Otherwise schools
+  // with a much friendlier ED pool than their RD pool get pinned to an
+  // unfairly low cap. Concrete case: Northeastern overall 7%, ED ~43% —
+  // the old code looked up by 7% and capped ED at 30%, even though the
+  // school admits 43% of ED applicants at baseline. With this fix the ED
+  // cap for Northeastern lands at 70% (the 25-50% bracket), so a strong
+  // ED applicant can plausibly land in the 50-70% range. RD lookup is
+  // unchanged because the overall rate IS the RD anchor.
+  const capLookupRate = isEdLikePlan ? baseResult.rate : effectiveAcceptanceRate(college, residency);
+  const cap = getChanceCap(capLookupRate);
   const capValue = isEdLikePlan ? cap.ed : cap.rd;
-  if (rawMid > capValue) rawMid = capValue;
-  const mid = clamp(rawMid, 0.5, 95);
+  // Soft cap: hard clip below the cap, gentle compression above. Preserves
+  // rank-ordering between strong profiles at sub-15% schools so two
+  // applicants who project 33% vs 65% pre-cap don't both display the same
+  // number. Taper 0.20 keeps the empirical ceiling close to the bracket
+  // value while letting an extra ~6 points of differentiation through.
+  const capApplied = rawMid > capValue;
+  if (capApplied) rawMid = capValue + (rawMid - capValue) * SOFT_CAP_TAPER;
+  const nationalMid = clamp(rawMid, 0.5, 95);
+
+  // 11b. School-specific history blend. Sandbox feature: when imported feeder
+  // school CSV has a record for this college+plan AND the sample is large
+  // enough (>=5 apps), blend toward the school's observed admit rate. The
+  // blend never replaces the national model — it's weighted at min(0.5,
+  // n/30). See src/lib/school-data.ts for math + anchors.
+  const schoolBlend = applySchoolHistory(nationalMid, college, plan, {
+    gpaWeighted: args.gpaW ?? null,
+    sat: args.sat ?? null,
+  });
+  const mid = schoolBlend.applied ? schoolBlend.mid : nationalMid;
 
   // 12. Confidence + band width. Stat metrics: weighted GPA + best test
   //     score (each 1 if present). AI tracks both internally so we mirror
@@ -776,7 +858,7 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   // 14. Hard cliff at 10% admit: sub-10% schools cap at "reach" floor and
   // ceiling. Variance dominates at that selectivity, "unlikely" is misleading,
   // and the caps already prevent anything above target there.
-  if (college.acceptanceRate < 10 && classification !== "insufficient") {
+  if (effectiveAcceptanceRate(college, residency) < 10 && classification !== "insufficient") {
     classification = "reach";
   }
 
@@ -794,13 +876,32 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
   if (testBlind) reasonParts.push("Test-blind admissions — score not considered, AI uses GPA only");
   if (rigorTier !== "none") reasonParts.push(`Rigor: ${rigorLabel(rigorTier)}`);
   if (baseResult.planNote) reasonParts.push(baseResult.planNote);
-  const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${college.acceptanceRate}% overall acceptance rate.`;
+  if (schoolBlend.callout) reasonParts.push(schoolBlend.callout);
+  const effectiveAr = effectiveAcceptanceRate(college, residency);
+  const residencyUsed: { residency: Residency; rate: number; overall: number } | null =
+    effectiveAr !== college.acceptanceRate
+      ? { residency, rate: effectiveAr, overall: college.acceptanceRate }
+      : null;
+  if (residencyUsed) {
+    const label =
+      residencyUsed.residency === "in-state"
+        ? `Using in-state rate ${residencyUsed.rate}% (overall ${residencyUsed.overall}%)`
+        : residencyUsed.residency === "international"
+          ? `Using international rate ${residencyUsed.rate}% (overall ${residencyUsed.overall}%)`
+          : `Using OOS rate ${residencyUsed.rate}% (overall ${residencyUsed.overall}% reflects in-state preference)`;
+    reasonParts.push(label);
+  }
+  const reason = reasonParts.length > 0 ? reasonParts.join(". ") + "." : `Based on ${effectiveAr}% acceptance rate.`;
 
   // Build the multiplier-stack trace. Steps show running chance after each
   // layer so the UI can render an accumulating display.
   const breakdown = buildBreakdown({
     baseRate: baseResult.rate,
-    baseLabel: baseResult.planNote ?? `Overall acceptance rate (${college.acceptanceRate}%)`,
+    baseLabel:
+      baseResult.planNote ??
+      (residencyUsed
+        ? `${residencyUsed.residency === "in-state" ? "In-state" : residencyUsed.residency === "international" ? "International" : "OOS"} acceptance rate (${residencyUsed.rate}% — overall ${residencyUsed.overall}%)`
+        : `Overall acceptance rate (${effectiveAr}%)`),
     statBand: combinedBand,
     statMultiplier: multiplier,
     yieldProtected: yp.note,
@@ -814,9 +915,10 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     ai,
     testOptionalNoScore,
     capValue,
-    capApplied: baseResult.rate * dampened > capValue,
-    capBracket: capBracketLabel(college.acceptanceRate, isEdLikePlan),
+    capApplied,
+    capBracket: capBracketLabel(effectiveAr, isEdLikePlan),
     finalChance: chance.mid,
+    schoolBlend,
   });
 
   const result: ChanceResultModel = {
@@ -830,6 +932,8 @@ export function computeAdmissionChance(args: ChanceInputsModel): ChanceResultMod
     breakdown,
     statBand: combinedBand,
     effectiveEcBand,
+    schoolBlend,
+    residencyUsed: residencyUsed ?? undefined,
   };
   return result;
 }
@@ -853,6 +957,7 @@ interface BuildBreakdownArgs {
   capApplied: boolean;
   capBracket: string;
   finalChance: number;
+  schoolBlend: SchoolBlendResult;
 }
 
 function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
@@ -931,11 +1036,30 @@ function buildBreakdown(a: BuildBreakdownArgs): ChanceBreakdown {
 
   // Cap step (only when it fired)
   if (a.capApplied) {
+    running = a.capValue;
     steps.push({
       label: `Selectivity cap (${a.capBracket})`,
       multiplier: a.capValue / running,
       runningChance: a.capValue,
       note: `Capped at ${a.capValue}% — bracket reflects institutional uncertainty.`,
+    });
+  }
+
+  // School-history blend step (only when applied; the blend result already
+  // baked the new midpoint, so this step exists for trace transparency).
+  if (a.schoolBlend.applied && a.schoolBlend.record) {
+    const r = a.schoolBlend.record;
+    const blendMult = running > 0 ? a.schoolBlend.mid / running : 1;
+    running = a.schoolBlend.mid;
+    const sample = `${r.totalAdmits}/${r.totalApplicants} admitted`;
+    const weightPct = Math.round(a.schoolBlend.schoolWeight * 100);
+    steps.push({
+      label: `Your school's history (${sample})`,
+      multiplier: blendMult,
+      runningChance: round1(running),
+      note:
+        `Blended at ${weightPct}% weight from your high school's record at this college. ` +
+        `Sample size: ${r.sampleSizeLabel}.`,
     });
   }
 

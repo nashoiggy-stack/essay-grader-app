@@ -1,36 +1,49 @@
 "use client";
 
 import { motion } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { ECActivityList } from "@/components/ECActivityList";
 import { ECConversationPanel } from "@/components/ECConversation";
 import { ECResults } from "@/components/ECResults";
 import { useECEvaluator } from "@/hooks/useECEvaluator";
+import { EC_ACTIVITIES_KEY, EC_STORAGE_KEY } from "@/lib/extracurricular-types";
 
 export default function ExtracurricularsPage() {
   const ec = useECEvaluator();
 
   return (
-    <AuroraBackground>
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
-        {/* Header */}
-        <div className="mb-10 animate-fade-in">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md">
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em] text-zinc-300">
-                Extracurriculars
-              </span>
+    <>
+      <main id="main-content" className="mx-auto max-w-5xl px-4 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
+        {/* Masthead — eyebrow + h1 + standfirst, plus Save button on the
+            right when there are activities to save. */}
+        <header className="mb-10 sm:mb-12">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-baseline gap-4">
+                <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
+                  Tools / Activity Evaluator
+                </p>
+                <SaveIndicator storageKey={[EC_ACTIVITIES_KEY, EC_STORAGE_KEY]} />
+              </div>
+              <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
+                Activity Evaluator
+              </h1>
+              <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
+                Describe your extracurriculars in your own words. We&apos;ll ask
+                questions to understand your involvement, then tier-rate each
+                activity and your overall profile.
+              </p>
             </div>
             {ec.conversations.length > 0 && (
               <motion.button
                 onClick={ec.saveAll}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-[background-color,color] duration-200 ${
                   ec.saveFlash
-                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
+                    ? "bg-tier-safety-soft text-tier-safety-fg"
+                    : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                 }`}
               >
                 {ec.saveFlash ? (
@@ -47,20 +60,13 @@ export default function ExtracurricularsPage() {
               </motion.button>
             )}
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tighter leading-[0.95] mb-4">
-            <span className="text-gradient">Activity Evaluator</span>
-          </h1>
-          <p className="max-w-xl text-lg text-zinc-400 leading-relaxed">
-            Describe your extracurriculars in your own words. I&apos;ll ask questions to understand
-            your involvement, then evaluate each activity and your overall profile.
-          </p>
-        </div>
+        </header>
 
         {/* Two-column layout: activity list + conversation */}
         <ScrollReveal delay={0.1}>
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 mb-10">
             {/* Left: Activity List */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+            <div className="rounded-md border border-border-hair bg-bg-surface p-5">
               <ECActivityList
                 conversations={ec.conversations}
                 activeConvId={ec.activeConvId}
@@ -73,7 +79,7 @@ export default function ExtracurricularsPage() {
             </div>
 
             {/* Right: Conversation */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+            <div className="rounded-md border border-border-hair bg-bg-surface p-6">
               {ec.activeConversation ? (
                 <ECConversationPanel
                   conversation={ec.activeConversation}
@@ -88,14 +94,14 @@ export default function ExtracurricularsPage() {
               ) : (
                 <div className="flex items-center justify-center h-full min-h-[350px]">
                   <div className="text-center">
-                    <p className="text-zinc-500 text-sm mb-4">
+                    <p className="text-text-muted text-sm mb-4">
                       {ec.conversations.length === 0
                         ? "Start by adding your first activity"
                         : "Select an activity to continue, or add a new one"}
                     </p>
                     <button
                       onClick={ec.startNewActivity}
-                      className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 transition-[background-color,color,opacity] duration-200"
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-strong)] transition-[background-color] duration-200"
                     >
                       + Add Activity
                     </button>
@@ -110,13 +116,13 @@ export default function ExtracurricularsPage() {
         {ec.doneCount > 0 && (
           <ScrollReveal delay={0.15}>
             <div className="flex items-center gap-4 mb-10">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div className="flex-1 h-px bg-border-hair" />
               <motion.button
                 onClick={ec.evaluate}
                 disabled={ec.evaluating}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="rounded-full bg-white px-8 py-3 text-sm font-semibold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,color,opacity] duration-200"
+                className="rounded-full bg-[var(--accent)] px-8 py-3 text-sm font-semibold text-[var(--accent-fg)] hover:bg-[var(--accent-strong)] disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color] duration-200"
               >
                 {ec.evaluating
                   ? ec.evalProgress
@@ -126,15 +132,15 @@ export default function ExtracurricularsPage() {
                     : "Evaluating..."
                   : `Evaluate ${ec.doneCount} Activit${ec.doneCount === 1 ? "y" : "ies"}`}
               </motion.button>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div className="flex-1 h-px bg-border-hair" />
             </div>
           </ScrollReveal>
         )}
 
         {/* Error */}
         {ec.evalError && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-            <p className="text-sm text-red-400">{ec.evalError}</p>
+          <div role="alert" className="mb-6 rounded-md border border-tier-unlikely-fg/30 bg-tier-unlikely-soft p-4">
+            <p className="text-sm text-tier-unlikely-fg">{ec.evalError}</p>
           </div>
         )}
 
@@ -150,13 +156,13 @@ export default function ExtracurricularsPage() {
           <div className="mt-8 text-center">
             <button
               onClick={ec.resetAll}
-              className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+              className="text-xs text-text-faint hover:text-text-secondary transition-colors"
             >
               Reset all activities
             </button>
           </div>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }

@@ -2,23 +2,32 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import type { ChanceResult, Classification } from "@/lib/college-types";
+import type { ApplicationPlan, ChanceResult, Classification, College } from "@/lib/college-types";
 import { BreakdownPanel } from "./BreakdownPanel";
 
 // Color coding mirrors /colleges CollegeCard so the same school produces the
 // same visual signal across surfaces. "Insufficient" is intentionally muted.
-const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string; glow: string }> = {
-  safety:       { bg: "bg-emerald-500/10", text: "text-emerald-400", bar: "bg-emerald-500", glow: "shadow-emerald-500/20" },
-  likely:       { bg: "bg-blue-500/10",    text: "text-blue-400",    bar: "bg-blue-500",    glow: "shadow-blue-500/20" },
-  target:       { bg: "bg-amber-500/10",   text: "text-amber-400",   bar: "bg-amber-500",   glow: "shadow-amber-500/20" },
-  reach:        { bg: "bg-orange-500/10",  text: "text-orange-400",  bar: "bg-orange-500",  glow: "shadow-orange-500/20" },
-  unlikely:     { bg: "bg-red-500/10",     text: "text-red-500",     bar: "bg-red-500",     glow: "shadow-red-500/20" },
-  insufficient: { bg: "bg-zinc-500/5",     text: "text-zinc-400",    bar: "bg-zinc-500",    glow: "shadow-zinc-500/15" },
+const TIER_STYLES: Record<Classification, { bg: string; text: string; bar: string }> = {
+  safety:       { bg: "bg-tier-safety-soft",       text: "text-tier-safety-fg",       bar: "bg-tier-safety-fg" },
+  likely:       { bg: "bg-tier-likely-soft",       text: "text-tier-likely-fg",       bar: "bg-tier-likely-fg" },
+  target:       { bg: "bg-tier-target-soft",       text: "text-tier-target-fg",       bar: "bg-tier-target-fg" },
+  reach:        { bg: "bg-tier-reach-soft",        text: "text-tier-reach-fg",        bar: "bg-tier-reach-fg" },
+  unlikely:     { bg: "bg-tier-unlikely-soft",     text: "text-tier-unlikely-fg",     bar: "bg-tier-unlikely-fg" },
+  insufficient: { bg: "bg-tier-insufficient-soft", text: "text-tier-insufficient-fg", bar: "bg-tier-insufficient-fg" },
 };
 
 interface ChanceResultProps {
   readonly result: ChanceResult;
   readonly collegeName: string;
+  // Optional: surface the school-history scatterplot inside the breakdown
+  // panel when feeder-school data is available for this college+plan.
+  readonly college?: College;
+  readonly applicationPlan?: ApplicationPlan;
+  readonly userStats?: {
+    readonly gpaWeighted: number | null;
+    readonly sat: number | null;
+    readonly act: number | null;
+  };
 }
 
 function buildHeadline(result: ChanceResult, collegeName: string): string {
@@ -73,7 +82,13 @@ function buildNextStep(result: ChanceResult): string {
 // 100). Width-weighted so the fill aligns with the labeled segment.
 const SEGMENT_TEMPLATE = "5fr 15fr 20fr 30fr 30fr"; // unlikely | reach | target | likely | safety
 
-export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, collegeName }) => {
+export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({
+  result,
+  collegeName,
+  college,
+  applicationPlan,
+  userStats,
+}) => {
   const style = TIER_STYLES[result.classification];
   const headline = buildHeadline(result, collegeName);
   const nextStep = buildNextStep(result);
@@ -84,33 +99,33 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-2xl p-6 sm:p-8 ring-1 ring-white/[0.06] space-y-6"
+      className="bg-bg-surface rounded-md p-6 sm:p-8 border border-border-hair space-y-6"
     >
       {/* Tier + percentage display */}
       <div className="text-center">
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">
+        <p className="text-xs text-text-muted uppercase tracking-[0.08em] mb-2">
           Your chances at {collegeName}
         </p>
         <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className={`inline-flex flex-col items-center px-6 py-3 rounded-xl ${style.bg} ${style.glow} shadow-lg ring-1 ring-white/[0.06]`}
+          initial={{ scale: 0.96, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+          className={`inline-flex flex-col items-center px-6 py-3 rounded-md ${style.bg} border border-border-hair`}
         >
           <span className={`text-4xl sm:text-5xl font-bold font-mono tabular-nums ${style.text} leading-none`}>
             {result.classification === "insufficient" ? "—" : `${result.chance.mid}%`}
           </span>
-          <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.15em] ${style.text}`}>
+          <span className={`mt-1 text-xs font-semibold uppercase tracking-[0.08em] ${style.text}`}>
             {tierUpper}
             {showMultiple && (
-              <span className="ml-1 text-zinc-400 font-normal normal-case tracking-normal">
+              <span className="ml-1 text-text-secondary font-normal normal-case tracking-normal">
                 ({result.multiple.toFixed(1)}× typical)
               </span>
             )}
           </span>
         </motion.div>
         {result.confidence !== "high" && result.classification !== "insufficient" && (
-          <p className="mt-2 text-xs text-zinc-600">
+          <p className="mt-2 text-xs text-text-faint">
             {result.confidence === "low" ? "Low confidence — add GPA and test scores for a better estimate" : "Add more data for a more reliable estimate"}
           </p>
         )}
@@ -122,7 +137,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
           tier label even at extreme values. */}
       {result.classification !== "insufficient" && (
         <div>
-          <div className="grid text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5"
+          <div className="grid text-[10px] text-text-faint uppercase tracking-[0.08em] mb-1.5"
                style={{ gridTemplateColumns: SEGMENT_TEMPLATE }}>
             <span className="text-left">Unlikely</span>
             <span className="text-center">Reach</span>
@@ -130,7 +145,7 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
             <span className="text-center">Likely</span>
             <span className="text-right">Safety</span>
           </div>
-          <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
+          <div className="h-2 rounded-full bg-bg-inset overflow-hidden">
             <motion.div
               className={`h-full rounded-full ${style.bar}`}
               initial={{ width: 0 }}
@@ -141,77 +156,142 @@ export const ChanceResultDisplay: React.FC<ChanceResultProps> = ({ result, colle
         </div>
       )}
 
+      {/* Residency flag — shown when the model used a residency-specific
+          rate instead of the published overall. Common at publics with
+          in-state preference (UNC, UVA, UCs, GT). */}
+      {result.residencyUsed && (
+        <div className="rounded-md bg-accent-soft border border-accent-line px-4 py-3 flex items-start gap-3">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mt-[2px] text-accent-text shrink-0"
+            aria-hidden
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p className="text-[12px] text-accent-text leading-relaxed">
+            {result.residencyUsed.residency === "in-state" ? (
+              <>
+                <span className="font-semibold">In-state rate used ({result.residencyUsed.rate}%)</span>
+                {" — "}
+                your residency advantage produces a meaningfully higher chance than the published
+                overall acceptance rate ({result.residencyUsed.overall}%). Toggle to Out-of-state
+                above if you&rsquo;re not a resident.
+              </>
+            ) : result.residencyUsed.residency === "international" ? (
+              <>
+                <span className="font-semibold">International rate used ({result.residencyUsed.rate}%)</span>
+                {" — "}
+                the published overall acceptance rate ({result.residencyUsed.overall}%) reflects
+                mostly domestic admits.
+              </>
+            ) : (
+              <>
+                <span className="font-semibold">Out-of-state rate used ({result.residencyUsed.rate}%)</span>
+                {" — "}
+                the published overall acceptance rate ({result.residencyUsed.overall}%) is roughly{" "}
+                {Math.max(1, Math.round((result.residencyUsed.overall - result.residencyUsed.rate) * 10) / 10)} points
+                higher because in-state applicants are admitted at a much higher rate. If you&rsquo;re
+                applying as in-state, toggle the residency selector above.
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
       {/* Headline narrative */}
-      <div className="rounded-xl bg-[#12121f] border border-white/[0.08] p-5">
-        <p className="text-[15px] text-zinc-100 leading-relaxed font-medium">
+      <div className="rounded-md bg-bg-inset border border-border-strong p-5">
+        <p className="text-[15px] text-text-primary leading-relaxed font-medium">
           {headline}
         </p>
-        <div className="mt-3 pt-3 border-t border-white/[0.05] flex items-start gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 shrink-0 mt-[2px]">
+        <div className="mt-3 pt-3 border-t border-border-hair flex items-start gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-text shrink-0 mt-[2px]">
             <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
-          <p className="text-[13px] text-zinc-400 leading-relaxed">
-            <span className="text-zinc-300 font-medium">Next step:</span> {nextStep}
+          <p className="text-[13px] text-text-secondary leading-relaxed">
+            <span className="text-text-secondary font-medium">Next step:</span> {nextStep}
           </p>
         </div>
       </div>
 
       {/* Multiplier breakdown + what-ifs (collapsible) */}
       {result.breakdown && (
-        <details className="group rounded-xl bg-[#0c0c1a]/60 border border-white/[0.05] overflow-hidden">
-          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-white/[0.02] transition-[background-color] duration-200">
-            <span className="text-xs text-zinc-500 font-medium">See the breakdown</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 transition-transform duration-300 group-open:rotate-180">
+        <details className="group rounded-md bg-bg-surface border border-border-hair overflow-hidden">
+          <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none hover:bg-bg-elevated transition-[background-color] duration-200">
+            <span className="text-xs text-text-muted font-medium">See the breakdown</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-faint transition-transform duration-300 group-open:rotate-180">
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </summary>
           <div className="px-4 pb-4 pt-1 space-y-4">
-            <p className="text-[12px] text-zinc-500 leading-relaxed">{result.explanation}</p>
+            <p className="text-[12px] text-text-muted leading-relaxed">{result.explanation}</p>
             <BreakdownPanel breakdown={result.breakdown} whatIfs={result.whatIfs} />
           </div>
         </details>
       )}
 
-      {/* Strengths & Weaknesses */}
+      {/* Strengths & Weaknesses — colors reuse the tier-safety / tier-unlikely
+          tokens so they adapt across light / dark / monochrome themes
+          (raw text-emerald-400 / text-red-400 failed 4.5:1 in light mode). */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <h4 className="text-sm font-semibold text-emerald-400 mb-2">Strengths</h4>
+          <h4 className="text-sm font-semibold text-tier-safety-fg mb-2">Strengths</h4>
           {result.strengths.length > 0 ? (
             <ul className="space-y-1.5">
               {result.strengths.map((s, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-                  <span className="text-emerald-400 mt-0.5 shrink-0">+</span>{s}
+                <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
+                  <span className="text-tier-safety-fg mt-0.5 shrink-0">+</span>{s}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-zinc-600">No notable strengths identified yet</p>
+            <p className="text-xs text-text-faint">No notable strengths identified yet</p>
           )}
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-red-400 mb-2">Areas to Improve</h4>
+          <h4 className="text-sm font-semibold text-tier-unlikely-fg mb-2">Areas to Improve</h4>
           {result.weaknesses.length > 0 ? (
             <ul className="space-y-1.5">
               {result.weaknesses.map((w, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-                  <span className="text-red-400 mt-0.5 shrink-0">!</span>{w}
+                <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
+                  <span className="text-tier-unlikely-fg mt-0.5 shrink-0">!</span>{w}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-zinc-600">No major weaknesses identified</p>
+            <p className="text-xs text-text-faint">No major weaknesses identified</p>
           )}
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-3">
-        <p className="text-[11px] text-amber-400/70 leading-relaxed">
-          This is an estimate based on general admissions patterns and is not a guarantee.
-          Actual admission decisions depend on many factors including essays, recommendations,
-          demonstrated interest, and institutional priorities.
-        </p>
-      </div>
+      {/* Missing data hints — neutral CTAs, not weaknesses */}
+      {result.missingDataHints && result.missingDataHints.length > 0 && (
+        <ul className="rounded-md bg-bg-inset border border-border-hair p-3 space-y-1.5">
+          {result.missingDataHints.map((hint, i) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
+              <span className="text-text-muted mt-0.5 shrink-0">+</span>
+              <a
+                href={hint.href}
+                className="hover:text-text-primary underline decoration-zinc-700 underline-offset-2"
+              >
+                {hint.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* The page-level "Estimates only" disclaimer with the methodology
+          link (chances/page.tsx:33-47) covers this. A second amber block
+          here was redundant + dark-only. */}
     </motion.div>
   );
 };

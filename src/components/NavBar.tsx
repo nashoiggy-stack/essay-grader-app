@@ -13,13 +13,13 @@ const NAV_ITEMS = [
   { href: "/extracurriculars", label: "ECs" },
   { href: "/resume", label: "Resume" },
   { href: "/colleges", label: "Colleges" },
+  { href: "/list", label: "List" },
   { href: "/chances", label: "Chances" },
   { href: "/compare", label: "Compare" },
   { href: "/strategy", label: "Strategy" },
 ] as const;
 
-const SPRING = { type: "spring" as const, stiffness: 350, damping: 30 };
-const EASE_EXPO = [0.32, 0.72, 0, 1] as const;
+const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
 
 export const NavBar: React.FC = () => {
   const pathname = usePathname();
@@ -28,30 +28,30 @@ export const NavBar: React.FC = () => {
 
   return (
     <>
-      {/* ── Floating pill nav ─────────────────────────────────── */}
-      {/* Top padding pushes the nav below the iOS notch / status bar via
-          safe-area-inset-top; max() keeps the existing 1rem when there's
-          no inset (desktop, older devices). */}
+      {/* Linear-derived bar — flush full-width, hairline bottom border, no
+          floating pill, no decorative shadow. Subtle backdrop-blur is the
+          ONLY glass-style effect kept (it's functional: keeps the bar
+          legible when content scrolls beneath it). */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
-        style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
+        className="sticky top-0 z-50 w-full bg-bg-base/85 backdrop-blur-[6px] border-b border-border-hair"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="pointer-events-auto w-full max-w-7xl rounded-full bg-[#0a0a14]/80 backdrop-blur-xl ring-1 ring-white/[0.08] shadow-[0_8px_32px_rgba(10,16,29,0.6)]">
-          <div className="px-4 lg:px-5 flex items-center justify-between h-12">
-            {/* Home button */}
-            <Link href="/" className="flex items-center gap-2 shrink-0 group">
-              <AdmitEdgeLogo
-                size={24}
-                className="group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.4)] transition-[filter] duration-200 [transition-timing-function:var(--ease-out)]"
-              />
-              <span className="text-sm font-semibold text-zinc-300 hidden sm:block group-hover:text-white transition-[color] duration-200 [transition-timing-function:var(--ease-out)]">
+        <div className="mx-auto max-w-[1180px] px-4 sm:px-6">
+          <div className="flex items-center justify-between h-12">
+            {/* Brand */}
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              <AdmitEdgeLogo size={20} />
+              <span
+                data-brand-mark
+                className="text-[14px] font-semibold text-text-primary hidden sm:block"
+              >
                 AdmitEdge
               </span>
               <span
                 aria-label="Beta"
-                className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-zinc-800/80 text-zinc-300 border border-zinc-700/50 leading-none"
+                className="font-mono text-[10px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-sm bg-bg-surface text-text-muted border border-border-hair leading-none"
               >
-                Beta
+                BETA
               </span>
             </Link>
 
@@ -63,31 +63,28 @@ export const NavBar: React.FC = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`relative px-3 lg:px-3.5 py-1.5 text-[13px] font-medium rounded-full transition-[color] duration-200 ${
-                      isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                    aria-current={isActive ? "page" : undefined}
+                    className={`px-2.5 lg:px-3 py-1.5 text-[13px] rounded-sm transition-[color,background-color] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      isActive
+                        ? "text-accent-text bg-accent-soft"
+                        : "text-text-muted hover:text-text-primary hover:bg-bg-elevated"
                     }`}
                   >
-                    {isActive && (
-                      <motion.div
-                        layoutId="nav-active"
-                        className="absolute inset-0 rounded-full bg-white/[0.08] ring-1 ring-white/[0.1]"
-                        transition={SPRING}
-                      />
-                    )}
-                    <span className="relative z-10">{item.label}</span>
+                    {item.label}
                   </Link>
                 );
               })}
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Link
                 href="/dashboard"
-                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-[color,background-color] duration-200 ${
+                aria-current={pathname === "/dashboard" ? "page" : undefined}
+                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[12px] transition-[color,background-color] duration-150 ${
                   pathname === "/dashboard"
-                    ? "text-blue-400 bg-blue-500/10"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.06]"
+                    ? "text-accent-text bg-accent-soft"
+                    : "text-text-muted hover:text-text-primary hover:bg-bg-elevated"
                 }`}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -97,10 +94,11 @@ export const NavBar: React.FC = () => {
               </Link>
               <Link
                 href="/profile"
-                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-[color,background-color] duration-200 ${
+                aria-current={pathname === "/profile" ? "page" : undefined}
+                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[12px] transition-[color,background-color] duration-150 ${
                   pathname === "/profile"
-                    ? "text-blue-400 bg-blue-500/10"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.06]"
+                    ? "text-accent-text bg-accent-soft"
+                    : "text-text-muted hover:text-text-primary hover:bg-bg-elevated"
                 }`}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -112,38 +110,37 @@ export const NavBar: React.FC = () => {
               {user ? (
                 <>
                   <span
-                    className="text-[11px] text-zinc-600 hidden lg:block truncate max-w-[80px] whitespace-nowrap"
+                    className="text-[11px] text-text-faint hidden lg:block truncate max-w-[80px] whitespace-nowrap ml-1"
                     title={user.email ?? undefined}
                   >
                     {user.email ? user.email.split("@")[0] : ""}
                   </span>
                   <button
                     onClick={signOut}
-                    className="text-[11px] text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block whitespace-nowrap"
+                    className="text-[12px] text-text-muted hover:text-text-primary px-2 py-1 rounded-sm hover:bg-bg-elevated transition-[color,background-color] duration-150 hidden sm:block whitespace-nowrap"
                   >
                     Sign out
                   </button>
                 </>
               ) : guest ? (
                 <>
-                  <span className="text-[11px] text-zinc-600 hidden lg:block whitespace-nowrap">Guest</span>
+                  <span className="text-[11px] text-text-faint hidden lg:block whitespace-nowrap ml-1">Guest</span>
                   <Link
                     href="/"
                     onClick={signOut}
-                    className="text-[11px] text-blue-400 hover:text-blue-300 px-2 py-1 rounded-full hover:bg-white/[0.06] transition-[color,background-color] duration-200 hidden sm:block whitespace-nowrap"
+                    className="text-[12px] text-[var(--accent)] hover:text-[var(--accent-strong)] px-2 py-1 rounded-sm hover:bg-accent-soft transition-[color,background-color] duration-150 hidden sm:block whitespace-nowrap"
                   >
                     Sign in
                   </Link>
                 </>
               ) : null}
 
-              {/* Hamburger — 44x44 minimum tap target on mobile (was 32x32,
-                  below WCAG/iOS HIG floor). Visual icon stays w-4.5 via the
-                  inner motion spans; the button just expands its hit area. */}
+              {/* Hamburger — 44x44 hit area on mobile (visible icon stays small) */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="md:hidden flex flex-col justify-center items-center min-w-[44px] min-h-[44px] gap-1.5 -mr-2"
                 aria-label="Toggle menu"
+                aria-expanded={mobileOpen}
               >
                 <motion.span
                   animate={{
@@ -151,8 +148,8 @@ export const NavBar: React.FC = () => {
                       ? "translateY(5px) rotate(45deg)"
                       : "translateY(0px) rotate(0deg)",
                   }}
-                  transition={{ duration: 0.28, ease: EASE_EXPO }}
-                  className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full origin-center"
+                  transition={{ duration: 0.24, ease: EASE_EXPO }}
+                  className="w-4 h-px bg-text-secondary block origin-center"
                 />
                 <motion.span
                   animate={{
@@ -160,7 +157,7 @@ export const NavBar: React.FC = () => {
                     transform: mobileOpen ? "scaleX(0)" : "scaleX(1)",
                   }}
                   transition={{ duration: 0.18, ease: EASE_EXPO }}
-                  className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full"
+                  className="w-4 h-px bg-text-secondary block"
                 />
                 <motion.span
                   animate={{
@@ -168,8 +165,8 @@ export const NavBar: React.FC = () => {
                       ? "translateY(-5px) rotate(-45deg)"
                       : "translateY(0px) rotate(0deg)",
                   }}
-                  transition={{ duration: 0.28, ease: EASE_EXPO }}
-                  className="w-4.5 h-[1.5px] bg-zinc-400 block rounded-full origin-center"
+                  transition={{ duration: 0.24, ease: EASE_EXPO }}
+                  className="w-4 h-px bg-text-secondary block origin-center"
                 />
               </button>
             </div>
@@ -177,35 +174,38 @@ export const NavBar: React.FC = () => {
         </div>
       </nav>
 
-      {/* ── Fullscreen mobile overlay ──────────────────────────── */}
+      {/* Fullscreen mobile overlay — flat surface, no backdrop-blur (Linear-
+          derived has no glassmorphism). Hairline divider above the
+          dashboard/profile pair to read as a separate group. */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: EASE_EXPO }}
-            className="fixed inset-0 z-40 bg-[#06060f]/95 backdrop-blur-2xl md:hidden flex flex-col items-center justify-center"
+            transition={{ duration: 0.2, ease: EASE_EXPO }}
+            className="fixed inset-0 z-40 bg-bg-base md:hidden flex flex-col items-stretch pt-16"
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 56px)" }}
           >
-            <div className="flex flex-col items-center gap-2 w-full max-w-xs">
+            <div className="flex flex-col w-full max-w-md mx-auto px-4">
               {NAV_ITEMS.map((item, i) => {
                 const isActive = pathname === item.href;
                 return (
                   <motion.div
                     key={item.href}
-                    initial={{ opacity: 0, transform: "translateY(20px)" }}
+                    initial={{ opacity: 0, transform: "translateY(8px)" }}
                     animate={{ opacity: 1, transform: "translateY(0px)" }}
-                    exit={{ opacity: 0, transform: "translateY(10px)" }}
-                    transition={{ delay: 0.04 + i * 0.04, duration: 0.32, ease: EASE_EXPO }}
-                    className="w-full"
+                    exit={{ opacity: 0, transform: "translateY(4px)" }}
+                    transition={{ delay: 0.02 + i * 0.025, duration: 0.24, ease: EASE_EXPO }}
                   >
                     <Link
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
-                      className={`block w-full text-center px-6 py-3.5 rounded-2xl text-base font-medium transition-[color,background-color] duration-200 ${
+                      aria-current={isActive ? "page" : undefined}
+                      className={`block w-full px-4 py-3 rounded-sm text-[15px] transition-[color,background-color] duration-150 ${
                         isActive
-                          ? "bg-white/[0.08] text-white"
-                          : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                          ? "text-accent-text bg-accent-soft"
+                          : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
                       }`}
                     >
                       {item.label}
@@ -214,57 +214,59 @@ export const NavBar: React.FC = () => {
                 );
               })}
 
-              <motion.div
-                initial={{ opacity: 0, transform: "translateY(20px)" }}
-                animate={{ opacity: 1, transform: "translateY(0px)" }}
-                exit={{ opacity: 0, transform: "translateY(10px)" }}
-                transition={{ delay: 0.04 + NAV_ITEMS.length * 0.04, duration: 0.32, ease: EASE_EXPO }}
-                className="w-full"
-              >
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className={`block w-full text-center px-6 py-3.5 rounded-2xl text-base font-medium transition-[color,background-color] duration-200 ${
-                    pathname === "/dashboard"
-                      ? "bg-white/[0.08] text-white"
-                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
-                  }`}
+              <div className="mt-4 pt-4 border-t border-border-hair flex flex-col">
+                <motion.div
+                  initial={{ opacity: 0, transform: "translateY(8px)" }}
+                  animate={{ opacity: 1, transform: "translateY(0px)" }}
+                  exit={{ opacity: 0, transform: "translateY(4px)" }}
+                  transition={{ delay: 0.02 + NAV_ITEMS.length * 0.025, duration: 0.24, ease: EASE_EXPO }}
                 >
-                  Dashboard
-                </Link>
-              </motion.div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={pathname === "/dashboard" ? "page" : undefined}
+                    className={`block w-full px-4 py-3 rounded-sm text-[15px] transition-[color,background-color] duration-150 ${
+                      pathname === "/dashboard"
+                        ? "text-accent-text bg-accent-soft"
+                        : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
+                    }`}
+                  >
+                    Dashboard
+                  </Link>
+                </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, transform: "translateY(20px)" }}
-                animate={{ opacity: 1, transform: "translateY(0px)" }}
-                exit={{ opacity: 0, transform: "translateY(10px)" }}
-                transition={{ delay: 0.04 + (NAV_ITEMS.length + 1) * 0.04, duration: 0.32, ease: EASE_EXPO }}
-                className="w-full"
-              >
-                <Link
-                  href="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className={`block w-full text-center px-6 py-3.5 rounded-2xl text-base font-medium transition-[color,background-color] duration-200 ${
-                    pathname === "/profile"
-                      ? "bg-white/[0.08] text-white"
-                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
-                  }`}
+                <motion.div
+                  initial={{ opacity: 0, transform: "translateY(8px)" }}
+                  animate={{ opacity: 1, transform: "translateY(0px)" }}
+                  exit={{ opacity: 0, transform: "translateY(4px)" }}
+                  transition={{ delay: 0.02 + (NAV_ITEMS.length + 1) * 0.025, duration: 0.24, ease: EASE_EXPO }}
                 >
-                  Profile
-                </Link>
-              </motion.div>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={pathname === "/profile" ? "page" : undefined}
+                    className={`block w-full px-4 py-3 rounded-sm text-[15px] transition-[color,background-color] duration-150 ${
+                      pathname === "/profile"
+                        ? "text-accent-text bg-accent-soft"
+                        : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
+                    }`}
+                  >
+                    Profile
+                  </Link>
+                </motion.div>
+              </div>
 
               {user && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.35, duration: 0.3 }}
-                  className="w-full pt-4 mt-4 border-t border-white/[0.06] text-center"
+                  transition={{ delay: 0.32, duration: 0.24 }}
+                  className="mt-6 pt-4 border-t border-border-hair px-4"
                 >
-                  <p className="text-[11px] text-zinc-600 truncate mb-2">{user.email}</p>
+                  <p className="text-[12px] text-text-faint truncate mb-2">{user.email}</p>
                   <button
                     onClick={() => { signOut(); setMobileOpen(false); }}
-                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-[color] duration-200"
+                    className="text-[13px] text-text-muted hover:text-text-primary transition-[color] duration-150"
                   >
                     Sign out
                   </button>
@@ -274,9 +276,6 @@ export const NavBar: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Spacer for floating nav */}
-      <div className="h-20" />
     </>
   );
 };

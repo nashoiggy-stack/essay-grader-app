@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { setItemAndNotify } from "@/lib/sync-event";
 
 interface TranscriptUploadProps {
   /** Called after localStorage has been updated so the iframe can reload */
@@ -51,8 +52,10 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
         return;
       }
 
-      // Write directly to localStorage — same origin, iframe picks it up on reload
-      localStorage.setItem("gpa-calc-v1", JSON.stringify(data));
+      // Persist through cloud-storage; setItemAndNotify also dispatches the
+      // "profile-source-updated" event the iframe and downstream hooks listen
+      // for, so a single call covers both the cache write and the wake-up.
+      setItemAndNotify("gpa-calc-v1", JSON.stringify(data));
 
       const totalClasses = data.years.reduce(
         (sum: number, y: { rows: unknown[] }) => sum + y.rows.length,
@@ -60,8 +63,6 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
       );
       setStatus("success");
       setMessage(`Extracted ${totalClasses} classes across ${data.years.length} year${data.years.length > 1 ? "s" : ""}. Reloading calculator...`);
-
-      window.dispatchEvent(new CustomEvent("profile-source-updated", { detail: { key: "gpa-calc-v1" } }));
 
       setTimeout(() => {
         onSuccess?.();
@@ -90,24 +91,24 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
   const statusIcon = {
     idle: <Upload className="w-5 h-5" />,
     uploading: <Loader2 className="w-5 h-5 animate-spin" />,
-    success: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
-    error: <AlertCircle className="w-5 h-5 text-red-400" />,
+    success: <CheckCircle2 className="w-5 h-5 text-tier-safety-fg" />,
+    error: <AlertCircle className="w-5 h-5 text-tier-unlikely-fg" />,
   }[status];
 
   const statusBorder = {
-    idle: "border-white/10 hover:border-blue-400/40",
-    uploading: "border-blue-400/40",
-    success: "border-emerald-400/40",
-    error: "border-red-400/40",
+    idle: "border-border-hair hover:border-accent-line",
+    uploading: "border-accent-line",
+    success: "border-tier-safety-fg/40",
+    error: "border-tier-unlikely-fg/40",
   }[status];
 
   return (
-    <div className="mx-auto max-w-2xl px-4 mb-8">
+    <div className="mb-8">
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => status !== "uploading" && inputRef.current?.click()}
-        className={`cursor-pointer rounded-2xl bg-white/[0.03] border ${statusBorder} p-6 transition-colors duration-200 backdrop-blur-sm`}
+        className={`cursor-pointer rounded-md bg-bg-surface border ${statusBorder} p-6 transition-colors duration-200`}
       >
         <input
           ref={inputRef}
@@ -119,45 +120,45 @@ export const TranscriptUpload: React.FC<TranscriptUploadProps> = ({ onSuccess })
           disabled={status === "uploading"}
         />
         <div className="flex items-center gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-white/70">
+          <div className="flex-shrink-0 w-10 h-10 rounded-md bg-bg-inset border border-border-hair flex items-center justify-center text-text-secondary">
             {statusIcon}
           </div>
           <div className="flex-1 min-w-0">
             {status === "idle" && (
               <>
-                <p className="text-sm font-semibold text-white mb-0.5">Upload your transcript(s)</p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-sm font-semibold text-text-primary mb-0.5">Upload your transcript(s)</p>
+                <p className="text-xs text-text-muted">
                   PDF or image — upload one or more files and we'll merge them automatically
                 </p>
               </>
             )}
             {status === "uploading" && (
               <>
-                <p className="text-sm font-semibold text-blue-300 mb-0.5 truncate">
+                <p className="text-sm font-semibold text-accent-text mb-0.5 truncate">
                   {fileNames.length === 1 ? fileNames[0] : `${fileNames.length} files: ${fileNames.join(", ")}`}
                 </p>
-                <p className="text-xs text-zinc-400">{message}</p>
+                <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
             {status === "success" && (
               <>
-                <p className="text-sm font-semibold text-emerald-300 mb-0.5">Transcript read successfully</p>
-                <p className="text-xs text-zinc-400">{message}</p>
+                <p className="text-sm font-semibold text-tier-safety-fg mb-0.5">Transcript read successfully</p>
+                <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
             {status === "error" && (
               <>
-                <p className="text-sm font-semibold text-red-300 mb-0.5">Couldn't read transcript</p>
-                <p className="text-xs text-zinc-400">{message}</p>
+                <p className="text-sm font-semibold text-tier-unlikely-fg mb-0.5">Couldn't read transcript</p>
+                <p className="text-xs text-text-secondary">{message}</p>
               </>
             )}
           </div>
           {status === "idle" && (
-            <FileText className="flex-shrink-0 w-5 h-5 text-zinc-600" strokeWidth={1.5} />
+            <FileText className="flex-shrink-0 w-5 h-5 text-text-faint" strokeWidth={1.5} />
           )}
         </div>
       </div>
-      <p className="mt-2 text-[11px] text-zinc-600 text-center">
+      <p className="mt-2 text-[11px] text-text-faint text-center">
         Experimental — review the extracted grades and edit if needed.
       </p>
     </div>

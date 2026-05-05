@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import type { GradingResult } from "@/lib/types";
 import { APP_CONFIG } from "@/data/mockData";
 import { setItemAndNotify } from "@/lib/sync-event";
+import { getLocalCache, setLocalCache } from "@/lib/cloud-storage";
 
 // ── UNDO [grade-cache] ──────────────────────────────────────────────────────
 // Client-side content-hash cache: same essay text → same cached result →
@@ -37,20 +38,19 @@ function gradingCacheKey(text: string): string {
 }
 
 function readCachedGrade(text: string): GradingResult | null {
+  const raw = getLocalCache(gradingCacheKey(text));
+  if (!raw) return null;
   try {
-    const raw = localStorage.getItem(gradingCacheKey(text));
-    return raw ? (JSON.parse(raw) as GradingResult) : null;
+    return JSON.parse(raw) as GradingResult;
   } catch {
     return null;
   }
 }
 
 function writeCachedGrade(text: string, result: GradingResult): void {
-  try {
-    localStorage.setItem(gradingCacheKey(text), JSON.stringify(result));
-  } catch {
-    // Quota exceeded or disabled — cache silently degrades, grading still works.
-  }
+  // Content-hashed cache; legitimately device-local (re-grading identical
+  // text is wasteful but never wrong).
+  setLocalCache(gradingCacheKey(text), JSON.stringify(result));
 }
 // end UNDO [grade-cache]
 

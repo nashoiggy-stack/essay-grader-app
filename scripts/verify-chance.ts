@@ -91,9 +91,8 @@ function run(label: string, profile: typeof MAXED | typeof STRONG): void {
         applicationPlan: plan,
       });
       const tag = college.admissionsTier === "holistic-elite" ? "HE" : "ALG";
-      const type = college.admissionsType === "stats-driven" ? "SD" : "HOL";
       console.log(
-        `  ${t.name.padEnd(40)} ${plan.padEnd(5)} [${tag}/${type}]  ${r.chance.mid}%  ${r.classification}`,
+        `  ${t.name.padEnd(40)} ${plan.padEnd(5)} [${tag}]  ${r.chance.mid}%  ${r.classification}`,
       );
     }
   }

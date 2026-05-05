@@ -57,7 +57,7 @@ const PERCENTILE_LABEL: Record<string, string> = {
 
 const CLASSIFICATION_TEXT: Record<Classification, string> = {
   safety: "text-emerald-300",
-  likely: "text-blue-300",
+  likely: "text-accent-text",
   target: "text-amber-300",
   reach: "text-orange-300",
   unlikely: "text-red-300",
@@ -101,10 +101,10 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
   const deadlines = computeDeadlines(deadlineEntries, new Date());
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+    <main id="main-content" className="mx-auto max-w-4xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
       {/* Banner */}
       <div className="mb-6 rounded-xl border border-white/[0.08] bg-[#0c0c1a]/80 p-4 flex items-start gap-3">
-        <Compass className="w-4 h-4 text-blue-300 shrink-0 mt-0.5" />
+        <Compass className="w-4 h-4 text-accent-text shrink-0 mt-0.5" />
         <div>
           <p className="text-sm text-zinc-200 font-semibold">
             Shared strategy briefing — snapshot from {capturedDate}.{" "}
@@ -135,8 +135,8 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
             <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
               {result.profileSummary.body}
             </p>
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1">
+            <div className="rounded-xl bg-bg-surface border border-white/[0.04] p-4">
+              <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-1">
                 Competitiveness Positioning
               </p>
               <p className="text-[13px] text-zinc-300 leading-relaxed whitespace-pre-line">
@@ -189,7 +189,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                   <ul className="space-y-2">
                     {lines.map((lever, i) => (
                       <li key={i} className="flex items-start gap-2 text-[13px] text-zinc-300 leading-relaxed">
-                        <span className="text-blue-300 mt-0.5 shrink-0">→</span>
+                        <span className="text-accent-text mt-0.5 shrink-0">→</span>
                         <span>{lever}</span>
                       </li>
                     ))}
@@ -220,7 +220,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                 {analysis.spike.signals.map((s, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-white/[0.04] text-zinc-400"
+                    className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full bg-bg-surface text-zinc-400"
                   >
                     {s}
                   </span>
@@ -246,7 +246,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
             {analysis.weaknesses.map((w) => (
               <div
                 key={w.code}
-                className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2"
+                className="rounded-lg bg-bg-surface border border-white/[0.04] px-3 py-2"
               >
                 <p className="text-[13px] text-zinc-200 font-semibold">{w.label}</p>
                 <p className="text-[12px] text-zinc-500 leading-snug">{w.detail}</p>
@@ -286,7 +286,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
               />
               {analysis.majorRecommendations.toConsider.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-2">
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-zinc-500 font-semibold mb-2">
                     Worth considering
                   </p>
                   <div className="space-y-1.5">
@@ -378,7 +378,7 @@ export const StrategyShareView: React.FC<StrategyShareViewProps> = ({
                 {deadlines.map((e, i) => (
                   <li
                     key={`${e.schoolName}-${e.plan}-${i}`}
-                    className="flex items-baseline justify-between gap-3 rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2"
+                    className="flex items-baseline justify-between gap-3 rounded-lg bg-bg-surface border border-white/[0.04] px-3 py-2"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] text-zinc-200 font-semibold truncate">
@@ -446,12 +446,12 @@ function ActionVerdictBlock({
   const Icon = s.icon;
   void action;
   return (
-    <div className={`rounded-xl ${s.bg} ring-1 ${s.ring} p-4 flex items-center gap-3`}>
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-white/[0.04]">
+    <div className={`rounded-xl ${s.bg}  ${s.ring} p-4 flex items-center gap-3`}>
+      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-bg-surface">
         <Icon className={`w-5 h-5 ${s.text}`} strokeWidth={2} />
       </div>
       <div className="min-w-0">
-        <p className={`text-[10px] uppercase tracking-[0.18em] font-bold ${s.text} mb-0.5`}>
+        <p className={`text-[10px] uppercase tracking-[0.08em] font-bold ${s.text} mb-0.5`}>
           {s.eyebrow}
         </p>
         <p className="text-[14px] text-zinc-100 font-semibold leading-snug">{label}</p>
@@ -472,14 +472,14 @@ function RecGroup({
   if (items.length === 0) return null;
   return (
     <div>
-      <p className={`text-[10px] uppercase tracking-[0.12em] font-semibold ${color} mb-1.5`}>
+      <p className={`text-[10px] uppercase tracking-[0.08em] font-semibold ${color} mb-1.5`}>
         {label}
       </p>
       <div className="space-y-1.5">
         {items.map((c) => (
           <div
             key={c.college.name}
-            className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-1.5 flex items-baseline justify-between gap-2"
+            className="rounded-lg bg-bg-surface border border-white/[0.04] px-3 py-1.5 flex items-baseline justify-between gap-2"
           >
             <span className="text-[13px] text-zinc-200 font-semibold truncate">
               {c.college.name}

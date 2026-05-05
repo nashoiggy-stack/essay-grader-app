@@ -28,7 +28,7 @@ interface BulkResponse {
 }
 
 const inputClass =
-  "w-full rounded-lg bg-[#0c0c1a]/90 border border-white/[0.06] px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-[border-color,box-shadow] duration-200";
+  "w-full rounded-lg bg-bg-inset border border-border-hair px-3 py-2 text-sm text-text-primary placeholder-zinc-600 focus:border-blue-500/50 focus: focus:ring-accent-line focus:outline-none transition-[border-color,box-shadow] duration-200";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -193,21 +193,21 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-sm font-semibold text-zinc-200 mb-1">Activities Helper</h2>
-        <p className="text-[12px] text-zinc-500">
+        <h2 className="text-sm font-semibold text-text-primary mb-1">Activities Helper</h2>
+        <p className="text-[12px] text-text-muted">
           Polish all Activities into Common App entries in one click. ~{COMMON_APP_LIMITS.activityNameMax} char titles, ~{COMMON_APP_LIMITS.descriptionMax} char descriptions. No fabrication — the advisor only uses facts from your entries.
         </p>
       </div>
 
       {/* ── Bulk flow: main entry point ──────────────────────────── */}
       {hasActivities && (
-        <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 space-y-4">
+        <div className="rounded-md bg-bg-surface border border-border-hair p-5 space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-semibold text-zinc-200">
+              <p className="text-[13px] font-semibold text-text-primary">
                 Generate all activities
               </p>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
+              <p className="text-[11px] text-text-muted mt-0.5">
                 {eligibleActivities.length} activit{eligibleActivities.length === 1 ? "y" : "ies"} from your resume
               </p>
             </div>
@@ -236,8 +236,8 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                 transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                 className="space-y-3 pt-2"
               >
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.05]">
-                  <p className="text-[11px] uppercase tracking-[0.15em] text-zinc-500 font-medium">
+                <div className="flex items-center justify-between pb-2 border-b border-border-hair">
+                  <p className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-medium">
                     {Object.keys(bulkResults).length} generated
                   </p>
                   {unappliedCount > 0 && (
@@ -265,40 +265,40 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                       className={`rounded-xl border p-4 transition-[border-color,background-color] duration-200 ${
                         isApplied
                           ? "border-emerald-500/15 bg-emerald-500/[0.03]"
-                          : "border-white/[0.05] bg-white/[0.02]"
+                          : "border-border-hair bg-bg-surface"
                       }`}
                     >
                       {/* Title */}
                       <div className="flex items-baseline justify-between gap-2 mb-1">
-                        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-600 font-medium truncate">
+                        <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium truncate">
                           {a.activityName || "Untitled"}
                         </p>
                         <span
                           className={`text-[10px] font-mono tabular-nums shrink-0 ${
-                            shortLen > COMMON_APP_LIMITS.activityNameMax ? "text-amber-400" : "text-zinc-600"
+                            shortLen > COMMON_APP_LIMITS.activityNameMax ? "text-amber-400" : "text-text-faint"
                           }`}
                         >
                           {shortLen}/{COMMON_APP_LIMITS.activityNameMax}
                         </span>
                       </div>
-                      <p className="text-[13px] text-zinc-100 font-semibold mb-2">
+                      <p className="text-[13px] text-text-primary font-semibold mb-2">
                         {entry.shortVersion}
                       </p>
 
                       {/* Description */}
                       <div className="flex items-baseline justify-between gap-2 mb-1">
-                        <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-600 font-medium">
+                        <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium">
                           Description
                         </p>
                         <span
                           className={`text-[10px] font-mono tabular-nums shrink-0 ${
-                            descLen > COMMON_APP_LIMITS.descriptionMax ? "text-amber-400" : "text-zinc-600"
+                            descLen > COMMON_APP_LIMITS.descriptionMax ? "text-amber-400" : "text-text-faint"
                           }`}
                         >
                           {descLen}/{COMMON_APP_LIMITS.descriptionMax}
                         </span>
                       </div>
-                      <p className="text-[13px] text-zinc-300 leading-snug mb-3">
+                      <p className="text-[13px] text-text-secondary leading-snug mb-3">
                         {entry.improved}
                       </p>
 
@@ -321,7 +321,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                         <button
                           onClick={() => regenerateOne(a.id)}
                           disabled={isRegen}
-                          className="inline-flex items-center gap-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 px-2.5 py-1 text-[11px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
+                          className="inline-flex items-center gap-1 rounded-md bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-primary px-2.5 py-1 text-[11px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-[background-color,color] duration-200"
                         >
                           <RotateCw className={`w-3 h-3 ${isRegen ? "animate-spin" : ""}`} />
                           {isRegen ? "Regenerating..." : "Regenerate"}
@@ -338,12 +338,12 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
 
       {/* ── Single-activity fallback ─────────────────────────────── */}
       {!hasActivities && (
-        <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 space-y-4">
-          <p className="text-[12px] text-zinc-500">
+        <div className="rounded-md bg-bg-surface border border-border-hair p-5 space-y-4">
+          <p className="text-[12px] text-text-muted">
             No activities in your resume yet. Add activities in Resume mode (or import from EC Evaluator), then come back here to generate Common App versions all at once.
           </p>
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-[11px] font-medium text-text-secondary mb-1">
               Or paste a single activity description
             </label>
             <textarea
@@ -353,7 +353,7 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
               value={draftText}
               onChange={(e) => setDraftText(e.target.value)}
             />
-            <p className="mt-1 text-[10px] text-zinc-600">{draftText.length} characters</p>
+            <p className="mt-1 text-[10px] text-text-faint">{draftText.length} characters</p>
           </div>
           <button
             onClick={runSingle}
@@ -375,19 +375,19 @@ export const ActivitiesHelperPanel: React.FC<ActivitiesHelperPanelProps> = ({
                 animate={{ opacity: 1, transform: "translateY(0px)" }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
-                className="space-y-3 rounded-xl bg-[#0c0c1a]/60 border border-blue-500/20 p-4"
+                className="space-y-3 rounded-xl bg-bg-surface border border-accent-line p-4"
               >
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-600 font-medium mb-1">Short title</p>
-                  <p className="text-sm text-zinc-100 font-semibold">{singleResult.shortVersion}</p>
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium mb-1">Short title</p>
+                  <p className="text-sm text-text-primary font-semibold">{singleResult.shortVersion}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-600 font-medium mb-1">Description</p>
-                  <p className="text-sm text-zinc-200 leading-snug">{singleResult.improved}</p>
+                  <p className="text-[10px] uppercase tracking-[0.08em] text-text-faint font-medium mb-1">Description</p>
+                  <p className="text-sm text-text-primary leading-snug">{singleResult.improved}</p>
                 </div>
                 <button
                   onClick={() => setSingleResult(null)}
-                  className="inline-flex items-center gap-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 px-2.5 py-1 text-[11px] font-semibold transition-[background-color,color] duration-200"
+                  className="inline-flex items-center gap-1 rounded-md bg-white/5 hover:bg-white/10 text-text-secondary hover:text-text-primary px-2.5 py-1 text-[11px] font-semibold transition-[background-color,color] duration-200"
                 >
                   <X className="w-3 h-3" />
                   Discard

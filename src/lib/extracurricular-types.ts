@@ -272,7 +272,21 @@ export function computeReadinessScore(input: ReadinessInput): number {
 
   // Final clamp + single round. Decimal math above is preserved until here
   // so small modifier deltas aren't lost to early rounding.
-  return Math.max(0, Math.min(100, Math.round(score)));
+  let final = Math.max(0, Math.min(100, Math.round(score)));
+
+  // Score must agree with the band that will be displayed. The only place
+  // they could drift is the 'exceptional' demotion: bandFromScore demotes
+  // a 90+ score to 'strong' when tier1Count < EXCEPTIONAL_TIER1_MIN, but
+  // before this cap the numeric score still read 92/95/etc., contradicting
+  // the visible band. Cap at 89 (the strong-band ceiling) so readers like
+  // /chances and /strategy that consume the raw score stay consistent
+  // with the qualitative band.
+  const tier1Count = activities.filter((a) => a.tier === 1).length;
+  if (tier1Count < EXCEPTIONAL_TIER1_MIN && final >= 90) {
+    final = 89;
+  }
+
+  return final;
 }
 
 /**

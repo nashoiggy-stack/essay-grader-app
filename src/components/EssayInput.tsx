@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Card3D } from "./Card3D";
 import { APP_CONFIG, LOADING_TEXT, UPLOAD_ACCEPT } from "@/data/mockData";
 
 interface EssayInputProps {
@@ -47,20 +46,20 @@ export const EssayInput: React.FC<EssayInputProps> = ({
   };
 
   return (
-    <Card3D className="glass rounded-2xl p-6 sm:p-8" glowColor="rgba(99, 102, 241, 0.12)">
+    <div className="bg-bg-surface rounded-md p-6 sm:p-8 border border-border-hair">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 gap-2">
-        <label className="text-sm font-medium text-zinc-300">Your essay</label>
+        <label htmlFor="essay-textarea" className="text-sm font-medium text-text-secondary">Your essay</label>
         <div className="flex items-center gap-2">
           {essayText && (
             <motion.button
               onClick={handleCopy}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ring-1 transition-[background-color,color,box-shadow] duration-200 ${
+              className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full  transition-[background-color,color,box-shadow] duration-200 ${
                 copied
-                  ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
-                  : "bg-[#0c0c1a]/90 text-zinc-400 ring-white/[0.06] hover:text-zinc-200 hover:bg-white/[0.05]"
+                  ? "bg-tier-safety-soft text-tier-safety-fg ring-tier-safety-fg/30"
+                  : "bg-bg-inset text-text-secondary border-border-hair hover:text-text-primary hover:bg-bg-surface"
               }`}
               title="Copy essay to clipboard"
             >
@@ -84,12 +83,15 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           )}
           {essayText && (
             <motion.span
+              id="essay-word-count"
+              role="status"
+              aria-live="polite"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`text-xs font-mono px-2.5 py-1 rounded-full ${
+              className={`text-xs font-mono px-2.5 py-1 rounded-sm ${
                 inRange
-                  ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
-                  : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
+                  ? "bg-tier-safety-soft text-tier-safety-fg"
+                  : "bg-tier-target-soft text-tier-target-fg"
               }`}
             >
               {wordCount} words
@@ -101,22 +103,33 @@ export const EssayInput: React.FC<EssayInputProps> = ({
 
       {/* Textarea */}
       <textarea
-        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] p-4 text-sm leading-relaxed text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
+        id="essay-textarea"
+        aria-describedby={essayText ? "essay-word-count" : undefined}
+        className="w-full rounded-sm bg-bg-inset border border-border-hair p-4 text-sm leading-relaxed text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none resize-y transition-[border-color,box-shadow,background-color,color] duration-200 min-h-[60vh]"
         rows={30}
         placeholder="Paste your Common App essay here..."
         value={essayText}
         onChange={(e) => onTextChange(e.target.value)}
       />
 
-      {/* Drop zone */}
+      {/* Drop zone — keyboard-accessible (role=button + tabIndex + Enter/Space) */}
       <motion.div
-        className={`mt-4 flex items-center justify-center rounded-xl border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer ${
-          dragging ? "border-blue-500 bg-blue-500/10" : "border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.02]"
+        role="button"
+        tabIndex={0}
+        aria-label={file ? `${file.name} selected. Click or press Enter to choose a different file.` : "Click, press Enter, or drag and drop a PDF or Word document to upload your essay."}
+        className={`mt-4 flex items-center justify-center rounded-sm border-2 border-dashed p-5 transition-[border-color,box-shadow,background-color,color] duration-200 cursor-pointer focus-visible:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-line ${
+          dragging ? "border-[var(--accent)] bg-accent-soft" : "border-border-strong hover:border-[var(--accent)] hover:bg-bg-surface"
         }`}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={onOpenFilePicker}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpenFilePicker();
+          }
+        }}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
       >
@@ -127,11 +140,11 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           className="hidden"
           onChange={onFileChange}
         />
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-text-secondary">
           {file ? (
-            <><span className="font-medium text-blue-400">{file.name}</span> selected</>
+            <><span className="font-medium text-accent-text">{file.name}</span> selected</>
           ) : (
-            <><span className="font-medium text-blue-400">Click to upload</span> or drag & drop PDF / Word doc</>
+            <><span className="font-medium text-accent-text">Click to upload</span> or drag & drop PDF / Word doc</>
           )}
         </p>
       </motion.div>
@@ -143,22 +156,17 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           disabled={loading}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          className="relative rounded-xl bg-blue-600 px-7 py-3 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+          className="relative rounded-md bg-[var(--accent)] hover:bg-[var(--accent-strong)] px-7 py-3 text-sm font-semibold text-[var(--accent-fg)] disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color] duration-200"
         >
-          <motion.span
-            className="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 pointer-events-none"
-            animate={{ backgroundPosition: loading ? ["0% 50%", "200% 50%"] : "0% 50%" }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            style={{ backgroundSize: "200% 100%" }}
-          />
-          <span className="relative z-10 flex items-center gap-2">
-            {loading && <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />}
+          
+          <span className="flex items-center gap-2">
+            {loading && <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />}
             {loading ? "Analyzing..." : "Grade Essay"}
           </span>
         </motion.button>
         <button
           onClick={onClear}
-          className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-[border-color,box-shadow,background-color,color] duration-200"
+          className="rounded-sm px-4 py-3 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-[background-color,color] duration-200"
         >
           Clear
         </button>
@@ -171,11 +179,11 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-5 glass rounded-xl p-5 overflow-hidden animate-pulse-glow"
+            className="mt-5 bg-bg-inset rounded-md border border-border-hair p-5 overflow-hidden"
           >
-            <p className="text-sm text-blue-300 font-medium">{LOADING_TEXT}</p>
-            <div className="mt-3 h-1 w-full rounded-full bg-white/[0.05] overflow-hidden">
-              <div className="h-full bg-blue-500/50 rounded-full shimmer w-full" />
+            <p className="text-sm text-accent-text font-medium">{LOADING_TEXT}</p>
+            <div className="mt-3 h-1 w-full rounded-full bg-bg-elevated overflow-hidden">
+              <div className="h-full bg-[var(--accent)] rounded-full shimmer w-full" />
             </div>
           </motion.div>
         )}
@@ -188,13 +196,13 @@ export const EssayInput: React.FC<EssayInputProps> = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="mt-5 rounded-xl border border-red-500/20 bg-red-500/5 p-4"
+            className="mt-5 rounded-md border border-tier-unlikely-fg/30 bg-tier-unlikely-soft p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-red-300">{error}</p>
+                <p className="text-sm text-tier-unlikely-fg">{error}</p>
                 {errorCode && errorCode !== "EMPTY_INPUT" && (
-                  <p className="mt-1 text-[10px] text-red-400/60 font-mono tabular-nums">
+                  <p className="mt-1 text-[10px] text-tier-unlikely-fg/70 font-mono tabular-nums">
                     Error: {errorCode}
                   </p>
                 )}
@@ -214,6 +222,6 @@ export const EssayInput: React.FC<EssayInputProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </Card3D>
+    </div>
   );
 };

@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { EssayInput } from "@/components/EssayInput";
 import { ScoreOverview } from "@/components/ScoreOverview";
 import { TabNavigation, type TabId } from "@/components/TabNavigation";
@@ -107,7 +106,7 @@ export default function Home() {
   };
 
   return (
-    <AuroraBackground>
+    <>
       {/* Essay History Sidebar */}
       <EssayHistorySidebar
         essays={history.essays}
@@ -119,26 +118,36 @@ export default function Home() {
         currentEssayText={essay.essayText}
       />
 
-      <main className="mx-auto max-w-5xl px-4 py-16 sm:py-28 font-[family-name:var(--font-geist-sans)]">
+      <main id="main-content" className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24 font-[family-name:var(--font-geist-sans)]">
 
-        {/* ── Hero with Scroll Animation ─────────────────────────── */}
-        <ContainerScroll
-          titleComponent={
-            <div className="mb-4">
-              <h1 className="text-5xl sm:text-7xl font-bold tracking-tight leading-[1.1] mb-5">
-                <span className="text-gradient">{APP_CONFIG.title}</span>
-              </h1>
-              <p className="text-zinc-400 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
-                {APP_CONFIG.subtitle}
-              </p>
-            </div>
-          }
-        >
-          {/* Rubric overview inside the 3D card */}
-          <div className="h-full w-full bg-[#0a0a14] p-5 flex flex-col gap-4 overflow-hidden">
+        {/* Masthead — replaces the cosmic ContainerScroll 3D hero per
+            CRITIQUE.md (was a leftover from the pre-Linear redesign). */}
+        <header className="mb-10 sm:mb-12">
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-3">
+              Tools / Essay Grader
+            </p>
+            <SaveIndicator storageKey="essay-grader-history" />
+          </div>
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04] text-text-primary">
+            {APP_CONFIG.title}
+          </h1>
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary">
+            {APP_CONFIG.subtitle}
+          </p>
+        </header>
+
+        {/* Rubric reference — two flat tables, matches /gpa's pattern. */}
+        <section className="mb-10 sm:mb-12">
+          <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-muted mb-4">
+            How essays are graded
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-8 lg:gap-y-0">
             <div>
-              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Common App Criteria (1-100)</h3>
-              <div className="space-y-2">
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+                Common App criteria · 1–100
+              </h2>
+              <ul className="divide-y divide-border-hair">
                 {[
                   { name: "Authenticity", desc: "Your real voice — not a formal essay voice" },
                   { name: "Compelling Story", desc: "Clear beginning, turn, and landing that hooks the reader" },
@@ -148,20 +157,19 @@ export default function Home() {
                   { name: "Passion", desc: "What energizes you — shown through specific detail" },
                   { name: "Ambition", desc: "Meaningful goals with a concrete next step" },
                 ].map((c) => (
-                  <div key={c.name} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                    <div>
-                      <span className="text-xs text-zinc-300 font-semibold">{c.name}</span>
-                      <span className="text-[10px] text-zinc-600 ml-1.5">{c.desc}</span>
-                    </div>
-                  </div>
+                  <li key={c.name} className="py-2">
+                    <p className="text-[13px] text-text-primary font-medium">{c.name}</p>
+                    <p className="text-[12px] text-text-muted leading-relaxed">{c.desc}</p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
-            <div className="border-t border-white/[0.06] pt-3">
-              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">VSPICE Rubric (1-4)</h3>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+            <div>
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-faint mb-3">
+                VSPICE rubric · 1–4
+              </h2>
+              <ul className="divide-y divide-border-hair">
                 {[
                   { name: "Vulnerability", desc: "Real fear or doubt, handled with maturity" },
                   { name: "Selflessness", desc: "Genuine care for others, grounded and specific" },
@@ -170,18 +178,15 @@ export default function Home() {
                   { name: "Curiosity", desc: "A question you chased with real receipts" },
                   { name: "Expression", desc: "Creative choices — image, metaphor, dialogue" },
                 ].map((c) => (
-                  <div key={c.name} className="flex items-start gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                    <div>
-                      <span className="text-[11px] text-zinc-300 font-semibold">{c.name}</span>
-                      <p className="text-[9px] text-zinc-600">{c.desc}</p>
-                    </div>
-                  </div>
+                  <li key={c.name} className="py-2">
+                    <p className="text-[13px] text-text-primary font-medium">{c.name}</p>
+                    <p className="text-[12px] text-text-muted leading-relaxed">{c.desc}</p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
-        </ContainerScroll>
+        </section>
 
         {/* ── Input Section ────────────────────────────────────────── */}
         <ScrollReveal delay={0.1}>
@@ -219,17 +224,17 @@ export default function Home() {
             >
               {/* Divider + Save button */}
               <div className="flex items-center gap-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-                <span className="text-xs text-zinc-500 uppercase tracking-widest">Results</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                <div className="flex-1 h-px bg-border-hair" />
+                <span className="text-xs text-text-muted uppercase tracking-[0.08em]">Results</span>
+                <div className="flex-1 h-px bg-border-hair" />
                 <motion.button
                   onClick={handleSave}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-[background-color,color,box-shadow] duration-200 ${
                     saveFlash
-                      ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                      : "bg-[#0c0c1a]/90 text-zinc-300 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06]"
+                      ? "bg-tier-safety-soft text-tier-safety-fg ring-1 ring-tier-safety-fg/30"
+                      : "bg-bg-inset text-text-secondary hover:bg-accent-soft hover:text-accent-text border border-border-hair"
                   }`}
                 >
                   {saveFlash ? (
@@ -248,7 +253,7 @@ export default function Home() {
                   onClick={handleExport}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 bg-[#0c0c1a]/90 hover:bg-blue-500/15 hover:text-blue-300 ring-1 ring-white/[0.06] transition-[background-color,color,box-shadow] duration-200"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary bg-bg-inset hover:bg-accent-soft hover:text-accent-text border border-border-hair transition-[background-color,color,box-shadow] duration-200"
                   title="Download grade report as Markdown"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -267,10 +272,9 @@ export default function Home() {
 
               {/* ── Inline Editor / Suggestions ──────────────────────── */}
               <ScrollReveal delay={0.15}>
-                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
-                <div className="glass rounded-2xl p-6 sm:p-8">
-                  <h3 className="text-lg font-bold text-zinc-200 mb-1">Inline Suggestions</h3>
-                  <p className="text-sm text-zinc-500 mb-5">
+                <div className="bg-bg-surface rounded-md border border-border-hair p-6 sm:p-8">
+                  <h3 className="text-lg font-bold text-text-primary mb-1">Inline Suggestions</h3>
+                  <p className="text-sm text-text-muted mb-5">
                     Choose a focus area to get targeted, Grammarly-style suggestions. Click highlights to accept or dismiss.
                   </p>
                   <InlineEditor
@@ -289,53 +293,64 @@ export default function Home() {
                     essayModified={essayModified}
                   />
                 </div>
-                </div>
               </ScrollReveal>
 
               {/* Tabbed Content */}
               <ScrollReveal delay={0.2}>
-                <div className="bezel" style={{ "--radius": "1rem" } as React.CSSProperties}>
-                <div className="glass rounded-2xl overflow-hidden">
+                <div className="bg-bg-surface rounded-md overflow-hidden">
                   <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
                   <div className="p-6 sm:p-8">
                     <AnimatePresence mode="wait">
-                      {activeTab === "common" && <CommonAppTab scores={grading.result.commonApp} />}
+                      {activeTab === "common" && (
+                        <div role="tabpanel" id="tabpanel-common" aria-labelledby="tab-common">
+                          <CommonAppTab scores={grading.result.commonApp} />
+                        </div>
+                      )}
                       {activeTab === "vspice" && (
-                        <VspiceTab
-                          scores={grading.result.vspice}
-                          bonuses={grading.result.bonuses}
-                          pitfalls={grading.result.pitfalls}
-                        />
+                        <div role="tabpanel" id="tabpanel-vspice" aria-labelledby="tab-vspice">
+                          <VspiceTab
+                            scores={grading.result.vspice}
+                            bonuses={grading.result.bonuses}
+                            pitfalls={grading.result.pitfalls}
+                          />
+                        </div>
                       )}
                       {activeTab === "feedback" && (
-                        <FeedbackTab
-                          generalFeedback={grading.result.generalFeedback}
-                          commonApp={grading.result.commonApp}
-                          onNavigateToCommon={() => setActiveTab("common")}
-                        />
+                        <div role="tabpanel" id="tabpanel-feedback" aria-labelledby="tab-feedback">
+                          <FeedbackTab
+                            generalFeedback={grading.result.generalFeedback}
+                            commonApp={grading.result.commonApp}
+                            onNavigateToCommon={() => setActiveTab("common")}
+                          />
+                        </div>
                       )}
-                      {activeTab === "lines" && <LineNotesTab suggestions={grading.result.lineSuggestions} />}
+                      {activeTab === "lines" && (
+                        <div role="tabpanel" id="tabpanel-lines" aria-labelledby="tab-lines">
+                          <LineNotesTab suggestions={grading.result.lineSuggestions} />
+                        </div>
+                      )}
                       {activeTab === "chat" && (
-                        <ChatTab
-                          messages={chat.messages}
-                          input={chat.input}
-                          loading={chat.loading}
-                          chatEndRef={chat.chatEndRef}
-                          onInputChange={chat.setInput}
-                          onSend={handleChatSend}
-                        />
+                        <div role="tabpanel" id="tabpanel-chat" aria-labelledby="tab-chat">
+                          <ChatTab
+                            messages={chat.messages}
+                            input={chat.input}
+                            loading={chat.loading}
+                            chatEndRef={chat.chatEndRef}
+                            onInputChange={chat.setInput}
+                            onSend={handleChatSend}
+                          />
+                        </div>
                       )}
                     </AnimatePresence>
                   </div>
-                </div>
                 </div>
               </ScrollReveal>
 
               {/* Footer */}
               <ScrollReveal delay={0.1}>
                 <div className="text-center py-8">
-                  <p className="text-xs text-zinc-600">
+                  <p className="text-xs text-text-faint">
                     Scores are AI-generated estimates, not official admissions feedback.
                     Use as a revision tool alongside your counselor.
                   </p>
@@ -345,6 +360,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </main>
-    </AuroraBackground>
+    </>
   );
 }

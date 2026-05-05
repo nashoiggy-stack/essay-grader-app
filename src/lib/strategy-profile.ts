@@ -14,9 +14,10 @@ import type {
   StrategyGpa,
   StrategyTests,
   StrategyEssay,
+  StrategyChanceExtras,
 } from "./strategy-types";
 import { DREAM_SCHOOL_KEY } from "./strategy-types";
-import type { UserProfile } from "./profile-types";
+import type { UserProfile, EssayScoreRecord } from "./profile-types";
 import type { ProfileEvaluation } from "./extracurricular-types";
 import type { GradingResult, SavedEssay } from "./types";
 import type { ClassifiedCollege, PinnedCollege } from "./college-types";
@@ -24,35 +25,23 @@ import { PINNED_COLLEGES_KEY } from "./college-types";
 import { PROFILE_STORAGE_KEY } from "./profile-types";
 import { COLLEGES } from "@/data/colleges";
 import { classifyCollege } from "./admissions";
-
-function safeParseJSON<T>(raw: string | null): T | null {
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
+import { getCachedJson, getCachedRaw, type CloudKey } from "./cloud-storage";
 
 function readUserProfile(): UserProfile | null {
-  if (typeof window === "undefined") return null;
-  return safeParseJSON<UserProfile>(localStorage.getItem(PROFILE_STORAGE_KEY));
+  return getCachedJson<UserProfile>(PROFILE_STORAGE_KEY as CloudKey);
 }
 
 function readEcEvaluation(): ProfileEvaluation | null {
-  if (typeof window === "undefined") return null;
-  return safeParseJSON<ProfileEvaluation>(localStorage.getItem("ec-evaluator-result"));
+  return getCachedJson<ProfileEvaluation>("ec-evaluator-result");
 }
 
 function readEssayHistory(): readonly SavedEssay[] {
-  if (typeof window === "undefined") return [];
-  const parsed = safeParseJSON<SavedEssay[]>(localStorage.getItem("essay-grader-history"));
+  const parsed = getCachedJson<SavedEssay[]>("essay-grader-history");
   return Array.isArray(parsed) ? parsed : [];
 }
 
 function readPinnedCollegeList(): readonly PinnedCollege[] {
-  if (typeof window === "undefined") return [];
-  const parsed = safeParseJSON<PinnedCollege[]>(localStorage.getItem(PINNED_COLLEGES_KEY));
+  const parsed = getCachedJson<PinnedCollege[]>(PINNED_COLLEGES_KEY as CloudKey);
   if (!Array.isArray(parsed)) return [];
   return parsed.filter(
     (p): p is PinnedCollege =>
@@ -133,9 +122,70 @@ function buildEssay(
   };
 }
 
+// Build the full chance-model "extras" set from the user profile. Mirrors
+// what useChanceCalculator does for /chances so strategy numbers match the
+// live calculator instead of silently degrading the essay multiplier and
+// rigor uplift.
+function buildChanceExtras(
+  profile: UserProfile | null,
+  essayCA: number | null,
+  essayV: number | null,
+): StrategyChanceExtras {
+  const ecBand =
+    typeof profile?.ecBand === "string" && profile.ecBand ? profile.ecBand : undefined;
+  const distinguishedEC =
+    profile?.firstAuthorPublication === true ||
+    profile?.nationalCompetitionPlacement === true ||
+    profile?.founderWithUsers === true ||
+    profile?.selectiveProgram === true;
+
+  const advancedCoursework = Array.isArray(profile?.advancedCoursework)
+    ? profile!.advancedCoursework
+    : undefined;
+  const advancedCourseworkAvailable =
+    profile?.advancedCourseworkAvailable === "all" ||
+    profile?.advancedCourseworkAvailable === "limited" ||
+    profile?.advancedCourseworkAvailable === "none"
+      ? profile.advancedCourseworkAvailable
+      : undefined;
+
+  // Same synthesis as useChanceCalculator: when no graded essay exists but
+  // the user supplied Common-App + V-SPICE numbers on /profile, treat them
+  // as a valid essay record so the chance model can leave the 1.0× neutral
+  // band. Without this, /strategy under-reports chances vs /chances.
+  let essayScores: readonly EssayScoreRecord[] | undefined;
+  if (Array.isArray(profile?.essayScores) && profile!.essayScores.length > 0) {
+    essayScores = profile!.essayScores;
+  } else if (essayCA != null && Number.isFinite(essayCA)) {
+    const vspice0to24 =
+      essayV != null && Number.isFinite(essayV)
+        ? Math.max(0, Math.min(24, essayV))
+        : 0;
+    essayScores = [
+      {
+        promptId: "strategy-form",
+        combinedScore: essayCA,
+        rubricScore: essayCA,
+        vspiceScore: vspice0to24,
+        gradedAt: Date.now(),
+      },
+    ];
+  }
+
+  return {
+    ecBand,
+    distinguishedEC,
+    apScores: profile?.apScores,
+    advancedCoursework,
+    advancedCourseworkAvailable,
+    essayScores,
+  };
+}
+
 function buildPinnedSchools(
   pins: readonly PinnedCollege[],
   profile: UserProfile | null,
+  extras: StrategyChanceExtras,
 ): readonly StrategyPinnedSchool[] {
   if (pins.length === 0) return [];
 
@@ -162,15 +212,7 @@ function buildPinnedSchools(
     ? parseFloat(profile.essayCommonApp)
     : null;
   const essayV = profile?.essayVspice ? parseFloat(profile.essayVspice) : null;
-  // Pass EC band, rigor, and distinguished-EC flags to the chance model so
-  // strong-profile applicants don't get capped by silent defaults.
-  const ecBand = typeof profile?.ecBand === "string" && profile.ecBand ? profile.ecBand : undefined;
   const rigor = profile?.rigor;
-  const distinguishedEC =
-    profile?.firstAuthorPublication === true ||
-    profile?.nationalCompetitionPlacement === true ||
-    profile?.founderWithUsers === true ||
-    profile?.selectiveProgram === true;
 
   const result: StrategyPinnedSchool[] = [];
   for (const pin of pins) {
@@ -184,7 +226,15 @@ function buildPinnedSchools(
       Number.isFinite(act ?? NaN) ? act : null,
       Number.isFinite(essayCA ?? NaN) ? essayCA : null,
       Number.isFinite(essayV ?? NaN) ? essayV : null,
-      { ecBand, distinguishedEC, rigor, apScores: profile?.apScores },
+      {
+        ecBand: extras.ecBand,
+        distinguishedEC: extras.distinguishedEC,
+        rigor,
+        apScores: extras.apScores,
+        advancedCoursework: extras.advancedCoursework,
+        advancedCourseworkAvailable: extras.advancedCourseworkAvailable,
+        essayScores: extras.essayScores,
+      },
     );
     const classified: ClassifiedCollege = {
       college,
@@ -205,19 +255,17 @@ function buildPinnedSchools(
 // ── Public reader ───────────────────────────────────────────────────────────
 
 function readDreamSchool(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(DREAM_SCHOOL_KEY);
-    if (!raw) return null;
-    const trimmed = raw.trim();
-    // Accept both a plain string and a JSON-quoted string for backward compat.
-    if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+  const raw = getCachedRaw(DREAM_SCHOOL_KEY as CloudKey);
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    try {
       return JSON.parse(trimmed) as string;
+    } catch {
+      return null;
     }
-    return trimmed.length > 0 ? trimmed : null;
-  } catch {
-    return null;
   }
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export function readStrategyProfile(): StrategyProfile {
@@ -230,7 +278,17 @@ export function readStrategyProfile(): StrategyProfile {
   const gpa = buildGpa(profile);
   const tests = buildTests(profile);
   const essay = buildEssay(profile, essayHistory);
-  const pinnedSchools = buildPinnedSchools(pins, profile);
+  // Strategy uses the SAME chance-model inputs the live calculator does —
+  // build once and reuse for the RD baseline (here) and any later ED
+  // re-classification in strategy-engine.
+  const essayCAForExtras = profile?.essayCommonApp
+    ? parseFloat(profile.essayCommonApp)
+    : null;
+  const essayVForExtras = profile?.essayVspice
+    ? parseFloat(profile.essayVspice)
+    : null;
+  const chanceExtras = buildChanceExtras(profile, essayCAForExtras, essayVForExtras);
+  const pinnedSchools = buildPinnedSchools(pins, profile, chanceExtras);
 
   const hasGpa = gpa.uw != null || gpa.w != null;
   const hasTests = tests.sat != null || tests.act != null;
@@ -262,6 +320,7 @@ export function readStrategyProfile(): StrategyProfile {
             graduationYear: profile?.basicInfo?.graduationYear ?? "",
           }
         : null,
+    chanceExtras,
     hasGpa,
     hasTests,
     hasEc,

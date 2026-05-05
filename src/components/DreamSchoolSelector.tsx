@@ -51,12 +51,12 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
     <div ref={containerRef} className="relative">
       {dreamSchool ? (
         // Selected state — compact chip with clear button
-        <div className="rounded-2xl bg-gradient-to-br from-blue-500/[0.08] to-blue-500/[0.04] border border-blue-500/25 p-5 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
-            <Star className="w-5 h-5 text-blue-200" fill="currentColor" strokeWidth={1.5} />
+        <div className="rounded-md bg-gradient-to-br from-blue-500/[0.08] to-blue-500/[0.04] border border-accent-line p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-accent-soft flex items-center justify-center shrink-0">
+            <Star className="w-5 h-5 text-accent-text" fill="currentColor" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-blue-300/80 font-semibold mb-0.5">
+            <p className="text-[10px] uppercase tracking-[0.08em] text-accent-text/80 font-semibold mb-0.5">
               Your Dream School
             </p>
             <p className="text-base sm:text-lg font-semibold text-white truncate">
@@ -71,7 +71,7 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
               setOpen(false);
             }}
             aria-label="Clear dream school"
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-zinc-200 transition-colors shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-bg-surface hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -79,8 +79,8 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
       ) : (
         // Empty state — search input
         <div>
-          <div className="flex items-center gap-2 rounded-2xl bg-[#0f0f1c] border border-white/[0.08] px-4 py-3.5 focus-within:border-blue-500/40 focus-within:ring-1 focus-within:ring-blue-500/20 transition-[border-color,box-shadow] duration-200">
-            <Star className="w-4 h-4 text-zinc-500 shrink-0" strokeWidth={1.5} />
+          <div className="flex items-center gap-2 rounded-md bg-bg-surface border border-border-strong px-4 py-3.5 focus-within:border-accent-line focus-within: focus-within:ring-blue-500/20 transition-[border-color,box-shadow] duration-200">
+            <Star className="w-4 h-4 text-text-muted shrink-0" strokeWidth={1.5} />
             <input
               type="text"
               value={query}
@@ -90,11 +90,11 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
               }}
               onFocus={() => setOpen(true)}
               placeholder="Search your dream school..."
-              className="flex-1 bg-transparent text-sm text-zinc-100 placeholder-zinc-500 outline-none"
+              className="flex-1 bg-transparent text-sm text-text-primary placeholder-zinc-500 outline-none"
             />
-            <Search className="w-4 h-4 text-zinc-600 shrink-0" strokeWidth={1.5} />
+            <Search className="w-4 h-4 text-text-faint shrink-0" strokeWidth={1.5} />
           </div>
-          <p className="text-[11px] text-zinc-500 mt-2 px-1">
+          <p className="text-[11px] text-text-muted mt-2 px-1">
             Pick the one school that matters most. The Strategy Engine will give it a dedicated
             ED/EA decision with specific reasoning.
           </p>
@@ -109,11 +109,11 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#0c0c1a] border border-white/[0.08] shadow-[0_24px_48px_rgba(0,0,0,0.5)] overflow-hidden z-20 max-h-[360px] overflow-y-auto"
+            className="absolute left-0 right-0 top-full mt-2 rounded-md bg-bg-inset border border-border-strong shadow-[0_24px_48px_rgba(0,0,0,0.5)] overflow-hidden z-20 max-h-[360px] overflow-y-auto"
           >
             {results.length === 0 ? (
               <div className="px-4 py-6 text-center">
-                <p className="text-sm text-zinc-500">No schools match &quot;{query}&quot;</p>
+                <p className="text-sm text-text-muted">No schools match &quot;{query}&quot;</p>
               </div>
             ) : (
               results.map((c) => (
@@ -125,15 +125,15 @@ export const DreamSchoolSelector: React.FC<DreamSchoolSelectorProps> = ({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] last:border-b-0"
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-bg-surface transition-colors border-b border-white/[0.03] last:border-b-0"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm text-zinc-100 truncate font-medium">{c.name}</p>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">
+                    <p className="text-sm text-text-primary truncate font-medium">{c.name}</p>
+                    <p className="text-[11px] text-text-muted mt-0.5">
                       {c.state} · {c.acceptanceRate}% acceptance · {c.type}
                     </p>
                   </div>
-                  <Star className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                  <Star className="w-3.5 h-3.5 text-text-faint shrink-0" />
                 </button>
               ))
             )}

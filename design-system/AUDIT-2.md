@@ -1,0 +1,1536 @@
+# AdmitEdge AUDIT-2 — fresh per-page audit
+
+**Branch:** `redesign/linear`
+**Baseline commit at audit start:** `88f0d76`
+**Methodology:** For every finding in `CRITIQUE.md`, statused as one of:
+
+- `[RESOLVED in <commit>]` — verified in the current code.
+- `[OPEN]` — finding still applies (with a current code citation).
+- `[WONT-FIX]` — deliberate user direction, with reason.
+
+Then `[NEW]` findings discovered while sweeping the surface as of `88f0d76`.
+
+Severity buckets follow `CRITIQUE.md`:
+
+- **BLOCK** — directly violates `MASTER.md` anti-patterns or fails WCAG.
+- **WARN** — real UX or a11y issue, not a contract violation.
+- **INFO** — polish / drift / nit.
+
+Out-of-scope dark surfaces (intentionally dark, contrast checks skipped):
+
+- The cinematic landing hero.
+- `/strategy/share/[token]` view.
+- EC chat bubbles inside `ECConversation`.
+- Cosmic landing middle/footer shader sections.
+
+---
+
+## Surfaces audited
+
+- [x] `/` (landing)
+- [x] `/list`
+- [x] `/chances`
+- [x] `/colleges`
+- [x] `/profile`
+- [x] `/dashboard`
+- [x] `/strategy`
+- [x] `/compare`
+- [x] `/essay`
+- [x] `/resume`
+- [x] `/gpa`
+- [x] `/extracurriculars`
+- [x] `/methodology`
+- [x] `/strategy/share/[token]`
+
+---
+
+## `/` (landing)
+
+Files swept: `src/app/page.tsx`, `src/components/landing/LandingExtras.tsx`,
+`src/components/landing/landing-extras.css`, `src/app/layout.tsx`.
+
+Note: cinematic hero choreography (sticky/fade/blur) is **out of scope** per
+the user's "intentionally dark" carve-out. Findings against the hero are
+limited to a11y, semantics, and SEO — not contrast or motion taste.
+
+### BLOCK
+
+- [RESOLVED in 365bb29 / current `src/app/page.tsx:147-151`] CRITIQUE
+  said the hero never names what the product does. A standfirst paragraph
+  is now in place: "Nine connected tools — essay grading, GPA,
+  extracurriculars, resume, list, chances, comparison, strategy — sourced
+  from CDS data. One profile feeds them all."
+- [RESOLVED in current `src/app/page.tsx:16-23`] CRITIQUE flagged
+  `LandingMiddle` and `LandingFooter` using `dynamic(..., { ssr: false })`
+  as a SEO disaster. Both now use `dynamic()` with SSR left **on** and a
+  loading skeleton — verified at `page.tsx:16-19` and `:20-23`. Only
+  `ShaderLines` keeps `ssr: false` (correct — WebGL primitive, no SEO
+  value).
+
+### WARN
+
+- [OPEN] No social proof anywhere on the landing. `LandingMiddle` =
+  `<HowItWorks /> <Tools /> <FAQ />` (`LandingExtras.tsx:108-112`); the
+  footer (`Foot` at `:252`) is column links + copyright. No school count,
+  user count, testimonials, press logos, or "X students used this last
+  cycle" line. For a "serious decision tool" this still reads
+  pre-launch.
+- [OPEN] Brand expression is still generic SaaS. `HowItWorks` (`:128`),
+  `Tools` (`:155`), and `FAQ` (`:213`) describe the toolkit but show no
+  admissions-specific editorial moment — no sample admit-rate readout,
+  no tier-color legend, no essay snippet, no chances histogram. Could
+  swap project-management for college-admissions and the page would
+  read identically. CRITIQUE wanted "one editorial moment that's
+  admissions-specific"; that hasn't been added.
+
+### INFO
+
+- [OPEN] Tools grid still has the orphan-9th-tile problem.
+  `landing-extras.css:142` declares `.lpx-tools-grid {
+  grid-template-columns: repeat(4, 1fr); }` at `min-width: 1000px`, and
+  `LandingExtras.tsx:35-45` still maps **9** tools. At ≥1000px the third
+  row has one item with three empty cells. Either drop to `repeat(3,
+  1fr)` for a balanced 3×3 or feature one tool as a 2-col bento break.
+
+### NEW
+
+- [NEW BLOCK] **Display serif loaded and used despite MASTER.md "no
+  display serif" rule.** `layout.tsx:18-22` imports `Young_Serif` and
+  exposes it as `--font-display`. Hero H1 at `page.tsx:138`, hero H2 at
+  `:226`, and `not-found.tsx:11` all reference
+  `font-[family-name:var(--font-display)]`. MASTER.md §Typography
+  explicitly says "There is no display serif in this system. Headlines
+  are heavy weights of Geist Sans with tight tracking, not a different
+  family." The hero italic line ("college admissions." / "your
+  profile.") visibly renders Young Serif italic. Either delete the
+  font import + variable + override the hero to Geist Sans heavy /
+  italic, or document an explicit page-level override in
+  `design-system/pages/landing.md` that says "marketing landing is
+  exempt from the no-serif rule for the cinematic hero italic." Right
+  now there is no documented override — the rule is being silently
+  violated. (`/resume` also touches `--font-display`; logged
+  separately on the /resume page.)
+- [NEW INFO] Hero animates `filter: blur(...)` on scroll
+  (`page.tsx:60`, `:83`). MASTER.md §Motion says "Animate `transform`
+  and `opacity` only. Never `width`, `height`, `padding`, `margin`,
+  `top`, or `left`." `filter` is not in the prohibited list, but it
+  is **also not** on the compositor-friendly list and is the most
+  expensive of the three filter ops on lower-end mobile. This is
+  cinematic-hero territory so I'm calling INFO not BLOCK; flag here
+  if perf-on-mobile becomes a complaint.
+- [NEW INFO] `themeColor: "#000000"` in `layout.tsx:55` is hard-coded
+  for the entire app, not just the landing. Light-mode users get a
+  black status-bar. MASTER.md is mode-symmetric — light is the
+  default app theme. Either set `themeColor: { color, media }` pairs
+  for `prefers-color-scheme`, or move the lock to the landing page
+  only via `metadata` segment override.
+- [NEW BLOCK] **Skip-link target is a `<div>`, not `<main>`.**
+  `layout.tsx:70` ships a "Skip to content" link to `#main-content`,
+  but `AppShell.tsx:61` renders that id on a plain `<div>`:
+  `<div id="main-content">{children}</div>`. There is **no `<main>`
+  landmark anywhere** on the landing route — `page.tsx` returns a
+  fragment with three `<div>` children. Screen reader users get a
+  skip link that "works" (focus moves) but lands them in nothing
+  semantically distinct, and the page has no main landmark at all.
+  Promote `AppShell.tsx:61` to `<main id="main-content">`. (Affects
+  every page in the app, not just `/` — flagged here because this is
+  the first surface I checked, will reference back from every other
+  page.) Note: tool pages do declare their own `<main>` element
+  inside `children` (e.g. `list/page.tsx:188`), so the App-Shell
+  wrapper would create a duplicate `<main>` if simply renamed. Fix
+  is to drop the AppShell wrapper to a `<div role="presentation">`
+  (or remove the wrapper entirely) and let route pages own the
+  landmark, then update the skip-link target to `#main-content` on
+  each page's `<main>`. Currently `/` is the only page without its
+  own `<main>` — every tool page has one.
+
+---
+
+## `/list`
+
+Files swept: `src/app/list/page.tsx`, `src/components/CollegeCard.tsx`,
+`src/components/BreakdownPanel.tsx`, `src/components/ScrollReveal.tsx`.
+
+### BLOCK
+
+- [RESOLVED in current `src/app/list/page.tsx:188`] Page declares its
+  own `<main>` landmark — the global skip-link concern from `/`
+  doesn't compound here.
+- [RESOLVED in current `src/components/CollegeCard.tsx:100`]
+  CRITIQUE flagged `CollegeCard` hardcoded `bg-[#0f0f1c]`,
+  `rounded-2xl`, `hover:shadow-*`. Card chrome is now `rounded-md
+  bg-bg-surface border border-border-hair … hover:bg-bg-elevated
+  hover:border-border-strong` — tokens, hairline border, no shadow.
+  (Vestigial `transition-[box-shadow]` still present at `:100`; no
+  `box-shadow` is ever set, so the transition is dead weight but
+  harmless.)
+- [NEW BLOCK] **Tier color ramps in `CollegeCard.tsx:12-20` are still
+  raw Tailwind, not OKLCH tier tokens.** `CLASS_COLORS` defines
+  `unlikely: bg-red-600/10 / text-red-500`, `reach: bg-orange-500/10
+  / text-orange-400`, `target: bg-amber-500/10 / text-amber-400`,
+  `safety: bg-emerald-500/10 / text-emerald-400`. CRITIQUE systemic
+  #2 said all tier signals must use `--tier-*-fg / --tier-*-soft`
+  tokens. `/list` uses these tokens at the page level (`TIER_DOT` at
+  `list/page.tsx:66-73` is correct: `bg-tier-safety-fg` etc.) but
+  the **per-card** signaling — which is what users actually see on
+  every pinned-school card — never migrated. Same fix: remap
+  `CLASS_COLORS` to `bg-tier-<name>-soft` / `text-tier-<name>-fg` /
+  `ring-tier-<name>-line`. (Note: `likely` already uses
+  `bg-accent-soft` / `text-accent-text` — but that's wrong too,
+  because `--accent` is the brand indigo, not the `--tier-likely-*`
+  blue. Two different tokens, accidentally aliased.)
+- [NEW BLOCK] **`BreakdownPanel.tsx:45` and `:99` use hard-coded hex
+  `bg-[#0a0a14]/70`.** This is the panel that opens when a user
+  clicks "See the breakdown" on a college card. Dark-only literal
+  on a panel that has to render in light mode too — in light mode
+  it shows a near-black 70%-alpha block over the card's
+  `--bg-surface`, which is wildly off-system and breaks the
+  same-page contrast contract. Replace both with `bg-bg-inset` (or
+  `bg-bg-surface-2`).
+- [NEW BLOCK] **Confidence/caveat badges in `CollegeCard.tsx:206-228`
+  use dark-only Tailwind ramps.** `text-emerald-300` on
+  `bg-emerald-500/10` for "Recruited athlete pathway" (`:206`), and
+  `text-text-secondary` on `ring-zinc-500/20` for the others. The
+  emerald-300 text on the emerald-500/10 background fails 4.5:1 in
+  light mode (light emerald text on near-white bg). Remap to tier
+  tokens or accent tokens.
+
+### WARN
+
+- [RESOLVED in current `src/components/CollegeCard.tsx:127-148`]
+  CRITIQUE systemic #5 flagged `opacity-0 group-hover:opacity-100`
+  on `/list` pin/unpin. The pin button is now always-visible
+  (`mt-0.5 w-8 h-8 rounded-full flex…`). Touch users can see and
+  use it.
+- [OPEN] **Breakdown columns visually lopsided.** CRITIQUE flagged
+  Balance has 5 rows × ~80px while Major fit has 2 rows. Still
+  true at `list/page.tsx:354-364`: 5 balance rows
+  (`tierDistribution`, `count`, `edLeverage`, `financialFit`,
+  `geoDiversity`) versus 2 major-fit rows (`avgFit`,
+  `programStrong`). Visual rhythm is unchanged. Either pad the
+  major column with the per-major bar list (already computed in
+  `MajorFitFlag`) or compress balance into 3 rows by combining
+  `financialFit` + `geoDiversity` into a single "Diversification"
+  row.
+- [NEW WARN] **`PILL_TONE` for major-fit pills uses raw ramps**
+  (`CollegeCard.tsx:290-294`). `bg-emerald-500/10 / text-emerald-400`
+  for strong, `bg-amber-500/10 / text-amber-400` for decent. This
+  isn't a tier-classification signal so it doesn't strictly need a
+  `--tier-*` token, but it's the same family of "raw Tailwind ramps
+  used decoratively" that CRITIQUE #2 + #9 are about. Define
+  `--fit-strong-*` / `--fit-decent-*` tokens, or reuse `--tier-safety-*`
+  for strong and `--tier-target-*` for decent.
+- [NEW WARN] **`LETTER_TONE` in `list/page.tsx:85-97` uses raw ramps.**
+  A+/A/A- → `text-emerald-600 dark:text-emerald-300`, C+/C/C- →
+  `text-amber-...`, D → `text-orange-...`, F → `text-red-...`. Same
+  systemic-#2 pattern. Less load-bearing because the letter itself
+  is the signal, but still off-system.
+- [NEW WARN] **Pin button is `w-8 h-8` (32×32 px)** at
+  `CollegeCard.tsx:136`. MASTER.md §Accessibility floor says "Min
+  touch target 44×44 on mobile." 32 is below the threshold even
+  with a generous tap-area extension (none is set). Promote to
+  `w-11 h-11` on mobile or add explicit padding to inflate the tap
+  region.
+- [NEW WARN] **Animated `filter: blur(4px)` per card on mount**
+  (`CollegeCard.tsx:95-97`). Each card animates from `blur(4px)`
+  to `blur(0px)` on entry; with N pinned schools you get N blur
+  filters running concurrently. Filter blur is GPU-expensive and
+  not on the compositor-friendly list. MASTER.md §Motion says
+  animate `transform` + `opacity` only. Drop the `filter` term;
+  keep the `y` translate + opacity.
+
+### INFO
+
+- [OPEN] **Numeric score on grade masthead has no aria-label.**
+  CRITIQUE flagged `aria-label="Grade: ${letter}"` on the letter
+  but no label on the numeric score. Still true at
+  `list/page.tsx:287-300`: the `{grade.letter}` span has
+  `aria-label`, the `{grade.officialScore.toFixed(1)} / 100` block
+  next to it doesn't. Add `aria-label={`Score: ${score} of 100`}`.
+- [NEW INFO] `recruitedAthletePathway` toggles a green "Recruited
+  athlete pathway" badge at `CollegeCard.tsx:206-208` but never
+  surfaces what it means or how the user opted into it. If
+  pathway-eligible, also explain (tooltip or short caption: "We
+  detected athletic recruiting on your profile").
+- [NEW INFO] `void Bookmark;` at `list/page.tsx:678` — dead-code
+  shim. The named import is unused now; just drop it from the
+  import statement at `:6` (`import { Plus, ArrowRight, Bookmark,
+  RefreshCw, X }`).
+- [NEW INFO] Empty-state CTA bg uses `var(--accent-fg)` for text
+  color (`list/page.tsx:261`). Verified — `--accent-fg` is defined
+  in `globals.css:43` (light) and `:117` (dark) as `oklch(99% 0
+  0)`. Not a real bug; leave as-is.
+
+---
+
+## `/chances`
+
+Files swept: `src/app/chances/page.tsx`, `src/components/ChanceForm.tsx`,
+`src/components/ChanceResult.tsx`, `src/components/BreakdownPanel.tsx`,
+`src/components/MajorSelect.tsx`.
+
+### BLOCK
+
+- [PARTIALLY-RESOLVED] CRITIQUE flagged tier colors as raw Tailwind
+  ramps. Verified at `ChanceResult.tsx:10-17`:
+  `safety/target/reach/unlikely/insufficient` are now on
+  `bg-tier-*-soft` / `text-tier-*-fg` / `bar: bg-tier-*-fg`
+  tokens. **However `likely` was not migrated** (`:12`):
+  `{ bg: "bg-accent-soft", text: "text-accent-text", bar:
+  "bg-blue-500", glow: "shadow-blue-500/20" }`. Two distinct
+  problems: (1) `--accent` is the brand indigo, not the
+  `--tier-likely-*` family (different token, different hue);
+  (2) `bar: bg-blue-500` and `glow: shadow-blue-500/20` are still
+  raw Tailwind ramps, the only `glow` value in the whole map. Pick
+  `bg-tier-likely-soft / text-tier-likely-fg / bg-tier-likely-fg`
+  to match the other five rows; drop the `glow` key entirely.
+- [OPEN] CRITIQUE flagged "duplicate amber disclaimers (top +
+  result)". Both still render. Top disclaimer at
+  `chances/page.tsx:33-47` ("Estimates only…") and bottom
+  disclaimer at `ChanceResult.tsx:240-246` ("This is an estimate
+  based on general admissions patterns…"). The two say almost the
+  same thing in different tones. Keep one — preferably the top
+  one, which is more substantive and links to `/methodology`.
+- [RESOLVED in 343ff95] CRITIQUE WARN about light-mode contrast on
+  the top "Estimates only" disclaimer. Verified at
+  `chances/page.tsx:33-47`: it now ships separate light + dark
+  amber tones (`bg-amber-500/[0.06] dark:bg-amber-500/[0.04]`,
+  `text-amber-900/85 dark:text-amber-200/80`). Reads in both modes.
+- [NEW BLOCK] **Hardcoded `bg-[#12121f]` headline card.**
+  `ChanceResult.tsx:160` wraps the headline narrative in
+  `<div className="rounded-xl bg-[#12121f] border border-border-strong
+  p-5">`. Dark-only hex literal sitting inside a card that already
+  has `bg-bg-surface`. In light mode this is a near-black block
+  inside a white card — the most visually broken part of the page.
+  Replace with `bg-bg-inset` or `bg-bg-surface-2`.
+- [NEW BLOCK] **Bottom disclaimer is dark-only.**
+  `ChanceResult.tsx:240-246`: `bg-amber-500/5 border
+  border-amber-500/10 ... text-amber-400/70`. Even after deduping
+  with the top one (above), this block has no light-mode tones —
+  text-amber-400 on amber-500/5 in light mode reads as washed-out
+  yellow on near-white at way under 4.5:1.
+- [NEW BLOCK] **Score-bar track is invisible in light mode.**
+  `ChanceResult.tsx:148`: `<div className="h-2 rounded-full
+  bg-bg-surface overflow-hidden">` — but the parent card at `:102`
+  is *also* `bg-bg-surface`. Same color on same color = no track,
+  the bar appears to float. Use `bg-bg-inset` for the track.
+
+### WARN
+
+- [OPEN] **`ChanceForm` mixes required + optional with identical
+  visual weight.** CRITIQUE flagged "(optional)" lives inside the
+  label string. Still true at `ChanceForm.tsx:192` ("SAT
+  (optional)"), `:198` ("ACT Composite (optional)"), `:204`
+  ("ACT Science (optional)"), `:239` ("Common App Score (0-100)"
+  — silent about optional even though it's optional). No required-*
+  marker either. Adopt one rule: required inputs get a red asterisk
+  + `aria-required`, optional inputs lose the inline `(optional)`
+  in favor of a muted "Optional" suffix in `<small>`.
+- [OPEN] **Strengths/Weaknesses use raw `text-emerald-400` /
+  `text-red-400`.** CRITIQUE called this out as "polluting the
+  semantic-color contract" because emerald/red are tier colors,
+  not generic positive/negative signals. Still true at
+  `ChanceResult.tsx:193, 198, 207, 212`. Either reuse
+  `--tier-safety-fg` (green-tier) for strengths and
+  `--tier-unlikely-fg` (red-tier) for weaknesses (they happen to
+  be the same hues anyway, this is not a tier collision because
+  these are not tier classifications), or define dedicated
+  `--positive-fg / --negative-fg` tokens.
+- [NEW WARN] **`GpaScaleNote` and the auto-fill banner use raw
+  blue ramps.** `ChanceForm.tsx:320` declares `bg-blue-500/[0.05]
+  border border-blue-500/[0.18]`. CRITIQUE systemic #9 codemodded
+  most of these to `bg-accent-soft / border-accent-line` — this
+  one was missed.
+- [NEW WARN] **`text-rose-400` for over-scale GPA warnings**
+  (`ChanceForm.tsx:174, 186`). Same family — should use a
+  semantic-error token, not a Tailwind ramp.
+- [NEW WARN] **Bouncy spring on the tier-percentage badge.**
+  `ChanceResult.tsx:109-112`: `transition={{ type: "spring",
+  stiffness: 200, damping: 15 }}`. MASTER.md anti-patterns:
+  "No bouncy or elastic motion easings." A `damping: 15` spring at
+  `stiffness: 200` overshoots visibly. Replace with `transition={{
+  duration: 0.24, ease: [0.16, 1, 0.3, 1] }}` per MASTER §Motion.
+- [NEW WARN] **Coursework score colors use raw ramps.**
+  `ChanceForm.tsx:284-291` — `text-emerald-400` for AP≥4 / IB≥6,
+  `text-amber-400` for AP=3 / IB 4-5. Decorative use of tier-named
+  colors. Define dedicated coursework-quality tokens or reuse the
+  `--tier-*` system explicitly.
+- [NEW WARN] **Typo: empty `focus:` class.** `ChanceForm.tsx:21`
+  — `inputClass` has `focus:border-blue-500/50 focus:
+  focus:ring-accent-line` — there's a bare `focus:` with no rule
+  attached, which Tailwind silently drops. Also `focus:border-blue-500/50`
+  conflicts with the focus-state token contract in MASTER.md
+  (focus border should become `var(--accent)`, not raw blue-500).
+- [NEW WARN] **Missing-data hints panel uses `bg-zinc-500/5`.**
+  `ChanceResult.tsx:224` — should use a token (`bg-bg-inset` or
+  `bg-bg-surface-2`).
+
+### INFO
+
+- [OPEN] CRITIQUE noted "(optional)" inside label strings is easy
+  to miss — covered above as WARN #1. Marking INFO as
+  acknowledged but not addressed.
+- [NEW INFO] `details > summary` hover at `ChanceResult.tsx:177`
+  — `hover:bg-bg-surface` on a `bg-bg-surface` parent yields no
+  visible hover state. Use `hover:bg-bg-surface-2`.
+- [NEW INFO] The `<details>` "See the breakdown" element at
+  `ChanceResult.tsx:176-188` has no `aria-expanded` (browser-native
+  on `<details>` so screen readers do announce it correctly), but
+  the chevron rotation transition is on `transform` — good. No
+  action; flagged for completeness.
+
+---
+
+## `/colleges`
+
+Files swept: `src/app/colleges/page.tsx`,
+`src/components/CollegeFilters.tsx`,
+`src/components/CollegeResults.tsx`,
+`src/components/CollegeSearchInput.tsx`, `CollegeCard.tsx` (covered
+in /list section). Also reuses `CollegeCard.tsx` so all the BLOCK +
+WARN findings logged on /list (raw tier ramps in `CLASS_COLORS`,
+`PILL_TONE` ramps, `bg-[#0a0a14]/70` in `BreakdownPanel`, 32px touch
+target, blur-on-mount filter) apply equally on this surface — not
+duplicated below.
+
+### BLOCK
+
+- [RESOLVED in current `src/components/CollegeSearchInput.tsx:50-53`]
+  CRITIQUE BLOCK: "Escape does not clear search input." Escape
+  handler is wired explicitly: `if (e.key === "Escape" && local)
+  { e.preventDefault(); setLocal(""); }`.
+- [RESOLVED in current `src/components/CollegeFilters.tsx:78`]
+  CRITIQUE BLOCK: "Filters always-open, 14 fields tall." Filter
+  panel is now `<details className="…">` collapsed by default with
+  a single-line summary. First card is above the fold on a 13"
+  laptop again.
+- [NEW BLOCK] **`bg-[#12121f]` hardcoded hex on the tier guide
+  panel.** `colleges/page.tsx:139`: `<div className="rounded-md
+  bg-[#12121f] border border-border-strong p-6">`. Same pattern as
+  `ChanceResult.tsx:160` — dark-only literal that breaks light
+  mode. Replace with `bg-bg-surface` (or `bg-bg-inset` for
+  inset look).
+- [NEW BLOCK] **TIERS legend in `colleges/page.tsx:17-24` uses raw
+  Tailwind ramps for both dot color AND text color.**
+  `bg-emerald-500`, `bg-amber-500`, `bg-orange-500`, `bg-red-500`,
+  `bg-zinc-500` for dots; `text-emerald-400`, `text-amber-400`,
+  `text-orange-400`, `text-red-500`, `text-text-secondary`,
+  `text-accent-text` for labels. CRITIQUE systemic #2 specifically
+  flagged the same ramps — and this is the *canonical legend that
+  defines what tier means* on the page. Hardest place to leave
+  off-system. Migrate to `bg-tier-<name>-fg` / `text-tier-<name>-fg`.
+  Note `Likely` row uses `bg-blue-500` + `text-accent-text` —
+  same accent-vs-tier-likely confusion as `ChanceResult.tsx`
+  (BLOCK on /chances).
+- [NEW BLOCK] **`GROUPS` in `CollegeResults.tsx:39-49` repeats the
+  same raw ramp pattern for the tier-group section headers.**
+  `text-emerald-400`, `text-amber-400`, `text-orange-400`,
+  `text-red-500`. These are the headings the user reads as they
+  scroll down — the most visible tier signal on the page after
+  the per-card badge. Migrate to `text-tier-<name>-fg`.
+
+### WARN
+
+- [OPEN] **Card grid wastes ~40% of screen at ≥1024px.** CRITIQUE
+  flagged "(2-up + tall cards)" — still exactly that at
+  `CollegeResults.tsx:209`: `grid grid-cols-1 sm:grid-cols-2 gap-3`
+  with no `lg:` breakpoint. Add a 3-up at `lg:` (or a list-view
+  density toggle). Cards collapse cleanly to 1-up on mobile so the
+  density bump is purely additive.
+- [OPEN] **Tier label per-card is redundant with tier-grouped
+  headers.** `CollegeResults.tsx:198-232` already groups results
+  by tier with a heading like "Reach (12)"; `CollegeCard.tsx:108`
+  *also* badges every card with the same tier label inside that
+  group. Drop the per-card badge when rendered inside a grouped
+  layout, or swap the per-card badge to a more useful signal
+  (e.g. acceptance-rate range, ED/EA availability). Pass a prop
+  like `inGroupedView` from `CollegeResults` so `CollegeCard` can
+  render the badge only when standalone (e.g. on /list).
+- [NEW WARN] **Pinned-count CTA bar mixes accent token + raw
+  blue ramp.** `CollegeResults.tsx:145`: `bg-accent-soft border
+  border-blue-500/15`. The `border-blue-500/15` is a leftover
+  from the pre-token era; pair it with `border-accent-line` to
+  match the rest.
+- [NEW WARN] **Same-color hover states throughout.**
+  - `CollegeResults.tsx:156` "View Strategy" link: `bg-accent-soft
+    hover:bg-accent-soft` (no hover delta).
+  - `CollegeFilters.tsx:223` "Add interest" button:
+    `bg-accent-soft hover:bg-accent-soft`.
+  - `CollegeFilters.tsx:177` chip remove button: `opacity-60
+    hover:opacity-100` — that one does have a delta but the chip
+    itself never gets a hover state.
+  Pick one: `hover:bg-accent-soft-strong` (define new token), or
+  `hover:bg-accent` with text inversion.
+- [NEW WARN] **Active major/interest chips use raw emerald
+  ramps.** `CollegeFilters.tsx:160` and `:237`: `bg-emerald-500/15
+  ring-emerald-500/30 text-emerald-200`. These signal "active
+  filter" not a tier — but they steal the tier-safety visual
+  language and they're dark-only (text-emerald-200 on emerald-500/15
+  is unreadable in light mode). Either swap to `bg-accent-soft
+  text-accent-text ring-accent-line` (active = accented) or
+  define a dedicated active-filter token. Same applies to inactive
+  chips at `:161` / `:238`: `ring-white/[0.12]` is dark-only by
+  construction — invisible in light mode.
+- [NEW WARN] **Filters input class has the same `focus:` typo and
+  raw blue ramp** as `ChanceForm.tsx`. `CollegeFilters.tsx:18`:
+  `focus:border-blue-500/50 focus: focus:ring-accent-line` — bare
+  `focus:` is dropped, and the focus border should be
+  `focus:border-[var(--accent)]` per MASTER §Focus.
+- [NEW WARN] **Cap-warning text uses raw amber ramp.**
+  `CollegeFilters.tsx:193`: `text-amber-400/80`. Should be a
+  warning token or `text-tier-target-fg`.
+
+### INFO
+
+- [OPEN] CRITIQUE flagged "(optional)" inside label strings —
+  same problem as `/chances`; covered there.
+- [NEW INFO] Top "Estimates only" disclaimer at
+  `colleges/page.tsx:117-131` is mode-aware (RESOLVED in 343ff95)
+  but the legend below at `:139` (the `bg-[#12121f]` block) is
+  not — they're two adjacent disclaimers with inconsistent
+  mode-handling. Fix together with the BLOCK above.
+- [NEW INFO] Two-source-of-truth for tier names: `colleges/page.tsx:17-24`
+  defines `TIERS[]` for the legend, and `CollegeResults.tsx:39-49`
+  defines `GROUPS[]` for the section headers. The labels match
+  ("Safety", "Likely", …) but the colors and descriptions live
+  in two arrays and could drift. Promote to a single
+  `src/lib/tier-meta.ts` consumed by both.
+
+---
+
+## `/profile`
+
+Files swept: `src/app/profile/page.tsx`,
+`src/components/SaveIndicator.tsx`, `src/components/SectionNav.tsx`,
+`src/components/TranscriptUpload.tsx` (TranscriptUpload covered
+again on `/gpa`).
+
+### BLOCK
+
+- [RESOLVED in eb6c1ce] CRITIQUE BLOCK: "No `<form>`, no
+  `<fieldset>`/`<legend>`." Verified — `profile/page.tsx:185`
+  wraps everything in `<form onSubmit={(e) => e.preventDefault()}>`
+  and every section is a `<fieldset>` with `<legend className="sr-only">`
+  (e.g. `:188-192`, `:264-268`, `:357-361`, etc.).
+- [RESOLVED in 97d34ed / `profile/page.tsx:89`] CRITIQUE BLOCK:
+  "Save state never shown." `<SaveIndicator storageKey={…} />` is
+  now mounted in the masthead; verified rendering above the H1.
+- [WONT-FIX] CRITIQUE called out a "Missing brief feature —
+  distinguished-EC checkboxes." User direction is the opposite —
+  the EC Evaluator owns tier-1 inference and the self-attestation
+  block was deliberately removed (commit `abd6851`). Verified by
+  `grep` — no `firstAuthorPublication / nationalCompetition /
+  founderWithUsers / selectiveProgram` references in
+  `profile/page.tsx`.
+- [NEW BLOCK] **Hardcoded `text-white` breaks in light mode.**
+  - `profile/page.tsx:130`: completeness count
+    `<p className="font-mono ... text-white leading-none">{completed}…</p>`.
+  - `:366`: SAT composite `<span className="text-white font-bold">{satComposite}</span>`.
+  - `:412`: ACT composite `<span className="text-white font-bold">{actComposite}</span>`.
+  All three are page-level numerics. In light mode, `text-white`
+  on `--bg-surface (oklch(97% 0.004 250))` is white-on-near-white
+  — invisible. Replace with `text-text-primary`.
+- [NEW BLOCK] **Completeness bar track + fill use raw blue ramps
+  and produce an invisible track.**
+  `profile/page.tsx:134`: `<div className="h-1.5 rounded-full
+  bg-bg-surface overflow-hidden">` — track is the same color as
+  the parent fieldset (`bg-bg-surface`), so the track is
+  invisible. Then `:136`: `bg-gradient-to-r from-blue-500 to-blue-400`
+  — raw Tailwind blue gradient instead of `--accent`. MASTER.md
+  anti-patterns: "No gradient text" implies "no decorative
+  gradients" — this fill is a decorative blue gradient where a
+  flat `var(--accent)` would suffice. Track → `bg-bg-inset`,
+  fill → `bg-[var(--accent)]`, drop the gradient.
+
+### WARN
+
+- [RESOLVED in eb6c1ce / a74c68a] CRITIQUE WARN: "Section ordering
+  is wrong (Major sits awkwardly above academics; ECs after essays)."
+  Current order at `profile/page.tsx`: Basic (`:188`) → GPA
+  (`:264`) → Coursework via `<AdvancedCourseworkSection>`
+  (`:348`) → SAT (`:357`) → ACT (`:403`) → ECs (`:471`) →
+  Essay (`:505`) → Major (`:545`) → Summary (`:594`). Major now
+  sits after academics + ECs + essays as CRITIQUE wanted.
+- [RESOLVED in current `profile/page.tsx:118`] CRITIQUE WARN:
+  "TranscriptUpload exists but is not mounted on /profile."
+  Component is now mounted as the first content block under the
+  masthead.
+- [RESOLVED in 6ac1a76] CRITIQUE WARN: "Completeness double-counts
+  (`APs` chip and `Coursework` chip share the same
+  `advancedCoursework` signal)." `profile/page.tsx:55-67` now has
+  five sections — Coursework collapsed into a single chip.
+- [NEW WARN] **`SourceBadge` mixes accent token with raw blue
+  ramp.** `profile/page.tsx:20-27`: outer pill is
+  `bg-accent-soft text-accent-text/70 border-accent-line`
+  (correct), but inside is `<span className="w-1 h-1 rounded-full
+  bg-blue-400" />`. Pick one — use `bg-[var(--accent)]` for the
+  dot.
+- [NEW WARN] **Loading spinner uses `border-blue-400`.**
+  `profile/page.tsx:37`: `<div className="… border-blue-400
+  border-t-transparent animate-spin" />`. Should be
+  `border-[var(--accent)]`.
+- [NEW WARN] **Same `inputClass` typo as `/chances` + `/colleges`.**
+  `profile/page.tsx:17`: `focus:border-blue-500/50 focus:
+  focus:ring-accent-line`. The bare `focus:` is dropped, and
+  `focus:border-blue-500/50` is off-system. Three pages use this
+  same broken `inputClass` — promote to a shared utility once
+  fixed.
+- [NEW WARN] **Over-scale warnings use `text-rose-400`** at
+  `:295, :315`. Same systemic issue as `/chances` —
+  `--negative-fg` token or reuse `--tier-unlikely-fg`.
+- [NEW WARN] **Coursework AP/IB score colors use raw emerald /
+  amber** (`profile/page.tsx:701-708`).
+
+### INFO
+
+- [NEW INFO] `<motion.span>` chip animations at `:144-160` add
+  per-chip staggered entry animation that triggers on every
+  Profile re-render — even when only an unrelated input changed.
+  Mild perf cost; consider `framer-motion`'s `LayoutGroup` or
+  removing the entry animation since the chips persist.
+- [NEW INFO] "Reset to calculated values" button at `:170` has
+  no confirmation dialog. If the user has typed values, this
+  silently overwrites them. Mild — typed values would be re-typeable
+  — but echoes the /resume autofill-reset concern.
+
+---
+
+## `/dashboard`
+
+Files swept: `src/app/dashboard/page.tsx`,
+`src/app/dashboard/_atlas/AtlasPage.tsx`,
+`src/app/dashboard/dashboard-atlas.css`,
+`src/app/dashboard/_atlas/use-atlas-data.ts`,
+`src/app/dashboard/_atlas/icons.tsx`.
+
+### BLOCK
+
+- [PARTIALLY-RESOLVED] CRITIQUE BLOCK: "Parallel design system…
+  imports its own `--ae-*` tokens, uses Young Serif display,
+  `clamp()` for app-UI type, `border-radius: 16px` on cards." Three
+  of the four are addressed:
+  - `--ae-*` namespace is now a thin alias layer to global tokens
+    (`dashboard-atlas.css:25`: `--ae-accent: var(--accent)`,
+    `:13-23`: `--ink-bg: var(--bg-base)`, etc.). RESOLVED for the
+    "parallel" complaint.
+  - Young Serif gone — `.ae-name` at `:80` uses `var(--ae-sans)`
+    (Geist). RESOLVED.
+  - 16px radii gone — current radii are `8px` (`:108`, `:181`)
+    and `999px` for pills. **Still off-spec**: MASTER.md says
+    cards default to `--radius` (6px), modals to `--radius-md`
+    (8px). 8px is acceptable but violates the cards-are-6px
+    convention. Mild WARN, kept under BLOCK because this is part
+    of CRITIQUE #10.
+  - **Fluid type still in place** — `.ae-name` uses `clamp(38px,
+    5.4vw, 68px)` (`:81`), `.ae-tagline` uses `clamp(15px, 1.2vw,
+    17px)` (`:89`), `.ae-section-title` uses `clamp(24px, 2.4vw,
+    32px)` (`:160`), `.ae-stat-value` is fixed but `.ae-stat-big
+    .ae-stat-value` switches to 56px… all fluid. MASTER.md
+    §Typography: "App UI does not use fluid type. Fluid (`clamp`)
+    is reserved for **only** the landing page hero + cinematic
+    CTA." Convert to fixed-rem scale.
+- [RESOLVED in 358c8f1 / `AtlasPage.tsx:175-180`] CRITIQUE BLOCK:
+  "First-load experience is wrong-footed — empty users see a
+  7-stat grid filled with `—` and a `0%` readiness bar. Should
+  show one CTA above the fold instead." `EmptyHero` (`:218-242`)
+  now renders a single "Pin your first school" CTA when
+  `isEmpty` is true.
+- [OPEN] **`LayoutTweaks` lacks `aria-pressed`.** CRITIQUE BLOCK
+  said the layout-toggle buttons "expose no `aria-pressed`" —
+  still true. `AtlasPage.tsx:104-115`: each `<button
+  className={'ae-tweak-btn ${layout === opt ? "is-active" : ""}'}>`
+  toggles the active class but offers no `aria-pressed={layout
+  === opt}`. AT users hear two indistinguishable buttons.
+  One-line fix.
+- [NEW BLOCK] **Undefined `--ae-hue` CSS variable breaks fills
+  silently.** `dashboard-atlas.css:143`:
+  `background: linear-gradient(90deg, var(--ae-accent),
+  oklch(0.78 0.16 var(--ae-hue)));`
+  Also `:529` and `:530` for tier-likely / tier-safety labels.
+  `--ae-hue` is **never defined** anywhere in the codebase
+  (`grep -r "--ae-hue:"` → no matches). When a CSS custom
+  property is undefined inside `oklch(...)`, the entire `oklch()`
+  argument is invalid, and the parent declaration falls back to
+  initial / inherited value. Net result: the readiness-stat bar
+  fill, the likely-tier label, and the safety-tier label all
+  render with no color (the default `currentColor` for label,
+  empty for background). Either define `--ae-hue: 264` near the
+  other `--ae-*` aliases (`:6`), or replace the undefined-hue
+  formulas with concrete `--tier-likely-fg` / `--tier-safety-fg`
+  tokens.
+- [NEW BLOCK] **Stat bar track is `rgba(255,255,255,0.06)`.**
+  `dashboard-atlas.css:139`: `background: rgba(255,255,255,0.06);`
+  Hardcoded white-on-alpha — invisible in light mode (white at
+  6% on white = no contrast). Replace with `var(--bg-inset)` or
+  the same hairline approach used everywhere else.
+
+### WARN
+
+- [RESOLVED in ee1c051] CRITIQUE WARN: "Three layout modes is
+  feature creep. Atlas + List cover the use case; Orbital is
+  decorative." Verified — `AtlasPage.tsx:18` declares
+  `type Layout = "atlas" | "list"`. `LayoutTweaks` (`:102-117`)
+  iterates `["atlas", "list"] as const`. Persisted "orbital"
+  preference is migrated to "atlas" at `:50-54`.
+- [OPEN] **Shortlist duplicates /list and /colleges with no
+  clear job.** CRITIQUE flagged this as redundant. Verified
+  `Shortlist` is rendered at `AtlasPage.tsx:93` whenever
+  `data.shortlist.length > 0`. The component (`:520`) shows pinned
+  schools grouped by tier — exactly what `/list` already does
+  with more depth. Either compress to a one-line summary
+  ("8 schools pinned · view list →") or remove and link out.
+- [NEW WARN] **Stat-bar fill is a gradient.**
+  `dashboard-atlas.css:143`: `linear-gradient(90deg,
+  var(--ae-accent), oklch(0.78 0.16 var(--ae-hue)))`. Even after
+  fixing `--ae-hue`, this is a decorative gradient on what is
+  otherwise a "calm, engineered" page — pick a flat
+  `var(--accent)` instead.
+- [NEW WARN] **Card radii are 8px, not 6px.**
+  `dashboard-atlas.css:108` (`.ae-header-grid`) and `:181`
+  (`.ae-atlas-body`) use `border-radius: 8px`. MASTER.md says
+  cards = `--radius` (6px); 8px is reserved for modals. One-line
+  swap.
+
+### INFO
+
+- [RESOLVED in c01fbd3 / `AtlasPage.tsx:131`] CRITIQUE INFO:
+  "Header eyebrow says 'Application atlas' but page is `/dashboard`."
+  Eyebrow is now just "Dashboard" — verified.
+- [RESOLVED via Orbital removal] CRITIQUE INFO: "Orbital
+  description says 'Eight tools, one orbit' but `tools` array has
+  nine." No longer relevant — Orbital mode dropped.
+- [NEW INFO] **CSS comment lies about Young Serif.**
+  `dashboard-atlas.css:3`: "Fonts reuse the project tokens: Geist
+  (sans/mono) + Young Serif (display)." Young Serif is no longer
+  referenced anywhere in this stylesheet (commit verified Geist-only).
+  Delete the stale comment to avoid future-reader confusion.
+- [NEW INFO] `LAYOUT_STORAGE_KEY` migration code (`AtlasPage.tsx:50-54`)
+  runs `setLayout("atlas")` for any saved "orbital" preference.
+  Once enough time has passed since Orbital was removed, drop the
+  migration to keep this hook leaner. Acceptable now.
+
+---
+
+## `/strategy`
+
+Files swept: `src/app/strategy/page.tsx`,
+`src/components/strategy/{StrategyAtlas,SnapshotCard,DreamSchoolCard,
+ActionPlanCard,SpikeCard,GapsCard,SchoolListCard,
+MajorRecommendationsCard,DeadlinesCard,Chrome,helpers}.tsx`,
+`src/components/StrategyCard.tsx`.
+
+### BLOCK
+
+- [RESOLVED in 0f34a6b / verified] CRITIQUE BLOCK: "1577 lines
+  violates the 800-line file rule. Split into
+  `src/components/strategy/`." `src/app/strategy/page.tsx` is now
+  320 lines; the components live in
+  `src/components/strategy/`. None of those files exceed 800
+  lines (StrategyAtlas at 450 is the longest).
+- [RESOLVED in current `strategy/page.tsx:182, 201, 225, 276`]
+  CRITIQUE BLOCK: "No landmark structure — entire 1577-line page
+  is one `<main>` with flat `<div>` cards. No `<section
+  aria-labelledby>`." Each phase of the briefing is now a
+  `<section>` with `aria-labelledby` pointing at its own H2 — four
+  total: profile-readout, recommendation, plan, atlas. Section
+  navigation surfaces them via `<SectionNav>` (`:173-180`).
+- [RESOLVED in 9d6d988 / current `StrategyAtlas.tsx`] CRITIQUE
+  BLOCK: "Spec calls for 'school-by-school plan' (atlas) — flat
+  bullet list. The atlas does not exist." `StrategyAtlas` now
+  renders one row per pinned school with: school name, tier glyph
+  + chance %, suggested plan badge (ED/EA/RD/etc.), deadline
+  pill, and an expand-on-click reasoning panel. Plan-distribution
+  chips at the top, sort by deadline / tier. This is the atlas
+  the spec asked for.
+- [RESOLVED in 9cbf12d] CRITIQUE WARN: "Strategy is guessing at
+  chance — chance numbers should match /chances." `StrategyAtlas.tsx:99-124`
+  pulls `chance.mid` from the same `classifyCollege` result that
+  /chances and /list use (via `pinnedSchools[].classified.chance.mid`),
+  so the percentage shown on a strategy row matches what the user
+  sees on /chances and /list for the same school + plan.
+- [RESOLVED in current] CRITIQUE BLOCK: "Focus management on
+  expand/collapse is missing — `aria-expanded` set, but no
+  `aria-controls` and no live regions." Verified: atlas rows
+  use `aria-expanded` (`StrategyAtlas.tsx:298`). Strategy cards
+  use a similar pattern in `StrategyCard.tsx`. `aria-controls` is
+  not strictly required when the controlled element is the
+  immediate next sibling rendered by the same button (which is
+  the case here) — modern AT (NVDA, VoiceOver) read the expansion
+  correctly. No live region needed for sync expansion. Calling
+  RESOLVED with caveat.
+
+### WARN
+
+- [OPEN] CRITIQUE WARN: "Action items are bullets with checkboxes
+  only — no 'Open in profile' links, no jumps to /colleges.
+  Pattern exists on Missing-Data banner; copy it." Need to
+  verify `ActionPlanCard.tsx` — checking now.
+- [OPEN] CRITIQUE WARN: "Count tiles look static — no hover, no
+  chevron, no `aria-expanded`. Then `SchoolsInClassificationNote`
+  ignores the selected classification entirely." Need to verify
+  this is still in `SchoolListCard`.
+- [NEW WARN] **`Chrome.tsx` urgency dots use raw ramps.**
+  `Chrome.tsx:127-128`: `high: "bg-red-400"`, `medium: "bg-amber-400"`.
+  These are urgency signals on the missing-data banner — should
+  use `--tier-unlikely-fg` / `--tier-target-fg` (or a dedicated
+  urgency token).
+- [NEW WARN] **`Chrome.tsx:134` MissingDataBanner uses raw amber**
+  — `bg-amber-500/[0.04] border border-amber-500/15`. Same as
+  the /chances + /colleges disclaimer style — should be
+  mode-aware. In light mode, amber-500 at 4% alpha = invisible
+  background; the border at 15% is barely there.
+- [NEW WARN] **`DeadlinesCard.tsx:64-66` urgency text uses raw
+  ramps** (`text-red-400` / `text-amber-400`). Reuse
+  `--tier-unlikely-fg` / `--tier-reach-fg` like
+  `StrategyAtlas.tsx:284-291` already does.
+- [NEW WARN] **`MajorRecommendationsCard.tsx:65-66` and `:230`
+  use raw `text-emerald-400` / `text-amber-400`** for tier row
+  labels and "Strong fit" badge. Same systemic-#2 pattern.
+
+### INFO
+
+- [RESOLVED in current `strategy/page.tsx:173-180`] CRITIQUE
+  systemic #8 (no section nav): SectionNav primitive mounted
+  with the four section ids.
+- [NEW INFO] `<motion.div key={result.generatedAt}>` at
+  `strategy/page.tsx:165-170` re-mounts the entire briefing on
+  every regenerate. That's intentional for the fade-in but the
+  exit fade (`exit={{ opacity: 0 }}`) means a flash of empty
+  while the new tree mounts. Acceptable; flagged for completeness.
+
+---
+
+## `/compare`
+
+Files swept: `src/app/compare/page.tsx`,
+`src/components/CompareSelector.tsx`,
+`src/components/CompareVisuals.tsx`,
+`src/components/QualitativeCompare.tsx`.
+
+### BLOCK
+
+- [RESOLVED in bdf7c90 / `compare/page.tsx:108`, `:126`] CRITIQUE
+  BLOCK: "Tier signaling is color-only at small sizes."
+  `TIER3_GLYPH` and `FIT_GLYPH` are now defined and rendered next
+  to tier text (`:444`, `:606`, `:652`). Color is no longer the
+  only signal.
+- [RESOLVED] CRITIQUE BLOCK: "Dark-only palette — hardcoded
+  `#06060f`, `text-emerald-300`, etc. throughout. Cannot render
+  in light mode." `grep "#06060f"` on `compare/page.tsx` /
+  `CompareVisuals.tsx` / `QualitativeCompare.tsx` → no matches.
+  Most `text-emerald-300` etc. usages were swept (commit
+  `bb7ef81` then `e961630` then `886203f`). **However a handful of
+  raw ramps remain — see WARN below; not enough to keep this as
+  a BLOCK.**
+- [RESOLVED in current `compare/page.tsx:295`] CRITIQUE BLOCK:
+  "Sticky tab nav clips on mobile (8 tabs at 375px with no scroll
+  affordance)." The tab strip now uses
+  `overflow-x-auto pb-2 scrollbar-none -mr-4 pr-4` — horizontal
+  scroll wired with negative margins so the affordance is visible
+  on touch.
+- [RESOLVED in 02209af] CRITIQUE BLOCK: "`QualitativeCompare`
+  uses `repeat(N, 1fr)` instead of the `auto-fit minmax()`
+  pattern." `QualitativeCompare.tsx:208` defines
+  `QUAL_GRID_TEMPLATE = "repeat(auto-fit, minmax(min(100%, 140px),
+  1fr))"` and uses it at `:229, :321, :362`. Same pattern repeats
+  across `compare/page.tsx:560, 777, 828, 862, 894, 974`.
+
+### WARN
+
+- [RESOLVED in 886203f / `CompareVisuals.tsx:22-23` plus name-hash
+  logic in `CompareSelector` / page] CRITIQUE WARN: "Color-by-
+  selection-order means the 'blue school' changes when slots are
+  reordered. Use stable hash on `c.name`." `886203f` "stable
+  per-school color via name hash, not slot order" — verified.
+- [OPEN] **CompareSelector remove `X` is still hover-only +
+  focus.** `CompareSelector.tsx:118`: `opacity-0
+  group-hover:opacity-100 focus:opacity-100`. The focus-fallback
+  is the partial fix from CRITIQUE systemic #5, but on touch
+  devices there's no hover and the user can't tab to the X without
+  first reaching the slot via screen-reader nav. Make the X
+  always-visible with a softer styling instead of hidden.
+- [NEW WARN] **`CompareVisuals.tsx:22-23` `schoolColors[]`
+  catalog still uses raw Tailwind ramps**:
+  ```
+  { name: "emerald", bar: "from-emerald-500 to-emerald-400",
+    bg: "bg-emerald-500/8", border: "border-emerald-500/25",
+    text: "text-emerald-300", dot: "bg-emerald-400",
+    hex: "#34d399" }
+  ```
+  Six color rows like this. The hash → color mapping is now
+  stable (`886203f`), but the colors themselves are still off-system
+  and dark-only — `text-emerald-300` / `text-amber-300` /
+  `text-rose-300` are the saturated 300-band tones that fail
+  4.5:1 in light mode. Define a `--school-palette-{0..5}` token
+  family in OKLCH that maintains chroma across light/dark.
+- [NEW WARN] **Crown icons stayed amber-300.**
+  `CompareVisuals.tsx:199, 268, 307`: `<Crown className="w-3 h-3
+  text-amber-300/80" />` (with one variant at `text-amber-300/70`).
+  Commit `88f0d76` migrated *strategy* tier signals but did not
+  touch CompareVisuals — verified via `git log --stat 88f0d76`
+  which lists only `compare/page.tsx` for the compare surface,
+  not CompareVisuals. Migrate to `text-tier-target-fg` (or define
+  a `--accent-warm` token if "best in slot" should not be
+  tier-coded).
+- [NEW WARN] **`compare/page.tsx:987` strong-merit-aid color uses
+  `text-emerald-300`**, the same dark-only ramp the rest of the
+  sweep dropped. Same fix.
+- [NEW WARN] **`CompareSelector.tsx:148-150` warning chip is
+  raw amber dark-only.** `bg-amber-500/[0.06] border
+  border-amber-500/20` + `text-amber-300`. In light mode the bg
+  + border are invisible and the text is unreadable. Use the
+  same mode-aware amber pattern as the `/chances` and
+  `/colleges` "Estimates only" disclaimers (which already ship
+  light + dark tones).
+- [NEW WARN] **`CompareVisuals.tsx:299` "best of slot" card uses
+  `bg-emerald-500/[0.05] border border-emerald-500/20
+  shadow-[0_0_12px_rgba(16,185,129,0.06)]`.** Three problems:
+  raw emerald ramp (dark-only), hardcoded RGB shadow color, and
+  a `box-shadow` glow on what MASTER.md says should be a
+  hairline-only system. Replace with
+  `bg-tier-safety-soft border border-tier-safety-fg/30` and drop
+  the shadow.
+
+### INFO
+
+- [NEW INFO] Sticky tab nav at `compare/page.tsx:291` uses
+  `bg-bg-base/90 backdrop-blur-md`. MASTER.md allows backdrop-blur
+  "where the blur is functional" — for a sticky overlay over
+  scrolling content this is functional. OK; flagged so reviewers
+  don't mistake it for the banned decorative backdrop-blur.
+
+---
+
+## `/essay`
+
+Files swept: `src/app/essay/page.tsx`, `src/components/EssayInput.tsx`,
+`src/components/FeedbackTab.tsx`, `src/components/CommonAppTab.tsx`,
+`src/components/ScoreOverview.tsx`, `src/components/LineNotesTab.tsx`,
+`src/components/ChatTab.tsx`, `src/components/TabNavigation.tsx`,
+`src/components/InlineEditor.tsx`, `src/components/EssayHistorySidebar.tsx`.
+
+### BLOCK
+
+- [RESOLVED in current `essay/page.tsx:123-138`] CRITIQUE BLOCK:
+  "ContainerScroll 3D hero is a cosmic-redesign holdover."
+  Replaced with the standard masthead: eyebrow + h1 + standfirst.
+  No more 3D tilt, no gradient text, no bouncy easing, no
+  `bg-[#0a0a14]`. Confirmed by inline comment at `:123-124`.
+- [RESOLVED in current `EssayInput.tsx:53, 107-108`] CRITIQUE
+  BLOCK: "Textarea has visible `<label>` but no
+  `htmlFor`/`id`/`aria-label`/`aria-describedby`." Label has
+  `htmlFor="essay-textarea"` (`:53`); textarea has matching
+  `id="essay-textarea"` (`:107`) and `aria-describedby={essayText
+  ? "essay-word-count" : undefined}` (`:108`).
+- [RESOLVED in current `EssayInput.tsx:86-100`] CRITIQUE BLOCK:
+  "Word-count pill is not `role="status"` `aria-live="polite"`."
+  Wired explicitly: `role="status" aria-live="polite"` (`:88-89`).
+- [RESOLVED in current `EssayInput.tsx:117-135`] CRITIQUE BLOCK:
+  "Drop zone is `motion.div` with `onClick` — no role, no
+  tabIndex, no Enter/Space handling." Drop zone now has
+  `role="button"`, `tabIndex={0}`, `aria-label`, and
+  `onKeyDown` handling Enter+Space.
+- [NEW BLOCK] **Tab panels still don't render the matching
+  `role="tabpanel"` / `id="tabpanel-${id}"`.** CRITIQUE called
+  this out as a half-wired ARIA contract; verified still broken.
+  `TabNavigation.tsx:39-41` declares `role="tab"` and
+  `aria-controls="tabpanel-${id}"` on every tab, but
+  `essay/page.tsx`, `FeedbackTab.tsx`, `CommonAppTab.tsx`,
+  `LineNotesTab.tsx`, `ChatTab.tsx` never render the matching
+  `id`/`role="tabpanel"`. `aria-controls` points into the void.
+  Wrap each tab's content in
+  `<div role="tabpanel" id="tabpanel-${id}" aria-labelledby="tab-${id}">`.
+- [NEW BLOCK] **Grade button is locked dark and `bg-blue-600
+  text-white`.** `EssayInput.tsx:160`: `bg-blue-600 px-7 py-3
+  text-sm font-semibold text-white`. Then `:163-167` animates a
+  three-stop blue-600 gradient that's actually solid (all three
+  stops are the same color) — pointless animation that still
+  burns a `requestAnimationFrame` while loading. Replace with
+  `bg-[var(--accent)] text-[var(--accent-fg)]` and drop the
+  decorative gradient.
+- [NEW BLOCK] **`LineNotesTab.tsx:29` uses a left-border
+  accent stripe.** `<p className="… border-l-2 border-accent-line
+  pl-3">…</p>`. MASTER.md anti-patterns: "No `border-left: Npx
+  solid color` accent stripes." This is exactly that. Drop the
+  border, indent the quote with padding only, or use a
+  blockquote-ish setup with no left rail.
+
+### WARN
+
+- [OPEN] **`FeedbackTab` Quick Scores duplicate `CommonAppTab`
+  and `ScoreOverview`.** CRITIQUE flagged this. Verified —
+  `FeedbackTab.tsx:31` still renders `<h4>Quick Scores</h4>` plus
+  per-criterion score cards (`:53-65`); `CommonAppTab.tsx:21-22`
+  renders the same scores via `ScoreRow`; `ScoreOverview.tsx`
+  shows them again. Three places, same numbers. Drop the
+  Quick-Scores block from `FeedbackTab` and let it focus on
+  feedback prose.
+- [OPEN] **"Line Notes" tab name vs content mismatch.** CRITIQUE
+  flagged: tab labeled like overlays, renders stacked cards.
+  Verified at `LineNotesTab.tsx:11-41` — it's a stacked list of
+  blockquote cards. Either rename the tab to "Line-by-line notes"
+  (matches the rendering) or move the rendering into the inline
+  editor as overlay annotations.
+- [NEW WARN] **`Card3D` 3D-tilt wrapper around the textarea
+  card.** `EssayInput.tsx:50`: `<Card3D … glowColor="rgba(99,
+  102, 241, 0.12)">`. The Linear-derived contract is "engineered,
+  not decorated" — a 3D tilt-on-mouse-move on the primary essay
+  input is decoration. The hardcoded RGBA glow color is also
+  a leftover indigo. Either wrap in a plain `<div className=
+  "bg-bg-surface rounded-md …">` or document a deliberate
+  page-level override.
+- [NEW WARN] **Animated dividers around the Results header.**
+  `essay/page.tsx:227, 229`: `bg-gradient-to-r from-transparent
+  via-blue-500/30 to-transparent`. Decorative gradient using a
+  raw blue ramp — replace with a flat `border-t border-border-hair`.
+- [NEW WARN] **Save flash chip uses raw emerald.**
+  `essay/page.tsx:236`: `bg-emerald-500/20 text-emerald-400
+  ring-emerald-500/30` for the "Saved" toast. Same pattern as
+  on /list. Use `--tier-safety-soft / --tier-safety-fg`.
+- [NEW WARN] **Copy button "copied" state uses raw emerald.**
+  `EssayInput.tsx:62`: `bg-emerald-500/15 text-emerald-300
+  ring-emerald-500/30`. text-emerald-300 fails 4.5:1 in light
+  mode. Same fix.
+- [NEW WARN] **`LineNotesTab.tsx:27` uses `rounded-xl`.**
+  MASTER.md radii: `rounded-md` for cards (6px), `rounded-lg`
+  (12px) for "Heroes, big cards." A line-note quote card is
+  neither hero nor big card — should be `rounded-md`.
+
+### INFO
+
+- [NEW INFO] `motion.button whileHover={{ scale: 1.04 }}
+  whileTap={{ scale: 0.96 }}` repeated across save / export /
+  grade / file-upload buttons in `essay/page.tsx` and
+  `EssayInput.tsx`. Scale-on-hover is fine (transform-only) but
+  the repeated 1.04/1.02 inconsistency is drift — pick one
+  hover scale and one tap scale, define them in `motion.ts` or
+  similar.
+- [NEW INFO] `motion.div` "Results" wrapper at `essay/page.tsx:218`
+  uses `transition={{ duration: 0.5 }}` — slower than MASTER's
+  240ms motion baseline for "modal in/out, page transitions."
+  Bring closer to 240-300ms.
+
+---
+
+## `/resume`
+
+Files swept: `src/app/resume/page.tsx`,
+`src/components/ResumeSectionCard.tsx`,
+`src/components/ResumeImproveDiff.tsx`,
+`src/components/ResumePreview.tsx`,
+`src/components/ActivitiesHelperPanel.tsx`.
+
+### BLOCK
+
+- [RESOLVED in current `resume/page.tsx:199-211`] CRITIQUE BLOCK:
+  "No section navigation — 8 sections + Skills + Header in one
+  column, easily 4000+ px tall." `<SectionNav>` mounts when in
+  Resume mode, with eight chips: Header / Education / Awards /
+  Activities / Community / Athletics / Summer / Skills.
+- [RESOLVED in current `resume/page.tsx:87-138, 86-87,
+  ResumeImproveDiff.tsx`] CRITIQUE WARN: "AI Improve button
+  silently overwrites prose with no diff/undo. Dangerous."
+  `pendingImprove` state + `acceptImprove` / `rejectImprove`
+  callbacks now route through `<ResumeImproveDiff>` which shows
+  a side-by-side diff before the rewrite is committed.
+- [NEW BLOCK] **H1 violates three MASTER.md rules at once.**
+  `resume/page.tsx:186-191`:
+  ```
+  <h1
+    className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[0.95] mb-4"
+    style={{ fontSize: "clamp(2.4rem, 6vw, 4rem)" }}
+  >
+    Build your college resume.
+  </h1>
+  ```
+  - **Display serif**: uses `var(--font-display)` = Young Serif.
+    MASTER.md: "There is no display serif in this system."
+  - **Locked dark**: `text-white` — invisible on light surface.
+  - **Fluid type on app UI**: `clamp(2.4rem, 6vw, 4rem)`.
+    MASTER.md: "App UI does not use fluid type. Fluid (`clamp`)
+    is reserved for **only** the landing page hero + cinematic
+    CTA."
+  Replace with the same masthead pattern other tool pages use:
+  `<h1 className="text-[2rem] sm:text-[2.5rem] font-semibold
+  tracking-[-0.022em] leading-[1.04] text-text-primary">`.
+- [NEW BLOCK] **"Resume Helper" eyebrow chip uses dark-only
+  glassy style.** `resume/page.tsx:157`: `border border-white/10
+  bg-white/5 backdrop-blur-md`. White at 5% on white is invisible;
+  decorative `backdrop-blur-md` violates the no-glass anti-pattern.
+  Replace with the simple eyebrow line `<p className="text-[11px]
+  font-medium uppercase tracking-[0.08em] text-text-muted">Tools /
+  Resume Helper</p>` other pages use.
+
+### WARN
+
+- [OPEN] **Mode toggle ("Resume / Activities Helper") still
+  replaces the whole editor — destination disguised as a mode.**
+  CRITIQUE flagged this. Verified at `resume/page.tsx:81, 215-256`.
+  When the user flips to "Activities Helper", the entire resume
+  editor unmounts and `<ActivitiesHelperPanel>` takes over the
+  same column. Either render Activities Helper in a side panel or
+  promote it to a route (`/resume/activities`).
+- [OPEN] **Reset-to-autofilled has no confirm.** CRITIQUE INFO.
+  Verified at `resume/page.tsx:470-476`: `<button
+  onClick={r.resetResume}>Reset to autofilled</button>` —
+  one-click destructive action with no confirmation dialog.
+  Wrap in a confirm/dialog or require a double-click pattern.
+- [OPEN] **Mobile preview parity is poor — preview drops below
+  editor with no scroll-to.** CRITIQUE flagged this. Verified at
+  `resume/page.tsx:481-499`: preview is `lg:sticky` (works at
+  desktop) but on mobile it just sits below the editor; the
+  "Show preview" CTA at `:497` toggles visibility but doesn't
+  scroll to it. Add a `requestAnimationFrame` scroll-into-view
+  after `setShowPreview(true)`.
+- [NEW WARN] **Save flash chip uses raw emerald** at
+  `resume/page.tsx:170` (`bg-emerald-500/20 text-emerald-400
+  ring-emerald-500/30`). Same pattern as `/essay`. Migrate to
+  tier tokens.
+- [NEW WARN] **Mode toggle active state is `text-white`.**
+  `resume/page.tsx:220` (`bg-bg-elevated text-white`). Locked
+  white — invisible on light bg-elevated. Use `text-text-primary`.
+- [NEW WARN] **Mobile show-preview button uses `bg-white/5
+  hover:bg-white/10`.** `resume/page.tsx:499`. Dark-only
+  alphas — invisible in light mode. Use `bg-bg-surface
+  hover:bg-bg-surface-2`.
+- [NEW WARN] **`inputClass` typo recurrence.** `resume/page.tsx:19-20`
+  has the same `focus:border-blue-500/50 focus:` pattern as
+  `/chances`, `/colleges`, `/profile`. Confirms this is a
+  copy-pasted utility — fixing once will benefit four pages.
+- [NEW WARN] **Loading spinner uses `border-blue-400`.**
+  `resume/page.tsx:144`. Same as `/profile`.
+
+### INFO
+
+- [RESOLVED] CRITIQUE WARN: "AI `Improve` button silently
+  overwrites prose with no diff/undo." Marked under BLOCK above
+  as resolved.
+- [NEW INFO] `print:hidden` / `print:block` / `print:static` /
+  `print:py-0` modifiers throughout the page (`:152, 154, 198,
+  215, 481, 482, 491, 499`) imply a print-CSS workflow for export.
+  Verify the printed output renders correctly on light paper —
+  `text-white` on `--bg-base` would print invisibly. Tied to
+  the BLOCK above (drop `text-white` from H1).
+- [NEW INFO] `ActivitiesHelperPanel` is mounted at `:230-256`
+  inside the mode toggle. CRITIQUE noted: "ActivitiesHelperPanel
+  is actually a resume-bulk-improve panel (wrong file in the
+  brief; the actual EC suggestion helper doesn't exist on this
+  page)." Worth re-checking the panel's job — if it's
+  resume-bulk-improve, the toggle label "Activities Helper" is
+  misleading. Rename to "Improve activities" or remove the
+  toggle.
+
+---
+
+## `/gpa`
+
+Files swept: `src/app/gpa/page.tsx`,
+`src/components/TranscriptUpload.tsx`, `public/gpa-calculator.html`
+(iframe payload).
+
+### BLOCK
+
+- [PARTIALLY-RESOLVED] CRITIQUE BLOCK: "`TranscriptUpload` is the
+  primary off-system component on this page — `rounded-2xl`,
+  `bg-white/[0.03]`, `backdrop-blur-sm`, `text-emerald-400` /
+  `text-red-400`, hardcoded `text-white`. Sits between
+  disciplined chrome and disciplined iframe and visibly screams
+  'old design system.'"
+  - Radii migrated: `rounded-md` (`TranscriptUpload.tsx:111`).
+  - But still violating: `backdrop-blur-sm` (`:111`), nested
+    `rounded-xl bg-bg-surface border border-white/10` icon
+    container (`:123`), `text-white/70` (`:123`), `text-white`
+    (`:129`), `text-emerald-400` (`:94`), `text-red-400` (`:95`),
+    `text-emerald-300` (`:145`), `text-red-300` (`:151`),
+    `border-white/10` (`:99`, `:123`), `border-emerald-400/40`
+    (`:101`), `border-red-400/40` (`:102`).
+  - Net: visually quieter than before, but still drift relative
+    to MASTER.md.
+- [OPEN] **`TranscriptUpload` width contract violates the page.**
+  CRITIQUE flagged `max-w-2xl mx-auto` while the rest of the
+  page is `max-w-[1180px]`. Verified at `TranscriptUpload.tsx:106`:
+  `<div className="mx-auto max-w-2xl px-4 mb-8">`. Hard visual
+  break. Either drop the inner `max-w-2xl` and let the parent
+  control width, or change the parent's wrapping section to
+  match. (`/profile` mounts the same component but inside its
+  own narrower `max-w-3xl` page, so the seam shows here.)
+
+### WARN
+
+- [OPEN] **Iframe seam — body uses `-apple-system`, parent
+  uses Geist.** CRITIQUE flagged. Verified
+  `public/gpa-calculator.html:71`:
+  `font-family: -apple-system, BlinkMacSystemFont, "Inter",
+  "Segoe UI", …`. On non-Mac the iframe will render Inter (or
+  whichever system fallback) while the parent renders Geist —
+  visibly different forms.
+- [OPEN] **Iframe still has `'DM Sans'` references on multiple
+  classes.** CRITIQUE flagged `.btn-add-year` and `.ytab-remove`.
+  Verified at `public/gpa-calculator.html:188, 198, 239, 277,
+  318, 523, 541` — `font-family: 'DM Sans', sans-serif` in eight
+  declarations. Any of these elements is a font-family mismatch.
+  Migrate the iframe payload to inherit the parent's
+  `--font-geist-sans`.
+- [OPEN] **Fixed `height: 2400px` is brittle.** `gpa/page.tsx:135`
+  hardcodes the iframe height. CRITIQUE flagged: "No
+  postMessage-based height sync." Still no postMessage. As the
+  user adds more years/courses, the iframe will overflow or
+  truncate. Implement a `window.parent.postMessage({type:
+  "gpa-height", h: document.body.scrollHeight}, "*")` from the
+  iframe and a listener in `gpa/page.tsx`.
+- [NEW WARN] **TranscriptUpload status colors all use raw
+  ramps**. `:94` `text-emerald-400`, `:95` `text-red-400`, `:145`
+  `text-emerald-300` (light-mode broken), `:151` `text-red-300`
+  (light-mode broken), borders too. Migrate to
+  `--tier-safety-fg` for success and `--tier-unlikely-fg` for
+  error.
+- [NEW WARN] **TranscriptUpload uses `backdrop-blur-sm` as
+  decoration.** `:111`. MASTER.md anti-patterns: backdrop-blur
+  is allowed only when functional. The card sits over the page
+  bg, not over scrolling content — drop the blur.
+- [NEW WARN] **Locked white in TranscriptUpload heading.** `:129`
+  `<p className="text-sm font-semibold text-white …">Upload your
+  transcript(s)</p>`. Same family as the /profile and /resume
+  text-white findings. Use `text-text-primary`.
+
+### INFO
+
+- [NEW INFO] `iframeColorScheme` at `gpa/page.tsx:10-11` only
+  switches `light` vs `dark` — but the parent app supports a
+  monochrome theme too. The iframe will render dark when the
+  parent is monochrome. Consider passing through the actual
+  monochrome state.
+- [NEW INFO] `<iframe ... key={`${iframeKey}-${iframeColorScheme}`}>`
+  forces a hard remount every time the user toggles theme.
+  Acceptable for theme switches; flagged so future theme-switch
+  speedups don't accidentally drop this.
+
+---
+
+## `/extracurriculars`
+
+Files swept: `src/app/extracurriculars/page.tsx`,
+`src/components/ECConversation.tsx`,
+`src/components/ECActivityList.tsx`,
+`src/components/ECResults.tsx`.
+
+Note: EC chat bubbles inside `ECConversation` are an explicit
+out-of-scope dark surface per user direction; not flagged below
+unless the issue extends past the chat panel itself.
+
+### BLOCK
+
+- [WONT-FIX] CRITIQUE BLOCK: "Missing brief feature —
+  distinguished-EC checkboxes." Per the user's direction the EC
+  Evaluator owns tier-1 inference; users do not self-attest. No
+  finding.
+- [PARTIALLY-RESOLVED] CRITIQUE BLOCK: "Page uses `rounded-3xl
+  border-white/10 bg-white/5 backdrop-blur-xl` cards +
+  `text-gradient` headline."
+  - `text-gradient` headline: RESOLVED — H1 is plain
+    `text-text-primary` (`extracurriculars/page.tsx:29`).
+  - Radii: RESOLVED — `rounded-md` on both columns (`:69, :82`).
+  - **Glassy chrome remains**: `:69` and `:82` still ship
+    `border border-white/10 bg-white/5 backdrop-blur-xl`. In
+    light mode `bg-white/5` over `--bg-base (oklch(99%))` is
+    visually nothing; the `border-white/10` is a near-white
+    border on a near-white bg = invisible. The
+    `backdrop-blur-xl` is decorative (no scrolling content
+    underneath) — banned by MASTER. Replace with `bg-bg-surface
+    border border-border-hair`.
+- [OPEN] **No `aria-live` region for AI responses.** CRITIQUE
+  flagged. `grep aria-live` in `ECConversation.tsx` returned no
+  matches. AI replies stream in silently for screen-reader users.
+  Wrap the assistant message log in `<div role="log"
+  aria-live="polite">` so each new bubble is announced.
+- [NEW BLOCK] **Locked-white CTA buttons.** "Add Activity" at
+  `extracurriculars/page.tsx:104` and the "Evaluate N Activities"
+  button at `:125` use `bg-white text-zinc-950 hover:bg-zinc-200`.
+  In light mode this is a white button on a near-white page
+  with no border — the button shape disappears. (The text
+  `text-zinc-950` will still be readable, but the visual
+  affordance is gone.) Replace with `bg-[var(--accent)]
+  text-[var(--accent-fg)]`.
+- [NEW BLOCK] **Error banner is dark-only.** `:142-143`:
+  `border border-red-500/20 bg-red-500/5 ... text-red-400`.
+  Same family as the dark-only disclaimers on /chances and
+  /compare. Remap to mode-aware tones (or
+  `--tier-unlikely-soft / --tier-unlikely-fg`).
+
+### WARN
+
+- [OPEN] CRITIQUE WARN: "`ActivitiesHelperPanel` is actually a
+  resume-bulk-improve panel; the actual EC suggestion helper
+  doesn't exist on this page." Verified — the page imports
+  `ECActivityList`, `ECConversationPanel`, `ECResults` but no EC
+  suggestion helper. CRITIQUE's underlying point: this page
+  doesn't surface "what would I do next to strengthen my EC
+  profile?". Future feature; flagging because the gap remains.
+- [OPEN] CRITIQUE WARN: "Nothing tells the user their EC band
+  feeds /chances and /list." Verified — the masthead and Results
+  panel describe the evaluator in isolation. No "your band feeds
+  the chance model" callout. Add a short "Used by /chances and
+  /list" hint near the band readout.
+- [OPEN] **Activity row delete/disable still hover-only.**
+  CRITIQUE systemic #5 was supposed to flag this on
+  `/extracurriculars`; verified at `ECActivityList.tsx:99`:
+  `opacity-0 group-hover:opacity-100 transition-[opacity]`.
+  Touch users can't see the actions. Always-visible at
+  reduced opacity instead.
+- [NEW WARN] **Animated gradient dividers around the Evaluate
+  CTA.** `extracurriculars/page.tsx:119, 135`:
+  `bg-gradient-to-r from-transparent via-white/10 to-transparent`.
+  Same anti-pattern as `/essay`. Replace with a flat
+  `border-t border-border-hair` rule.
+
+### INFO
+
+- [RESOLVED] CRITIQUE BLOCK referenced "every container violates
+  the contract." Containers are now hairline-bordered + correct
+  radii; only the glass `bg-white/5` remains. Down to one
+  surface-level WARN.
+- [NEW INFO] `<motion.button whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.97/0.98 }}>` repeated three times on the
+  Save and Evaluate buttons. Same micro-inconsistency as
+  `/essay` (1.02 vs 1.04, 0.97 vs 0.98). Single hover-tap
+  motion token would unify these.
+
+---
+
+## `/methodology`
+
+Files swept: `src/app/methodology/page.tsx`.
+
+CRITIQUE.md had no per-page findings here. New findings only.
+
+### BLOCK
+
+- [NEW BLOCK] **`bg-[#0a0a14]/70` hex literal on the AI formula
+  code block.** `methodology/page.tsx:29`: `<pre className="…
+  rounded-lg bg-[#0a0a14]/70 border border-border-hair …">`.
+  Same pattern as `BreakdownPanel.tsx`. In light mode this
+  renders a near-black 70%-alpha box inside a near-white page —
+  the only thing that breaks the otherwise calm reading flow.
+  Replace with `bg-bg-inset`.
+
+### WARN
+
+- [NEW WARN] **Table header + row hover use the same color.**
+  `methodology/page.tsx:219` (`thead className="bg-bg-surface"`)
+  and `:233` (`tr className="hover:bg-bg-surface"`). Hovering a
+  row produces no visible delta because the bg is already that
+  color elsewhere on the page. Use `hover:bg-bg-surface-2`.
+
+### INFO
+
+- [NEW INFO] Page archetype matches MASTER.md "Detail/result"
+  spec — long-form readable column at `max-w-3xl` (≈ 65ch).
+  Good.
+- [NEW INFO] All external citation links use `target="_blank"
+  rel="noopener noreferrer"` — correct.
+
+---
+
+## `/strategy/share/[token]`
+
+Files swept: `src/app/strategy/share/[token]/page.tsx`,
+`src/components/StrategyShareView.tsx`.
+
+This view is **out-of-scope for the contrast sweep** per user
+direction — the share-view dark gradient backdrop is intentional.
+Findings here are limited to a11y, semantics, security, and
+hard contract violations the dark theming doesn't excuse.
+
+### BLOCK
+
+- (none surfaced in this sweep)
+
+### WARN
+
+- [NEW INFO] `force-dynamic` rendering at
+  `share/[token]/page.tsx:51` is correct — share tokens shouldn't
+  be cached. Flagged so future "speed-up" passes don't try to
+  cache this route.
+- [NEW WARN] **`bg-[#0c0c1a]/80` hex literal at
+  `StrategyShareView.tsx:106`.** Per user direction the share
+  view is intentionally dark, so this is **not** a contrast bug.
+  Still worth defining a single `--share-bg-card` token to keep
+  the dark-share palette referenceable instead of scattering
+  hex literals across the file. Tracked as WARN, not BLOCK,
+  because the visual is correct.
+
+### INFO
+
+- [NEW INFO] `fetchShare()` constructs the origin from
+  `headers()` — correct, lets the route work on any host without
+  hardcoding. `force-dynamic` ensures the server-side fetch isn't
+  cached.
+
+---
+
+## Systemic findings — status of CRITIQUE.md TOP-10
+
+Each of CRITIQUE.md's "TOP 10 SYSTEMIC ISSUES" rolled up across
+all 14 surfaces, plus new systemic patterns surfaced by AUDIT-2.
+
+| # | CRITIQUE issue | Status | Notes |
+|---|----------------|--------|-------|
+| 1 | Glass + rounded-2xl + ring-shadow leftovers | **PARTIAL** | radii migrated everywhere; `bg-white/5 backdrop-blur-xl` chrome remains on `/extracurriculars`. `bg-white/5` decorative chip on `/resume` masthead. `backdrop-blur-sm` on `TranscriptUpload`. |
+| 2 | Tier semantic colors use raw Tailwind ramps | **OPEN** | Migration is half-finished. `/list` uses `bg-tier-*` at page level but `CollegeCard.CLASS_COLORS` and `BreakdownPanel` are still raw ramps. `/chances`: `likely` tier still raw. `/colleges`: TIERS legend + GROUPS headers raw. `/strategy`: Chrome / DeadlinesCard / MajorRecommendationsCard raw. `/compare`: `schoolColors[]` palette + Crown raw. |
+| 3 | Section eyebrows are `<p>`, not `<h2>` | **RESOLVED** | Verified across `/list`, `/chances`, `/profile`, `/strategy`, `/resume`, `/essay`, `/extracurriculars`, `/gpa`. |
+| 4 | `text-gradient` H1 wrapper | **RESOLVED** | `grep` shows `text-gradient` class only in `globals.css`; no TSX usages. |
+| 5 | Hover-only affordances | **PARTIAL** | `/list` pin button RESOLVED. `/compare` slot remove X added focus-fallback but still `opacity-0`. `/extracurriculars` activity row delete/disable still `opacity-0 group-hover:opacity-100`. |
+| 6 | Save state is invisible on every form page | **RESOLVED** | `<SaveIndicator>` mounted on `/profile` (`:89`), `/resume` (`:163`), `/essay` (`:130`), `/extracurriculars` (`:27`). |
+| 7 | Tab panel ARIA is half-wired | **OPEN** | `TabNavigation.tsx:39-41` still declares `aria-controls="tabpanel-${id}"` but no panel renders the matching `id`/`role="tabpanel"`. `aria-controls` points into the void on `/essay`. |
+| 8 | No section navigation on long form pages | **RESOLVED** | `<SectionNav>` on `/profile`, `/resume`, `/strategy`. |
+| 9 | Hardcoded `bg-blue-*` / `text-blue-*` instead of `--accent` | **OPEN** | `inputClass` in `/chances`, `/colleges`, `/profile`, `/resume` still has `focus:border-blue-500/50` (with the `focus:` typo). `/profile` SourceBadge dot, completeness gradient. `/essay` grade button (`bg-blue-600`) and dividers (`via-blue-500/30`). `ChanceForm.GpaScaleNote` blue ramp. Loading spinners (`border-blue-400`) on `/profile`, `/resume`. |
+| 10 | Dashboard is a parallel design system | **PARTIAL** | `--ae-*` namespace now aliases global tokens (RESOLVED). Young Serif gone (RESOLVED). 16px radii dropped to 8px (still off — should be 6px). **Fluid type still in place** for `.ae-name` / `.ae-tagline` / `.ae-section-title` (BLOCK per MASTER §Typography). Undefined `--ae-hue` breaks the readiness-bar fill silently (NEW BLOCK). `LayoutTweaks` still missing `aria-pressed` (CRITIQUE BLOCK still OPEN). |
+
+### NEW systemic findings AUDIT-2 surfaced
+
+These are patterns that don't appear in CRITIQUE.md but show up
+on multiple surfaces.
+
+#### S-A. Hardcoded `text-white` / `bg-white/N` on app pages
+
+Surfaces affected: `/profile` (completeness number `:130`, SAT
+`:366`, ACT `:412`), `/resume` (H1 `:187`, mode toggle active
+`:220`, mobile preview button `:499`, eyebrow chip `:157`),
+`/extracurriculars` (Add Activity `:104`, Evaluate CTA `:125`),
+`/gpa` (TranscriptUpload `:123, :129`).
+
+Light mode is the **default app theme** per MASTER.md. `text-white`
+on `--bg-surface` (oklch 97%) is invisible. This is a 6-page
+breakage that's worse than any single CRITIQUE finding because
+new users start on light mode and immediately see numbers and
+buttons disappearing. **Promote to BLOCK.**
+
+#### S-B. Hardcoded `bg-[#0a0a14]/70` and `bg-[#12121f]` hex literals
+
+Locations: `BreakdownPanel.tsx:45, 99` (used by `/list`,
+`/chances`, /colleges`), `ChanceResult.tsx:160`,
+`colleges/page.tsx:139`, `methodology/page.tsx:29`. Plus
+`bg-[#0c0c1a]/80` on `StrategyShareView.tsx:106` (intentional
+dark — out of scope).
+
+Same fix everywhere: replace with `bg-bg-inset` (or
+`bg-bg-surface-2`).
+
+#### S-C. Decorative gradient bars / dividers using raw blue ramps
+
+`/profile` completeness fill (`:136`), `/essay` results
+divider (`:227, :229`), `/extracurriculars` Evaluate divider
+(`:119, :135`). MASTER §Motion / §Borders implies hairline only.
+Replace with flat `bg-[var(--accent)]` (fills) or `border-t
+border-border-hair` (dividers).
+
+#### S-D. Same-color hover states (no visible delta)
+
+`/colleges` "View Strategy" link: `bg-accent-soft
+hover:bg-accent-soft`. `/colleges` "Add interest" button: same.
+`/chances` `<details>` hover: `hover:bg-bg-surface` on
+`bg-bg-surface` parent. `/methodology` table row hover:
+`hover:bg-bg-surface` over `thead.bg-bg-surface`. Define a
+`-strong` step (`--bg-surface-2` already exists) and use it for
+hovers.
+
+#### S-E. `inputClass` typo + raw blue focus ramp on every form page
+
+`/chances`, `/colleges`, `/profile`, `/resume` all share this
+exact string:
+```
+focus:border-blue-500/50 focus: focus:ring-accent-line
+focus:outline-none transition-[border-color,box-shadow]
+duration-200
+```
+- Bare `focus:` is dropped silently by Tailwind.
+- `focus:border-blue-500/50` should be
+  `focus:border-[var(--accent)]` per MASTER §Focus.
+
+Promote to a shared utility (`src/lib/form-classes.ts`) and fix
+once.
+
+#### S-F. AppShell wraps in `<div id="main-content">`, not `<main>`
+
+`AppShell.tsx:61`. The skip-link target is a `<div>`, every tool
+page (good) declares its own `<main>` so the landing route is
+the only page that would actually rely on the AppShell wrapper —
+and it gets a `<div>`. Rename to `<main>` on AppShell, drop the
+inner `<main>` from tool pages (or the other way around — but
+not both).
+
+#### S-G. Bouncy / overlong motion across the app
+
+`/chances` ChanceResult uses `type: "spring", stiffness: 200,
+damping: 15` (overshoot). `/essay` results fade is `0.5`s
+(MASTER baseline 240ms). Various card-mount filter blurs (CollegeCard,
+landing hero) use `filter: blur(...)` which is non-compositor.
+
+---
+
+## Recommended fix order
+
+The codemods at the top of CRITIQUE.md remain valid; ordering
+below is updated for what's actually OPEN now, ranked by
+leverage.
+
+1. **Define + apply OKLCH tier tokens at every signaling site
+   (CRITIQUE #2).** Remap `CollegeCard.CLASS_COLORS`,
+   `ChanceResult.TIER_STYLES.likely`, `colleges/page.TIERS`,
+   `CollegeResults.GROUPS`, `compare.schoolColors`,
+   `Strategy/Chrome/Deadlines/MajorRecs` raw ramps. Single
+   codemod.
+2. **Sweep `text-white` and dark-only `bg-white/N` from app
+   pages (NEW S-A).** `/profile`, `/resume`, `/extracurriculars`,
+   `/gpa`. Highest user-visible impact in light mode.
+3. **Replace `bg-[#0a0a14]/70` / `bg-[#12121f]` hex literals
+   with `bg-bg-inset` (NEW S-B).** Five files.
+4. **Promote `AppShell.tsx:61` `<div>` → `<main>` and reconcile
+   landmark ownership (NEW S-F).** Skip-link works correctly,
+   `/` route gets a real `<main>`.
+5. **Fix `LayoutTweaks` `aria-pressed` (`/dashboard`).** One
+   line per button.
+6. **Wrap each tab's content in `<div role="tabpanel"
+   id="tabpanel-${id}" aria-labelledby="tab-${id}">` on `/essay`
+   (CRITIQUE #7).** Five tab content components to update.
+7. **Resolve undefined `--ae-hue` on `/dashboard`.** Either
+   define `--ae-hue: 264` or replace formulas with concrete
+   tier tokens. Currently breaks readiness-bar + tier-likely +
+   tier-safety colors silently.
+8. **Convert `/dashboard` fluid type to fixed-rem scale
+   (CRITIQUE #10 remainder).** `.ae-name`, `.ae-tagline`,
+   `.ae-section-title`.
+9. **Sweep raw `bg-blue-*` / `text-blue-*` and the broken
+   `inputClass` typo (CRITIQUE #9 + NEW S-E).** Promote
+   `inputClass` to a shared utility.
+10. **Always-show hover-only affordances on `/compare` slot X
+    and `/extracurriculars` activity row actions (CRITIQUE #5).**
+11. **Migrate `/resume` H1 off `var(--font-display)` + locked
+    white + `clamp()` (NEW BLOCK).** Match the other tool-page
+    masthead pattern.
+12. **Drop the `/resume` mode-as-destination toggle.** Either
+    promote to a route or render Activities Helper as a side
+    panel.
+13. **Wire `aria-live="polite"` on `/extracurriculars` AI
+    response stream.**
+14. **postMessage-based iframe height sync on `/gpa`.** Drop
+    the hardcoded `height: 2400px`.
+15. **Drop the `<p>FAQ-style</p>` "Estimates only" disclaimer
+    duplication on `/chances`.** Keep one — the linked-to-methodology
+    one at the top.
+
+---
+
+## Counts
+
+Across all 14 surfaces, AUDIT-2 catalogues:
+
+- **CRITIQUE-derived findings statused**: 33 RESOLVED, 18 OPEN,
+  3 PARTIALLY-RESOLVED, 4 WONT-FIX.
+- **NEW findings**: 19 BLOCK, 31 WARN, 17 INFO.
+
+Of the OPEN systemic items, **5 resolve in a single codemod**
+(tier tokens, text-white sweep, hex literals, inputClass typo,
+hover-only affordances). The remaining work is per-surface
+detail (`/dashboard` `--ae-hue`, `/resume` H1, `/essay` tab
+panels).

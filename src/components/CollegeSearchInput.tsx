@@ -35,7 +35,7 @@ export const CollegeSearchInput: React.FC<CollegeSearchInputProps> = ({
   return (
     <div className="relative mb-4">
       <Search
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none"
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none"
         aria-hidden
       />
       <input
@@ -43,16 +43,25 @@ export const CollegeSearchInput: React.FC<CollegeSearchInputProps> = ({
         type="search"
         value={local}
         onChange={(e) => setLocal(e.target.value)}
+        onKeyDown={(e) => {
+          // Escape clears the input. Native <input type=search> sometimes
+          // does this in WebKit, but never in Firefox/Chrome — wire it
+          // explicitly so the contract is the same everywhere.
+          if (e.key === "Escape" && local) {
+            e.preventDefault();
+            setLocal("");
+          }
+        }}
         placeholder="Search schools by name or alias…"
         aria-label="Search colleges"
-        className="w-full rounded-xl bg-[#0c0c1a]/90 border border-white/[0.06] pl-9 pr-9 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 focus:outline-none"
+        className="w-full rounded-sm bg-bg-inset border border-border-hair pl-9 pr-9 py-2.5 text-sm text-text-primary placeholder-text-faint focus:border-[var(--accent)] focus:ring-1 focus:ring-accent-line focus:outline-none"
       />
       {local && (
         <button
           type="button"
           onClick={() => setLocal("")}
           aria-label="Clear search"
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-2.5 sm:p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

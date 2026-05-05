@@ -10,7 +10,7 @@ interface ResumePreviewProps {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="resume-section mb-5">
-      <h3 className="text-[11px] uppercase tracking-[0.18em] font-semibold text-zinc-700 pb-1 mb-2 border-b border-zinc-300">
+      <h3 className="text-[11px] uppercase tracking-[0.08em] font-semibold text-zinc-700 pb-1 mb-2 border-b border-zinc-300">
         {title}
       </h3>
       {children}
@@ -62,10 +62,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ resume }) => {
     summerExperience.length > 0;
 
   return (
-    <div className="resume-preview bg-white text-zinc-900 rounded-2xl p-8 sm:p-10 shadow-xl max-w-[780px] mx-auto font-sans">
+    <div className="resume-preview bg-white text-zinc-900 rounded-md p-8 sm:p-10 max-w-[780px] mx-auto font-sans">
       {/* Header */}
       <header className="mb-6 pb-4 border-b-2 border-zinc-900">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 leading-none mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-[-0.012em] text-zinc-900 leading-none mb-2">
           {basicInfo.name || "Your Name"}
         </h1>
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-zinc-700">

@@ -7,21 +7,22 @@ import type { ClassifiedCollege } from "@/lib/college-types";
 import type { ProfileSpike } from "@/lib/extracurricular-types";
 import { hasProgramVariance } from "@/data/hook-multipliers";
 import { BreakdownPanel } from "./BreakdownPanel";
+import { getCachedJson } from "@/lib/cloud-storage";
 
 const CLASS_COLORS = {
-  unlikely: { bg: "bg-red-600/10", border: "border-red-600/20", text: "text-red-500", label: "Unlikely", ring: "ring-red-600/25" },
-  reach: { bg: "bg-orange-500/10", border: "border-orange-500/20", text: "text-orange-400", label: "Reach", ring: "ring-orange-500/25" },
-  target: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", label: "Target", ring: "ring-amber-500/25" },
-  likely: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Likely", ring: "ring-blue-500/25" },
-  safety: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Safety", ring: "ring-emerald-500/25" },
+  unlikely:     { bg: "bg-tier-unlikely-soft",     border: "border-tier-unlikely-fg/30",     text: "text-tier-unlikely-fg",     label: "Unlikely",          ring: "ring-tier-unlikely-fg/30" },
+  reach:        { bg: "bg-tier-reach-soft",        border: "border-tier-reach-fg/30",        text: "text-tier-reach-fg",        label: "Reach",             ring: "ring-tier-reach-fg/30" },
+  target:       { bg: "bg-tier-target-soft",       border: "border-tier-target-fg/30",       text: "text-tier-target-fg",       label: "Target",            ring: "ring-tier-target-fg/30" },
+  likely:       { bg: "bg-tier-likely-soft",       border: "border-tier-likely-fg/30",       text: "text-tier-likely-fg",       label: "Likely",            ring: "ring-tier-likely-fg/30" },
+  safety:       { bg: "bg-tier-safety-soft",       border: "border-tier-safety-fg/30",       text: "text-tier-safety-fg",       label: "Safety",            ring: "ring-tier-safety-fg/30" },
   // Insufficient data: deliberately muted, no semantic color, no tier promise.
-  insufficient: { bg: "bg-zinc-500/5", border: "border-zinc-500/10", text: "text-zinc-400", label: "Insufficient Data", ring: "ring-zinc-500/15" },
+  insufficient: { bg: "bg-tier-insufficient-soft", border: "border-border-hair",             text: "text-text-secondary",       label: "Insufficient Data", ring: "ring-border-hair" },
 } as const;
 
 // Low-confidence muted variant — overrides tier color so the card visually
 // signals "we don't trust this number much". Applied when confidence === "low"
 // or when the chance was derived from a fallback (ED/EA estimate).
-const LOW_CONF_TEXT = "text-zinc-500";
+const LOW_CONF_TEXT = "text-text-muted";
 
 // Map EC spike categories to college tags for matching
 const SPIKE_TAG_MAP: Record<string, string[]> = {
@@ -72,7 +73,6 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
     confidence,
     yieldProtectedNote,
     usedFallback,
-    stale,
     recruitedAthletePathway,
     breakdown,
     majorMatch,
@@ -83,45 +83,41 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
   const chanceTextClass = isLowConf ? LOW_CONF_TEXT : colors.text;
 
   const spikeMatch = useMemo(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem("ec-evaluator-result") : null;
-      if (!raw) return null;
-      const ecResult = JSON.parse(raw);
-      if (!ecResult?.spikes?.length) return null;
-      return getSpikeMatch(ecResult.spikes, c.tags);
-    } catch {
-      return null;
-    }
+    const ecResult = getCachedJson<{ spikes?: Parameters<typeof getSpikeMatch>[0] }>(
+      "ec-evaluator-result",
+    );
+    if (!ecResult?.spikes?.length) return null;
+    return getSpikeMatch(ecResult.spikes, c.tags);
   }, [c.tags]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ delay: index * 0.04, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -2 }}
       data-college-card-index={flatIndex ?? undefined}
-      className={`group rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-5 sm:p-6 hover:bg-[#13131f] hover:border-white/[0.14] hover:shadow-[0_8px_24px_rgba(10,16,29,0.6)] transition-[background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] ${
-        focused ? "ring-2 ring-blue-500/30" : ""
+      className={`group rounded-md bg-bg-surface border border-border-hair p-5 sm:p-6 hover:bg-bg-elevated hover:border-border-strong  transition-[background-color,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        focused ? "ring-2 ring-accent-line" : ""
       }`}
     >
       {/* ── Header: Name + chance dominant ─────────────────────── */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ring-1 ${colors.ring}`}>
+            <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}  ${colors.ring}`}>
               {colors.label}
             </span>
             {c.usNewsRank && (
-              <span className="text-[10px] text-zinc-500 font-medium">
+              <span className="text-[10px] text-text-muted font-medium">
                 #{c.usNewsRank} US News
               </span>
             )}
           </div>
-          <h4 className="text-base sm:text-lg font-semibold text-zinc-100 truncate leading-tight">
+          <h4 className="text-base sm:text-lg font-semibold text-text-primary truncate leading-tight">
             {c.name}
           </h4>
-          <p className="text-[11px] text-zinc-500 mt-1">
+          <p className="text-[11px] text-text-muted mt-1">
             {c.state} &middot; {c.type === "public" ? "Public" : "Private"} &middot; {c.setting}
           </p>
         </div>
@@ -137,10 +133,10 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               }}
               aria-label={isPinned ? `Unpin ${c.name}` : `Pin ${c.name} to your list`}
               aria-pressed={isPinned}
-              className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center transition-[background-color,color] duration-200 ${
+              className={`mt-0.5 w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-[background-color,color] duration-200 ${
                 isPinned
-                  ? "bg-blue-500/15 text-blue-300 hover:bg-blue-500/25"
-                  : "bg-white/[0.03] text-zinc-500 hover:bg-white/[0.08] hover:text-zinc-300"
+                  ? "bg-accent-soft text-accent-text hover:bg-accent-soft"
+                  : "bg-bg-surface text-text-muted hover:bg-bg-elevated hover:text-text-secondary"
               }`}
             >
               <Bookmark
@@ -155,14 +151,14 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
               without faking precision. Muted color when confidence is low or
               the value comes from an ED/EA fallback. */}
           <div className="text-right">
-            <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-0.5">Chance</p>
+            <p className="text-[9px] text-text-faint uppercase tracking-[0.08em] mb-0.5">Chance</p>
             <p
               className={`text-3xl sm:text-4xl font-semibold font-mono tabular-nums leading-none ${chanceTextClass}`}
             >
               {classification === "insufficient" ? "—" : `${chance.mid}%`}
             </p>
             {classification !== "insufficient" && (
-              <p className="text-[10px] font-mono tabular-nums text-zinc-500 mt-0.5">
+              <p className="text-[10px] font-mono tabular-nums text-text-muted mt-0.5">
                 {chance.low}–{chance.high}%
               </p>
             )}
@@ -171,7 +167,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
       </div>
 
       {/* ── Hairline separator ──────────────────────────────────── */}
-      <div className="h-px bg-white/[0.05] -mx-5 sm:-mx-6 mb-4" />
+      <div className="h-px bg-bg-surface -mx-5 sm:-mx-6 mb-4" />
 
       {/* ── Stats row: horizontal with generous spacing ─────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3">
@@ -186,7 +182,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           surfaced as advisory text per SPEC. Show only at high-selectivity
           schools where strong essays can meaningfully shift outcomes. */}
       {classification !== "insufficient" && c.acceptanceRate < 25 && (
-        <p className="mt-3 text-[11px] text-zinc-500 leading-snug">
+        <p className="mt-3 text-[11px] text-text-muted leading-snug">
           Numbers assume average essay quality. Strong essays at this selectivity can shift chances meaningfully.
         </p>
       )}
@@ -198,42 +194,37 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           a competitive program could shift things. Per-program data sourcing
           is a separate workstream. */}
       {classification !== "insufficient" && hasProgramVariance(c.name) && (
-        <p className="mt-2 text-[11px] text-zinc-500 leading-snug">
+        <p className="mt-2 text-[11px] text-text-muted leading-snug">
           Some programs at this school may have admit rates that differ from the school overall.
         </p>
       )}
 
       {/* ── Confidence + caveat badges ──────────────────────────── */}
-      {(isLowConf || yieldProtectedNote || usedFallback || stale || recruitedAthletePathway) && (
+      {(isLowConf || yieldProtectedNote || usedFallback || recruitedAthletePathway) && (
         <div className="mt-4 flex flex-wrap gap-1.5">
           {recruitedAthletePathway && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-tier-safety-soft text-tier-safety-fg ring-1 ring-tier-safety-fg/30">
               Recruited athlete pathway
             </span>
           )}
           {confidence === "low" && !recruitedAthletePathway && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-text-secondary ring-1 ring-zinc-500/20">
               Low confidence
             </span>
           )}
           {usedFallback === "ed" && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-text-secondary ring-1 ring-zinc-500/20">
               ED estimate based on overall trends
             </span>
           )}
           {usedFallback === "ea" && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-text-secondary ring-1 ring-zinc-500/20">
               EA estimate based on overall trends
             </span>
           )}
           {yieldProtectedNote && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-text-secondary ring-1 ring-zinc-500/20">
               May consider demonstrated interest
-            </span>
-          )}
-          {stale && classification !== "insufficient" && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20">
-              Data may be stale
             </span>
           )}
         </div>
@@ -241,13 +232,13 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
 
       {/* ── Reasoning (only if present) ─────────────────────────── */}
       {reason && (
-        <p className="mt-4 pt-4 border-t border-white/[0.05] text-[12px] text-zinc-400 leading-relaxed">
+        <p className="mt-4 pt-4 border-t border-border-hair text-[12px] text-text-secondary leading-relaxed">
           {reason}
         </p>
       )}
 
       {spikeMatch && (
-        <p className="mt-2 text-[11px] text-blue-400/80 flex items-center gap-1.5">
+        <p className="mt-2 text-[11px] text-accent-text/80 flex items-center gap-1.5">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
@@ -260,7 +251,7 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           have at least one fragment (rank in field, knownFor tag, pipeline,
           earnings). Not shown when the badge itself is absent. */}
       {majorMatch && majorMatch !== "none" && matchReason && (
-        <p className="mt-1 ml-[18px] text-[11px] text-zinc-500 leading-snug">
+        <p className="mt-1 ml-[18px] text-[11px] text-text-muted leading-snug">
           {matchReason}
         </p>
       )}
@@ -273,8 +264,8 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
           (where the user has a single school selected) since rendering them
           per-card would balloon visual footprint. */}
       {breakdown && classification !== "insufficient" && (
-        <details className="group mt-4 pt-4 border-t border-white/[0.05]">
-          <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors">
+        <details className="group mt-4 pt-4 border-t border-border-hair">
+          <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] text-text-muted hover:text-text-secondary transition-colors">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-open:rotate-180">
               <polyline points="6 9 12 15 18 9"/>
             </svg>
@@ -297,9 +288,9 @@ export const CollegeCard: React.FC<CollegeCardProps> = ({
 // the inline expansion below.
 
 const PILL_TONE = {
-  strong: { bg: "bg-emerald-500/10", text: "text-emerald-400", ring: "ring-emerald-500/25", bar: "bg-emerald-400" },
-  decent: { bg: "bg-amber-500/10", text: "text-amber-400", ring: "ring-amber-500/25", bar: "bg-amber-400" },
-  none:   { bg: "bg-white/[0.03]", text: "text-zinc-500", ring: "ring-white/[0.06]", bar: "bg-zinc-600" },
+  strong: { bg: "bg-tier-safety-soft", text: "text-tier-safety-fg", ring: "ring-tier-safety-fg/30", bar: "bg-tier-safety-fg" },
+  decent: { bg: "bg-tier-target-soft", text: "text-tier-target-fg", ring: "ring-tier-target-fg/30", bar: "bg-tier-target-fg" },
+  none:   { bg: "bg-bg-inset",         text: "text-text-muted",      ring: "border-border-hair",     bar: "bg-text-faint" },
 } as const;
 
 function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
@@ -342,13 +333,13 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
   return (
     <div className="mt-2">
       <span
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${tone.bg} ${tone.text} ring-1 ${tone.ring}`}
+        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${tone.bg} ${tone.text}  ${tone.ring}`}
       >
         <GraduationCap
           className="w-3 h-3 shrink-0"
           strokeWidth={level === "strong" ? 2 : 1.75}
         />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em]">
           {pillLabel}
         </span>
       </span>
@@ -364,10 +355,10 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
               key={`${b.kind}:${b.name}`}
               className="flex items-center gap-2.5 text-[11px] leading-snug"
             >
-              <span className="text-zinc-400 truncate min-w-0 basis-[40%] sm:basis-[35%]">
+              <span className="text-text-secondary truncate min-w-0 basis-[40%] sm:basis-[35%]">
                 {b.name}
                 {b.kind === "interest" && (
-                  <span className="ml-1 text-zinc-600">(interest)</span>
+                  <span className="ml-1 text-text-faint">(interest)</span>
                 )}
               </span>
               <span
@@ -376,14 +367,14 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
                 aria-valuemax={100}
                 aria-valuenow={score}
                 aria-label={`${b.name} fit score`}
-                className="flex-1 h-1.5 rounded-full bg-white/[0.04] overflow-hidden min-w-[40px]"
+                className="flex-1 h-1.5 rounded-full bg-bg-surface overflow-hidden min-w-[40px]"
               >
                 <span
                   className={`block h-full rounded-full ${rowTone.bar} transition-[width] duration-300`}
                   style={{ width: `${score}%` }}
                 />
               </span>
-              <span className="font-mono tabular-nums text-zinc-300 shrink-0 w-7 text-right">
+              <span className="font-mono tabular-nums text-text-secondary shrink-0 w-7 text-right">
                 {score}
               </span>
             </li>
@@ -397,10 +388,10 @@ function MajorFitFlag({ item }: { item: ClassifiedCollege }) {
 function MetaStat({ label, value, secondary }: { label: string; value: string; secondary?: string }) {
   return (
     <div>
-      <p className="text-[9px] text-zinc-600 uppercase tracking-[0.15em] mb-1">{label}</p>
-      <p className="text-sm font-mono tabular-nums text-zinc-200">{value}</p>
+      <p className="text-[9px] text-text-faint uppercase tracking-[0.08em] mb-1">{label}</p>
+      <p className="text-sm font-mono tabular-nums text-text-primary">{value}</p>
       {secondary && (
-        <p className="text-[10px] font-mono tabular-nums text-zinc-500 mt-0.5">{secondary}</p>
+        <p className="text-[10px] font-mono tabular-nums text-text-muted mt-0.5">{secondary}</p>
       )}
     </div>
   );

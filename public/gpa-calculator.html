@@ -17,50 +17,59 @@
       } catch (e) { /* no-op */ }
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Default canvas (dark widget) — overridden in light mode below.
-       Set on html so it applies to the iframe's canvas color. */
-    html {
-      color-scheme: dark;
-    }
+    /* Default canvas (dark widget) — overridden in light mode below. */
+    html { color-scheme: dark; }
 
+    /* Linear-derived tokens — dark default. OKLCH-tinted neutrals + a single
+       deep-indigo accent (matches design-system/MASTER.md). Iframes are
+       isolated documents so tokens are duplicated here, not inherited. */
     :root {
-      --hs-w:    #60a5fa;
-      --hs-uw:   #93c5fd;
-      --col-w:   #3b82f6;
-      --col-uw:  #bfdbfe;
-      --bg:      #06060f;
-      --surface: rgba(6, 6, 15, 0.6);
-      --border:  rgba(255, 255, 255, 0.07);
-      --text:    #f1f5f9;
-      --muted:   #94a3b8;
-      --subtle:  #475569;
+      --accent-1:  oklch(64% 0.18 264);   /* primary signal (e.g. HS weighted) */
+      --accent-2:  oklch(76% 0.12 264);   /* secondary (e.g. HS unweighted) */
+      --accent-3:  oklch(58% 0.18 264);   /* tertiary (e.g. college weighted) */
+      --accent-4:  oklch(82% 0.10 264);   /* quaternary (e.g. college unweighted) */
+      /* Legacy aliases kept so widget markup doesn't have to change. */
+      --hs-w:    var(--accent-1);
+      --hs-uw:   var(--accent-2);
+      --col-w:   var(--accent-3);
+      --col-uw:  var(--accent-4);
+
+      --bg:      oklch(13% 0.012 250);
+      --surface: oklch(16% 0.013 250);
+      --border:  oklch(96% 0.005 250 / 0.08);
+      --text:    oklch(96% 0.005 250);
+      --muted:   oklch(76% 0.008 250);
+      --subtle:  oklch(58% 0.008 250);
     }
 
-    /* Light-theme overrides — applied when parent passes `?theme=light` and
-       the bootstrap script (below) sets `data-theme="light"` on <html>.
-       Flips the canvas + the text/border tokens used throughout the widget
-       so the same markup stays readable on a light page. Functional accent
-       colors (blue link/text, red errors, etc.) are intentionally kept. */
-    html[data-theme="light"] {
-      color-scheme: light;
-    }
+    html[data-theme="light"] { color-scheme: light; }
     html[data-theme="light"]:root {
-      --bg:      #ffffff;
-      --surface: rgba(255, 255, 255, 0.65);
-      --border:  rgba(15, 23, 42, 0.08);
-      --text:    #1a1b25;
-      --muted:   #52525b;
-      --subtle:  #a1a1aa;
+      --accent-1:  oklch(48% 0.16 264);
+      --accent-2:  oklch(60% 0.14 264);
+      --accent-3:  oklch(40% 0.16 264);
+      --accent-4:  oklch(70% 0.10 264);
+      --hs-w:    var(--accent-1);
+      --hs-uw:   var(--accent-2);
+      --col-w:   var(--accent-3);
+      --col-uw:  var(--accent-4);
+
+      --bg:      oklch(99% 0.003 250);
+      --surface: oklch(97% 0.004 250);
+      --border:  oklch(18% 0.01 250 / 0.08);
+      --text:    oklch(18% 0.01 250);
+      --muted:   oklch(40% 0.01 250);
+      --subtle:  oklch(58% 0.008 250);
     }
 
     body {
-      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      /* Use system font stack; the parent loads Geist but iframes can't
+         inherit @font-face. System stack on macOS resolves to San Francisco
+         which sits in the same neighborhood as Geist visually. */
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       background: transparent;
       color: var(--text);
       min-height: 100vh;
@@ -78,12 +87,12 @@
 
     .badge {
       display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(59,130,246,.1);
-      border: 1px solid rgba(59,130,246,.28);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);
       border-radius: 100px;
       padding: .3rem .9rem;
       font-size: .72rem; font-weight: 600;
-      color: #93c5fd;
+      color: var(--accent-1);
       text-transform: uppercase; letter-spacing: .09em;
       margin-bottom: 1.4rem;
     }
@@ -107,61 +116,33 @@
     /* ── Layout ── */
     .container { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 0 1rem 6rem; }
 
-    /* ── Glass card ── */
+    /* Surface card — Linear-derived: flat surface, hairline border, no
+       backdrop-blur, no decorative shadow. */
     .card {
-      background: rgba(6, 6, 15, 0.92);
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255,255,255,0.06); border-radius: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       padding: 1.8rem; margin-bottom: 1.5rem;
-      box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 24px 64px rgba(0,0,0,.45);
     }
-    /* Light-theme card chrome — same shape, white surface, dark border. */
+    /* Light theme: same hairline contract, just inherits the light tokens. */
     html[data-theme="light"] .card {
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow:
-        0 1px 0 rgba(255, 255, 255, 1) inset,
-        0 24px 64px rgba(15, 23, 42, 0.08);
+      background: var(--surface);
+      border: 1px solid var(--border);
     }
-    html[data-theme="light"] .ytab {
-      background: rgba(15, 23, 42, 0.04);
-      border-color: rgba(15, 23, 42, 0.08);
-      color: var(--muted);
-    }
-    html[data-theme="light"] .ytab:hover {
-      background: rgba(15, 23, 42, 0.08);
-      color: var(--text);
-      border-color: rgba(15, 23, 42, 0.14);
-    }
-    html[data-theme="light"] .scale-table th {
-      background: rgba(15, 23, 42, 0.03);
-    }
-    html[data-theme="light"] input,
-    html[data-theme="light"] select {
-      background: rgba(15, 23, 42, 0.03) !important;
-      border-color: rgba(15, 23, 42, 0.10) !important;
-      color: var(--text) !important;
-    }
-    html[data-theme="light"] input:hover,
-    html[data-theme="light"] select:hover {
-      background: rgba(15, 23, 42, 0.06) !important;
-    }
-    html[data-theme="light"] .result-card {
-      background: rgba(15, 23, 42, 0.03);
-    }
-    html[data-theme="light"] .btn-secondary {
-      background: rgba(15, 23, 42, 0.05);
-      border-color: rgba(15, 23, 42, 0.10);
-    }
+    /* Light-theme overrides previously duplicated the surface/border
+       contracts with hardcoded slate-900 rgba values. Now redundant —
+       :root + html[data-theme="light"]:root already publish --surface
+       and --border for both modes, so the dark-default rules just work
+       in light too. Block intentionally left empty. */
 
     .card-header { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.25rem; }
     .card-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, rgba(59,130,246,.22), rgba(37,99,235,.22));
-      border: 1px solid rgba(59,130,246,.28);
+      width: 32px; height: 32px; border-radius: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
       display: grid; place-items: center; flex-shrink: 0;
     }
-    .card-icon svg { width: 17px; height: 17px; color: #93c5fd; }
+    .card-icon svg { width: 16px; height: 16px; color: var(--accent-1); }
     .card-title { font-size: 1rem; font-weight: 700; }
 
     /* ── Year tab bar ── */
@@ -170,34 +151,34 @@
       gap: .45rem; flex-wrap: wrap;
       margin-bottom: 1.3rem;
       padding-bottom: 1.15rem;
-      border-bottom: 1px solid rgba(255,255,255,.05);
+      border-bottom: 1px solid var(--border);
     }
 
     .ytab {
       display: inline-flex; align-items: center; gap: .35rem;
-      padding: .42rem 1rem;
-      border-radius: 9px;
-      font-size: .83rem; font-weight: 600;
-      font-family: 'DM Sans', sans-serif;
+      padding: .4rem .85rem;
+      border-radius: 4px;
+      font-size: .8rem; font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      background: transparent;
       color: var(--muted);
-      transition: all .18s ease;
+      transition: color .15s ease, background-color .15s ease, border-color .15s ease;
       white-space: nowrap;
     }
-    .ytab:hover { background: rgba(255,255,255,.08); color: var(--text); border-color: rgba(255,255,255,.14); }
+    .ytab:hover { background: var(--surface); color: var(--text); }
     .ytab.active {
-      background: linear-gradient(135deg, rgba(29,78,216,.35), rgba(37,99,235,.35));
-      border-color: rgba(59,130,246,.45);
-      color: #bfdbfe;
-      box-shadow: 0 0 18px rgba(59,130,246,.22);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border-color: color-mix(in oklch, var(--accent-1), transparent 70%);
+      color: var(--accent-1);
+      box-shadow: none;
     }
 
     .ytab-remove {
       width: 16px; height: 16px;
       border-radius: 50%;
-      background: rgba(255,255,255,.08);
+      background: var(--surface);
       border: none;
       cursor: pointer;
       display: grid; place-items: center;
@@ -216,21 +197,21 @@
       font-size: .82rem; font-weight: 600;
       font-family: 'DM Sans', sans-serif;
       cursor: pointer;
-      border: 1px dashed rgba(255,255,255,.15);
+      border: 1px dashed var(--border);
       background: transparent; color: var(--subtle);
       transition: all .18s ease;
       margin-left: auto;
     }
     .btn-add-year svg { width: 13px; height: 13px; }
-    .btn-add-year:hover { border-color: rgba(59,130,246,.45); color: #93c5fd; background: rgba(59,130,246,.07); }
+    .btn-add-year:hover { border-color: color-mix(in oklch, var(--accent-1), transparent 60%); color: var(--accent-1); background: color-mix(in oklch, var(--accent-1), transparent 88%); }
     .btn-add-year:disabled { opacity: .3; cursor: not-allowed; }
-    .btn-add-year:disabled:hover { border-color: rgba(255,255,255,.15); color: var(--subtle); background: transparent; }
+    .btn-add-year:disabled:hover { border-color: var(--border); color: var(--subtle); background: transparent; }
 
     /* ── Row header ── */
     .row-header {
       display: grid; grid-template-columns: 1fr 130px 165px 70px 44px 40px;
       gap: .65rem; padding-bottom: .65rem;
-      border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: .85rem;
+      border-bottom: 1px solid var(--border); margin-bottom: .85rem;
     }
     .row-header span { font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--subtle); }
 
@@ -261,13 +242,13 @@
       display: grid; place-items: center;
     }
     .core-toggle.is-core {
-      background: rgba(59,130,246,.12);
-      border: 1px solid rgba(59,130,246,.28);
-      color: #93c5fd;
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);
+      color: var(--accent-1);
     }
     .core-toggle.is-core:hover {
-      background: rgba(59,130,246,.22);
-      border-color: rgba(59,130,246,.45);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%);
+      border-color: color-mix(in oklch, var(--accent-1), transparent 60%);
     }
     .core-toggle.is-hs {
       background: rgba(234,179,8,.1);
@@ -291,7 +272,7 @@
     /* ── Inputs ── */
     input[type="text"], input[type="email"], input[type="password"], select {
       width: 100%; padding: .55rem .85rem;
-      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+      background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; font-size: .88rem;
       font-family: 'DM Sans', sans-serif; color: var(--text);
       outline: none; transition: border-color .18s, box-shadow .18s, background .18s;
@@ -301,18 +282,18 @@
     input[type="password"]::placeholder { color: var(--subtle); }
     input[type="text"]:hover,
     input[type="email"]:hover,
-    input[type="password"]:hover { border-color: rgba(255,255,255,.15); background: rgba(2,6,23,.7); }
+    input[type="password"]:hover { border-color: var(--border); background: var(--surface); }
     input[type="text"]:focus,
     input[type="email"]:focus,
-    input[type="password"]:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.13); background: rgba(2,6,23,.75); }
+    input[type="password"]:focus { border-color: color-mix(in oklch, var(--accent-1), transparent 60%); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent-1), transparent 88%); background: var(--surface); }
     select {
       cursor: pointer; -webkit-appearance: none; appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23475569'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem;
     }
-    select:hover { border-color: rgba(255,255,255,.15); background-color: rgba(2,6,23,.7); }
-    select:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.13); background-color: rgba(2,6,23,.75); }
-    select option { background: #06060f; color: #f1f5f9; }
+    select:hover { border-color: var(--border); background-color: var(--surface); }
+    select:focus { border-color: color-mix(in oklch, var(--accent-1), transparent 60%); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent-1), transparent 88%); background-color: var(--surface); }
+    select option { background: var(--bg); color: var(--text); }
     select.unset  { color: var(--subtle); }
 
     /* ── Delete btn ── */
@@ -339,15 +320,15 @@
     }
     .btn svg { width: 14px; height: 14px; }
 
-    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 0 22px rgba(59,130,246,.28); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(59,130,246,.48), 0 6px 20px rgba(0,0,0,.35); }
-    .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-primary { background: var(--accent-1); color: #fff; border: 1px solid var(--accent-1); box-shadow: none; border-radius: 4px; }
+    .btn-primary:hover { filter: brightness(1.08); transform: none; }
+    .btn-primary:active { transform: translateY(0.5px); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-    .btn-secondary { background: rgba(255,255,255,.05); color: var(--muted); border: 1px solid rgba(255,255,255,.08); }
-    .btn-secondary:hover { background: rgba(255,255,255,.09); color: var(--text); border-color: rgba(255,255,255,.14); }
+    .btn-secondary { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--surface); color: var(--text); border-color: var(--border); }
 
-    .btn-ghost { background: transparent; color: var(--subtle); border: 1px solid rgba(255,255,255,.05); }
+    .btn-ghost { background: transparent; color: var(--subtle); border: 1px solid var(--border); }
     .btn-ghost:hover { background: rgba(239,68,68,.07); color: #f87171; border-color: rgba(239,68,68,.2); }
 
     /* ── College note ── */
@@ -365,11 +346,11 @@
     details { margin-top: 1.3rem; }
     summary {
       cursor: pointer; list-style: none;
-      font-size: .82rem; font-weight: 600; color: #60a5fa;
+      font-size: .82rem; font-weight: 600; color: var(--accent-1);
       user-select: none; display: inline-flex; align-items: center; gap: .4rem;
       transition: color .15s;
     }
-    summary:hover { color: #93c5fd; }
+    summary:hover { color: var(--accent-1); }
     summary::-webkit-details-marker { display: none; }
     .chev { width: 13px; height: 13px; transition: transform .2s ease; flex-shrink: 0; }
     details[open] summary .chev { transform: rotate(90deg); }
@@ -377,8 +358,8 @@
     .scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1rem; }
     .scale-label { font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--subtle); text-align: center; margin-bottom: .45rem; }
     .scale-table { width: 100%; border-collapse: collapse; font-size: .79rem; }
-    .scale-table th { background: rgba(255,255,255,.025); padding: .33rem .6rem; text-align: left; font-weight: 600; color: var(--subtle); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; }
-    .scale-table td { padding: .28rem .6rem; border-top: 1px solid rgba(255,255,255,.035); color: var(--muted); }
+    .scale-table th { background: var(--surface); padding: .33rem .6rem; text-align: left; font-weight: 600; color: var(--subtle); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; }
+    .scale-table td { padding: .28rem .6rem; border-top: 1px solid var(--border); color: var(--muted); }
     .scale-table td:first-child { color: var(--text); font-weight: 500; }
 
     /* ── Section labels ── */
@@ -393,7 +374,7 @@
     .cumulative-divider::before,
     .cumulative-divider::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+      background: var(--border);
     }
     .cumulative-divider span {
       font-size: .68rem; font-weight: 700;
@@ -408,7 +389,7 @@
 
     /* ── Result cards ── */
     .result-card {
-      position: relative; border-radius: 22px;
+      position: relative; border-radius: 6px;
       padding: 1.7rem 1.3rem 1.5rem;
       text-align: center; display: flex; flex-direction: column; align-items: center;
       overflow: hidden;
@@ -416,8 +397,8 @@
     }
     .result-card::before {
       content: ''; position: absolute; inset: 0;
-      background: rgba(6,6,15,.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border-radius: 22px; border: 1px solid rgba(255,255,255,.06);
+      background: var(--surface);  -webkit-
+      border-radius: 6px; border: 1px solid var(--border);
     }
     .result-card::after {
       content: ''; position: absolute;
@@ -425,23 +406,23 @@
     }
     .result-card > * { position: relative; z-index: 1; }
 
-    .result-card.hs-w   { box-shadow: 0 0 44px rgba(129,140,248,.13), 0 10px 48px rgba(0,0,0,.5); }
-    .result-card.hs-uw  { box-shadow: 0 0 44px rgba(34,211,238,.11),  0 10px 48px rgba(0,0,0,.5); }
-    .result-card.col-w  { box-shadow: 0 0 44px rgba(192,132,252,.12), 0 10px 48px rgba(0,0,0,.5); }
-    .result-card.col-uw { box-shadow: 0 0 44px rgba(45,212,191,.11),  0 10px 48px rgba(0,0,0,.5); }
+    .result-card.hs-w   { box-shadow: none; }
+    .result-card.hs-uw  { box-shadow: none; }
+    .result-card.col-w  { box-shadow: none; }
+    .result-card.col-uw { box-shadow: none; }
 
-    .result-card.hs-w::after  { background: linear-gradient(90deg,transparent,var(--hs-w),transparent);   box-shadow: 0 0 14px rgba(129,140,248,.8); }
-    .result-card.hs-uw::after { background: linear-gradient(90deg,transparent,var(--hs-uw),transparent);  box-shadow: 0 0 14px rgba(34,211,238,.8);  }
-    .result-card.col-w::after  { background: linear-gradient(90deg,transparent,var(--col-w),transparent); box-shadow: 0 0 14px rgba(192,132,252,.8); }
-    .result-card.col-uw::after { background: linear-gradient(90deg,transparent,var(--col-uw),transparent);box-shadow: 0 0 14px rgba(45,212,191,.8);  }
+    .result-card.hs-w::after  { background: linear-gradient(90deg,transparent,var(--hs-w),transparent);   box-shadow: none; }
+    .result-card.hs-uw::after { background: linear-gradient(90deg,transparent,var(--hs-uw),transparent);  box-shadow: none;  }
+    .result-card.col-w::after  { background: linear-gradient(90deg,transparent,var(--col-w),transparent); box-shadow: none; }
+    .result-card.col-uw::after { background: linear-gradient(90deg,transparent,var(--col-uw),transparent);box-shadow: none;  }
 
-    .result-card.hs-w:hover  { transform: translateY(-5px); box-shadow: 0 0 64px rgba(129,140,248,.24), 0 18px 56px rgba(0,0,0,.55); }
-    .result-card.hs-uw:hover { transform: translateY(-5px); box-shadow: 0 0 64px rgba(34,211,238,.22),  0 18px 56px rgba(0,0,0,.55); }
-    .result-card.col-w:hover  { transform: translateY(-5px); box-shadow: 0 0 64px rgba(192,132,252,.22), 0 18px 56px rgba(0,0,0,.55); }
-    .result-card.col-uw:hover { transform: translateY(-5px); box-shadow: 0 0 64px rgba(45,212,191,.22),  0 18px 56px rgba(0,0,0,.55); }
+    .result-card.hs-w:hover  { transform: translateY(-5px); box-shadow: none; }
+    .result-card.hs-uw:hover { transform: translateY(-5px); box-shadow: none; }
+    .result-card.col-w:hover  { transform: translateY(-5px); box-shadow: none; }
+    .result-card.col-uw:hover { transform: translateY(-5px); box-shadow: none; }
 
     /* Cumulative cards — slightly elevated border */
-    .result-card.cumul::before { border-color: rgba(255,255,255,.11); }
+    .result-card.cumul::before { border-color: var(--border); }
 
     .rc-school { font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--subtle); }
     .rc-type   { font-size: .77rem; color: var(--muted); margin-top: .2rem; margin-bottom: .9rem; }
@@ -492,25 +473,25 @@
       position: fixed; inset: 0; z-index: 1000;
       display: flex; align-items: center; justify-content: center;
       background: rgba(2, 6, 23, 0.97);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+       -webkit-
     }
 
     .auth-card {
       width: 100%; max-width: 420px; margin: 1rem;
       background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(255,255,255,.09);
+       -webkit-
+      border: 1px solid var(--border);
       border-radius: 24px;
       padding: 2.4rem 2rem 2rem;
-      box-shadow: 0 0 80px rgba(59,130,246,.15), 0 32px 80px rgba(0,0,0,.65);
+      box-shadow: 0 0 80px color-mix(in oklch, var(--accent-1), transparent 88%), 0 32px 80px rgba(0,0,0,.65);
     }
 
     .auth-header { text-align: center; margin-bottom: 1.8rem; }
     .auth-badge {
       display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.28);
+      background: color-mix(in oklch, var(--accent-1), transparent 88%); border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);
       border-radius: 100px; padding: .28rem .85rem;
-      font-size: .7rem; font-weight: 600; color: #93c5fd;
+      font-size: .7rem; font-weight: 600; color: var(--accent-1);
       text-transform: uppercase; letter-spacing: .09em;
       margin-bottom: 1.1rem;
     }
@@ -538,11 +519,11 @@
 
     .auth-toggle { text-align: center; font-size: .83rem; color: var(--muted); }
     .auth-toggle-btn {
-      background: none; border: none; color: #93c5fd; font-weight: 600;
+      background: none; border: none; color: var(--accent-1); font-weight: 600;
       cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .83rem;
       padding: 0; margin-left: .25rem; transition: color .15s;
     }
-    .auth-toggle-btn:hover { color: #bfdbfe; text-decoration: underline; }
+    .auth-toggle-btn:hover { color: var(--accent-1); text-decoration: underline; }
 
     /* ── User bar ── */
     #user-bar {
@@ -555,8 +536,8 @@
     }
     .btn-signout {
       padding: .34rem .8rem; font-size: .78rem; font-weight: 600;
-      background: rgba(255,255,255,.05); color: var(--subtle);
-      border: 1px solid rgba(255,255,255,.08); border-radius: 8px;
+      background: var(--surface); color: var(--subtle);
+      border: 1px solid var(--border); border-radius: 8px;
       cursor: pointer; font-family: 'DM Sans', sans-serif;
       transition: all .18s;
     }
@@ -566,10 +547,10 @@
     #save-indicator {
       position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
       display: none; align-items: center; gap: .45rem;
-      background: rgba(15,23,42,.9); border: 1px solid rgba(255,255,255,.1);
+      background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; padding: .45rem .85rem;
       font-size: .78rem; color: var(--muted);
-      backdrop-filter: blur(12px);
+      
       animation: fadeUp .25s ease both;
     }
     #save-indicator svg { width: 13px; height: 13px; color: #4ade80; }
@@ -658,7 +639,7 @@
       <span></span>
     </div>
 
-    <div style="margin-bottom:1rem;padding:.55rem .85rem;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15);border-radius:10px;font-size:.76rem;color:#93c5fd;line-height:1.55;">
+    <div style="margin-bottom:1rem;padding:.55rem .85rem;background:color-mix(in oklch, var(--accent-1), transparent 88%);border: 1px solid color-mix(in oklch, var(--accent-1), transparent 60%);border-radius:10px;font-size:.76rem;color: var(--accent-1);line-height:1.55;">
       <strong>*Counts for:</strong> Click the <strong>ALL</strong> button on a class to change it to <strong>HS</strong>. Classes set to <strong>ALL</strong> count toward both your High School and College GPA. Classes set to <strong>HS</strong> count only toward your High School GPA (e.g. PE, electives that colleges don't consider).
     </div>
 
@@ -1271,6 +1252,40 @@
       if (cloudState) restoreState(cloudState);
     });
   }
+
+  // Height-sync — broadcast the iframe's actual content height to its
+  // parent so /gpa can grow / shrink with the calculator instead of
+  // locking at a brittle fixed height. Throttled with rAF.
+  (function setupHeightSync() {
+    if (typeof window === 'undefined' || window.parent === window) return;
+    var lastH = 0;
+    var pending = false;
+    function postHeight() {
+      pending = false;
+      var h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0
+      );
+      if (Math.abs(h - lastH) < 2) return;
+      lastH = h;
+      try { window.parent.postMessage({ type: 'gpa-height', h: h }, '*'); }
+      catch (_) {}
+    }
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(postHeight);
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      var ro = new ResizeObserver(schedule);
+      ro.observe(document.documentElement);
+    } else {
+      window.addEventListener('resize', schedule);
+    }
+    setTimeout(schedule, 60);
+    document.addEventListener('input', schedule, true);
+    document.addEventListener('click', schedule, true);
+  })();
 </script>
 
 </body>

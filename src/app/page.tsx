@@ -8,13 +8,18 @@ import { ArrowRight, User } from "lucide-react";
 // LandingMiddle + LandingFooter are below the fold and cost no first-paint
 // time to defer. Lazy-loading them shrinks the initial JS payload so the
 // hero can paint and become interactive faster.
+// LandingMiddle + LandingFooter are below the fold so dynamic() lets
+// them code-split out of the initial bundle. SSR is left ON (the
+// previous `ssr: false` made the editorial middle + footer invisible
+// to crawlers and caused a flash-of-empty-content on slow networks
+// — see CRITIQUE.md systemic issue / landing BLOCK).
 const LandingMiddle = dynamic(
   () => import("@/components/landing/LandingExtras").then((m) => ({ default: m.LandingMiddle })),
-  { ssr: false, loading: () => <div style={{ minHeight: "60vh" }} /> }
+  { loading: () => <div style={{ minHeight: "60vh" }} /> }
 );
 const LandingFooter = dynamic(
   () => import("@/components/landing/LandingExtras").then((m) => ({ default: m.LandingFooter })),
-  { ssr: false, loading: () => null }
+  { loading: () => null }
 );
 
 const ShaderLines = dynamic(
@@ -32,6 +37,20 @@ export default function LandingPage() {
   useEffect(() => {
     const timer = setTimeout(() => setShaderReady(true), 0);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Touch-primary detection (iPad / iPhone). The 420vh + 280vh sticky
+  // scroll choreography fights iOS Safari's inertia and feels janky
+  // even on iPad Pro. On touch, we bypass it: hero and CTA each become
+  // simple full-viewport sections that scroll naturally.
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(hover: none) and (pointer: coarse)");
+    setIsTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   // ── Hero scroll choreography ──────────────────────────────────
@@ -90,21 +109,28 @@ export default function LandingPage() {
 
   return (
     <>
-      {/* ── Page 1 / Hero (sticky, fades out on scroll) ───────── */}
+      <main id="main-content">
+      {/* ── Page 1 / Hero — sticky scroll-jacked on desktop, simple
+          full-viewport section on touch (iPad / iPhone). ─────── */}
       <div
         ref={heroRef}
         data-landing-page=""
         className="bg-zinc-950"
-        style={{ height: "420vh", ...landingTokens }}
+        style={{ height: isTouch ? "100dvh" : "420vh", ...landingTokens }}
       >
         <div
           className="relative w-full bg-zinc-950 text-white"
-          style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}
+          style={{
+            position: isTouch ? "relative" : "sticky",
+            top: 0,
+            height: "100dvh",
+            overflow: "hidden",
+          }}
         >
           <motion.div
             className="absolute inset-0 pointer-events-none"
             style={{
-              opacity: heroGridOpacity,
+              opacity: isTouch ? 0.4 : heroGridOpacity,
               backgroundSize: "60px 60px",
               backgroundImage:
                 "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
@@ -114,36 +140,49 @@ export default function LandingPage() {
           />
 
           {shaderReady && (
-            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: heroOpacity }}>
+            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: isTouch ? 1 : heroOpacity }}>
               <ShaderLines />
             </motion.div>
           )}
 
           <motion.div
             className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
-            style={{ opacity: heroOpacity, scale: heroScale, filter: heroBlurFilter }}
+            style={
+              isTouch
+                ? { opacity: 1, scale: 1, filter: "none" }
+                : { opacity: heroOpacity, scale: heroScale, filter: heroBlurFilter }
+            }
           >
             <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] sm:tracking-[0.5em] text-zinc-300 mb-4 sm:mb-6 font-semibold">
               College Prep Suite
             </p>
+            {/* Single h1 with two visual lines — second line italic. Was two
+                separate h1s, which advertised two top-level headings to
+                screen readers and broke document outline. */}
             <h1
-              className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] text-white leading-[1]"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
-              Your edge in
+              <span className="block mb-2 sm:mb-3">Your edge in</span>
+              <span className="block italic">college admissions.</span>
             </h1>
-            <h1
-              className="font-[family-name:var(--font-display)] tracking-tight text-white leading-[1] italic"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
-            >
-              college admissions.
-            </h1>
-            <p className="text-xs text-zinc-500 text-center mt-2">
+            {/* Standfirst — names what the product actually does, so a
+                first-time visitor scanning the hero understands the value
+                prop without scrolling through 420vh of choreography. */}
+            <p className="mt-5 sm:mt-6 max-w-[44ch] text-[14px] sm:text-[15px] leading-relaxed text-zinc-300">
+              Nine connected tools — essay grading, GPA, extracurriculars,
+              resume, list, chances, comparison, strategy — sourced from CDS
+              data. One profile feeds them all.
+            </p>
+            <p className="text-xs text-zinc-500 text-center mt-4">
               Early access — actively in development
             </p>
           </motion.div>
 
-          {/* Scroll hint — fades out alongside the rest of the hero */}
+          {/* Scroll hint — fades out alongside the rest of the hero on
+              desktop. Hidden entirely on touch since content scrolls
+              naturally there and the prompt is misleading. */}
+          {!isTouch && (
           <motion.div
             style={{ opacity: heroOpacity }}
             className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex flex-col items-center gap-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
@@ -167,27 +206,34 @@ export default function LandingPage() {
               />
             </div>
           </motion.div>
+          )}
         </div>
       </div>
 
       {/* ── Page 2 / Editorial middle (normal scroll) ─────────── */}
       <LandingMiddle />
 
-      {/* ── Page 3 / CTA (sticky, fades in on scroll) ─────────── */}
+      {/* ── Page 3 / CTA — sticky scroll-jacked on desktop, simple
+          full-viewport section on touch (iPad / iPhone). ─────── */}
       <div
         ref={ctaRef}
         data-landing-page=""
         className="bg-zinc-950"
-        style={{ height: "280vh", ...landingTokens }}
+        style={{ height: isTouch ? "100dvh" : "280vh", ...landingTokens }}
       >
         <div
           className="relative w-full bg-zinc-950 text-white"
-          style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}
+          style={{
+            position: isTouch ? "relative" : "sticky",
+            top: 0,
+            height: "100dvh",
+            overflow: "hidden",
+          }}
         >
           <motion.div
             className="absolute inset-0 pointer-events-none"
             style={{
-              opacity: ctaGridOpacity,
+              opacity: isTouch ? 0.4 : ctaGridOpacity,
               backgroundSize: "60px 60px",
               backgroundImage:
                 "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
@@ -197,31 +243,30 @@ export default function LandingPage() {
           />
 
           {shaderReady && (
-            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: ctaOpacity }}>
+            <motion.div className="absolute inset-0 z-[1] pointer-events-none" style={{ opacity: isTouch ? 1 : ctaOpacity }}>
               <ShaderLines />
             </motion.div>
           )}
 
           <motion.div
             className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6"
-            style={{
-              opacity: ctaOpacity,
-              scale: ctaScale,
-              filter: ctaBlurFilter,
-              pointerEvents: ctaPointerEvents,
-            }}
+            style={
+              isTouch
+                ? { opacity: 1, scale: 1, filter: "none", pointerEvents: "auto" }
+                : {
+                    opacity: ctaOpacity,
+                    scale: ctaScale,
+                    filter: ctaBlurFilter,
+                    pointerEvents: ctaPointerEvents,
+                  }
+            }
           >
             <h2
-              className="font-[family-name:var(--font-display)] tracking-tight mb-2 sm:mb-3 text-white leading-[1]"
+              className="font-[family-name:var(--font-display)] tracking-[-0.012em] mb-4 sm:mb-6 text-white leading-[1]"
               style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
             >
-              Start building
-            </h2>
-            <h2
-              className="font-[family-name:var(--font-display)] tracking-tight mb-4 sm:mb-6 text-white leading-[1] italic"
-              style={{ fontSize: "clamp(2.4rem, 8vw, 7rem)" }}
-            >
-              your profile.
+              <span className="block mb-2 sm:mb-3">Start building</span>
+              <span className="block italic">your profile.</span>
             </h2>
             <p className="text-zinc-300 text-sm sm:text-lg md:text-xl mb-8 sm:mb-12 max-w-xl mx-auto font-light leading-relaxed px-2">
               Grade your essays, calculate your GPA, evaluate your extracurriculars, and find your
@@ -260,6 +305,7 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </div>
+      </main>
 
       {/* ── Footer (after CTA finishes) ───────────────────────── */}
       <LandingFooter />

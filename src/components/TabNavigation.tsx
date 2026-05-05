@@ -29,7 +29,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <nav role="tablist" aria-label="Essay results sections" className="flex border-b border-white/[0.06] overflow-x-auto">
+    <nav role="tablist" aria-label="Essay results sections" className="flex border-b border-border-hair overflow-x-auto">
       {TABS.map((tab, i) => {
         const isActive = activeTab === tab.id;
         return (
@@ -43,16 +43,16 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
-            className={`relative px-5 py-3.5 text-sm font-medium transition-[color] duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-inset ${
-              isActive ? "text-blue-400" : "text-zinc-500 hover:text-zinc-300"
+            className={`relative px-5 py-3.5 text-sm font-medium transition-[color] duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-inset ${
+              isActive ? "text-accent-text" : "text-text-muted hover:text-text-secondary"
             }`}
           >
             {tab.label}
             {isActive && (
               <motion.div
                 layoutId="tab-underline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-500"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent)]"
+                transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
               />
             )}
           </button>

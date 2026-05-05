@@ -32,7 +32,7 @@ function formatDate(ts: number): string {
 
 function scoreColor(score: number): string {
   if (score >= 80) return "text-emerald-400";
-  if (score >= 65) return "text-blue-400";
+  if (score >= 65) return "text-accent-text";
   if (score >= 50) return "text-amber-400";
   return "text-red-400";
 }
@@ -83,13 +83,17 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
         onClick={onToggle}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
-        className="fixed right-4 top-20 z-40 rounded-xl bg-[#12121f] border border-white/[0.08] px-3 py-2.5 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:border-white/[0.15] transition-[background-color,color,border-color] duration-200 shadow-lg shadow-black/40 flex items-center gap-2"
+        className="fixed z-40 rounded-xl bg-[#12121f] border border-white/[0.08] px-3 py-2.5 text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:border-border-strong transition-[background-color,color,border-color] duration-200 shadow-black/40 flex items-center gap-2"
+        style={{
+          top: "calc(5rem + env(safe-area-inset-top))",
+          right: "max(1rem, env(safe-area-inset-right))",
+        }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
         </svg>
         {essays.length > 0 && (
-          <span className="bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded text-[10px]">
+          <span className="bg-accent-soft text-accent-text px-1.5 py-0.5 rounded text-[10px]">
             {essays.length}
           </span>
         )}
@@ -103,7 +107,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onToggle}
-            className="fixed inset-0 z-40 bg-[#06060f]/60 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-bg-base/60 backdrop-blur-sm"
           />
         )}
       </AnimatePresence>
@@ -116,7 +120,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 320, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-80 bg-[#0a0a14] border-l border-white/[0.06] shadow-2xl shadow-black/60 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-80 max-w-[85vw] bg-bg-base border-l border-white/[0.06] shadow-black/60 flex flex-col pb-[env(safe-area-inset-bottom)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
@@ -159,7 +163,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
                             onChange={(e) => setEditTitle(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") commitRename(); if (e.key === "Escape") setEditingId(null); }}
                             onBlur={commitRename}
-                            className="flex-1 bg-white/[0.05] border border-blue-500/30 rounded-md px-2 py-0.5 text-xs text-zinc-200 focus:outline-none"
+                            className="flex-1 bg-bg-surface border border-accent-line rounded-md px-2 py-0.5 text-xs text-zinc-200 focus:outline-none"
                           />
                         </div>
                       ) : (
@@ -167,7 +171,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
                           onClick={() => onLoad(essay.id)}
                           className="w-full text-left"
                         >
-                          <p className="text-sm font-medium text-zinc-300 truncate group-hover:text-blue-400 transition-colors">
+                          <p className="text-sm font-medium text-zinc-300 truncate group-hover:text-accent-text transition-colors">
                             {essay.title}
                           </p>
                         </button>
@@ -203,7 +207,7 @@ export const EssayHistorySidebar: React.FC<EssayHistorySidebarProps> = ({
                           ) : (
                             <button
                               onClick={(e) => { e.stopPropagation(); restore(essay); }}
-                              className="text-zinc-600 hover:text-blue-300 p-0.5"
+                              className="text-zinc-600 hover:text-accent-text p-0.5"
                               title="Restore this version"
                             >
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

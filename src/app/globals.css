@@ -17,93 +17,131 @@
 
 :root,
 :root.dark {
-  /* ── DARK theme — cosmic depth ────────────────────────────── */
-  --bg-base: #06060f;
-  --bg-surface: #0f0f1a;
-  --bg-elevated: #15152a;
-  --text-primary: #e4e4e7;
-  --text-secondary: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --border-token: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --accent: #60a5fa;
-  --accent-strong: #3b82f6;
-  --accent-soft: rgba(99, 102, 241, 0.18);
-  --accent-glow: rgba(99, 102, 241, 0.35);
-  --violet-soft: rgba(168, 85, 247, 0.14);
-  --cyan-soft: rgba(56, 189, 248, 0.12);
-  --noise-opacity: 0.025;
+  /* ── DARK theme — Linear-derived ────────────────────────────
+     OKLCH-tinted neutrals carry a faint cool tint toward the brand
+     hue (264, deep indigo). See design-system/MASTER.md. */
+  --bg-base: oklch(13% 0.012 250);
+  --bg-surface: oklch(16% 0.013 250);
+  --bg-elevated: oklch(19% 0.014 250);
+  --bg-inset: oklch(11% 0.011 250);
+  --text-primary: oklch(96% 0.005 250);
+  --text-secondary: oklch(76% 0.008 250);
+  --text-muted: oklch(58% 0.008 250);
+  --text-faint: oklch(42% 0.008 250);
+  --border-token: oklch(96% 0.005 250 / 0.08);
+  --border-hair: oklch(96% 0.005 250 / 0.08);
+  --border-strong: oklch(96% 0.005 250 / 0.18);
+  --accent: oklch(64% 0.18 264);
+  --accent-strong: oklch(58% 0.18 264);
+  --accent-soft: oklch(64% 0.18 264 / 0.12);
+  --accent-line: oklch(64% 0.18 264 / 0.32);
+  --accent-text: oklch(82% 0.10 264);
+  --accent-glow: oklch(64% 0.18 264 / 0.30);
+  /* Foreground that always reads on top of --accent. White when accent
+     is the deep indigo (dark + light themes); near-black when accent
+     is forced to white (monochrome theme — see override below). */
+  --accent-fg: oklch(99% 0 0);
 
-  /* Atmospheric gradient mesh — visible when no shader overlay */
-  --bg-atmosphere:
-    radial-gradient(1100px 600px at 18% -8%, rgba(99, 102, 241, 0.20), transparent 60%),
-    radial-gradient(900px 600px at 110% 12%, rgba(168, 85, 247, 0.14), transparent 65%),
-    radial-gradient(800px 500px at 50% 110%, rgba(56, 189, 248, 0.10), transparent 60%);
+  /* Tier classification colors — matched-chroma OKLCH per MASTER.md so
+     all six tiers sit in the same visual register. -fg is the foreground
+     (text + dot fill); -soft is a low-opacity background tint. Used on
+     /list, /chances, /colleges, /strategy, /compare wherever the
+     admit-chance tier is the signal. */
+  --tier-safety-fg: oklch(72% 0.16 155);
+  --tier-safety-soft: oklch(72% 0.16 155 / 0.14);
+  --tier-likely-fg: oklch(72% 0.16 220);
+  --tier-likely-soft: oklch(72% 0.16 220 / 0.14);
+  --tier-target-fg: oklch(78% 0.15 75);
+  --tier-target-soft: oklch(78% 0.15 75 / 0.14);
+  --tier-reach-fg: oklch(74% 0.16 45);
+  --tier-reach-soft: oklch(74% 0.16 45 / 0.14);
+  --tier-unlikely-fg: oklch(70% 0.18 22);
+  --tier-unlikely-soft: oklch(70% 0.18 22 / 0.14);
+  --tier-insufficient-fg: oklch(58% 0.008 250);
+  --tier-insufficient-soft: oklch(58% 0.008 250 / 0.10);
 
-  /* Card chrome */
-  --card-bg: rgba(15, 15, 26, 0.70);
-  --card-border: rgba(255, 255, 255, 0.07);
-  --card-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 -1px 0 rgba(0, 0, 0, 0.30) inset,
-    0 30px 60px -20px rgba(0, 0, 0, 0.55),
-    0 8px 24px -8px rgba(0, 0, 0, 0.35);
-  --card-bezel-bg: rgba(255, 255, 255, 0.025);
-  --card-bezel-border: rgba(255, 255, 255, 0.05);
+  /* Legacy aliases retained for compatibility — point at neutral tints */
+  --violet-soft: oklch(96% 0.005 250 / 0.06);
+  --cyan-soft: oklch(96% 0.005 250 / 0.04);
+  --noise-opacity: 0;
+
+  /* No decorative gradient mesh — Linear-derived runs on flat surfaces. */
+  --bg-atmosphere: none;
+
+  /* Card chrome — hairline borders, no shadows. */
+  --card-bg: var(--bg-surface);
+  --card-border: var(--border-hair);
+  --card-shadow: none;
+  --card-bezel-bg: transparent;
+  --card-bezel-border: transparent;
 
   /* Legacy aliases */
   --background: var(--bg-base);
   --foreground: var(--text-primary);
 
-  /* Easing tokens — Emil Kowalski */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Easing tokens */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
   /* Duration tokens */
-  --duration-press: 160ms;
-  --duration-fast: 125ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
+  --duration-press: 150ms;
+  --duration-fast: 150ms;
+  --duration-normal: 240ms;
+  --duration-slow: 360ms;
 }
 
-/* ── LIGHT theme — editorial luxury ──────────────────────────── */
-/* A warm, refined light palette with subtle blue/violet/amber highlights.
-   Not a generic Apple clone — opinionated, layered, gradient-rich. */
+/* ── LIGHT theme — Linear-derived (default) ───────────────────
+   See design-system/MASTER.md. Warm-cool off-white surfaces with a
+   faint cool tint toward the brand hue (264). No gradient mesh, no
+   shadows. Light is the default — daytime essay-writing. */
 :root.light {
-  --bg-base: #fbfaf7;          /* warm off-white (paper feel) */
-  --bg-surface: #ffffff;
-  --bg-elevated: #ffffff;
-  --text-primary: #1a1b25;     /* deep ink, not pure black */
-  --text-secondary: #2d2f3a;
-  --text-muted: #61627a;       /* soft warm gray */
-  --border-token: rgba(28, 30, 60, 0.08);
-  --border-strong: rgba(28, 30, 60, 0.14);
-  --accent: #4f46e5;           /* indigo — richer than basic blue */
-  --accent-strong: #4338ca;
-  --accent-soft: rgba(79, 70, 229, 0.10);
-  --accent-glow: rgba(79, 70, 229, 0.18);
-  --violet-soft: rgba(168, 85, 247, 0.08);
-  --cyan-soft: rgba(56, 189, 248, 0.07);
-  --noise-opacity: 0.012;       /* paper grain */
+  --bg-base: oklch(99% 0.003 250);
+  --bg-surface: oklch(97% 0.004 250);
+  --bg-elevated: oklch(95% 0.005 250);
+  --bg-inset: oklch(93% 0.006 250);
+  --text-primary: oklch(18% 0.01 250);
+  --text-secondary: oklch(40% 0.01 250);
+  --text-muted: oklch(58% 0.008 250);
+  --text-faint: oklch(72% 0.006 250);
+  --border-token: oklch(18% 0.01 250 / 0.08);
+  --border-hair: oklch(18% 0.01 250 / 0.08);
+  --border-strong: oklch(18% 0.01 250 / 0.16);
+  --accent: oklch(48% 0.16 264);
+  --accent-strong: oklch(40% 0.16 264);
+  --accent-soft: oklch(48% 0.16 264 / 0.08);
+  --accent-line: oklch(48% 0.16 264 / 0.24);
+  --accent-text: oklch(36% 0.12 264);
+  --accent-glow: oklch(48% 0.16 264 / 0.16);
+  /* White stays the right contrast on the deep-indigo light-mode accent. */
+  --accent-fg: oklch(99% 0 0);
 
-  /* Atmospheric gradient mesh — soft warm light w/ brand color highlights */
-  --bg-atmosphere:
-    radial-gradient(1200px 700px at 12% -10%, rgba(79, 70, 229, 0.10), transparent 55%),
-    radial-gradient(1000px 700px at 105% 8%, rgba(236, 72, 153, 0.06), transparent 60%),
-    radial-gradient(900px 600px at 50% 110%, rgba(56, 189, 248, 0.07), transparent 60%),
-    radial-gradient(700px 500px at 88% 58%, rgba(251, 191, 36, 0.04), transparent 65%);
+  /* Tier classification colors — light-mode variants (lower lightness so
+     they read on the warm-cool off-white --bg-surface). */
+  --tier-safety-fg: oklch(45% 0.15 155);
+  --tier-safety-soft: oklch(45% 0.15 155 / 0.10);
+  --tier-likely-fg: oklch(48% 0.15 220);
+  --tier-likely-soft: oklch(48% 0.15 220 / 0.10);
+  --tier-target-fg: oklch(56% 0.15 75);
+  --tier-target-soft: oklch(56% 0.15 75 / 0.10);
+  --tier-reach-fg: oklch(54% 0.16 45);
+  --tier-reach-soft: oklch(54% 0.16 45 / 0.10);
+  --tier-unlikely-fg: oklch(48% 0.18 22);
+  --tier-unlikely-soft: oklch(48% 0.18 22 / 0.10);
+  --tier-insufficient-fg: oklch(58% 0.008 250);
+  --tier-insufficient-soft: oklch(58% 0.008 250 / 0.06);
 
-  /* Card chrome — frosted white with soft layered shadows */
-  --card-bg: rgba(255, 255, 255, 0.78);
-  --card-border: rgba(28, 30, 60, 0.07);
-  --card-shadow:
-    0 1px 0 rgba(255, 255, 255, 1) inset,
-    0 -1px 0 rgba(28, 30, 60, 0.04) inset,
-    0 24px 48px -16px rgba(28, 30, 60, 0.10),
-    0 6px 16px -6px rgba(28, 30, 60, 0.06);
-  --card-bezel-bg: rgba(28, 30, 60, 0.025);
-  --card-bezel-border: rgba(28, 30, 60, 0.05);
+  --violet-soft: oklch(18% 0.01 250 / 0.04);
+  --cyan-soft: oklch(18% 0.01 250 / 0.03);
+  --noise-opacity: 0;
+
+  --bg-atmosphere: none;
+
+  --card-bg: var(--bg-surface);
+  --card-border: var(--border-hair);
+  --card-shadow: none;
+  --card-bezel-bg: transparent;
+  --card-bezel-border: transparent;
 
   --background: var(--bg-base);
   --foreground: var(--text-primary);
@@ -132,9 +170,27 @@
   --accent-strong: #ffffff;
   --accent-soft: rgba(255, 255, 255, 0.08);
   --accent-glow: rgba(255, 255, 255, 0.18);
+  /* Foreground that reads on the white accent — must invert. */
+  --accent-fg: #040404;
   --violet-soft: rgba(255, 255, 255, 0.06);
   --cyan-soft: rgba(255, 255, 255, 0.04);
   --noise-opacity: 0;
+
+  /* Tier classification colors — monochrome variant. Pure grayscale theme
+     deliberately collapses the chroma to a single neutral, signaling
+     'every tier is the same shade of monochrome' as the contract intends. */
+  --tier-safety-fg: rgba(250, 250, 250, 0.92);
+  --tier-safety-soft: rgba(255, 255, 255, 0.10);
+  --tier-likely-fg: rgba(225, 225, 225, 0.88);
+  --tier-likely-soft: rgba(255, 255, 255, 0.08);
+  --tier-target-fg: rgba(200, 200, 200, 0.84);
+  --tier-target-soft: rgba(255, 255, 255, 0.07);
+  --tier-reach-fg: rgba(175, 175, 175, 0.80);
+  --tier-reach-soft: rgba(255, 255, 255, 0.06);
+  --tier-unlikely-fg: rgba(150, 150, 150, 0.76);
+  --tier-unlikely-soft: rgba(255, 255, 255, 0.05);
+  --tier-insufficient-fg: rgba(140, 140, 140, 0.72);
+  --tier-insufficient-soft: rgba(255, 255, 255, 0.04);
 
   /* Layered backdrop: radial highlights at corners + spotlight at top */
   --bg-atmosphere:
@@ -167,13 +223,35 @@
   --color-bg-base: var(--bg-base);
   --color-bg-surface: var(--bg-surface);
   --color-bg-elevated: var(--bg-elevated);
+  --color-bg-inset: var(--bg-inset);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
   --color-border-token: var(--border-token);
+  --color-border-hair: var(--border-hair);
   --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-text: var(--accent-text);
+  /* Tier color tokens bridged to Tailwind utilities so pages can use
+     bg-tier-safety-soft, text-tier-safety-fg, etc. instead of raw
+     bg-emerald-500. Avoids the 'accent' Tailwind namespace conflict
+     because tier-* doesn't collide with any built-in. */
+  --color-tier-safety-fg: var(--tier-safety-fg);
+  --color-tier-safety-soft: var(--tier-safety-soft);
+  --color-tier-likely-fg: var(--tier-likely-fg);
+  --color-tier-likely-soft: var(--tier-likely-soft);
+  --color-tier-target-fg: var(--tier-target-fg);
+  --color-tier-target-soft: var(--tier-target-soft);
+  --color-tier-reach-fg: var(--tier-reach-fg);
+  --color-tier-reach-soft: var(--tier-reach-soft);
+  --color-tier-unlikely-fg: var(--tier-unlikely-fg);
+  --color-tier-unlikely-soft: var(--tier-unlikely-soft);
+  --color-tier-insufficient-fg: var(--tier-insufficient-fg);
+  --color-tier-insufficient-soft: var(--tier-insufficient-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -191,6 +269,25 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Always reserve a scrollbar gutter so the right edge doesn't flicker
+     when content height crosses the viewport threshold (e.g. when a modal
+     opens, a section reveals, or a route switch changes total height).
+     'stable' keeps the gutter present even when no scrollbar is needed,
+     which removes the visual jump and eliminates the right-edge strip
+     that was clashing with the cinematic hero in light mode. */
+  scrollbar-gutter: stable;
+}
+
+/* Landing page routes lock the html canvas to the cinematic dark so the
+   scrollbar gutter (which renders <html>'s background, not <main>'s)
+   matches the cinematic hero. Without this, light-mode users saw a
+   pale strip running down the right edge of the dark hero — the gutter
+   showing the light theme's --bg-base while the hero painted bg-zinc-950
+   on the content area. The :has() selector targets the html only when
+   a [data-landing-page] descendant is present (the cinematic hero +
+   CTA wrappers in src/app/page.tsx mark themselves with this attribute). */
+html:has([data-landing-page]) {
+  background: #0a0a14;
 }
 
 /* ── Mobile interaction baseline ────────────────────────────── */
@@ -208,6 +305,30 @@ button, a, [role="button"], [role="tab"] {
    on iOS / iPadOS only) so design can keep smaller font-sizes elsewhere. */
 @supports (-webkit-touch-callout: none) {
   input, textarea, select { font-size: 16px; }
+}
+
+/* Keep focused inputs above the iOS virtual keyboard. Sticky NavBar (h-14
+   = 56px) plus the SectionNav can otherwise hide a focused field when iPad
+   pulls the keyboard up — `scroll-margin-top` tells the browser to leave
+   that much space when scrollIntoView fires on focus. */
+input, textarea, select {
+  scroll-margin-top: calc(var(--navbar-height, 56px) + 1rem);
+}
+
+/* Backdrop-filter is GPU-expensive on iPad Mini and older iPads. We
+   stack it on the sticky NavBar, the compare-page tab strip, and modal
+   overlays — that's three blurred layers competing during scroll, which
+   stutters on touch-primary devices. Drop the blur there; the underlying
+   tint keeps the visual hierarchy without the GPU cost. */
+@media (hover: none) and (pointer: coarse) {
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
 body {
@@ -258,15 +379,15 @@ p {
    The landing page is fully opted-out so its hero typography (much larger
    sizes, custom font weights) is preserved exactly as designed. */
 :where(h1, h2) {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.022em;
   line-height: 1.08;
 }
 :where(h3) {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.018em;
 }
 
 /* Forced consistent sizes on feature-page headings.
@@ -703,9 +824,21 @@ body::after {
   border-radius: var(--radius, 1rem);
 }
 
-/* Display headline — solid white, let the display font do the work */
+/* Display headline — was a true gradient, now resolves to the active
+   theme's text-primary so it reads correctly in both light and dark. */
 .text-gradient {
-  color: #ffffff;
+  color: var(--text-primary);
+}
+
+/* Prevent iOS Safari from auto-zooming on input focus.
+   iOS zooms when a focused input's effective font-size < 16px.
+   App-wide inputs use Tailwind text-sm (14px), so cap below 640px. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 /* Shimmer loading */

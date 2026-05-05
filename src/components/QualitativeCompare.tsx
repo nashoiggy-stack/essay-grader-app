@@ -202,6 +202,11 @@ const LOCATION_FIELDS: QualField[] = [
   },
 ];
 
+// auto-fit grid template — wraps to as many columns as fit at 140px+
+// each, falls to single-column on phones too narrow for one card. Matches
+// ComparisonGrid's behavior (was repeat(N, 1fr) which crammed the cells).
+const QUAL_GRID_TEMPLATE = "repeat(auto-fit, minmax(min(100%, 140px), 1fr))";
+
 // ── Expandable qualitative row ─────────────────────────────────────────────
 
 function QualRow({
@@ -214,14 +219,14 @@ function QualRow({
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   return (
-    <div className="space-y-1">
-      <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500 font-semibold mb-1.5">
+    <div role="row" className="space-y-1">
+      <p
+        role="rowheader"
+        className="text-[10px] uppercase tracking-[0.08em] text-text-muted font-semibold mb-1.5"
+      >
         {field.label}
       </p>
-      <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}
-      >
+      <div className="grid gap-2" style={{ gridTemplateColumns: QUAL_GRID_TEMPLATE }}>
         {colleges.map((c, i) => {
           const tag = field.getTag(c);
           const detail = field.getDetail(c);
@@ -229,28 +234,34 @@ function QualRow({
           const hasDetail = detail != null && detail.length > 0;
 
           return (
-            <div key={c.name} className="min-w-0">
+            <div
+              key={c.name}
+              role="gridcell"
+              aria-label={`${c.name}: ${tag ?? "no data"}`}
+              className="min-w-0"
+            >
               <button
                 type="button"
                 onClick={() => hasDetail && setExpandedIdx(isExpanded ? null : i)}
                 disabled={!hasDetail}
-                className={`w-full rounded-lg text-left transition-all duration-200 ${
+                aria-expanded={hasDetail ? isExpanded : undefined}
+                className={`w-full rounded-md text-left transition-all duration-200 ${
                   hasDetail
-                    ? "hover:bg-white/[0.04] cursor-pointer"
+                    ? "hover:bg-bg-surface cursor-pointer"
                     : "cursor-default"
                 } ${
                   isExpanded
-                    ? "bg-white/[0.03] ring-1 ring-white/[0.08]"
+                    ? "bg-bg-surface border border-border-hair"
                     : ""
                 }`}
               >
                 <div className="flex items-center justify-between gap-1 px-2.5 py-2">
-                  <span className="text-[11px] text-zinc-200 font-medium truncate">
+                  <span className="text-[11px] text-text-secondary font-medium truncate">
                     {tag ?? "—"}
                   </span>
                   {hasDetail && (
                     <ChevronDown
-                      className={`w-3 h-3 text-zinc-600 shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+                      className={`w-3 h-3 text-text-muted shrink-0 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
                         isExpanded ? "" : "-rotate-90"
                       }`}
                     />
@@ -269,7 +280,7 @@ function QualRow({
                     }}
                     className="overflow-hidden"
                   >
-                    <p className="px-2.5 pb-2 text-[11px] text-zinc-400 leading-relaxed">
+                    <p className="px-2.5 pb-2 text-[11px] text-text-muted leading-relaxed">
                       {detail}
                     </p>
                   </motion.div>
@@ -284,7 +295,7 @@ function QualRow({
 }
 
 // ── Section wrapper — composes CompareSection to avoid duplicating
-//    the expand/collapse pattern ─────────────────────────────────────���───────
+//    the expand/collapse pattern ────────────────────────────────────────────
 
 function QualSection({
   title,
@@ -299,21 +310,31 @@ function QualSection({
 }) {
   return (
     <CompareSection title={title} defaultExpanded={defaultExpanded}>
-      {/* Column headers */}
       <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}
+        role="grid"
+        aria-label={`${title} comparison across ${colleges.map((c) => c.name).join(", ")}`}
       >
-        {colleges.map((c) => (
-          <p key={c.name} className="text-[10px] text-zinc-500 font-medium truncate px-2.5">
-            {c.name.length > 20 ? c.name.split(" ").slice(0, 2).join(" ") : c.name}
-          </p>
+        {/* Column headers */}
+        <div
+          role="row"
+          className="grid gap-2"
+          style={{ gridTemplateColumns: QUAL_GRID_TEMPLATE }}
+        >
+          {colleges.map((c) => (
+            <p
+              key={c.name}
+              role="columnheader"
+              className="text-[10px] text-text-muted font-medium truncate px-2.5"
+            >
+              {c.name.length > 20 ? c.name.split(" ").slice(0, 2).join(" ") : c.name}
+            </p>
+          ))}
+        </div>
+        {/* Rows */}
+        {fields.map((f) => (
+          <QualRow key={f.key} field={f} colleges={colleges} />
         ))}
       </div>
-      {/* Rows */}
-      {fields.map((f) => (
-        <QualRow key={f.key} field={f} colleges={colleges} />
-      ))}
     </CompareSection>
   );
 }
@@ -334,24 +355,21 @@ export function CultureTab({ colleges }: { colleges: readonly College[] }) {
     <div className="space-y-4">
       <QualSection title="Culture & Atmosphere" fields={CULTURE_FIELDS} colleges={colleges} />
       {/* Vibe tags as pill cloud */}
-      <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] px-5 py-4">
-        <p className="text-[12px] font-bold text-zinc-200 uppercase tracking-[0.12em] mb-3">
+      <div className="rounded-md bg-bg-surface border border-border-hair px-5 py-4">
+        <p className="text-[12px] font-bold text-text-secondary uppercase tracking-[0.08em] mb-3">
           Vibe Tags
         </p>
-        <div
-          className="grid gap-3"
-          style={{ gridTemplateColumns: `repeat(${colleges.length}, 1fr)` }}
-        >
+        <div className="grid gap-3" style={{ gridTemplateColumns: QUAL_GRID_TEMPLATE }}>
           {colleges.map((c) => (
             <div key={c.name} className="space-y-1">
-              <p className="text-[10px] text-zinc-500 font-medium truncate">
+              <p className="text-[10px] text-text-muted font-medium truncate">
                 {c.name.length > 20 ? c.name.split(" ").slice(0, 2).join(" ") : c.name}
               </p>
               <div className="flex flex-wrap gap-1">
                 {(c.vibeTags ?? []).map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] ring-1 ring-white/[0.06] text-zinc-300"
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-bg-surface border border-border-hair text-text-secondary"
                   >
                     {tag}
                   </span>

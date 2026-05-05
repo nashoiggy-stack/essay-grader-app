@@ -33,7 +33,7 @@ export const AuthGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#06060f]">
+      <div className="min-h-dvh flex items-center justify-center bg-bg-base">
         <div className="h-6 w-6 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
       </div>
     );
@@ -267,14 +267,14 @@ function LoginScreen() {
   };
 
   return (
-    <div className="bg-[#06060f] min-h-dvh w-full flex flex-col text-white">
+    <div className="bg-bg-base min-h-dvh w-full flex flex-col text-white">
       <style dangerouslySetInnerHTML={{ __html: GLASS_STYLES }} />
       <ConfettiCanvas ref={confettiRef} manualstart className="fixed top-0 left-0 w-full h-full pointer-events-none z-[999]" />
 
       {/* Success overlay */}
       <AnimatePresence>
         {showSuccess && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-[#06060f]/80 backdrop-blur-sm">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/80 backdrop-blur-sm p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center gap-4 p-8">
               <PartyPopper className="w-12 h-12 text-green-400" />
               <p className="text-xl font-semibold">Welcome back!</p>
@@ -299,13 +299,13 @@ function LoginScreen() {
               <motion.div key="email-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0.1} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-tight text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
                       {mode === "signin" ? "Welcome back" : "Get started"}
                     </p>
                   </div>
                 </BlurFade>
                 <BlurFade delay={0.2}>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-text-secondary">
                     {mode === "signin" ? "Sign in to continue" : "Create your account"}
                   </p>
                 </BlurFade>
@@ -315,13 +315,13 @@ function LoginScreen() {
               <motion.div key="password-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
                 <BlurFade delay={0} className="w-full">
                   <div className="text-center">
-                    <p className="font-light text-4xl sm:text-5xl tracking-tight text-white">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
                       {mode === "signin" ? "Enter password" : "Create password"}
                     </p>
                   </div>
                 </BlurFade>
                 <BlurFade delay={0.1}>
-                  <p className="text-sm text-zinc-400">{email}</p>
+                  <p className="text-sm text-text-secondary">{email}</p>
                 </BlurFade>
               </motion.div>
             )}
@@ -392,7 +392,7 @@ function LoginScreen() {
               <BlurFade delay={0.4} className="w-full">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-xs text-zinc-600">or</span>
+                  <span className="text-xs text-text-faint">or</span>
                   <div className="flex-1 h-px bg-white/10" />
                 </div>
               </BlurFade>
@@ -407,12 +407,12 @@ function LoginScreen() {
               </BlurFade>
 
               <BlurFade delay={0.6}>
-                <p className="text-sm text-zinc-500 text-center">
+                <p className="text-sm text-text-muted text-center">
                   {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
                   <button
                     type="button"
                     onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setSuccessMsg(""); }}
-                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    className="text-accent-text hover:text-accent-text font-medium transition-colors"
                   >
                     {mode === "signin" ? "Create one" : "Sign in"}
                   </button>

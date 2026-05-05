@@ -50,14 +50,18 @@ export function BackgroundPicker() {
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-4 right-4 z-50 print:hidden"
+      className="fixed z-50 print:hidden"
+      style={{
+        bottom: "max(1rem, env(safe-area-inset-bottom))",
+        right: "max(1rem, env(safe-area-inset-right))",
+      }}
       data-bg-picker
     >
       {open && (
         <div
           role="dialog"
           aria-label="Background options"
-          className="mb-2 w-56 rounded-2xl border bg-[var(--bg-surface)] p-2 shadow-2xl"
+          className="mb-2 w-56 rounded-md border bg-[var(--bg-surface)] p-2 "
           style={{
             borderColor: "var(--border-token)",
             boxShadow: "0 24px 48px -12px rgba(0,0,0,0.4), 0 8px 16px -8px rgba(0,0,0,0.25)",
@@ -65,7 +69,7 @@ export function BackgroundPicker() {
         >
           <div className="px-2 pt-1 pb-2">
             <p
-              className="text-[10px] uppercase tracking-[0.18em] font-semibold"
+              className="text-[10px] uppercase tracking-[0.08em] font-semibold"
               style={{ color: "var(--text-muted)" }}
             >
               Background
@@ -137,7 +141,7 @@ export function BackgroundPicker() {
         aria-label={open ? "Close background picker" : "Open background picker"}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur-md transition-transform hover:scale-105 active:scale-95"
+        className="flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur-md transition-transform hover:scale-105 active:scale-95"
         style={{
           background: "var(--bg-surface)",
           borderColor: "var(--border-token)",

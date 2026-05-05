@@ -52,8 +52,8 @@ void SUGGESTION_CATEGORIES;
 const TYPE_COLORS = {
   cut: { bg: "bg-red-500/15", border: "border-red-500/40", text: "text-red-400", label: "Cut", dot: "bg-red-500" },
   add: { bg: "bg-emerald-500/15", border: "border-emerald-500/40", text: "text-emerald-400", label: "Add", dot: "bg-emerald-500" },
-  rewrite: { bg: "bg-blue-500/15", border: "border-blue-500/40", text: "text-blue-400", label: "Rewrite", dot: "bg-blue-500" },
-  strengthen: { bg: "bg-blue-500/15", border: "border-blue-500/40", text: "text-blue-400", label: "Strengthen", dot: "bg-blue-500" },
+  rewrite: { bg: "bg-accent-soft", border: "border-accent-line", text: "text-accent-text", label: "Rewrite", dot: "bg-blue-500" },
+  strengthen: { bg: "bg-accent-soft", border: "border-accent-line", text: "text-accent-text", label: "Strengthen", dot: "bg-blue-500" },
 } as const;
 
 interface InlineEditorProps {
@@ -130,11 +130,11 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
 
         {suggestions.length > 0 && (
           <>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-text-muted">
               {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""}
-              {activeFocus && <> for <span className="text-blue-400">{activeFocus}</span></>}
+              {activeFocus && <> for <span className="text-accent-text">{activeFocus}</span></>}
             </span>
-            <button onClick={onClearSuggestions} className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors">
+            <button onClick={onClearSuggestions} className="text-xs text-text-faint hover:text-text-secondary transition-colors">
               Clear all
             </button>
           </>
@@ -162,30 +162,30 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
-            <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.08] p-5">
-              <p className="text-xs text-zinc-400 font-medium mb-4">What do you want to improve?</p>
+            <div className="rounded-md bg-bg-surface border border-border-strong p-5">
+              <p className="text-xs text-text-secondary font-medium mb-4">What do you want to improve?</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {INTENT_GROUPS.map((group) => {
                   const isOpen = openGroup === group.key;
                   const hasActive = group.categories.some((c) => c === activeFocus);
                   return (
-                    <div key={group.key} className="rounded-xl bg-[#0c0c1a]/90 ring-1 ring-white/[0.05] overflow-hidden">
+                    <div key={group.key} className="rounded-xl bg-bg-inset border border-border-hair overflow-hidden">
                       <button
                         onClick={() => setOpenGroup(isOpen ? null : group.key)}
-                        className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left transition-[background-color] duration-200 hover:bg-white/[0.03]"
+                        className="w-full flex items-center justify-between gap-3 px-3.5 py-3 text-left transition-[background-color] duration-200 hover:bg-bg-surface"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className={`text-[13px] font-semibold ${hasActive ? "text-blue-300" : "text-zinc-200"}`}>
+                          <p className={`text-[13px] font-semibold ${hasActive ? "text-accent-text" : "text-text-primary"}`}>
                             {group.label}
                           </p>
-                          <p className="text-[11px] text-zinc-500 mt-0.5 leading-snug">
+                          <p className="text-[11px] text-text-muted mt-0.5 leading-snug">
                             {group.description}
                           </p>
                         </div>
                         <svg
                           width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                          className={`shrink-0 text-zinc-500 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                          className={`shrink-0 text-text-muted transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
                         >
                           <polyline points="6 9 12 15 18 9"/>
                         </svg>
@@ -210,8 +210,8 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                                   }}
                                   className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-[background-color,color] duration-200 ${
                                     activeFocus === cat
-                                      ? "bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30"
-                                      : "bg-white/[0.04] text-zinc-400 hover:bg-white/[0.08] hover:text-zinc-200"
+                                      ? "bg-accent-soft text-accent-text ring-1 ring-accent-line"
+                                      : "bg-bg-surface text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
                                   }`}
                                 >
                                   {cat}
@@ -234,7 +234,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       {suggestions.length > 0 && (
         <div className="flex gap-4 flex-wrap">
           {(Object.entries(TYPE_COLORS) as [keyof typeof TYPE_COLORS, (typeof TYPE_COLORS)[keyof typeof TYPE_COLORS]][]).map(([, c]) => (
-            <span key={c.label} className="flex items-center gap-1.5 text-xs text-zinc-500">
+            <span key={c.label} className="flex items-center gap-1.5 text-xs text-text-muted">
               <span className={`w-2 h-2 rounded-full ${c.dot}`} />
               {c.label}
             </span>
@@ -251,7 +251,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
 
       {/* ── Highlighted essay ─────────────────────────────────────── */}
       {highlightedParts && highlightedParts.length > 0 && (
-        <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-5 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap">
+        <div className="rounded-xl bg-bg-surface border border-border-hair p-5 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap">
           {highlightedParts.map((part, i) => {
             if (part.suggestionIndex === null) {
               return <span key={i}>{part.text}</span>;
@@ -283,25 +283,25 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="rounded-xl bg-[#12121f] border border-white/[0.08] p-5 shadow-xl"
+            className="rounded-xl bg-[#12121f] border border-border-strong p-5 "
           >
             <div className="flex items-center gap-2 mb-2">
               <span className={`w-2.5 h-2.5 rounded-full ${activeColors.dot}`} />
-              <span className={`text-xs font-semibold uppercase tracking-wider ${activeColors.text}`}>
+              <span className={`text-xs font-semibold uppercase tracking-[0.08em] ${activeColors.text}`}>
                 {activeColors.label}
               </span>
             </div>
 
-            <p className="text-sm text-zinc-400 mb-3">{activeS.reason}</p>
+            <p className="text-sm text-text-secondary mb-3">{activeS.reason}</p>
 
             {activeS.type === "cut" ? (
               <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-3 mb-4">
-                <p className="text-xs text-zinc-500 mb-1">Will remove:</p>
+                <p className="text-xs text-text-muted mb-1">Will remove:</p>
                 <p className="text-sm text-red-400 line-through">{activeS.original}</p>
               </div>
             ) : activeS.replacement ? (
-              <div className="rounded-lg bg-[#1a1a2e] border border-white/[0.08] p-3 mb-4">
-                <p className="text-xs text-zinc-500 mb-1">
+              <div className="rounded-lg bg-[#1a1a2e] border border-border-strong p-3 mb-4">
+                <p className="text-xs text-text-muted mb-1">
                   {activeS.type === "add" ? "Will insert after the highlighted text:" : "Will replace with:"}
                 </p>
                 <p className={`text-sm ${activeColors.text}`}>{activeS.replacement}</p>
@@ -311,13 +311,13 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => { onAcceptSuggestion(activeSuggestion!); setActiveSuggestion(null); }}
-                className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-opacity hover:opacity-80 ${activeColors.bg} ${activeColors.text} ring-1 ${activeColors.border}`}
+                className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-opacity hover:opacity-80 ${activeColors.bg} ${activeColors.text}  ${activeColors.border}`}
               >
                 Accept
               </button>
               <button
                 onClick={() => { onDismissSuggestion(activeSuggestion!); setActiveSuggestion(null); }}
-                className="flex-1 rounded-lg bg-[#0c0c1a]/90 text-zinc-500 py-2 text-sm font-semibold hover:text-zinc-300 transition-colors"
+                className="flex-1 rounded-lg bg-bg-inset text-text-muted py-2 text-sm font-semibold hover:text-text-secondary transition-colors"
               >
                 Dismiss
               </button>

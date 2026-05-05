@@ -23,12 +23,12 @@ export const FeedbackTab: React.FC<FeedbackTabProps> = ({
     exit={{ opacity: 0, x: 20 }}
     transition={{ duration: 0.3 }}
   >
-    <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-5 mb-6">
-      <h4 className="text-sm font-semibold text-blue-400 mb-2">Overall Assessment</h4>
-      <p className="text-sm text-zinc-300 leading-relaxed">{generalFeedback}</p>
+    <div className="rounded-xl bg-accent-soft border border-blue-500/10 p-5 mb-6">
+      <h4 className="text-sm font-semibold text-accent-text mb-2">Overall Assessment</h4>
+      <p className="text-sm text-text-secondary leading-relaxed">{generalFeedback}</p>
     </div>
 
-    <h4 className="text-sm font-semibold text-zinc-300 mb-3">Quick Scores</h4>
+    <h4 className="text-sm font-semibold text-text-secondary mb-3">Quick Scores</h4>
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {Object.entries(commonApp).map(([name, c]) => (
         <QuickScoreCard
@@ -57,9 +57,9 @@ const QuickScoreCard: React.FC<QuickScoreCardProps> = ({ name, score, onClick })
     <motion.button
       onClick={onClick}
       whileHover={{ scale: 1.02, y: -2 }}
-      className="glass rounded-lg p-3 text-left transition-[background-color,box-shadow] duration-200 cursor-pointer"
+      className="bg-bg-surface rounded-lg p-3 text-left transition-[background-color,box-shadow] duration-200 cursor-pointer"
     >
-      <p className="text-xs text-zinc-500 truncate">{name}</p>
+      <p className="text-xs text-text-muted truncate">{name}</p>
       <p className={`text-lg font-bold font-mono ${text}`}>{score}</p>
     </motion.button>
   );

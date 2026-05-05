@@ -14,7 +14,6 @@ import {
   Crown,
   ChevronDown,
 } from "lucide-react";
-import { AuroraBackground } from "@/components/AuroraBackground";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { CompareSelector } from "@/components/CompareSelector";
 import { DemographicsCard, generateDemographicInsights, type DemoInsight } from "@/components/DemographicsChart";
@@ -25,6 +24,7 @@ import {
   type SchoolColor,
 } from "@/components/CompareVisuals";
 import { CampusTab, CultureTab } from "@/components/QualitativeCompare";
+import { getCachedJson } from "@/lib/cloud-storage";
 import type { College, Classification, Tier3 } from "@/lib/college-types";
 import {
   compareColleges,
@@ -45,9 +45,16 @@ function readProfileForFit(): {
   essayV: number | null;
 } | null {
   try {
-    const raw = localStorage.getItem("admitedge-profile");
-    if (!raw) return null;
-    const p = JSON.parse(raw);
+    type ProfileShape = {
+      gpaUW?: string;
+      gpaW?: string;
+      sat?: { readingWriting?: string; math?: string };
+      act?: { english?: string; math?: string; reading?: string };
+      essayCommonApp?: string;
+      essayVspice?: string;
+    };
+    const p = getCachedJson<ProfileShape>("admitedge-profile");
+    if (!p) return null;
     const gpaUW = p.gpaUW ? parseFloat(p.gpaUW) : null;
     const gpaW = p.gpaW ? parseFloat(p.gpaW) : null;
     const sat =
@@ -87,20 +94,42 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 // ── Tier colors ────────────────────────────────────────────────────────────
+// All tier visuals use the OKLCH tier-* tokens so they stay legible in
+// light, dark, and monochrome themes. Glyphs live alongside the colors
+// so the signal isn't color-only — meets the a11y contract that color
+// is never the sole indicator (CRITIQUE.md /compare BLOCK).
 
 const TIER3_COLOR: Record<Tier3 | string, string> = {
-  high: "text-emerald-300 bg-emerald-500/10 ring-emerald-500/25",
-  medium: "text-amber-300 bg-amber-500/10 ring-amber-500/25",
-  low: "text-red-300 bg-red-500/10 ring-red-500/25",
+  high: "text-tier-safety-fg bg-tier-safety-soft",
+  medium: "text-tier-target-fg bg-tier-target-soft",
+  low: "text-tier-unlikely-fg bg-tier-unlikely-soft",
 };
 
-const FIT_COLORS: Record<Classification, { text: string; bg: string; ring: string }> = {
-  safety: { text: "text-emerald-300", bg: "bg-emerald-500/10", ring: "ring-emerald-500/25" },
-  likely: { text: "text-blue-300", bg: "bg-blue-500/10", ring: "ring-blue-500/25" },
-  target: { text: "text-amber-300", bg: "bg-amber-500/10", ring: "ring-amber-500/25" },
-  reach: { text: "text-orange-300", bg: "bg-orange-500/10", ring: "ring-orange-500/25" },
-  unlikely: { text: "text-red-300", bg: "bg-red-500/10", ring: "ring-red-500/25" },
-  insufficient: { text: "text-zinc-400", bg: "bg-zinc-500/5", ring: "ring-zinc-500/15" },
+const TIER3_GLYPH: Record<Tier3, string> = {
+  high: "▲",
+  medium: "●",
+  low: "▼",
+};
+
+const FIT_COLORS: Record<Classification, { text: string; bg: string }> = {
+  safety: { text: "text-tier-safety-fg", bg: "bg-tier-safety-soft" },
+  likely: { text: "text-accent-text", bg: "bg-accent-soft" },
+  target: { text: "text-tier-target-fg", bg: "bg-tier-target-soft" },
+  reach: { text: "text-tier-reach-fg", bg: "bg-tier-reach-soft" },
+  unlikely: { text: "text-tier-unlikely-fg", bg: "bg-tier-unlikely-soft" },
+  insufficient: { text: "text-tier-insufficient-fg", bg: "bg-tier-insufficient-soft" },
+};
+
+// Non-color signal — distinct glyphs survive monochrome / colorblind /
+// printed screenshots. The double-glyphs differentiate the two extremes
+// (safety vs unlikely) at a glance.
+const FIT_GLYPH: Record<Classification, string> = {
+  safety: "▲▲",
+  likely: "▲",
+  target: "●",
+  reach: "▼",
+  unlikely: "▼▼",
+  insufficient: "−",
 };
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -168,8 +197,8 @@ export default function ComparePage() {
   const visibleTabs = TABS.filter((t) => t.key !== "fit" || profileData != null);
 
   return (
-    <AuroraBackground>
-      <main className="mx-auto max-w-6xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
+    <>
+      <main id="main-content" className="mx-auto max-w-6xl px-4 py-16 sm:py-24 font-[family-name:var(--font-geist-sans)]">
         {/* Header */}
         <motion.div
           className="mb-8 text-center"
@@ -177,10 +206,10 @@ export default function ComparePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="text-gradient">College Comparison</span>
+          <h1 className="text-[2rem] sm:text-[2.5rem] font-semibold tracking-[-0.022em] leading-[1.04]">
+            College Comparison
           </h1>
-          <p className="mt-3 text-zinc-400 max-w-lg mx-auto text-sm">
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-text-secondary mx-auto">
             Select 2–4 schools. Compare admissions, academics, campus, outcomes, and fit — side by side.
           </p>
         </motion.div>
@@ -213,7 +242,7 @@ export default function ComparePage() {
               <button
                 type="button"
                 onClick={() => setConfirmed(false)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-white/[0.08] transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full bg-bg-surface border border-border-strong px-4 py-2 text-xs font-semibold text-text-secondary hover:bg-bg-elevated transition-colors"
               >
                 Edit Selection
               </button>
@@ -254,28 +283,48 @@ export default function ComparePage() {
               })}
             </div>
 
-            {/* Tabs */}
+            {/* Tabs — sticky horizontal nav with scroll affordance.
+                The right-edge fade gradient signals overflow on mobile
+                (CRITIQUE.md flagged the tabs as silently clipping at
+                375px with no cue to scroll). */}
             <ScrollReveal delay={0.14}>
-              <div className="sticky top-16 z-30 bg-[#06060f]/90 backdrop-blur-md -mx-4 px-4 py-2 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none rounded-b-xl">
-                {visibleTabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => setActiveTab(tab.key)}
-                      className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold transition-[color,background-color] duration-200 shrink-0 ${
-                        isActive
-                          ? "text-white bg-white/[0.08]"
-                          : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
+              <div className="sticky top-16 z-30 bg-bg-base/90 backdrop-blur-md -mx-4 px-4 py-2 rounded-b-md">
+                <div
+                  role="tablist"
+                  aria-label="Comparison categories"
+                  className="relative flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none -mr-4 pr-4"
+                  style={{
+                    /* Right-edge fade so overflowing tabs visibly trail off,
+                       cueing 'there is more, scroll'. Mask is a transform-
+                       cheap way to fade without an extra DOM element. */
+                    maskImage:
+                      "linear-gradient(to right, black calc(100% - 28px), transparent)",
+                    WebkitMaskImage:
+                      "linear-gradient(to right, black calc(100% - 28px), transparent)",
+                  }}
+                >
+                  {visibleTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.key;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-sm text-[12px] font-medium transition-[color,background-color] duration-200 shrink-0 ${
+                          isActive
+                            ? "text-text-primary bg-bg-elevated"
+                            : "text-text-muted hover:text-text-secondary hover:bg-bg-surface"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </ScrollReveal>
 
@@ -318,8 +367,8 @@ export default function ComparePage() {
 
         {/* Placeholder — shown when no comparison is active */}
         {!comparison && (
-          <div className="mt-8 rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-12 text-center">
-            <p className="text-zinc-500">
+          <div className="mt-8 rounded-md bg-bg-surface border border-border-hair p-12 text-center">
+            <p className="text-text-muted">
               {selected.length === 0
                 ? "Search for schools above — or import your pinned list from the College List Builder."
                 : selected.length === 1
@@ -329,7 +378,7 @@ export default function ComparePage() {
           </div>
         )}
       </main>
-    </AuroraBackground>
+    </>
   );
 }
 
@@ -337,10 +386,10 @@ export default function ComparePage() {
 
 function InsightsBar({ insights }: { insights: readonly ComparisonInsight[] }) {
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-blue-500/[0.06] to-blue-500/[0.02] border border-blue-500/15 p-5">
+    <div className="rounded-md bg-gradient-to-br from-blue-500/[0.06] to-blue-500/[0.02] border border-blue-500/15 p-5">
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-blue-300" />
-        <h3 className="text-[12px] font-semibold uppercase tracking-[0.12em] text-blue-200">
+        <Sparkles className="w-4 h-4 text-accent-text" />
+        <h3 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-accent-text">
           Decision Insights
         </h3>
       </div>
@@ -360,11 +409,11 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.04] ring-1 ring-white/[0.08] hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-bg-surface border border-border-hair hover:ring-white/[0.15] px-3 py-1.5 text-[12px] transition-[box-shadow] duration-200"
       >
-        <Crown className="w-3 h-3 text-amber-300" />
-        <span className="text-zinc-400">{insight.label}:</span>
-        <span className="text-zinc-100 font-semibold">{insight.collegeName}</span>
+        <Crown className="w-3 h-3 text-tier-target-fg" />
+        <span className="text-text-secondary">{insight.label}:</span>
+        <span className="text-text-primary font-semibold">{insight.collegeName}</span>
       </button>
       <AnimatePresence>
         {open && (
@@ -373,9 +422,9 @@ function InsightPill({ insight }: { insight: ComparisonInsight }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="absolute left-0 top-full mt-1.5 w-60 z-10 rounded-lg bg-[#0c0c1a] border border-white/[0.1] p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+            className="absolute left-0 top-full mt-1.5 w-60 z-10 rounded-lg bg-bg-inset border border-border-strong p-3 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
           >
-            <p className="text-[11px] text-zinc-300 leading-relaxed">
+            <p className="text-[11px] text-text-secondary leading-relaxed">
               {insight.detail}
             </p>
           </motion.div>
@@ -392,21 +441,28 @@ function FitBadgeRow({ fits }: { fits: readonly CollegeFitSummary[] }) {
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {fits.map((f) => {
         const colors = FIT_COLORS[f.classification];
+        const glyph = FIT_GLYPH[f.classification];
         return (
           <div
             key={f.college.name}
-            className={`rounded-xl ${colors.bg} ring-1 ${colors.ring} p-3`}
+            className={`rounded-md border border-border-hair ${colors.bg} p-3`}
           >
-            <p className="text-[12px] text-zinc-300 font-medium truncate">
+            <p className="text-[12px] text-text-secondary font-medium truncate">
               {f.college.name}
             </p>
             <div className="flex items-center gap-2 mt-1">
               <span
-                className={`text-[11px] font-bold uppercase tracking-[0.1em] ${colors.text}`}
+                aria-hidden
+                className={`text-[10px] leading-none ${colors.text} font-mono`}
+              >
+                {glyph}
+              </span>
+              <span
+                className={`text-[11px] font-bold uppercase tracking-[0.08em] ${colors.text}`}
               >
                 {f.fitLabel}
               </span>
-              <span className="text-[10px] font-mono tabular-nums text-zinc-500">
+              <span className="text-[10px] font-mono tabular-nums text-text-muted ml-auto">
                 {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
               </span>
             </div>
@@ -428,14 +484,30 @@ function ComparisonGrid({
 }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl bg-[#0f0f1c] border border-white/[0.06] p-8 text-center">
-        <p className="text-sm text-zinc-500">No data available for this section.</p>
+      <div className="rounded-md bg-bg-surface border border-border-hair p-8 text-center">
+        <p className="text-sm text-text-muted">No data available for this section.</p>
       </div>
     );
   }
 
+  // ARIA grid semantics — the visual layout is auto-fit responsive cards,
+  // not a true HTML <table>, but assistive tech needs row/cell structure
+  // to read this as comparable data. Each ComparisonRow announces itself
+  // as a row; ValueCells live inside as gridcells.
   return (
-    <div className="space-y-2">
+    <div
+      role="grid"
+      aria-label={`Comparison of ${colleges.map((c) => c.name).join(", ")}`}
+      className="space-y-2"
+    >
+      <div role="row" className="sr-only">
+        <span role="columnheader">Field</span>
+        {colleges.map((c) => (
+          <span key={c.name} role="columnheader">
+            {c.name}
+          </span>
+        ))}
+      </div>
       {rows.map((row) => (
         <ComparisonRow key={row.field} row={row} collegeCount={colleges.length} />
       ))}
@@ -454,18 +526,25 @@ function ComparisonRow({
   const hasBest = row.values.some((v) => v.isBest);
 
   return (
-    <div className="rounded-xl bg-[#0f0f1c] border border-white/[0.05] overflow-hidden hover:border-white/[0.1] transition-[border-color] duration-200">
+    <div
+      role="row"
+      className="rounded-md bg-bg-surface border border-border-hair overflow-hidden hover:border-border-strong transition-[border-color] duration-200"
+    >
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         className="w-full px-4 py-3 text-left"
       >
         <div className="flex items-center gap-3 mb-2">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500 font-semibold">
+          <p
+            role="rowheader"
+            className="text-[11px] uppercase tracking-[0.08em] text-text-muted font-semibold"
+          >
             {row.label}
           </p>
           <ChevronDown
-            className={`w-3 h-3 text-zinc-600 transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
+            className={`w-3 h-3 text-text-faint transition-transform duration-200 [transition-timing-function:var(--ease-out)] ${
               expanded ? "" : "-rotate-90"
             }`}
           />
@@ -482,7 +561,13 @@ function ComparisonRow({
           }}
         >
           {row.values.map((v) => (
-            <ValueCell key={v.collegeName} value={v.value} isBest={v.isBest && hasBest} />
+            <div
+              key={v.collegeName}
+              role="gridcell"
+              aria-label={`${v.collegeName}: ${v.value}`}
+            >
+              <ValueCell value={v.value} isBest={v.isBest && hasBest} />
+            </div>
           ))}
         </div>
       </button>
@@ -498,8 +583,8 @@ function ComparisonRow({
             }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-3 border-t border-white/[0.04] pt-2">
-              <p className="text-[11px] text-zinc-500 leading-relaxed">
+            <div className="px-4 pb-3 border-t border-border-hair pt-2">
+              <p className="text-[11px] text-text-muted leading-relaxed">
                 {getFieldContext(row.field)}
               </p>
             </div>
@@ -518,27 +603,35 @@ function ValueCell({ value, isBest }: { value: string; isBest: boolean }) {
       ? (lower as Tier3)
       : null;
   const tierClass = tierMatch ? TIER3_COLOR[tierMatch] : null;
+  const tierGlyph = tierMatch ? TIER3_GLYPH[tierMatch] : null;
 
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5">
-        {isBest && <Crown className="w-3 h-3 text-amber-300 shrink-0" />}
+        {isBest && <Crown className="w-3 h-3 text-tier-target-fg shrink-0" aria-label="Best in row" />}
         {tierClass ? (
           <span
-            className={`inline-flex items-center text-[12px] font-semibold px-2 py-0.5 rounded-md ring-1 ${tierClass}`}
+            className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-md ${tierClass}`}
           >
+            {tierGlyph && (
+              <span aria-hidden className="font-mono text-[10px] leading-none">
+                {tierGlyph}
+              </span>
+            )}
             {value}
           </span>
         ) : (
           <span
             className={`text-[13px] leading-snug ${
-              isBest ? "text-zinc-100 font-semibold" : "text-zinc-300"
+              isBest ? "text-text-primary font-semibold" : "text-text-secondary"
             }`}
           >
             {value === "Yes" ? (
-              <span className="text-emerald-300 font-semibold">Yes</span>
+              <span className="inline-flex items-center gap-1 text-tier-safety-fg font-semibold">
+                <span aria-hidden>✓</span> Yes
+              </span>
             ) : value === "No" ? (
-              <span className="text-zinc-500">No</span>
+              <span className="text-text-muted">No</span>
             ) : (
               value
             )}
@@ -556,32 +649,36 @@ function FitTab({ fits }: { fits: readonly CollegeFitSummary[] }) {
     <div className="space-y-3">
       {fits.map((f) => {
         const colors = FIT_COLORS[f.classification];
+        const glyph = FIT_GLYPH[f.classification];
         return (
           <div
             key={f.college.name}
-            className="rounded-xl bg-[#0f0f1c] border border-white/[0.05] p-5"
+            className="rounded-md bg-bg-surface border border-border-hair p-5"
           >
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h4 className="text-[15px] font-semibold text-zinc-100">
+              <h4 className="text-[15px] font-semibold text-text-primary">
                 {f.college.name}
               </h4>
               <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-[0.1em] px-2.5 py-0.5 rounded-full ring-1 ${colors.bg} ${colors.text} ${colors.ring}`}
+                  className={`inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.08em] px-2.5 py-0.5 rounded-full ${colors.bg} ${colors.text}`}
                 >
+                  <span aria-hidden className="font-mono leading-none">
+                    {glyph}
+                  </span>
                   {f.fitLabel}
                 </span>
-                <span className="text-sm font-mono tabular-nums text-zinc-400">
+                <span className="text-sm font-mono tabular-nums text-text-secondary">
                   {f.classification === "insufficient" ? "—" : `${f.chance.mid}%`}
                 </span>
                 {f.classification !== "insufficient" && (
-                  <span className="text-[10px] font-mono tabular-nums text-zinc-500">
+                  <span className="text-[10px] font-mono tabular-nums text-text-muted">
                     ({f.chance.low}–{f.chance.high}%)
                   </span>
                 )}
               </div>
             </div>
-            <p className="text-[13px] text-zinc-400 leading-relaxed">
+            <p className="text-[13px] text-text-secondary leading-relaxed">
               {f.reason}
             </p>
           </div>
@@ -659,11 +756,11 @@ function DemographicsTab({ colleges }: { colleges: readonly College[] }) {
           {insights.map((ins, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] ring-1 ring-white/[0.08] text-zinc-300"
+              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-bg-surface border border-border-hair text-text-secondary"
             >
-              <Crown className="w-3 h-3 text-amber-300" />
-              <span className="text-zinc-400">{ins.label}:</span>
-              <span className="font-semibold text-zinc-100">{ins.collegeName}</span>
+              <Crown className="w-3 h-3 text-tier-target-fg" />
+              <span className="text-text-secondary">{ins.label}:</span>
+              <span className="font-semibold text-text-primary">{ins.collegeName}</span>
             </span>
           ))}
         </div>
@@ -881,13 +978,13 @@ function CostTab({ colleges }: { colleges: readonly College[] }) {
                 value={c.strongFinancialAid ? "Yes" : "No"}
                 label="Meets full need"
                 isBest={c.strongFinancialAid === true}
-                color={c.strongFinancialAid ? "text-emerald-300" : "text-zinc-500"}
+                color={c.strongFinancialAid ? "text-tier-safety-fg" : "text-text-muted"}
               />
               <MetricCard
                 value={c.strongMeritAid ? "Yes" : "No"}
                 label="Merit scholarships"
                 isBest={c.strongMeritAid === true}
-                color={c.strongMeritAid ? "text-emerald-300" : "text-zinc-500"}
+                color={c.strongMeritAid ? "text-tier-safety-fg" : "text-text-muted"}
               />
             </div>
           ))}

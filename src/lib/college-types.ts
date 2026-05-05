@@ -92,12 +92,21 @@ export interface College {
   readonly edAdmitRate?: number;                  // 0-100, Early Decision admit rate (CDS C21)
   readonly eaAdmitRate?: number;                  // 0-100, Early Action admit rate (CDS C21)
   readonly regularDecisionAdmitRate?: number;     // 0-100, RD-only admit rate (CDS C1/C21 derived)
+  // Out-of-state acceptance rate. Set on schools where in-state preference
+  // skews the overall published rate (UNC, UVA, UMich, all UCs, public
+  // flagships generally). When present, the chance model uses this in place
+  // of `acceptanceRate` for OOS applicants (the default audience for this
+  // tool) — the published "overall" rate is otherwise misleading by 5-15
+  // points at residency-preference schools. Source: CDS C1 residency
+  // breakdown (admits ÷ applicants for the Out-of-State column).
+  readonly oosAcceptanceRate?: number;            // 0-100
+  readonly inStateAcceptanceRate?: number;        // 0-100, informational
   readonly top10HSPercent?: number;               // 0-100, CDS-reported top 10% of HS class (CDS C11)
   readonly avgGPACDS?: number;                    // CDS-reported average HS GPA of enrolled freshmen (CDS C12)
   // Trailing year of the source CDS academic year (e.g. "2024-2025" → 2025).
   // Populated for CDS-sourced schools by the merge in src/data/colleges.ts.
-  // Used by the chance model to surface "data may be stale" when undefined
-  // or older than 2 academic cycles.
+  // Internal-only: feeds the chance model's confidence calculation
+  // (hasCds in admissions.ts). Not surfaced as a user-facing flag.
   readonly dataYear?: number;
 
   // ── Hook fields (W2) ──────────────────────────────────────────────────────
@@ -127,13 +136,6 @@ export interface College {
   // Northwestern, JHU, UChicago, Notre Dame, Vanderbilt, Rice, Williams,
   // Amherst, Pomona, Swarthmore.
   readonly admissionsTier?: "algorithmic" | "holistic-elite";
-
-  // Differentiates how the school evaluates applicants in the algorithmic
-  // tier. Stats-driven publics (UF, all UCs, UMich, UVA, etc.) cap chance
-  // generously in the 15-25% admit-rate bracket because their decisions are
-  // largely formulaic. Holistic privates cap conservatively because soft
-  // factors swing more weight. Default 'holistic'.
-  readonly admissionsType?: "stats-driven" | "holistic" | "mixed";
 
   // ── Program-specific admit rates (W4 structural — empty in Feature 1) ────
   // When populated, the chance model surfaces low-confidence for users whose
@@ -352,7 +354,10 @@ export interface ClassifiedCollege {
   // school-specific rate. Surfaces a "based on overall trends" badge.
   readonly usedFallback?: "ed" | "ea" | null;
   // Set when the school's data is older than 2 academic cycles (or missing).
-  // Drives the "data may be stale" note.
+  // Internal-only: still emitted by computeAdmissionChance and threaded
+  // through ClassifiedCollege so confidence-band logic can read it. The
+  // user-facing "data may be stale" pill was removed (fired on most schools
+  // and gave users no actionable signal).
   readonly stale?: boolean;
   // Set when the recruited-athlete pathway fired. The chance/range represent
   // the published 70-85% band, and the note overrides normal stat-band
@@ -409,9 +414,21 @@ export interface ChanceResult {
   readonly explanation: string;
   readonly strengths: string[];
   readonly weaknesses: string[];
+  // Neutral CTAs for inputs the user hasn't provided yet (e.g. AP scores).
+  // Surfaced as a separate UI section so absence of data isn't styled as a
+  // weakness/penalty. Each entry is { label, href }.
+  readonly missingDataHints?: readonly { label: string; href: string }[];
   readonly confidence: ConfidenceTier;
   readonly breakdown?: import("./admissions").ChanceBreakdown;
   readonly whatIfs?: readonly import("./admissions").WhatIfScenario[];
+  // Set when the chance model used a residency-specific acceptance rate
+  // instead of the school's overall published rate. UI surfaces a flag
+  // so the user sees why the chance figure differs from the headline AR.
+  readonly residencyUsed?: {
+    readonly residency: "in-state" | "oos" | "international";
+    readonly rate: number;
+    readonly overall: number;
+  };
 }
 
 export interface CollegeFilters {
@@ -443,6 +460,8 @@ export interface CollegeFilters {
 
 export type ECBandInput = "" | "limited" | "developing" | "solid" | "strong" | "exceptional";
 
+export type Residency = "in-state" | "oos" | "international";
+
 export interface ChanceInputs {
   gpaUW: string;
   gpaW: string;
@@ -460,6 +479,11 @@ export interface ChanceInputs {
   // it and deleting the reset-on-college-change effect restores the original
   // behavior exactly.
   applicationPlan: ApplicationPlan;
+  // Residency relative to the selected school. Default "oos" — most users
+  // are out-of-state for any given school. Only matters when the school
+  // has oosAcceptanceRate / inStateAcceptanceRate set; otherwise the
+  // chance model falls back to the published overall rate regardless.
+  residency: Residency;
 }
 
 export const EMPTY_FILTERS: CollegeFilters = {
@@ -498,6 +522,7 @@ export const EMPTY_CHANCE_INPUTS: ChanceInputs = {
   collegeIndex: null,
   // UNDO [application-plan]: remove this line.
   applicationPlan: "RD",
+  residency: "oos",
 };
 
 export const REGIONS = [
