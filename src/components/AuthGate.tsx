@@ -12,12 +12,14 @@ import confetti from "canvas-confetti";
 import type { Options as ConfettiOptions, GlobalOptions as ConfettiGlobalOptions, CreateTypes as ConfettiInstance } from "canvas-confetti";
 
 // Exact-match public paths.
-const PUBLIC_ROUTES = ["/gpa"];
+const PUBLIC_ROUTES = ["/gpa", "/auth/reset"];
 // Prefix-match public paths — needed for dynamic segments where the full
 // pathname isn't known ahead of time (e.g. share tokens). An anonymous
 // visitor navigating to /strategy/share/<token> must render without being
 // redirected to the login screen: the whole point of the share feature
 // is that a parent or counselor without an account can open the URL.
+// /auth/reset is also public — Supabase's recovery email lands a user
+// there before they have a normal session.
 const PUBLIC_PREFIXES = ["/strategy/share/"];
 
 function isPublicPath(pathname: string): boolean {
@@ -190,10 +192,11 @@ function IconBtn({ onClick, children, type = "button" }: { onClick?: () => void;
 // ── Login Screen ──────────────────────────────────────────────────────────────
 
 function LoginScreen() {
-  const { signIn, signUp, error, enterAsGuest } = useAuthContext();
+  const { signIn, signUp, error, enterAsGuest, resetPassword } = useAuthContext();
   const router = useRouter();
 
-  const [step, setStep] = useState<"email" | "password">("email");
+  const [step, setStep] = useState<"email" | "password" | "reset">("email");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -257,6 +260,18 @@ function LoginScreen() {
   const handleGuest = () => {
     enterAsGuest();
     router.push("/");
+  };
+
+  const handleResetPassword = async () => {
+    if (!isEmailValid || resetSubmitting) return;
+    setResetSubmitting(true);
+    setSuccessMsg("");
+    const msg = await resetPassword(email);
+    if (msg) {
+      setSuccessMsg(msg);
+      // Stay on the reset screen so the user sees the success state.
+    }
+    setResetSubmitting(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -325,6 +340,17 @@ function LoginScreen() {
                 </BlurFade>
               </motion.div>
             )}
+            {step === "reset" && (
+              <motion.div key="reset-header" initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="w-full flex flex-col items-center gap-4">
+                <BlurFade delay={0} className="w-full">
+                  <div className="text-center">
+                    <p className="font-light text-4xl sm:text-5xl tracking-[-0.012em] text-white">
+                      Reset password
+                    </p>
+                  </div>
+                </BlurFade>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Error */}
@@ -377,8 +403,43 @@ function LoginScreen() {
                     />
                   </BlurFade>
                   <BlurFade delay={0.15}>
-                    <button type="button" onClick={() => setStep("email")} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors">
-                      <ArrowLeft className="w-4 h-4" /> Go back
+                    <div className="flex items-center justify-between">
+                      <button type="button" onClick={() => setStep("email")} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors">
+                        <ArrowLeft className="w-4 h-4" /> Go back
+                      </button>
+                      {mode === "signin" && (
+                        <button
+                          type="button"
+                          onClick={() => { setStep("reset"); setSuccessMsg(""); }}
+                          className="text-sm text-white/60 hover:text-white transition-colors"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
+                  </BlurFade>
+                </motion.div>
+              )}
+
+              {step === "reset" && (
+                <motion.div key="reset-form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.1 }} className="space-y-4">
+                  <BlurFade delay={0} className="w-full">
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      We&rsquo;ll send a reset link to <span className="font-medium text-white">{email}</span>. Open the link from your email and you&rsquo;ll be able to set a new password.
+                    </p>
+                  </BlurFade>
+                  <BlurFade delay={0.1} className="w-full">
+                    <GlassButton
+                      onClick={handleResetPassword}
+                      className="w-full"
+                      disabled={!isEmailValid || resetSubmitting || !!successMsg}
+                    >
+                      {resetSubmitting ? "Sending…" : successMsg ? "Email sent" : "Send reset link"}
+                    </GlassButton>
+                  </BlurFade>
+                  <BlurFade delay={0.2}>
+                    <button type="button" onClick={() => { setStep("password"); setSuccessMsg(""); }} className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors">
+                      <ArrowLeft className="w-4 h-4" /> Back to sign-in
                     </button>
                   </BlurFade>
                 </motion.div>

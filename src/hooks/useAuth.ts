@@ -13,6 +13,8 @@ interface UseAuthReturn {
   readonly signUp: (email: string, password: string) => Promise<string | null>;
   readonly signOut: () => Promise<void>;
   readonly enterAsGuest: () => void;
+  readonly resetPassword: (email: string) => Promise<string | null>;
+  readonly updatePassword: (newPassword: string) => Promise<string | null>;
 }
 
 export function useAuth(): UseAuthReturn {
@@ -68,5 +70,35 @@ export function useAuth(): UseAuthReturn {
     setGuest(true);
   };
 
-  return { user, guest, loading, error, signIn, signUp, signOut, enterAsGuest };
+  const resetPassword = async (email: string): Promise<string | null> => {
+    setError("");
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/reset`
+        : undefined;
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+    if (err) {
+      setError(err.message);
+      return null;
+    }
+    return "Check your email for a link to reset your password.";
+  };
+
+  const updatePassword = async (newPassword: string): Promise<string | null> => {
+    setError("");
+    const { error: err } = await supabase.auth.updateUser({ password: newPassword });
+    if (err) {
+      setError(err.message);
+      return null;
+    }
+    return "Password updated. You're signed in.";
+  };
+
+  return {
+    user, guest, loading, error,
+    signIn, signUp, signOut, enterAsGuest,
+    resetPassword, updatePassword,
+  };
 }

@@ -13,6 +13,8 @@ interface AuthContextValue {
   readonly signUp: (email: string, password: string) => Promise<string | null>;
   readonly signOut: () => Promise<void>;
   readonly enterAsGuest: () => void;
+  readonly resetPassword: (email: string) => Promise<string | null>;
+  readonly updatePassword: (newPassword: string) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
